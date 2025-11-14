@@ -1,0 +1,1 @@
+# synquerra-app
