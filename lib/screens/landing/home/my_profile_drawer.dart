@@ -9,6 +9,9 @@ import 'package:safe_track/screens/landing/home/profile_drawer/recharge_and_rene
 import 'package:safe_track/screens/landing/home/profile_drawer/subscription_status.dart';
 import 'package:safe_track/screens/landing/settings_screen.dart';
 
+import 'package:safe_track/core/services/user_preferences.dart';
+import 'package:safe_track/screens/registration/login_page.dart';
+
 class MyProfileDrawer extends StatelessWidget {
   const MyProfileDrawer({super.key});
 
@@ -170,7 +173,43 @@ class MyProfileDrawer extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // TODO: Add your logout logic here
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(context), // Close dialog
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              // Close dialog
+                              Navigator.pop(context);
+
+                              // Perform Logout Logic
+                              await UserPreferences().removeUser();
+
+                              if (!context.mounted) return;
+
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   },
                   icon: const Icon(
                     Icons.logout,

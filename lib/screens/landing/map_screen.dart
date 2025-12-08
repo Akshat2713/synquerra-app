@@ -5,6 +5,9 @@ import 'package:location/location.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:safe_track/screens/landing/home/my_profile_drawer.dart'; // Your existing drawer
 
+import '../../core/models/user_model.dart';
+import '../../core/services/user_preferences.dart';
+
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -20,10 +23,23 @@ class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
   double _currentZoom = 13;
 
+  UserData? _currentUser;
+
   @override
   void initState() {
     super.initState();
     _fetchLocationAndMove();
+
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = await UserPreferences().getUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
   }
 
   // Combines fetching location and moving the map
@@ -329,7 +345,7 @@ class _MapScreenState extends State<MapScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Tracking Rohan",
+                            "Tracking ${_currentUser?.firstName ?? 'User'}",
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontSize: 24, // Larger text
                               fontWeight: FontWeight.bold,
@@ -362,7 +378,7 @@ class _MapScreenState extends State<MapScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        "Last Seen: 15/12/2014 03:50:26", // Updated date from image
+                        "Last Login: ${_currentUser?.lastLoginAt ?? 'Unknown'}", // Updated date from image
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                           fontSize: 18,
@@ -372,13 +388,13 @@ class _MapScreenState extends State<MapScreen> {
                     const SizedBox(height: 12),
 
                     // --- User ID ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.person_outline, // Added icon
-                      label: "User Id:",
-                      value: "5g3dfx35b",
-                      theme: theme,
-                    ),
+                    // buildInfoRow(
+                    //   context,
+                    //   icon: Icons.person_outline, // Added icon
+                    //   label: "User Id:",
+                    //   value: _currentUser?.uniqueId ?? 'Loading...',
+                    //   theme: theme,
+                    // ),
 
                     // --- GEO Number ---
                     buildInfoRow(
@@ -445,8 +461,8 @@ class _MapScreenState extends State<MapScreen> {
                     buildContactCard(
                       context,
                       name: "Rajesh Kumar",
-                      phoneNumber: "9988XXXXXX",
-                      email: "rajest101@gmai;.com",
+                      phoneNumber: _currentUser?.mobile ?? 'N/A',
+                      email: _currentUser?.email ?? 'N/A',
                       theme: theme,
                     ),
                     const SizedBox(height: 8),
