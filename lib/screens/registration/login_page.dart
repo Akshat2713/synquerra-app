@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:safe_track/screens/landing/map_screen.dart';
-// Corrected import path to match your canvas file
 import 'package:safe_track/screens/registration/signup_screen1.dart';
-import 'package:safe_track/theme/colors.dart'; // Assuming your AppColors.navBlue is here
+import 'package:safe_track/theme/colors.dart';
+import '../../core/models/user_model.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/user_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _isLoading = false;
+
+  final AuthService _authService = AuthService();
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -22,14 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _signIn() {
+  Future<void> _signIn() async {
     // --- TODO: Implement your sign-in logic here ---
-    final email = _emailController.text;
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // print('Attempting login with Email: $email, Password: $password');
-
-    // Example: Check if fields are empty
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter both email and password.')),
@@ -37,17 +40,46 @@ class _LoginScreenState extends State<LoginScreen> {
       return; // Stop execution if fields are empty
     }
 
-    // Example: On success, navigate to the main app screen
-    // For now, just show a success message
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Login Successful (Demo)!')));
+    FocusScope.of(context).unfocus();
 
-    // Navigate AFTER successful validation
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MapScreen()),
-    ); // Use pushReplacement so user can't go "back" to login
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final AuthResponse authResponse = await _authService.login(
+        email,
+        password,
+      );
+
+      if (authResponse.data != null) {
+        await UserPreferences().saveUser(authResponse.data!);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Welcome Back, ${authResponse.data?.firstName}!'),
+        ),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MapScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // Stop spinner
+        });
+      }
+    }
   }
 
   void _signUp() {
@@ -136,6 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        enabled: !_isLoading,
                         style: TextStyle(
                           color:
                               colorScheme.onSurface, // Text color inside field
@@ -161,6 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: true,
+                        enabled: !_isLoading,
                         style: TextStyle(
                           color:
                               colorScheme.onSurface, // Text color inside field
@@ -190,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           TextButton(
-                            onPressed: _signUp,
+                            onPressed: _isLoading ? null : _signUp,
                             style: TextButton.styleFrom(
                               padding:
                                   EdgeInsets.zero, // Remove default padding
@@ -278,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: activeGradient, // Apply correct gradient
+        gradient: _isLoading ? null : activeGradient, // Apply correct gradient
         borderRadius: BorderRadius.circular(30), // Match button shape
         boxShadow: [
           BoxShadow(
@@ -289,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: _signIn,
+        onPressed: _isLoading ? null : _signIn,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent, // Make button transparent
           shadowColor: Colors.transparent, // Hide default shadow
@@ -298,14 +332,24 @@ class _LoginScreenState extends State<LoginScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child: Text(
-          "Sign In",
-          style: TextStyle(
-            color: colorScheme.onPrimary, // Text color for active button
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: _isLoading
+            // Show Spinner if loading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                "Sign In",
+                style: TextStyle(
+                  color: colorScheme.onPrimary, // Text color for active button
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import 'package:safe_track/main.dart';
-// import 'package:safe_track/screens/home_screen.dart';
 import 'package:safe_track/screens/registration/login_page.dart';
+// 1. ADD THESE IMPORTS
+import 'package:safe_track/screens/landing/map_screen.dart';
+import '../../core/services/user_preferences.dart';
+import '../../core/models/user_model.dart'; // Required to recognize UserData type
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,6 +20,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+
+    // Setup Animation
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -27,18 +31,46 @@ class _SplashScreenState extends State<SplashScreen>
       end: 1.5,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
+    // Start Animation slightly delayed
     Future.delayed(const Duration(milliseconds: 100), () {
       _controller.forward();
     });
 
-    Timer(const Duration(seconds: 2), () {
+    // 2. CALL THE CHECK LOGIC
+    _checkLoginStatus();
+  }
+
+  // 3. LOGIC TO CHECK USER AND NAVIGATE
+  Future<void> _checkLoginStatus() async {
+    // We wait for BOTH the 2-second timer (for visual effect)
+    // AND the UserPreferences check to complete.
+    final List<dynamic> results = await Future.wait([
+      Future.delayed(
+        const Duration(seconds: 2),
+      ), // Ensure logo shows for at least 2s
+      UserPreferences().getUser(), // Check local storage
+    ]);
+
+    // results[0] is the delay (void)
+    // results[1] is the UserData object (or null)
+    final UserData? user = results[1];
+
+    if (!mounted) return;
+
+    // 4. DECIDE WHERE TO GO
+    if (user != null) {
+      // User is logged in -> Go to Map
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ), // replace with HomeScreen() if needed
+        MaterialPageRoute(builder: (_) => const MapScreen()),
       );
-    });
+    } else {
+      // User is NOT logged in -> Go to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
   }
 
   @override
@@ -50,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // match your brand
+      backgroundColor: Colors.white,
       body: Center(
         child: ScaleTransition(
           scale: _scaleAnimation,
@@ -58,6 +90,9 @@ class _SplashScreenState extends State<SplashScreen>
             'assets/images/app_logo.png',
             width: 150,
             height: 150,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.school, size: 100, color: Colors.blue);
+            },
           ),
         ),
       ),

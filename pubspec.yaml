@@ -41,10 +41,10 @@ dependencies:
 
   flutter_map: ^8.1.1
   latlong2: ^0.9.1
-  # http: ^0.15.0
+  http: ^1.5.0
   # geolocator: ^9.0.2
   location: ^8.0.1
-  # shared_preferences: ^2.0.13
+  shared_preferences: ^2.1.1
   salomon_bottom_bar: ^3.3.2
   flutter_map_compass: ^1.1.1
   flutter_zoom_drawer: ^3.2.0
