@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safe_track/screens/registration/user_signup/user_signup1.dart';
+import 'package:safe_track/screens/registration/user_signup/user_signup_demo.dart';
 import 'package:safe_track/theme/colors.dart'; // Assuming your AppColors.navBlue is here
 // Import a dummy screen or your next registration step screen
 import 'package:safe_track/widgets/dummy_screen.dart';
@@ -34,7 +35,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       MaterialPageRoute(
         builder: (_) => _selectedType == RegistrationType.organization
             ? DummyScreen(title: "Organization Registration")
-            : RegistrationStep1(),
+            : SignupScreenDemo(),
       ),
     );
   }

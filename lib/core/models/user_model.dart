@@ -17,7 +17,31 @@ class AuthResponse {
       status: json['status'] ?? 'error',
       code: json['code'] ?? 500,
       message: json['message'] ?? 'Unknown error',
-      data: json['data'] != null ? UserData.fromJson(json['data']) : null,
+      data: json['data'] != null ? UserData.fromLoginJson(json['data']) : null,
+    );
+  }
+}
+
+class SignupResponse {
+  final String status;
+  final UserData? user; // Reusing the same UserData object!
+
+  SignupResponse({required this.status, this.user});
+
+  factory SignupResponse.fromJson(Map<String, dynamic> json) {
+    // Navigate: data -> signup -> data -> user
+    // final signupNode = json['data']?['signup'];
+    final mainData = json['data'];
+
+    final innerData = mainData?['data'];
+    // final userNode = signupNode?['data']?['user'];
+
+    final userNode = innerData?['user'];
+
+    return SignupResponse(
+      status: mainData?['status'] ?? 'unknown',
+      // We use a SPECIFIC constructor for Signup data
+      user: userNode != null ? UserData.fromSignupJson(userNode) : null,
     );
   }
 }
@@ -43,7 +67,7 @@ class UserData {
     required this.lastLoginAt,
   });
 
-  factory UserData.fromJson(Map<String, dynamic> json) {
+  factory UserData.fromLoginJson(Map<String, dynamic> json) {
     final tokens = json['tokens'] ?? {};
     return UserData(
       uniqueId: json['uniqueId'] ?? '',
@@ -57,6 +81,25 @@ class UserData {
     );
   }
 
+  factory UserData.fromSignupJson(Map<String, dynamic> json) {
+    return UserData(
+      // MAPPING LOGIC: Map the Signup API's "_id" to our App's "uniqueId"
+      uniqueId: json['_id'] ?? '',
+
+      // MAPPING LOGIC: Map the Signup API's "name" to "firstName"
+      firstName: json['name'] ?? '',
+      lastName: '', // Signup doesn't return last name, so we leave it empty
+
+      email: json['email'] ?? '',
+
+      // These fields are missing in Signup response, so we provide defaults
+      mobile: '',
+      accessToken: '',
+      refreshToken: '',
+      lastLoginAt: '',
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'uniqueId': uniqueId,
@@ -67,5 +110,9 @@ class UserData {
       'lastLoginAt': lastLoginAt,
       'tokens': {'accessToken': accessToken, 'refreshToken': refreshToken},
     };
+  }
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData.fromLoginJson(json); // The structure matches Login
   }
 }

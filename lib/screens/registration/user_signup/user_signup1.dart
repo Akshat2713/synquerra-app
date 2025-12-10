@@ -35,11 +35,6 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
       return;
     }
 
-    // --- TODO: Implement your submission logic here ---
-    print('Device ID: $deviceId');
-    print('Device Name: $deviceName');
-    print('Activation Code: $activationCode');
-
     // Navigate to the next step
     Navigator.push(
       context,
