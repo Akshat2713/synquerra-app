@@ -3,7 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
-import 'package:safe_track/screens/landing/home/my_profile_drawer.dart'; // Your existing drawer
+import '../../core/services/device_service.dart';
+import '../../screens/landing/home/my_profile_drawer.dart'; // Your existing drawer
 
 import '../../core/models/user_model.dart';
 import '../../core/services/user_preferences.dart';
@@ -25,12 +26,16 @@ class _MapScreenState extends State<MapScreen> {
 
   UserData? _currentUser;
 
+  List<String> _allImeis = [];
+
   @override
   void initState() {
     super.initState();
     _fetchLocationAndMove();
 
     _loadUserData();
+
+    _loadImeis();
   }
 
   Future<void> _loadUserData() async {
@@ -38,6 +43,15 @@ class _MapScreenState extends State<MapScreen> {
     if (mounted) {
       setState(() {
         _currentUser = user;
+      });
+    }
+  }
+
+  Future<void> _loadImeis() async {
+    final imeis = await DeviceService().getDeviceImeis();
+    if (mounted) {
+      setState(() {
+        _allImeis = imeis;
       });
     }
   }
@@ -213,13 +227,83 @@ class _MapScreenState extends State<MapScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 12.0),
                       child: Icon(Icons.search, color: Colors.grey),
                     ),
-                    const Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: "Search",
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                    Expanded(
+                      child: Autocomplete<String>(
+                        // A. Define the options (IMEIs)
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text == '') {
+                            // If empty, return top 10 from the full list
+                            return _allImeis.take(10);
+                          }
+                          // Filter logic
+                          return _allImeis
+                              .where((String imei) {
+                                return imei.contains(textEditingValue.text);
+                              })
+                              .take(10); // Limit to top 10 recommendations
+                        },
+
+                        // B. What happens when user selects one
+                        onSelected: (String selection) {
+                          print('You selected: $selection');
+                          // TODO: Add logic here to focus map on this IMEI
+                        },
+
+                        // C. The Input Field (Keep your existing design)
+                        fieldViewBuilder:
+                            (
+                              context,
+                              textController,
+                              focusNode,
+                              onFieldSubmitted,
+                            ) {
+                              return TextField(
+                                controller: textController,
+                                focusNode: focusNode,
+                                decoration: const InputDecoration(
+                                  hintText: "Search IMEI",
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              );
+                            },
+
+                        // D. The List View (The Dropdown Styling)
+                        optionsViewBuilder: (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              color: colorScheme.surface,
+                              borderRadius: BorderRadius.circular(
+                                20,
+                              ), // Match your rounded style
+                              child: Container(
+                                width:
+                                    MediaQuery.of(context).size.width -
+                                    80, // Adjust width
+                                constraints: BoxConstraints(maxHeight: 200),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                        final String option = options.elementAt(
+                                          index,
+                                        );
+                                        return ListTile(
+                                          title: Text(option),
+                                          onTap: () {
+                                            onSelected(option);
+                                          },
+                                        );
+                                      },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     IconButton(
