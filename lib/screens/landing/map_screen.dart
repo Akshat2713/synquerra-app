@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
+import 'package:safe_track/screens/landing/home/details/detail_screen.dart';
 import '../../core/services/device_service.dart';
 import '../../screens/landing/home/my_profile_drawer.dart'; // Your existing drawer
 
@@ -48,11 +49,17 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _loadImeis() async {
-    final imeis = await DeviceService().getDeviceImeis();
-    if (mounted) {
-      setState(() {
-        _allImeis = imeis;
-      });
+    print("Starting to load IMEIs..."); // DEBUG 1
+    try {
+      final imeis = await DeviceService().getDeviceImeis();
+      print("Loaded IMEIs: $imeis"); // DEBUG 2
+      if (mounted) {
+        setState(() {
+          _allImeis = imeis;
+        });
+      }
+    } catch (e) {
+      print("Failed to load IMEIs: $e"); // DEBUG 3
     }
   }
 
@@ -231,6 +238,12 @@ class _MapScreenState extends State<MapScreen> {
                       child: Autocomplete<String>(
                         // A. Define the options (IMEIs)
                         optionsBuilder: (TextEditingValue textEditingValue) {
+                          print(
+                            "Search text: '${textEditingValue.text}'",
+                          ); // DEBUG 4
+                          print(
+                            "Current list size: ${_allImeis.length}",
+                          ); // DEBUG 5
                           if (textEditingValue.text == '') {
                             // If empty, return top 10 from the full list
                             return _allImeis.take(10);
@@ -245,8 +258,17 @@ class _MapScreenState extends State<MapScreen> {
 
                         // B. What happens when user selects one
                         onSelected: (String selection) {
-                          print('You selected: $selection');
-                          // TODO: Add logic here to focus map on this IMEI
+                          // 1. Close keyboard
+                          FocusScope.of(context).unfocus();
+
+                          // 2. Navigate
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  DeviceDetailsScreen(imei: selection),
+                            ),
+                          );
                         },
 
                         // C. The Input Field (Keep your existing design)
@@ -261,7 +283,7 @@ class _MapScreenState extends State<MapScreen> {
                                 controller: textController,
                                 focusNode: focusNode,
                                 decoration: const InputDecoration(
-                                  hintText: "Search IMEI",
+                                  hintText: "Search Device",
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.zero,
                                 ),
