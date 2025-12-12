@@ -85,4 +85,85 @@ class DeviceService {
       return []; // Return empty list on error
     }
   }
+
+  Future<List<AnalyticsDistance>> getDistance24(String imei) async {
+    final token = await UserPreferences().getAccessToken();
+    final url = Uri.parse('$_baseUrl/analytics/analytics-query');
+    final query =
+        '{ "query": "{ analyticsDistance24(imei: \\"\$imei\\") { hour distance cumulative } }" }';
+
+    // We strictly replace the placeholder to inject the variable
+    final body = query.replaceFirst('\$imei', imei);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: body,
+      );
+      final json = jsonDecode(response.body);
+      if (json['status'] == 'success') {
+        final list = json['data']['analyticsDistance24'] as List;
+        return list.map((e) => AnalyticsDistance.fromJson(e)).toList();
+      }
+    } catch (e) {
+      print("Distance Error: $e");
+    }
+    return [];
+  }
+
+  // 2. Fetch Health
+  Future<AnalyticsHealth?> getHealth(String imei) async {
+    final token = await UserPreferences().getAccessToken();
+    final url = Uri.parse('$_baseUrl/analytics/analytics-query');
+    final body =
+        '{ "query": "{ analyticsHealth(imei: \\"$imei\\") { gpsScore temperatureStatus temperatureHealthIndex } }" }';
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: body,
+      );
+      final json = jsonDecode(response.body);
+      if (json['status'] == 'success') {
+        return AnalyticsHealth.fromJson(json['data']['analyticsHealth']);
+      }
+    } catch (e) {
+      print("Health Error: $e");
+    }
+    return null;
+  }
+
+  // 3. Fetch Uptime
+  Future<AnalyticsUptime?> getUptime(String imei) async {
+    final token = await UserPreferences().getAccessToken();
+    final url = Uri.parse('$_baseUrl/analytics/analytics-query');
+    final body =
+        '{ "query": "{ analyticsUptime(imei: \\"$imei\\") { score expectedPackets receivedPackets largestGapSec } }" }';
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: body,
+      );
+      final json = jsonDecode(response.body);
+      if (json['status'] == 'success') {
+        return AnalyticsUptime.fromJson(json['data']['analyticsUptime']);
+      }
+    } catch (e) {
+      print("Uptime Error: $e");
+    }
+    return null;
+  }
 }

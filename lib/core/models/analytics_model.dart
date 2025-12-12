@@ -46,3 +46,78 @@ class AnalyticsData {
     );
   }
 }
+
+// lib/models/telemetry_models.dart
+
+class AnalyticsDistance {
+  final String hour;
+  final double distance;
+  final double cumulative;
+
+  AnalyticsDistance({
+    required this.hour,
+    required this.distance,
+    required this.cumulative,
+  });
+
+  factory AnalyticsDistance.fromJson(Map<String, dynamic> json) {
+    return AnalyticsDistance(
+      hour: json['hour'] ?? '',
+      distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
+      cumulative: (json['cumulative'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+class AnalyticsHealth {
+  final double gpsScore;
+  final String temperatureStatus;
+  final double temperatureIndex;
+  final List<String> movementStats;
+  // We can add movement stats later if needed for a chart
+
+  AnalyticsHealth({
+    required this.gpsScore,
+    required this.temperatureStatus,
+    required this.temperatureIndex,
+    required this.movementStats,
+  });
+
+  factory AnalyticsHealth.fromJson(Map<String, dynamic> json) {
+    return AnalyticsHealth(
+      gpsScore: (json['gpsScore'] as num?)?.toDouble() ?? 0.0,
+      temperatureStatus: json['temperatureStatus'] ?? 'Unknown',
+      temperatureIndex:
+          (json['temperatureHealthIndex'] as num?)?.toDouble() ?? 0.0,
+      movementStats:
+          (json['movementStats'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
+    );
+  }
+}
+
+class AnalyticsUptime {
+  final double score;
+  final int expected;
+  final int received;
+  final double largestGap;
+  final int dropouts;
+
+  AnalyticsUptime({
+    required this.score,
+    required this.expected,
+    required this.received,
+    required this.largestGap,
+    required this.dropouts,
+  });
+
+  factory AnalyticsUptime.fromJson(Map<String, dynamic> json) {
+    return AnalyticsUptime(
+      score: (json['score'] as num?)?.toDouble() ?? 0.0,
+      expected: json['expectedPackets'] ?? 0,
+      received: json['receivedPackets'] ?? 0,
+      largestGap: (json['largestGapSec'] as num?)?.toDouble() ?? 0.0,
+      dropouts: json['dropouts'] ?? 0,
+    );
+  }
+}
