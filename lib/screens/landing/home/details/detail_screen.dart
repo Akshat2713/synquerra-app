@@ -177,6 +177,11 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                   "${data.signal ?? '-'}%",
                   Icons.signal_cellular_alt,
                 ),
+                _buildDataColumn(
+                  "Temperature",
+                  "${data.temperature ?? '-'}℃",
+                  Icons.thermostat,
+                ),
               ],
             ),
             const SizedBox(height: 16),

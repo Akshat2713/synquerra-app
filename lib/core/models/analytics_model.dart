@@ -9,6 +9,7 @@ class AnalyticsData {
   final String? signal;
   final String timestamp;
   final String? alert;
+  final String? temperature;
 
   AnalyticsData({
     required this.id,
@@ -21,6 +22,7 @@ class AnalyticsData {
     this.signal,
     required this.timestamp,
     this.alert,
+    this.temperature,
   });
 
   factory AnalyticsData.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,7 @@ class AnalyticsData {
       signal: json['signal']?.toString(),
       timestamp: json['timestamp'] ?? '',
       alert: json['alert'],
+      temperature: json['rawTemperature']?.toString(),
     );
   }
 }

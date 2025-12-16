@@ -195,7 +195,13 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                 Icons.signal_cellular_alt,
                 Colors.orange,
               ),
-              // _StatItem("Satellites", "${data?.satellites ?? '-'}", "", Icons.satellite_alt, Colors.purple), // Assuming you added satellites to model
+              _StatItem(
+                "Temperature",
+                data?.temperature ?? '-',
+                "℃",
+                Icons.thermostat,
+                Colors.redAccent,
+              ), // Assuming you added satellites to model
             ],
             theme: theme,
           ),

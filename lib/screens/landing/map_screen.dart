@@ -30,6 +30,11 @@ class _MapScreenState extends State<MapScreen> {
 
   List<String> _allImeis = [];
 
+  bool _isLoadingImeis = false;
+  bool _hasLoadedImeis = false;
+
+  final FocusNode _searchFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +42,19 @@ class _MapScreenState extends State<MapScreen> {
 
     _loadUserData();
 
-    _loadImeis();
+    _searchFocusNode.addListener(() {
+      if (_searchFocusNode.hasFocus && !_hasLoadedImeis) {
+        _loadImeis();
+      }
+    });
+
+    // _loadImeis();
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -50,6 +67,10 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _loadImeis() async {
+    if (_hasLoadedImeis || _isLoadingImeis) return;
+    setState(() {
+      _isLoadingImeis = true;
+    });
     print("Starting to load IMEIs..."); // DEBUG 1
     try {
       final imeis = await DeviceService().getDeviceImeis();
@@ -57,11 +78,24 @@ class _MapScreenState extends State<MapScreen> {
       if (mounted) {
         setState(() {
           _allImeis = imeis;
+          _hasLoadedImeis = true;
+          _isLoadingImeis = false;
         });
       }
     } catch (e) {
       print("Failed to load IMEIs: $e"); // DEBUG 3
+      if (mounted) setState(() => _isLoadingImeis = false);
     }
+  }
+
+  void _navigateToDetails(String imei) {
+    if (imei.isEmpty) return;
+
+    FocusScope.of(context).unfocus(); // Close keyboard
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DataTelemetryScreen(imei: imei)),
+    );
   }
 
   // Combines fetching location and moving the map
@@ -144,530 +178,551 @@ class _MapScreenState extends State<MapScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      endDrawer: const MyProfileDrawer(),
-      body: Stack(
-        children: [
-          // --- MAP BACKGROUND ---
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _currentLocation != null
-                  ? LatLng(
-                      _currentLocation!.latitude!,
-                      _currentLocation!.longitude!,
-                    )
-                  : const LatLng(32.9090, 74.8016), // Dudura, Jammu
-              initialZoom: _currentZoom,
-              minZoom: 3,
-              maxZoom: 18,
-              onPositionChanged: (position, hasGesture) {
-                if (position.zoom != _currentZoom) {
-                  if (mounted) {
-                    setState(() {
-                      _currentZoom = position.zoom;
-                    });
-                  }
-                }
-              },
-            ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.png?key=uOv6PI7AYa13sqD3rQbo', // Your corrected MapTiler URL
-                userAgentPackageName: 'com.safe_track.app',
-              ),
-              if (_currentLocation != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: LatLng(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        key: _scaffoldKey,
+        endDrawer: const MyProfileDrawer(),
+        body: Stack(
+          children: [
+            // --- MAP BACKGROUND ---
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _currentLocation != null
+                    ? LatLng(
                         _currentLocation!.latitude!,
                         _currentLocation!.longitude!,
-                      ),
-                      width: 80,
-                      height: 80,
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: Colors.red,
-                        size: 40,
-                      ),
-                    ),
-                  ],
-                ),
-
-              // --- MOVED MapCompass INSIDE FlutterMap's children ---
-              MapCompass(
-                icon: Icon(
-                  Icons.explore_outlined,
-                  size: 36,
-                  // Use theme color for compass icon
-                  color: Colors.black87,
-                ),
-                hideIfRotatedNorth: true,
-                alignment: Alignment.topRight, // Position within the map
-                padding: const EdgeInsets.only(
-                  top: 110,
-                  right: 10,
-                ), // Adjust padding as needed relative to map edges
+                      )
+                    : const LatLng(32.9090, 74.8016), // Dudura, Jammu
+                initialZoom: _currentZoom,
+                minZoom: 3,
+                maxZoom: 18,
+                onPositionChanged: (position, hasGesture) {
+                  if (position.zoom != _currentZoom) {
+                    if (mounted) {
+                      setState(() {
+                        _currentZoom = position.zoom;
+                      });
+                    }
+                  }
+                  if (hasGesture) FocusScope.of(context).unfocus();
+                },
               ),
-              // --------------------------------------------------------
-            ],
-          ),
-
-          // --- TOP SEARCH BAR AREA ---
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 10,
-            right: 10,
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(30),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(30),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.png?key=uOv6PI7AYa13sqD3rQbo', // Your corrected MapTiler URL
+                  userAgentPackageName: 'com.safe_track.app',
                 ),
-                child: Row(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Icon(Icons.search, color: Colors.grey),
-                    ),
-                    Expanded(
-                      child: Autocomplete<String>(
-                        // A. Define the options (IMEIs)
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          print(
-                            "Search text: '${textEditingValue.text}'",
-                          ); // DEBUG 4
-                          print(
-                            "Current list size: ${_allImeis.length}",
-                          ); // DEBUG 5
-                          if (textEditingValue.text == '') {
-                            // If empty, return top 10 from the full list
-                            return _allImeis.take(10);
-                          }
-                          // Filter logic
-                          return _allImeis
-                              .where((String imei) {
-                                return imei.contains(textEditingValue.text);
-                              })
-                              .take(10); // Limit to top 10 recommendations
-                        },
+                if (_currentLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(
+                          _currentLocation!.latitude!,
+                          _currentLocation!.longitude!,
+                        ),
+                        width: 80,
+                        height: 80,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
 
-                        // B. What happens when user selects one
-                        onSelected: (String selection) {
-                          // 1. Close keyboard
-                          FocusScope.of(context).unfocus();
+                // --- MOVED MapCompass INSIDE FlutterMap's children ---
+                MapCompass(
+                  icon: Icon(
+                    Icons.explore_outlined,
+                    size: 36,
+                    // Use theme color for compass icon
+                    color: Colors.black87,
+                  ),
+                  hideIfRotatedNorth: true,
+                  alignment: Alignment.topRight, // Position within the map
+                  padding: const EdgeInsets.only(
+                    top: 110,
+                    right: 10,
+                  ), // Adjust padding as needed relative to map edges
+                ),
+                // --------------------------------------------------------
+              ],
+            ),
 
-                          // 2. Navigate
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  DataTelemetryScreen(imei: selection),
-                            ),
-                          );
-                        },
+            // --- TOP SEARCH BAR AREA ---
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 10,
+              right: 10,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Icon(Icons.search, color: Colors.grey),
+                      ),
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Autocomplete<String>(
+                              key: ValueKey(_hasLoadedImeis),
+                              // A. Define Options
+                              optionsBuilder:
+                                  (TextEditingValue textEditingValue) async {
+                                    // Trigger load if not loaded yet
+                                    if (!_hasLoadedImeis) {
+                                      _loadImeis();
+                                      // Return empty while loading to avoid errors
+                                      return const Iterable<String>.empty();
+                                    }
 
-                        // C. The Input Field (Keep your existing design)
-                        fieldViewBuilder:
-                            (
-                              context,
-                              textController,
-                              focusNode,
-                              onFieldSubmitted,
-                            ) {
-                              return TextField(
-                                controller: textController,
-                                focusNode: focusNode,
-                                decoration: const InputDecoration(
-                                  hintText: "Search Device",
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                              );
-                            },
+                                    if (textEditingValue.text == '') {
+                                      return _allImeis.take(
+                                        5,
+                                      ); // Show top 5 recent/all
+                                    }
+                                    return _allImeis
+                                        .where((String imei) {
+                                          return imei.contains(
+                                            textEditingValue.text,
+                                          );
+                                        })
+                                        .take(5);
+                                  },
 
-                        // D. The List View (The Dropdown Styling)
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return Align(
-                            alignment: Alignment.topLeft,
-                            child: Material(
-                              elevation: 4.0,
-                              color: colorScheme.surface,
-                              borderRadius: BorderRadius.circular(
-                                20,
-                              ), // Match your rounded style
-                              child: Container(
-                                width:
-                                    MediaQuery.of(context).size.width -
-                                    80, // Adjust width
-                                constraints: BoxConstraints(maxHeight: 200),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  itemCount: options.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                        final String option = options.elementAt(
-                                          index,
-                                        );
-                                        return ListTile(
-                                          title: Text(option),
-                                          onTap: () {
-                                            onSelected(option);
-                                          },
-                                        );
+                              // B. Selection Handler
+                              onSelected: (String selection) {
+                                _navigateToDetails(selection);
+                              },
+
+                              // C. Input Field
+                              fieldViewBuilder:
+                                  (
+                                    context,
+                                    textController,
+                                    focusNode,
+                                    onFieldSubmitted,
+                                  ) {
+                                    // Trigger load when focused
+                                    if (focusNode.hasFocus &&
+                                        !_hasLoadedImeis) {
+                                      _loadImeis();
+                                    }
+
+                                    return TextField(
+                                      controller: textController,
+                                      focusNode: focusNode,
+                                      // --- FIX 2: Handle Keyboard "Go/Search" button ---
+                                      textInputAction: TextInputAction.search,
+                                      onSubmitted: (value) {
+                                        // If text matches an IMEI exactly, go there.
+                                        // Or simply pass whatever text is there to the details screen logic
+                                        _navigateToDetails(value);
                                       },
-                                ),
-                              ),
-                            ),
-                          );
+                                      decoration: InputDecoration(
+                                        hintText: _isLoadingImeis
+                                            ? "Loading..."
+                                            : "Search Device by IMEI",
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                    );
+                                  },
+
+                              // D. Dropdown List View
+                              optionsViewBuilder: (context, onSelected, options) {
+                                return Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Material(
+                                    elevation: 4.0,
+                                    color: colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      width: constraints.maxWidth,
+                                      constraints: const BoxConstraints(
+                                        maxHeight: 250,
+                                      ),
+                                      child: ListView.builder(
+                                        padding: EdgeInsets.zero,
+                                        shrinkWrap: true,
+                                        itemCount: options.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                              final String option = options
+                                                  .elementAt(index);
+                                              return ListTile(
+                                                leading: const Icon(
+                                                  Icons.history,
+                                                  size: 20,
+                                                  color: Colors.grey,
+                                                ), // Add icon for better look
+                                                title: Text(option),
+                                                onTap: () => onSelected(option),
+                                              );
+                                            },
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.person_outline,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: () {
+                          print("Profile icon tapped");
                         },
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.person_outline,
-                        color: colorScheme.onSurfaceVariant,
+                      IconButton(
+                        icon: Icon(
+                          Icons.menu,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: () =>
+                            _scaffoldKey.currentState?.openEndDrawer(),
                       ),
-                      onPressed: () {
-                        print("Profile icon tapped");
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.menu,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      onPressed: () =>
-                          _scaffoldKey.currentState?.openEndDrawer(),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // --- ZOOM CONTROLS (Removed Compass from here) ---
-          Positioned(
-            // Adjust top position now that compass is removed
-            top: MediaQuery.of(context).padding.top + 130, // Example adjustment
-            right: 10,
-            child: Container(
-              // Keep zoom buttons together
-              decoration: BoxDecoration(
-                color: colorScheme.surface.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 4,
-                    color: Colors.black26,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.add, color: colorScheme.onSurface),
-                    onPressed: _zoomIn,
-                    iconSize: 28,
-                  ),
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    indent: 5,
-                    endIndent: 5,
-                    color: colorScheme.outlineVariant,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.remove, color: colorScheme.onSurface),
-                    onPressed: _zoomOut,
-                    iconSize: 28,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // --- CURRENT LOCATION BUTTON ---
-          Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.15 + 20,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _goToCurrentLocation,
-              backgroundColor: theme.primaryColor,
-              child: const Icon(Icons.my_location, color: Colors.white),
-            ),
-          ),
-
-          // --- BOTTOM DRAGGABLE SHEET ---
-          DraggableScrollableSheet(
-            initialChildSize: 0.15,
-            minChildSize: 0.15,
-            maxChildSize: 0.8, // Increased maxChildSize to show more content
-            builder: (BuildContext context, ScrollController scrollController) {
-              return Container(
+            // --- ZOOM CONTROLS (Removed Compass from here) ---
+            Positioned(
+              // Adjust top position now that compass is removed
+              top:
+                  MediaQuery.of(context).padding.top +
+                  130, // Example adjustment
+              right: 10,
+              child: Container(
+                // Keep zoom buttons together
                 decoration: BoxDecoration(
-                  color: colorScheme.surface, // Theme-aware background
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
+                  color: colorScheme.surface.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3), // Adjusted shadow
-                      blurRadius: 15,
-                      spreadRadius: 5,
+                      blurRadius: 4,
+                      color: Colors.black26,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: ListView(
-                  controller: scrollController, // Important for scrolling
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // --- Handle to indicate draggable ---
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 5,
-                        margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                    IconButton(
+                      icon: Icon(Icons.add, color: colorScheme.onSurface),
+                      onPressed: _zoomIn,
+                      iconSize: 28,
                     ),
-                    const SizedBox(height: 10),
-
-                    // --- Tracking User Header ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Tracking ${_currentUser?.firstName ?? 'User'}",
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontSize: 24, // Larger text
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "100%",
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.battery_full,
-                                color: Colors.green,
-                                size: 24,
-                              ), // Larger icon
-                            ],
-                          ),
-                        ],
-                      ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 5,
+                      endIndent: 5,
+                      color: colorScheme.outlineVariant,
                     ),
-                    const SizedBox(height: 8),
-
-                    // --- Last Seen ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "Last Login: ${_currentUser?.lastLoginAt ?? 'Unknown'}", // Updated date from image
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 18,
-                        ), // Larger text
-                      ),
+                    IconButton(
+                      icon: Icon(Icons.remove, color: colorScheme.onSurface),
+                      onPressed: _zoomOut,
+                      iconSize: 28,
                     ),
-                    const SizedBox(height: 12),
-
-                    // --- User ID ---
-                    // buildInfoRow(
-                    //   context,
-                    //   icon: Icons.person_outline, // Added icon
-                    //   label: "User Id:",
-                    //   value: _currentUser?.uniqueId ?? 'Loading...',
-                    //   theme: theme,
-                    // ),
-
-                    // --- GEO Number ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.location_history, // Added icon
-                      label: "GEO Number:",
-                      value: "3",
-                      valueSuffix: " Safe Zone",
-                      valueSuffixColor: Colors.green, // Specific color
-                      theme: theme,
-                    ),
-
-                    // --- Speed / Temperature ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.speed, // Added icon
-                      label: "28 Km/hr",
-                      value: "32°C",
-                      valueColor: colorScheme.onSurface, // Default value color
-                      theme: theme,
-                    ),
-
-                    // --- SIM 1 / Signal Strength ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.signal_cellular_alt, // Added icon
-                      label: "SIM 1",
-                      value: "Signal Strength:",
-                      valueSuffix: "74%",
-                      valueSuffixColor: Colors.green, // Specific color
-                      theme: theme,
-                    ),
-
-                    // --- SOS ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.sos, // Added icon
-                      label: "SOS",
-                      value: "Enable",
-                      theme: theme,
-                    ),
-                    const SizedBox(height: 20),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 60.0),
-                      child: Divider(height: 1, thickness: 2),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // --- Guardian Contacts Header ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "Guardian Contacts:",
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 18, // Larger text
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // --- Guardian Contact 1 ---
-                    buildContactCard(
-                      context,
-                      name: "Rajesh Kumar",
-                      phoneNumber: _currentUser?.mobile ?? 'N/A',
-                      email: _currentUser?.email ?? 'N/A',
-                      theme: theme,
-                    ),
-                    const SizedBox(height: 8),
-
-                    // --- Guardian Contact 2 ---
-                    buildContactCard(
-                      context,
-                      name: "Anita Sharma",
-                      phoneNumber: "8899XXXXXX",
-                      email: "anita.sharma@gmail.com",
-                      theme: theme,
-                      // You can add a name here if available
-                    ),
-                    const SizedBox(height: 20),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 60.0),
-                      child: Divider(height: 1, thickness: 2),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // --- Device Details Header ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "Device Details",
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 18, // Larger text
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // --- Device Details Info ---
-                    buildInfoRow(
-                      context,
-                      icon: Icons.devices, // Added icon
-                      label: "IMEI (Device):",
-                      value: "168418618486",
-                      theme: theme,
-                    ),
-                    buildInfoRow(
-                      context,
-                      icon: Icons.memory, // Added icon
-                      label: "Firmware:",
-                      value: "1dfv3515",
-                      theme: theme,
-                    ),
-                    buildInfoRow(
-                      context,
-                      icon: Icons.sim_card, // Added icon
-                      label: "SIM No:",
-                      value:
-                          "", // Assuming empty as per image, add if available
-                      theme: theme,
-                    ),
-                    buildInfoRow(
-                      context,
-                      icon: Icons.phone_android, // Added icon
-                      label: "MSDN No:",
-                      value:
-                          "", // Assuming empty as per image, add if available
-                      theme: theme,
-                    ),
-                    buildInfoRow(
-                      context,
-                      icon: Icons.qr_code, // Added icon
-                      label: "Profile Code:",
-                      value: "14683515",
-                      theme: theme,
-                    ),
-                    const SizedBox(height: 20),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 60.0),
-                      child: Divider(height: 1, thickness: 2),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // --- Location History ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "Location History",
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 18, // Larger text
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ), // Changed color to primary
-                      ),
-                    ),
-                    const SizedBox(height: 100), // Space to allow scrolling
                   ],
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+
+            // --- CURRENT LOCATION BUTTON ---
+            Positioned(
+              bottom: MediaQuery.of(context).size.height * 0.15 + 20,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: _goToCurrentLocation,
+                backgroundColor: theme.primaryColor,
+                child: const Icon(Icons.my_location, color: Colors.white),
+              ),
+            ),
+
+            // --- BOTTOM DRAGGABLE SHEET ---
+            DraggableScrollableSheet(
+              initialChildSize: 0.15,
+              minChildSize: 0.15,
+              maxChildSize: 0.8, // Increased maxChildSize to show more content
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface, // Theme-aware background
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3), // Adjusted shadow
+                        blurRadius: 15,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: ListView(
+                    controller: scrollController, // Important for scrolling
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    children: [
+                      // --- Handle to indicate draggable ---
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // --- Tracking User Header ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Tracking ${_currentUser?.firstName ?? 'User'}",
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontSize: 24, // Larger text
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "100%",
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.battery_full,
+                                  color: Colors.green,
+                                  size: 24,
+                                ), // Larger icon
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // --- Last Seen ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Last Login: ${_currentUser?.lastLoginAt ?? 'Unknown'}", // Updated date from image
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 18,
+                          ), // Larger text
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // --- User ID ---
+                      // buildInfoRow(
+                      //   context,
+                      //   icon: Icons.person_outline, // Added icon
+                      //   label: "User Id:",
+                      //   value: _currentUser?.uniqueId ?? 'Loading...',
+                      //   theme: theme,
+                      // ),
+
+                      // --- GEO Number ---
+                      buildInfoRow(
+                        context,
+                        icon: Icons.location_history, // Added icon
+                        label: "GEO Number:",
+                        value: "3",
+                        valueSuffix: " Safe Zone",
+                        valueSuffixColor: Colors.green, // Specific color
+                        theme: theme,
+                      ),
+
+                      // --- Speed / Temperature ---
+                      buildInfoRow(
+                        context,
+                        icon: Icons.speed, // Added icon
+                        label: "28 Km/hr",
+                        value: "32°C",
+                        valueColor:
+                            colorScheme.onSurface, // Default value color
+                        theme: theme,
+                      ),
+
+                      // --- SIM 1 / Signal Strength ---
+                      buildInfoRow(
+                        context,
+                        icon: Icons.signal_cellular_alt, // Added icon
+                        label: "SIM 1",
+                        value: "Signal Strength:",
+                        valueSuffix: "74%",
+                        valueSuffixColor: Colors.green, // Specific color
+                        theme: theme,
+                      ),
+
+                      // --- SOS ---
+                      buildInfoRow(
+                        context,
+                        icon: Icons.sos, // Added icon
+                        label: "SOS",
+                        value: "Enable",
+                        theme: theme,
+                      ),
+                      const SizedBox(height: 20),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 60.0),
+                        child: Divider(height: 1, thickness: 2),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // --- Guardian Contacts Header ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Guardian Contacts:",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 18, // Larger text
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // --- Guardian Contact 1 ---
+                      buildContactCard(
+                        context,
+                        name: "Rajesh Kumar",
+                        phoneNumber: _currentUser?.mobile ?? 'N/A',
+                        email: _currentUser?.email ?? 'N/A',
+                        theme: theme,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // --- Guardian Contact 2 ---
+                      buildContactCard(
+                        context,
+                        name: "Anita Sharma",
+                        phoneNumber: "8899XXXXXX",
+                        email: "anita.sharma@gmail.com",
+                        theme: theme,
+                        // You can add a name here if available
+                      ),
+                      const SizedBox(height: 20),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 60.0),
+                        child: Divider(height: 1, thickness: 2),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // --- Device Details Header ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Device Details",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 18, // Larger text
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // --- Device Details Info ---
+                      buildInfoRow(
+                        context,
+                        icon: Icons.devices, // Added icon
+                        label: "IMEI (Device):",
+                        value: "168418618486",
+                        theme: theme,
+                      ),
+                      buildInfoRow(
+                        context,
+                        icon: Icons.memory, // Added icon
+                        label: "Firmware:",
+                        value: "1dfv3515",
+                        theme: theme,
+                      ),
+                      buildInfoRow(
+                        context,
+                        icon: Icons.sim_card, // Added icon
+                        label: "SIM No:",
+                        value:
+                            "", // Assuming empty as per image, add if available
+                        theme: theme,
+                      ),
+                      buildInfoRow(
+                        context,
+                        icon: Icons.phone_android, // Added icon
+                        label: "MSDN No:",
+                        value:
+                            "", // Assuming empty as per image, add if available
+                        theme: theme,
+                      ),
+                      buildInfoRow(
+                        context,
+                        icon: Icons.qr_code, // Added icon
+                        label: "Profile Code:",
+                        value: "14683515",
+                        theme: theme,
+                      ),
+                      const SizedBox(height: 20),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 60.0),
+                        child: Divider(height: 1, thickness: 2),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // --- Location History ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Location History",
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 18, // Larger text
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
+                          ), // Changed color to primary
+                        ),
+                      ),
+                      const SizedBox(height: 100), // Space to allow scrolling
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
