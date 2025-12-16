@@ -2,6 +2,9 @@ class AnalyticsData {
   final String id;
   final String imei;
   final String packetType; // 'A', 'N', etc.
+
+  final String? interval;
+  final String? geoid;
   final double? latitude;
   final double? longitude;
   final double? speed;
@@ -15,6 +18,8 @@ class AnalyticsData {
     required this.id,
     required this.imei,
     required this.packetType,
+    this.interval,
+    this.geoid,
     this.latitude,
     this.longitude,
     this.speed,
@@ -38,6 +43,8 @@ class AnalyticsData {
       id: json['id'] ?? '',
       imei: json['imei'] ?? '',
       packetType: json['packet'] ?? 'Unknown',
+      interval: json['interval']?.toString(),
+      geoid: json['geoid']?.toString(),
       latitude: parseDouble(json['latitude']),
       longitude: parseDouble(json['longitude']),
       speed: parseDouble(json['speed']),

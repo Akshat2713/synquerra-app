@@ -52,7 +52,7 @@ class DeviceService {
         """
       { 
         analyticsDataByImei(imei: "$imei") { 
-          id imei packet 
+          id imei packet interval geoid
           latitude longitude speed battery signal alert 
           timestamp rawTemperature
         } 

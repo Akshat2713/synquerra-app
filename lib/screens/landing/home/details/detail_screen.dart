@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Run 'flutter pub add intl' if needed
+import 'package:intl/intl.dart';
 import 'package:safe_track/core/models/analytics_model.dart';
 import 'package:safe_track/core/services/device_service.dart';
-// import '../../theme/colors.dart'; // Uncomment if you have your colors file
+import 'package:safe_track/theme/colors.dart';
 
 class DeviceDetailsScreen extends StatefulWidget {
   final String imei;
@@ -24,33 +24,34 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     _fetchData();
   }
 
-  // --- The Fetching Logic ---
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
+    final allData = await _analyticsService.getAnalyticsByImei(widget.imei);
+    // Showing last 50 records
+    final recentData = allData.reversed.take(50).toList();
 
-    // 1. Fetch all data
-    List<AnalyticsData> allData = await _analyticsService.getAnalyticsByImei(
-      widget.imei,
-    );
+    if (!mounted) return;
+    setState(() {
+      _historyData = recentData;
+      _isLoading = false;
+    });
+  }
 
-    // 2. Logic: The API usually returns Oldest -> Newest.
-    // We reverse it to show Newest first, then take the top 10.
-    List<AnalyticsData> recentData = allData.reversed.take(10).toList();
-
-    if (mounted) {
-      setState(() {
-        _historyData = recentData;
-        _isLoading = false;
-      });
+  // --- Formatters ---
+  String _formatTime(String isoString) {
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      return DateFormat('HH:mm:ss').format(dt);
+    } catch (_) {
+      return '--:--';
     }
   }
 
-  // Helper to make time readable
-  String _formatTimestamp(String isoString) {
+  String _formatDate(String isoString) {
     try {
       final dt = DateTime.parse(isoString).toLocal();
-      return DateFormat('MMM d, h:mm:ss a').format(dt);
-    } catch (e) {
+      return DateFormat('MMM dd, yyyy').format(dt);
+    } catch (_) {
       return isoString;
     }
   }
@@ -58,160 +59,404 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: isDark
+          ? const Color(0xFF0A0C10)
+          : const Color(0xFFF0F2F5),
       appBar: AppBar(
+        backgroundColor: AppColors.navBlue,
+        elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Device Details", style: TextStyle(fontSize: 18)),
+            const Text(
+              "Full Telemetry Log",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             Text(
               "IMEI: ${widget.imei}",
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: 'monospace',
+                color: Colors.white70,
+              ),
             ),
           ],
         ),
-        backgroundColor: theme.primaryColor,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 28),
+            onPressed: _fetchData,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _fetchData, // This handles the "scroll up to refresh"
+              onRefresh: _fetchData,
               child: _historyData.isEmpty
-                  ? ListView(
-                      // ListView allows pull-to-refresh even on empty screen
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: const Center(child: Text("No data available")),
-                        ),
-                      ],
-                    )
+                  ? _buildEmptyState(theme)
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _historyData.length,
                       itemBuilder: (context, index) {
-                        return _buildHistoryCard(_historyData[index], theme);
+                        return _buildTelemetryCard(_historyData[index], theme);
                       },
                     ),
             ),
     );
   }
 
-  // --- The UI Card for each data packet ---
-  Widget _buildHistoryCard(AnalyticsData data, ThemeData theme) {
-    // Logic: Color code the card based on data quality
-    Color statusColor = Colors.green;
-    IconData statusIcon = Icons.location_on;
+  // --- BIGGER EMPTY STATE ---
+  Widget _buildEmptyState(ThemeData theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.sd_storage_outlined,
+            size: 100, // Much bigger icon
+            color: theme.disabledColor.withOpacity(0.4),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "No logs found",
+            style: TextStyle(
+              color: theme.disabledColor,
+              fontSize: 22, // Bigger text
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Waiting for device data...",
+            style: TextStyle(color: theme.disabledColor, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (data.packetType == 'A') {
-      statusColor = Colors.orange; // Alert/Heartbeat packet
-      statusIcon = Icons.notifications_active;
-    } else if (data.latitude == null) {
-      statusColor = Colors.grey; // No GPS lock
-      statusIcon = Icons.signal_wifi_off;
+  // --- THE NEW "ALL PARAMETERS" CARD ---
+  Widget _buildTelemetryCard(AnalyticsData data, ThemeData theme) {
+    // 1. Determine Status & Colors
+    final bool isAlert =
+        data.packetType == 'A' ||
+        (data.alert != null && data.alert!.isNotEmpty);
+    final bool hasGps = data.latitude != null && data.latitude != 0;
+
+    Color statusColor = AppColors.navBlue;
+    if (isAlert) {
+      statusColor = Colors.redAccent;
+    } else if (!hasGps) {
+      statusColor = Colors.orangeAccent;
+    } else if ((data.speed ?? 0) > 0) {
+      statusColor = Colors.green;
     }
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Header: Time & Type
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(statusIcon, color: statusColor, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatTimestamp(data.timestamp),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: statusColor.withOpacity(0.5)),
-                  ),
-                  child: Text(
-                    data.packetType,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
+    // 2. Parse Numeric Values
+    final double battery =
+        double.tryParse(data.battery?.toString() ?? '0') ?? 0;
+    final double signal = double.tryParse(data.signal?.toString() ?? '0') ?? 0;
+    final double temp =
+        double.tryParse(data.temperature?.toString() ?? '0') ?? 0;
 
-            // Data Grid
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildDataColumn(
-                  "Speed",
-                  "${data.speed ?? 0} km/h",
-                  Icons.speed,
-                ),
-                _buildDataColumn(
-                  "Battery",
-                  "${data.battery ?? '-'}%",
-                  Icons.battery_std,
-                ),
-                _buildDataColumn(
-                  "Signal",
-                  "${data.signal ?? '-'}%",
-                  Icons.signal_cellular_alt,
-                ),
-                _buildDataColumn(
-                  "Temperature",
-                  "${data.temperature ?? '-'}℃",
-                  Icons.thermostat,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              // Thicker Left Status Strip
+              Container(width: 8, color: statusColor),
 
-            // Location Bar
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+              // Main Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(18), // Increased Padding
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- HEADER: Time & Packet Type ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _formatTime(data.timestamp),
+                                style: const TextStyle(
+                                  fontSize: 20, // Increased from 16
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _formatDate(data.timestamp),
+                                style: TextStyle(
+                                  fontSize: 13, // Increased from 11
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                          _buildPacketBadge(data.packetType, statusColor),
+                        ],
+                      ),
+                      const SizedBox(height: 20), // More breathing room
+                      // --- ROW 1: Location & Speed ---
+                      Row(
+                        children: [
+                          // GPS Box
+                          Expanded(
+                            flex: 3,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceVariant
+                                    .withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    hasGps ? Icons.gps_fixed : Icons.gps_off,
+                                    size: 20, // Bigger Icon
+                                    color: hasGps ? Colors.green : Colors.grey,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      hasGps
+                                          ? "${data.latitude!.toStringAsFixed(5)}, ${data.longitude!.toStringAsFixed(5)}"
+                                          : " -- , -- ",
+                                      style: TextStyle(
+                                        fontSize: 14, // Increased form 12
+                                        fontFamily: 'monospace',
+                                        fontWeight: FontWeight.w600,
+                                        color: hasGps
+                                            ? theme.colorScheme.onSurface
+                                            : theme.disabledColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Speed Box
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.speed,
+                                    size: 20,
+                                    color: Colors.blue,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "${data.speed ?? 0} km/h",
+                                    style: const TextStyle(
+                                      fontSize: 14, // Increased from 12
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16), // More breathing room
+                      // --- ROW 2: Device Health ---
+                      Row(
+                        children: [
+                          _buildMiniMetric(
+                            Icons.battery_std,
+                            "${battery.toInt()}%",
+                            battery > 20 ? Colors.green : Colors.red,
+                            theme,
+                          ),
+                          const SizedBox(width: 10),
+                          _buildMiniMetric(
+                            Icons.signal_cellular_alt,
+                            "${signal.toInt()}%",
+                            Colors.orange,
+                            theme,
+                          ),
+                          const SizedBox(width: 10),
+                          _buildMiniMetric(
+                            Icons.thermostat,
+                            temp > 0 ? "${temp.toInt()}°C" : "--",
+                            Colors.redAccent,
+                            theme,
+                          ),
+                        ],
+                      ),
+
+                      // --- ALERTS ---
+                      if (isAlert)
+                        Container(
+                          margin: const EdgeInsets.only(top: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.redAccent.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                size: 20,
+                                color: Colors.redAccent,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  "Alert: ${data.alert ?? 'Unknown'}",
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14, // Bigger alert text
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // --- EXPANSION: ALL PARAMETERS ---
+                      const SizedBox(height: 8),
+                      Theme(
+                        data: theme.copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          childrenPadding: EdgeInsets.zero,
+                          title: Text(
+                            "Advanced Telemetry",
+                            style: TextStyle(
+                              fontSize: 14, // Increased
+                              color: theme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 24,
+                            color: theme.primaryColor,
+                          ),
+                          children: [
+                            const Divider(),
+                            _buildTechRow("Record ID", data.id, theme),
+                            _buildTechRow("Raw Packet", data.packetType, theme),
+                            _buildTechRow("Server Time", data.timestamp, theme),
+                            if (data.geoid != null)
+                              _buildTechRow("Geofence ID", data.geoid!, theme),
+                            _buildTechRow(
+                              "Interval",
+                              data.interval != null
+                                  ? "${data.interval}s"
+                                  : "N/A",
+                              theme,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: data.latitude != null
-                  ? Text(
-                      "Lat: ${data.latitude}  |  Lng: ${data.longitude}",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                      ),
-                    )
-                  : const Text(
-                      "No GPS Coordinates",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
-                        fontSize: 12,
-                      ),
-                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Helper Widgets ---
+
+  Widget _buildPacketBadge(String type, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+      ),
+      child: Text(
+        "PKT: $type",
+        style: TextStyle(
+          fontSize: 13, // Increased from 11
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniMetric(
+    IconData icon,
+    String value,
+    Color color,
+    ThemeData theme,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10), // Taller
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: color), // Bigger icon
+            const SizedBox(width: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14, // Increased from 12
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ],
         ),
@@ -219,14 +464,35 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     );
   }
 
-  Widget _buildDataColumn(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-      ],
+  Widget _buildTechRow(String label, String value, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8), // More spacing
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110, // Wider label area
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.5, // Increased form 11
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14, // Increased form 11
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
