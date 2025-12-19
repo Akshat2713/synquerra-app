@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-// import 'package:safe_track/screens/registration/user_signup/user_signup1.dart';
-import 'package:safe_track/screens/registration/user_signup/user_signup_demo.dart';
-import 'package:safe_track/theme/colors.dart'; // Assuming your AppColors.navBlue is here
+// import 'package:synquerra/screens/registration/user_signup/user_signup1.dart';
+import 'package:synquerra/screens/registration/user_signup/user_signup_demo.dart';
+import 'package:synquerra/theme/colors.dart'; // Assuming your AppColors.navBlue is here
 // Import a dummy screen or your next registration step screen
-import 'package:safe_track/widgets/dummy_screen.dart';
+import 'package:synquerra/widgets/dummy_screen.dart';
 
 // Enum to manage which role is selected
 enum RegistrationType { none, organization, user }

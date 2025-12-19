@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart'; // Reusing the dummy screen
-import 'package:safe_track/widgets/dummy_screen.dart';
+import 'package:synquerra/theme/colors.dart'; // Reusing the dummy screen
+import 'package:synquerra/widgets/dummy_screen.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});

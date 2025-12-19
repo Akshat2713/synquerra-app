@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/widgets/edit_value_dialog.dart'; // Import the new dialog
-import 'package:safe_track/theme/colors.dart'; // Import AppColors if needed, e.g., for AppColors.safeGreen
-import 'package:safe_track/widgets/dummy_screen.dart';
+import 'package:synquerra/widgets/edit_value_dialog.dart'; // Import the new dialog
+import 'package:synquerra/theme/colors.dart'; // Import AppColors if needed, e.g., for AppColors.safeGreen
+import 'package:synquerra/widgets/dummy_screen.dart';
 
 class DeviceSettingsScreen extends StatefulWidget {
   const DeviceSettingsScreen({super.key});

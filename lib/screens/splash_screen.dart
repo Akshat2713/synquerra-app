@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/registration/login_page.dart';
+import 'package:synquerra/screens/registration/login_page.dart';
 // 1. ADD THESE IMPORTS
-import 'package:safe_track/screens/landing/map_screen.dart';
+import 'package:synquerra/screens/landing/map_screen.dart';
 import '../../core/services/user_preferences.dart';
 import '../../core/models/user_model.dart'; // Required to recognize UserData type
 

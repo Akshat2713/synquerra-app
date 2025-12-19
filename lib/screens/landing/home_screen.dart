@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 // import 'package:location/location.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-import 'package:safe_track/screens/landing/alarms_and_notifications_screen.dart';
-import 'package:safe_track/screens/landing/location_history_screen.dart';
-import 'package:safe_track/screens/landing/settings_screen.dart';
-import 'package:safe_track/screens/landing/map_screen.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/screens/landing/alarms_and_notifications_screen.dart';
+import 'package:synquerra/screens/landing/location_history_screen.dart';
+import 'package:synquerra/screens/landing/settings_screen.dart';
+import 'package:synquerra/screens/landing/map_screen.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

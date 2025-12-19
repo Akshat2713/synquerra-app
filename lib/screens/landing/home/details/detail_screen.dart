@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:safe_track/core/models/analytics_model.dart';
-import 'package:safe_track/core/services/device_service.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/core/models/analytics_model.dart';
+import 'package:synquerra/core/services/device_service.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class DeviceDetailsScreen extends StatefulWidget {
   final String imei;

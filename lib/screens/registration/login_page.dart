@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/landing/map_screen.dart';
-import 'package:safe_track/screens/registration/signup_screen1.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/screens/landing/map_screen.dart';
+import 'package:synquerra/screens/registration/signup_screen1.dart';
+import 'package:synquerra/theme/colors.dart';
 import '../../core/models/user_model.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/user_preferences.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/core/models/signup_input.dart';
-import 'package:safe_track/core/services/auth_service.dart';
-import 'package:safe_track/screens/registration/login_page.dart';
-// import 'package:safe_track/screens/login_screen.dart'; // To navigate after success
-import 'package:safe_track/theme/colors.dart'; // Ensure this path is correct
+import 'package:synquerra/core/models/signup_input.dart';
+import 'package:synquerra/core/services/auth_service.dart';
+import 'package:synquerra/screens/registration/login_page.dart';
+// import 'package:synquerra/screens/login_screen.dart'; // To navigate after success
+import 'package:synquerra/theme/colors.dart'; // Ensure this path is correct
 
 class SignupScreenDemo extends StatefulWidget {
   const SignupScreenDemo({super.key});

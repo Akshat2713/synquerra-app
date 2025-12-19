@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/landing/map_screen.dart';
-import 'package:safe_track/theme/colors.dart'; // Assuming AppColors.safeGreen is here
+import 'package:synquerra/screens/landing/map_screen.dart';
+import 'package:synquerra/theme/colors.dart'; // Assuming AppColors.safeGreen is here
 
 class RegistrationStep4 extends StatefulWidget {
   const RegistrationStep4({super.key});

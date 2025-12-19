@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Import provider
-import 'package:safe_track/providers/theme_provider.dart'; // Import your new provider
-import 'package:safe_track/theme/app_theme.dart';
+import 'package:synquerra/providers/theme_provider.dart'; // Import your new provider
+import 'package:synquerra/theme/app_theme.dart';
 import 'screens/splash_screen.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/theme/colors.dart';
 
 void main() {
   // Wrap your app with the provider

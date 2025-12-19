@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/registration/user_signup/user_signup2.dart';
-import 'package:safe_track/theme/colors.dart'; // Assuming AppColors.safeGreen is here
+import 'package:synquerra/screens/registration/user_signup/user_signup2.dart';
+import 'package:synquerra/theme/colors.dart'; // Assuming AppColors.safeGreen is here
 
 class RegistrationStep1 extends StatefulWidget {
   const RegistrationStep1({super.key});

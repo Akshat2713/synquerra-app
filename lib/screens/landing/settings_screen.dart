@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/settings/device_settings_screen.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/settings/account_screen.dart';
-import 'package:safe_track/widgets/dummy_screen.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/settings/device_settings_screen.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/settings/account_screen.dart';
+import 'package:synquerra/widgets/dummy_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

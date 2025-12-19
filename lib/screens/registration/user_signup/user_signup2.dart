@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/screens/registration/user_signup/user_signup3.dart';
-import 'package:safe_track/theme/colors.dart'; // Assuming AppColors.safeGreen is here
+import 'package:synquerra/screens/registration/user_signup/user_signup3.dart';
+import 'package:synquerra/theme/colors.dart'; // Assuming AppColors.safeGreen is here
 import 'package:intl/intl.dart'; // For formatting the date
 
 // Enum for the radio buttons

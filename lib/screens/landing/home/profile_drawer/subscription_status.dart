@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class SubscriptionStatusScreen extends StatelessWidget {
   const SubscriptionStatusScreen({super.key});

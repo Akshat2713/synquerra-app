@@ -3,8 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
-import 'package:safe_track/screens/landing/home/details/data_telemetry_screen.dart';
-// import 'package:safe_track/screens/landing/home/details/detail_screen.dart';
+import 'package:synquerra/screens/landing/home/details/data_telemetry_screen.dart';
+// import 'package:synquerra/screens/landing/home/details/detail_screen.dart';
 import '../../core/services/device_service.dart';
 import '../../screens/landing/home/my_profile_drawer.dart'; // Your existing drawer
 
@@ -213,7 +213,7 @@ class _MapScreenState extends State<MapScreen> {
                 TileLayer(
                   urlTemplate:
                       'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.png?key=uOv6PI7AYa13sqD3rQbo', // Your corrected MapTiler URL
-                  userAgentPackageName: 'com.safe_track.app',
+                  userAgentPackageName: 'com.synquerra.app',
                 ),
                 if (_currentLocation != null)
                   MarkerLayer(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart';
-import 'package:safe_track/widgets/info_card.dart'; // IMPORT the reusable widgets
+import 'package:synquerra/theme/colors.dart';
+import 'package:synquerra/widgets/info_card.dart'; // IMPORT the reusable widgets
 
 class DeviceRegistrationScreen extends StatelessWidget {
   const DeviceRegistrationScreen({super.key});

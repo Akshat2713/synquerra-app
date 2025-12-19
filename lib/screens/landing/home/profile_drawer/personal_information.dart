@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/widgets/info_card.dart'; // IMPORT the new reusable widgets
+import 'package:synquerra/widgets/info_card.dart'; // IMPORT the new reusable widgets
 
 class PersonalInformationScreen extends StatelessWidget {
   const PersonalInformationScreen({super.key});

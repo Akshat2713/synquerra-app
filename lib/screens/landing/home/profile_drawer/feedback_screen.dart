@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});

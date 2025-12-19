@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:safe_track/providers/theme_provider.dart'; // Import the provider
-import 'package:safe_track/screens/landing/home/profile_drawer/device_information.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/device_registration.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/feedback_screen.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/personal_information.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/recharge_and_renewal_options.dart';
-import 'package:safe_track/screens/landing/home/profile_drawer/subscription_status.dart';
-import 'package:safe_track/screens/landing/settings_screen.dart';
+import 'package:synquerra/providers/theme_provider.dart'; // Import the provider
+import 'package:synquerra/screens/landing/home/profile_drawer/device_information.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/device_registration.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/feedback_screen.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/personal_information.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/recharge_and_renewal_options.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/subscription_status.dart';
+import 'package:synquerra/screens/landing/settings_screen.dart';
 
-import 'package:safe_track/core/services/user_preferences.dart';
-import 'package:safe_track/screens/registration/login_page.dart';
+import 'package:synquerra/core/services/user_preferences.dart';
+import 'package:synquerra/screens/registration/login_page.dart';
 
 class MyProfileDrawer extends StatelessWidget {
   const MyProfileDrawer({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart'; // Ensure this matches your file path
+import 'package:synquerra/theme/colors.dart'; // Ensure this matches your file path
 
 class AppTheme {
   // --- SHARED APP BAR CONFIG (Constant White Text/Icons) ---

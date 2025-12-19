@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class LedIndicatorScreen extends StatefulWidget {
   const LedIndicatorScreen({super.key});

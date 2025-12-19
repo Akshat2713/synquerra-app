@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:safe_track/core/models/analytics_model.dart';
-import 'package:safe_track/theme/colors.dart';
+import 'package:synquerra/core/models/analytics_model.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class DistanceHistoryScreen extends StatelessWidget {
   final List<AnalyticsDistance> data;
