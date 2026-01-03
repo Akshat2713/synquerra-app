@@ -1,6 +1,6 @@
 {
-    "name": "safe_track",
-    "short_name": "safe_track",
+    "name": "synquerra",
+    "short_name": "synquerra",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851578857478",
+    "project_id": "synquerra-app",
+    "storage_bucket": "synquerra-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851578857478:android:554446bcbb5497cd657b87",
+        "android_client_info": {
+          "package_name": "com.synquerra.synquerra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJTPgOlvLNWS-MQ-SGlcqUAvSNFHzNs7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

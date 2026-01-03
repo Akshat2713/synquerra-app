@@ -18,6 +18,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
 
   // Data Containers
   AnalyticsData? _latestDeviceData;
+  List<AnalyticsData> _deviceData = [];
   List<AnalyticsDistance> _distanceData = [];
   AnalyticsHealth? _healthData;
   AnalyticsUptime? _uptimeData;
@@ -40,6 +41,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     if (mounted) {
       setState(() {
         _latestDeviceData = packets.isNotEmpty ? packets.last : null;
+        _deviceData = packets;
         _distanceData = dist;
         _healthData = health;
         _uptimeData = uptime;
@@ -197,7 +199,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               ),
               _StatItem(
                 "Temperature",
-                data?.temperature ?? '-',
+                data?.temperature?.replaceAll('c', '').trim() ?? '-',
                 "℃",
                 Icons.thermostat,
                 Colors.redAccent,
@@ -230,7 +232,8 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => DeviceDetailsScreen(imei: widget.imei),
+                  builder: (_) =>
+                      DeviceDetailsScreen(imei: widget.imei, data: _deviceData),
                 ),
               ),
             ),

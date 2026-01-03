@@ -1,4 +1,4 @@
-package com.example.safe_track
+package com.synquerra.synquerra
 
 import io.flutter.embedding.android.FlutterActivity
 

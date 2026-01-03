@@ -6,8 +6,13 @@ import 'package:synquerra/theme/colors.dart';
 
 class DeviceDetailsScreen extends StatefulWidget {
   final String imei;
+  final List<AnalyticsData> data;
 
-  const DeviceDetailsScreen({super.key, required this.imei});
+  const DeviceDetailsScreen({
+    super.key,
+    required this.imei,
+    required this.data,
+  });
 
   @override
   State<DeviceDetailsScreen> createState() => _DeviceDetailsScreenState();
@@ -16,25 +21,42 @@ class DeviceDetailsScreen extends StatefulWidget {
 class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
   final DeviceService _analyticsService = DeviceService();
   List<AnalyticsData> _historyData = [];
-  bool _isLoading = true;
+  bool _isLoading = false; // Initial data is available immediately
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    // Use the data passed from the previous screen immediately
+    _processPassedData();
+  }
+
+  void _processPassedData() {
+    // Reverse the list to show the most recent logs first
+    // and take the last 50 records as per your requirement
+    setState(() {
+      _historyData = widget.data.reversed.take(50).toList();
+    });
   }
 
   Future<void> _fetchData() async {
+    // Manual refresh triggered only by the AppBar icon
     setState(() => _isLoading = true);
-    final allData = await _analyticsService.getAnalyticsByImei(widget.imei);
-    // Showing last 50 records
-    final recentData = allData.reversed.take(50).toList();
+    try {
+      final allData = await _analyticsService.getAnalyticsByImei(widget.imei);
+      final recentData = allData.reversed.take(50).toList();
 
-    if (!mounted) return;
-    setState(() {
-      _historyData = recentData;
-      _isLoading = false;
-    });
+      if (!mounted) return;
+      setState(() {
+        _historyData = recentData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to refresh data: $e")));
+    }
   }
 
   // --- Formatters ---
@@ -88,28 +110,26 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, size: 28),
-            onPressed: _fetchData,
+            onPressed: _fetchData, // Explicit reload trigger
           ),
         ],
       ),
+      // Removed RefreshIndicator to prevent unwanted scroll-based reloads
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _fetchData,
-              child: _historyData.isEmpty
-                  ? _buildEmptyState(theme)
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _historyData.length,
-                      itemBuilder: (context, index) {
-                        return _buildTelemetryCard(_historyData[index], theme);
-                      },
-                    ),
+          : _historyData.isEmpty
+          ? _buildEmptyState(theme)
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _historyData.length,
+              itemBuilder: (context, index) {
+                return _buildTelemetryCard(_historyData[index], theme);
+              },
             ),
     );
   }
 
-  // --- BIGGER EMPTY STATE ---
+  // --- EMPTY STATE ---
   Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: Column(
@@ -117,7 +137,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
         children: [
           Icon(
             Icons.sd_storage_outlined,
-            size: 100, // Much bigger icon
+            size: 100,
             color: theme.disabledColor.withOpacity(0.4),
           ),
           const SizedBox(height: 24),
@@ -125,7 +145,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
             "No logs found",
             style: TextStyle(
               color: theme.disabledColor,
-              fontSize: 22, // Bigger text
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -139,9 +159,8 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     );
   }
 
-  // --- THE NEW "ALL PARAMETERS" CARD ---
+  // --- TELEMETRY CARD ---
   Widget _buildTelemetryCard(AnalyticsData data, ThemeData theme) {
-    // 1. Determine Status & Colors
     final bool isAlert =
         data.packetType == 'A' ||
         (data.alert != null && data.alert!.isNotEmpty);
@@ -156,12 +175,10 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
       statusColor = Colors.green;
     }
 
-    // 2. Parse Numeric Values
     final double battery =
         double.tryParse(data.battery?.toString() ?? '0') ?? 0;
     final double signal = double.tryParse(data.signal?.toString() ?? '0') ?? 0;
-    final double temp =
-        double.tryParse(data.temperature?.toString() ?? '0') ?? 0;
+    final String temp = data.temperature?.replaceAll('c', '').trim() ?? '--';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -181,17 +198,14 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
         child: IntrinsicHeight(
           child: Row(
             children: [
-              // Thicker Left Status Strip
               Container(width: 8, color: statusColor),
-
-              // Main Content
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(18), // Increased Padding
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // --- HEADER: Time & Packet Type ---
+                      // Header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -201,7 +215,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                               Text(
                                 _formatTime(data.timestamp),
                                 style: const TextStyle(
-                                  fontSize: 20, // Increased from 16
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'monospace',
                                 ),
@@ -210,7 +224,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                               Text(
                                 _formatDate(data.timestamp),
                                 style: TextStyle(
-                                  fontSize: 13, // Increased from 11
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: theme.colorScheme.onSurface
                                       .withOpacity(0.6),
@@ -221,11 +235,10 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                           _buildPacketBadge(data.packetType, statusColor),
                         ],
                       ),
-                      const SizedBox(height: 20), // More breathing room
-                      // --- ROW 1: Location & Speed ---
+                      const SizedBox(height: 20),
+                      // Row 1: Location & Speed
                       Row(
                         children: [
-                          // GPS Box
                           Expanded(
                             flex: 3,
                             child: Container(
@@ -242,7 +255,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                                 children: [
                                   Icon(
                                     hasGps ? Icons.gps_fixed : Icons.gps_off,
-                                    size: 20, // Bigger Icon
+                                    size: 20,
                                     color: hasGps ? Colors.green : Colors.grey,
                                   ),
                                   const SizedBox(width: 10),
@@ -252,7 +265,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                                           ? "${data.latitude!.toStringAsFixed(5)}, ${data.longitude!.toStringAsFixed(5)}"
                                           : " -- , -- ",
                                       style: TextStyle(
-                                        fontSize: 14, // Increased form 12
+                                        fontSize: 14,
                                         fontFamily: 'monospace',
                                         fontWeight: FontWeight.w600,
                                         color: hasGps
@@ -267,7 +280,6 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          // Speed Box
                           Expanded(
                             flex: 2,
                             child: Container(
@@ -291,7 +303,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                                   Text(
                                     "${data.speed ?? 0} km/h",
                                     style: const TextStyle(
-                                      fontSize: 14, // Increased from 12
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue,
                                     ),
@@ -302,8 +314,8 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16), // More breathing room
-                      // --- ROW 2: Device Health ---
+                      const SizedBox(height: 16),
+                      // Row 2: Metrics
                       Row(
                         children: [
                           _buildMiniMetric(
@@ -322,14 +334,13 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                           const SizedBox(width: 10),
                           _buildMiniMetric(
                             Icons.thermostat,
-                            temp > 0 ? "${temp.toInt()}°C" : "--",
+                            temp != '--' ? "$temp°C" : "--",
                             Colors.redAccent,
                             theme,
                           ),
                         ],
                       ),
-
-                      // --- ALERTS ---
+                      // Alerts
                       if (isAlert)
                         Container(
                           margin: const EdgeInsets.only(top: 16),
@@ -355,25 +366,23 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
                                   style: const TextStyle(
                                     color: Colors.redAccent,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14, // Bigger alert text
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-
-                      // --- EXPANSION: ALL PARAMETERS ---
+                      // Advanced Expansion
                       const SizedBox(height: 8),
                       Theme(
                         data: theme.copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           tilePadding: EdgeInsets.zero,
-                          childrenPadding: EdgeInsets.zero,
                           title: Text(
                             "Advanced Telemetry",
                             style: TextStyle(
-                              fontSize: 14, // Increased
+                              fontSize: 14,
                               color: theme.primaryColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -411,8 +420,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     );
   }
 
-  // --- Helper Widgets ---
-
+  // --- Helpers ---
   Widget _buildPacketBadge(String type, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -424,7 +432,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
       child: Text(
         "PKT: $type",
         style: TextStyle(
-          fontSize: 13, // Increased from 11
+          fontSize: 13,
           fontWeight: FontWeight.bold,
           color: color,
         ),
@@ -440,7 +448,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
   ) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10), // Taller
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(10),
@@ -448,12 +456,12 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: color), // Bigger icon
+            Icon(icon, size: 18, color: color),
             const SizedBox(width: 8),
             Text(
               value,
               style: TextStyle(
-                fontSize: 14, // Increased from 12
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.onSurface,
               ),
@@ -466,16 +474,16 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
 
   Widget _buildTechRow(String label, String value, ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8), // More spacing
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 110, // Wider label area
+            width: 110,
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 13.5, // Increased form 11
+                fontSize: 13.5,
                 color: theme.colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w500,
               ),
@@ -485,7 +493,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 14, // Increased form 11
+                fontSize: 14,
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w600,
               ),

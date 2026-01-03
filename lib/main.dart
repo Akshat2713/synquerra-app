@@ -1,12 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Import provider
 import 'package:synquerra/providers/theme_provider.dart'; // Import your new provider
 import 'package:synquerra/theme/app_theme.dart';
 import 'screens/splash_screen.dart';
-import 'package:synquerra/theme/colors.dart';
+// import 'package:synquerra/theme/colors.dart';
 
-void main() {
+void main() async {
   // Wrap your app with the provider
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),

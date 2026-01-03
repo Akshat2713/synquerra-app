@@ -1,4 +1,4 @@
-# safe_track
+# synquerra
 
 A new Flutter project.
 
