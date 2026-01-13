@@ -1,19 +1,26 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import provider
-import 'package:synquerra/providers/theme_provider.dart'; // Import your new provider
+import 'package:provider/provider.dart';
+import 'package:synquerra/providers/theme_provider.dart';
+import 'package:synquerra/providers/device_provider.dart';
+import 'package:synquerra/providers/searched_device_provider.dart'; // Import SearchedDeviceProvider
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/theme/app_theme.dart';
 import 'screens/splash_screen.dart';
-// import 'package:synquerra/theme/colors.dart';
 
 void main() async {
-  // Wrap your app with the provider
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    // MultiProvider allows you to stack all your state management classes
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => DeviceProvider()),
+        ChangeNotifierProvider(create: (_) => SearchedDeviceProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -24,22 +31,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to theme changes from the provider
+    // We listen specifically to theme changes for the MaterialApp setup
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
       title: 'GPS Tracker',
       debugShowCheckedModeBanner: false,
-
-      // Set the theme mode based on the provider's state
       themeMode: themeProvider.themeMode,
-
-      // Your existing light theme
       theme: AppTheme.lightTheme,
-      // Your existing dark theme
       darkTheme: AppTheme.darkTheme,
-
-      // -----------------------------
       home: const SplashScreen(),
     );
   }

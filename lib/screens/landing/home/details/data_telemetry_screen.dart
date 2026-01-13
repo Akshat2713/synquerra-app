@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:synquerra/providers/device_provider.dart';
+import 'package:synquerra/providers/searched_device_provider.dart';
+import 'package:synquerra/core/services/user_preferences.dart';
 import 'package:synquerra/screens/landing/home/details/distence_history.dart';
 import 'package:synquerra/screens/landing/home/details/detail_screen.dart';
 import 'package:synquerra/core/models/analytics_model.dart';
-import 'package:synquerra/core/services/device_service.dart';
 import 'package:synquerra/theme/colors.dart';
 
 class DataTelemetryScreen extends StatefulWidget {
@@ -14,48 +17,52 @@ class DataTelemetryScreen extends StatefulWidget {
 }
 
 class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
-  final DeviceService _service = DeviceService();
-
-  // Data Containers
-  AnalyticsData? _latestDeviceData;
-  List<AnalyticsData> _deviceData = [];
-  List<AnalyticsDistance> _distanceData = [];
-  AnalyticsHealth? _healthData;
-  AnalyticsUptime? _uptimeData;
-
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _fetchAllData();
+    // Fetch data from global provider on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerGlobalRefresh();
+    });
   }
 
-  Future<void> _fetchAllData() async {
-    setState(() => _isLoading = true);
-    final packets = await _service.getAnalyticsByImei(widget.imei);
-    final dist = await _service.getDistance24(widget.imei);
-    final health = await _service.getHealth(widget.imei);
-    final uptime = await _service.getUptime(widget.imei);
+  // Determines which provider to hit based on the IMEI
+  Future<void> _triggerGlobalRefresh() async {
+    final user = await UserPreferences().getUser();
+    if (!mounted) return;
 
-    if (mounted) {
-      setState(() {
-        _latestDeviceData = packets.isNotEmpty ? packets.last : null;
-        _deviceData = packets;
-        _distanceData = dist;
-        _healthData = health;
-        _uptimeData = uptime;
-        _isLoading = false;
-      });
+    if (widget.imei == user?.imei) {
+      // Update primary device data
+      context.read<DeviceProvider>().refreshMyDevice(widget.imei);
+    } else {
+      // Update searched device data
+      context.read<SearchedDeviceProvider>().fetchSearchedDevice(widget.imei);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 1. Listen to both providers
+    final myProv = context.watch<DeviceProvider>();
+    final searchProv = context.watch<SearchedDeviceProvider>();
+
+    // 2. Identify active data source
+    // If the current search IMEI matches this screen, use searchProv, else use myProv
+    final bool isSearched = searchProv.currentImei == widget.imei;
+
+    final latestData = isSearched
+        ? searchProv.latestTelemetry
+        : myProv.latestTelemetry;
+    final allPackets = isSearched ? searchProv.allPackets : myProv.allPackets;
+    final distanceData = isSearched
+        ? searchProv.distanceData
+        : myProv.distanceData;
+    final healthData = isSearched ? searchProv.healthData : myProv.healthData;
+    final uptimeData = isSearched ? searchProv.uptimeData : myProv.uptimeData;
+    final isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    // Background color based on theme
     final bgColor = isDark ? Colors.black87 : const Color(0xFFF2F4F7);
 
     return Scaffold(
@@ -77,10 +84,10 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
         backgroundColor: AppColors.navBlue,
         elevation: 0,
       ),
-      body: _isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _fetchAllData,
+              onRefresh: _triggerGlobalRefresh,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -88,20 +95,17 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _sectionHeader("Live Status", theme),
-                    _buildDeviceStatusCard(theme),
+                    _buildDeviceStatusCard(latestData, allPackets, theme),
                     const SizedBox(height: 24),
-
                     _sectionHeader("Movement & Travel", theme),
-                    _buildDistanceCard(theme),
+                    _buildDistanceCard(distanceData, theme),
                     const SizedBox(height: 24),
-
                     _sectionHeader("System Health", theme),
-                    _buildHealthCard(theme),
+                    _buildHealthCard(healthData, theme),
                     const SizedBox(height: 24),
-
                     _sectionHeader("Connectivity", theme),
-                    _buildUptimeCard(theme),
-                    const SizedBox(height: 40), // Bottom padding
+                    _buildUptimeCard(uptimeData, theme),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -124,10 +128,13 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // --- CARD 1: DEVICE STATUS (Detailed) ---
-  Widget _buildDeviceStatusCard(ThemeData theme) {
-    final data = _latestDeviceData;
-    final isOnline = data != null; // Simple check, refine logic if needed
+  // --- CARD 1: DEVICE STATUS ---
+  Widget _buildDeviceStatusCard(
+    AnalyticsData? data,
+    List<AnalyticsData> allPackets,
+    ThemeData theme,
+  ) {
+    final isOnline = data != null;
 
     return _BaseCard(
       theme: theme,
@@ -199,16 +206,16 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               ),
               _StatItem(
                 "Temperature",
-                data?.temperature?.replaceAll('c', '').trim() ?? '-',
+                data?.temperature?.toLowerCase().replaceAll('c', '').trim() ??
+                    '-',
                 "℃",
                 Icons.thermostat,
                 Colors.redAccent,
-              ), // Assuming you added satellites to model
+              ),
             ],
             theme: theme,
           ),
           const SizedBox(height: 16),
-          // Raw Data Expansion
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             title: const Text(
@@ -220,7 +227,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               _detailRow("Latitude", "${data?.latitude}", theme),
               _detailRow("Longitude", "${data?.longitude}", theme),
               _detailRow("Alert Code", data?.alert ?? "None", theme),
-              // _detailRow("ID", data?.id ?? "N/A", theme),
             ],
           ),
           const SizedBox(height: 12),
@@ -233,7 +239,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      DeviceDetailsScreen(imei: widget.imei, data: _deviceData),
+                      DeviceDetailsScreen(imei: widget.imei, data: allPackets),
                 ),
               ),
             ),
@@ -243,14 +249,10 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // --- CARD 2: DISTANCE (Detailed) ---
-  Widget _buildDistanceCard(ThemeData theme) {
-    double total = _distanceData.isNotEmpty
-        ? _distanceData.last.cumulative
-        : 0.0;
-    double lastHour = _distanceData.isNotEmpty
-        ? _distanceData.last.distance
-        : 0.0;
+  // --- CARD 2: DISTANCE ---
+  Widget _buildDistanceCard(List<AnalyticsDistance> data, ThemeData theme) {
+    double total = data.isNotEmpty ? data.last.cumulative : 0.0;
+    double lastHour = data.isNotEmpty ? data.last.distance : 0.0;
 
     return _BaseCard(
       theme: theme,
@@ -297,11 +299,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
             "${lastHour.toStringAsFixed(3)} km",
             theme,
           ),
-          _detailRow(
-            "Data Points",
-            "${_distanceData.length} hours recorded",
-            theme,
-          ),
+          _detailRow("Data Points", "${data.length} hours recorded", theme),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -312,10 +310,8 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => DistanceHistoryScreen(
-                    data: _distanceData,
-                    imei: widget.imei,
-                  ),
+                  builder: (_) =>
+                      DistanceHistoryScreen(data: data, imei: widget.imei),
                 ),
               ),
               child: const Text(
@@ -329,11 +325,9 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // --- CARD 3: HEALTH (Detailed) ---
-  Widget _buildHealthCard(ThemeData theme) {
-    // If movementStats is a List<String> in your model, display it
-    final stats =
-        _healthData?.movementStats ?? []; // Ensure model has this field
+  // --- CARD 3: HEALTH ---
+  Widget _buildHealthCard(AnalyticsHealth? data, ThemeData theme) {
+    final stats = data?.movementStats ?? [];
 
     return _BaseCard(
       theme: theme,
@@ -344,7 +338,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               Expanded(
                 child: _ScoreBox(
                   "GPS Score",
-                  _healthData?.gpsScore ?? 0,
+                  data?.gpsScore ?? 0,
                   Colors.teal,
                   theme,
                 ),
@@ -353,7 +347,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               Expanded(
                 child: _ScoreBox(
                   "Temp Index",
-                  _healthData?.temperatureIndex ?? 0,
+                  data?.temperatureIndex ?? 0,
                   Colors.deepOrange,
                   theme,
                 ),
@@ -363,7 +357,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
           const SizedBox(height: 16),
           _detailRow(
             "Temperature Status",
-            _healthData?.temperatureStatus.toUpperCase() ?? "UNKNOWN",
+            data?.temperatureStatus.toUpperCase() ?? "UNKNOWN",
             theme,
           ),
           const Divider(height: 24),
@@ -375,7 +369,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Dynamic Stats Grid
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -416,18 +409,17 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // --- CARD 4: UPTIME (Detailed) ---
-  Widget _buildUptimeCard(ThemeData theme) {
+  // --- CARD 4: UPTIME ---
+  Widget _buildUptimeCard(AnalyticsUptime? data, ThemeData theme) {
     return _BaseCard(
       theme: theme,
       child: Column(
         children: [
-          // Main Score
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                value: (_uptimeData?.score ?? 0) / 100,
+                value: (data?.score ?? 0) / 100,
                 backgroundColor: theme.colorScheme.surfaceVariant,
                 color: Colors.indigo,
                 strokeWidth: 8,
@@ -437,7 +429,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${_uptimeData?.score.toStringAsFixed(1)} / 100",
+                    "${data?.score.toStringAsFixed(1)} / 100",
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -453,33 +445,32 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          // Dense Data Grid
           _GridStat(
             items: [
               _StatItem(
                 "Expected",
-                "${_uptimeData?.expected}",
+                "${data?.expected}",
                 "pkts",
                 Icons.move_to_inbox,
                 Colors.grey,
               ),
               _StatItem(
                 "Received",
-                "${_uptimeData?.received}",
+                "${data?.received}",
                 "pkts",
                 Icons.inbox,
                 Colors.green,
               ),
               _StatItem(
                 "Loss",
-                "${(_uptimeData?.expected ?? 0) - (_uptimeData?.received ?? 0)}",
+                "${(data?.expected ?? 0) - (data?.received ?? 0)}",
                 "pkts",
                 Icons.warning_amber,
                 Colors.red,
               ),
               _StatItem(
                 "Max Gap",
-                "${_uptimeData?.largestGap.toStringAsFixed(0)}",
+                "${data?.largestGap.toStringAsFixed(0)}",
                 "sec",
                 Icons.timer_off,
                 Colors.orange,
@@ -488,19 +479,13 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
             theme: theme,
           ),
           const SizedBox(height: 12),
-          _detailRow(
-            "Dropouts Detected",
-            "${_uptimeData?.dropouts ?? 0}",
-            theme,
-          ),
+          _detailRow("Dropouts Detected", "${data?.dropouts ?? 0}", theme),
         ],
       ),
     );
   }
 
-  // --- REUSABLE WIDGETS ---
-
-  // 1. The Card Container
+  // --- REUSABLE HELPERS ---
   Widget _BaseCard({required Widget child, required ThemeData theme}) {
     return Container(
       width: double.infinity,
@@ -520,7 +505,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // 2. Key-Value Text Row
   Widget _detailRow(String label, String value, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -539,7 +523,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // 3. Grid for Stats
   Widget _GridStat({required List<_StatItem> items, required ThemeData theme}) {
     return GridView.count(
       shrinkWrap: true,
@@ -595,7 +578,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     );
   }
 
-  // 4. Box for Scores (GPS/Temp)
   Widget _ScoreBox(String label, double score, Color color, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -622,7 +604,6 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
   }
 }
 
-// Helper Class for Grid Items
 class _StatItem {
   final String label;
   final String value;
