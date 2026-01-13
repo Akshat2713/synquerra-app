@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
+import 'package:synquerra/core/models/analytics_model.dart';
 import 'package:synquerra/screens/landing/home/details/data_telemetry_screen.dart';
 // import 'package:synquerra/screens/landing/home/details/detail_screen.dart';
 import '../../core/services/device_service.dart';
@@ -27,6 +28,11 @@ class _MapScreenState extends State<MapScreen> {
   double _currentZoom = 13;
 
   UserData? _currentUser;
+
+  // Add these to your state variables
+  AnalyticsData? _latestTelemetry;
+  AnalyticsHealth? _healthData;
+  bool _isFetchingDeviceData = false;
 
   List<String> _allImeis = [];
 
@@ -58,11 +64,66 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _loadUserData() async {
+    print("--- DEBUG: Initializing User Load ---");
     final user = await UserPreferences().getUser();
+
+    if (user == null) {
+      print("--- DEBUG: No user object found in Preferences ---");
+      return;
+    }
+
+    print("--- DEBUG: User found. IMEI in storage: '${user.imei}' ---");
+
+    if (user.imei.isEmpty) {
+      print(
+        "--- DEBUG: WARNING - User IMEI is empty! API calls will be skipped. ---",
+      );
+      // If IMEI is empty, we still want to show the user's name/email in the UI
+      if (mounted) setState(() => _currentUser = user);
+      return;
+    }
+
     if (mounted) {
       setState(() {
         _currentUser = user;
       });
+      // IMEI is confirmed, now fetch the live device data
+      _fetchDeviceData(user.imei);
+    }
+  }
+
+  Future<void> _fetchDeviceData(String imei) async {
+    print("--- DEBUG: Fetching telemetry for IMEI: $imei ---");
+    setState(() => _isFetchingDeviceData = true);
+
+    try {
+      final results = await Future.wait([
+        DeviceService().getAnalyticsByImei(imei),
+        DeviceService().getHealth(imei),
+      ]);
+
+      final List<AnalyticsData> packets = results[0] as List<AnalyticsData>;
+      final AnalyticsHealth health = results[1] as AnalyticsHealth;
+
+      print("--- DEBUG: Data Received. Packets: ${packets.length} ---");
+
+      if (mounted) {
+        setState(() {
+          _latestTelemetry = packets.isNotEmpty ? packets.last : null;
+          _healthData = health;
+          _isFetchingDeviceData = false;
+        });
+        print("--- DEBUG: UI State updated with new telemetry ---");
+      }
+      if (_latestTelemetry?.latitude != null) {
+        _mapController.move(
+          LatLng(_latestTelemetry!.latitude!, _latestTelemetry!.longitude!),
+          _currentZoom,
+        );
+      }
+    } catch (e) {
+      print("--- DEBUG: Fetch Error: $e ---");
+      if (mounted) setState(() => _isFetchingDeviceData = false);
     }
   }
 
@@ -460,31 +521,33 @@ class _MapScreenState extends State<MapScreen> {
             ),
 
             // --- BOTTOM DRAGGABLE SHEET ---
+            // --- BOTTOM DRAGGABLE SHEET ---
+            // --- BOTTOM DRAGGABLE SHEET ---
             DraggableScrollableSheet(
               initialChildSize: 0.15,
               minChildSize: 0.15,
-              maxChildSize: 0.8, // Increased maxChildSize to show more content
+              maxChildSize: 0.8,
               builder: (BuildContext context, ScrollController scrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: colorScheme.surface, // Theme-aware background
+                    color: colorScheme.surface,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3), // Adjusted shadow
+                        color: Colors.black.withOpacity(0.3),
                         blurRadius: 15,
                         spreadRadius: 5,
                       ),
                     ],
                   ),
                   child: ListView(
-                    controller: scrollController, // Important for scrolling
+                    controller: scrollController,
                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                     children: [
-                      // --- Handle to indicate draggable ---
+                      // Drag Handle
                       Center(
                         child: Container(
                           width: 40,
@@ -496,28 +559,25 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
 
-                      // --- Tracking User Header ---
+                      // --- HEADER: Tracking Name ---
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Tracking ${_currentUser?.firstName ?? 'User'}",
+                              "Tracking ${_currentUser?.firstName ?? 'Leela'}", // Dynamic Name
                               style: theme.textTheme.titleLarge?.copyWith(
-                                fontSize: 24, // Larger text
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: colorScheme.onSurface,
                               ),
                             ),
                             Row(
                               children: [
                                 Text(
-                                  "100%",
+                                  "${_latestTelemetry?.battery ?? '0'}%",
                                   style: theme.textTheme.titleSmall?.copyWith(
-                                    color: colorScheme.onSurface,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -526,196 +586,142 @@ class _MapScreenState extends State<MapScreen> {
                                   Icons.battery_full,
                                   color: Colors.green,
                                   size: 24,
-                                ), // Larger icon
+                                ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
 
-                      // --- Last Seen ---
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
-                          "Last Login: ${_currentUser?.lastLoginAt ?? 'Unknown'}", // Updated date from image
+                          "Last Login: ${_currentUser?.lastLoginAt ?? '2026-01-13 16:11:35'}",
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                             fontSize: 18,
-                          ), // Larger text
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      // --- User ID ---
-                      // buildInfoRow(
-                      //   context,
-                      //   icon: Icons.person_outline, // Added icon
-                      //   label: "User Id:",
-                      //   value: _currentUser?.uniqueId ?? 'Loading...',
-                      //   theme: theme,
-                      // ),
+                      // --- PLACEHOLDERS & DYNAMIC FIELDS ---
 
-                      // --- GEO Number ---
+                      // Static Placeholder
                       buildInfoRow(
                         context,
-                        icon: Icons.location_history, // Added icon
+                        icon: Icons.location_history,
                         label: "GEO Number:",
                         value: "3",
                         valueSuffix: " Safe Zone",
-                        valueSuffixColor: Colors.green, // Specific color
+                        valueSuffixColor: Colors.green,
                         theme: theme,
                       ),
 
-                      // --- Speed / Temperature ---
+                      // Dynamic GPS Score
                       buildInfoRow(
                         context,
-                        icon: Icons.speed, // Added icon
+                        icon: Icons.score,
+                        label: "GPS Score:",
+                        value: "${_healthData?.gpsScore.toInt() ?? 0}",
+                        valueSuffix: " / 100",
+                        valueSuffixColor: Colors.blue,
+                        theme: theme,
+                      ),
+
+                      // Static Placeholder (from your original screen)
+                      buildInfoRow(
+                        context,
+                        icon: Icons.speed,
                         label: "28 Km/hr",
                         value: "32°C",
-                        valueColor:
-                            colorScheme.onSurface, // Default value color
                         theme: theme,
                       ),
 
-                      // --- SIM 1 / Signal Strength ---
+                      // Dynamic Speed & Temp
                       buildInfoRow(
                         context,
-                        icon: Icons.signal_cellular_alt, // Added icon
+                        icon: Icons.sensors,
+                        label: "${_latestTelemetry?.speed ?? 0.0} Km/hr",
+                        value: _latestTelemetry?.temperature != null
+                            ? "${_latestTelemetry!.temperature!.toLowerCase().replaceAll('c', '').trim()}°C"
+                            : "--",
+                        theme: theme,
+                      ),
+
+                      // Static SIM Placeholder
+                      buildInfoRow(
+                        context,
+                        icon: Icons.signal_cellular_alt,
                         label: "SIM 1",
-                        value: "Signal Strength:",
-                        valueSuffix: "74%",
-                        valueSuffixColor: Colors.green, // Specific color
+                        value: "Signal Strength: ",
+                        valueSuffix: "${_latestTelemetry?.signal ?? 0}%",
+                        valueSuffixColor: Colors.green,
                         theme: theme,
                       ),
 
-                      // --- SOS ---
+                      // Static SOS Placeholder
                       buildInfoRow(
                         context,
-                        icon: Icons.sos, // Added icon
+                        icon: Icons.sos,
                         label: "SOS",
                         value: "Enable",
                         theme: theme,
                       ),
+
                       const SizedBox(height: 20),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 60.0),
-                        child: Divider(height: 1, thickness: 2),
-                      ),
+                      const Divider(indent: 60, endIndent: 60),
                       const SizedBox(height: 20),
 
-                      // --- Guardian Contacts Header ---
+                      // --- Guardian Contacts ---
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           "Guardian Contacts:",
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18, // Larger text
                             fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
+                            fontSize: 18,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-
-                      // --- Guardian Contact 1 ---
                       buildContactCard(
                         context,
-                        name: "Rajesh Kumar",
-                        phoneNumber: _currentUser?.mobile ?? 'N/A',
-                        email: _currentUser?.email ?? 'N/A',
+                        name:
+                            "${_currentUser?.firstName ?? 'Leela'} ${_currentUser?.lastName ?? 'Bhalla'}",
+                        phoneNumber: _currentUser?.mobile ?? '74*****209',
+                        email: _currentUser?.email ?? 'li***@example.com',
                         theme: theme,
                       ),
-                      const SizedBox(height: 8),
 
-                      // --- Guardian Contact 2 ---
-                      buildContactCard(
-                        context,
-                        name: "Anita Sharma",
-                        phoneNumber: "8899XXXXXX",
-                        email: "anita.sharma@gmail.com",
-                        theme: theme,
-                        // You can add a name here if available
-                      ),
                       const SizedBox(height: 20),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 60.0),
-                        child: Divider(height: 1, thickness: 2),
-                      ),
-                      const SizedBox(height: 20),
+                      const Divider(indent: 60, endIndent: 60),
 
-                      // --- Device Details Header ---
+                      // --- Device Details ---
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           "Device Details",
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18, // Larger text
                             fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
+                            fontSize: 18,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-
-                      // --- Device Details Info ---
                       buildInfoRow(
                         context,
-                        icon: Icons.devices, // Added icon
+                        icon: Icons.devices,
                         label: "IMEI (Device):",
-                        value: "168418618486",
+                        value: _currentUser?.imei ?? '168418618486',
                         theme: theme,
                       ),
                       buildInfoRow(
                         context,
-                        icon: Icons.memory, // Added icon
+                        icon: Icons.memory,
                         label: "Firmware:",
                         value: "1dfv3515",
                         theme: theme,
                       ),
-                      buildInfoRow(
-                        context,
-                        icon: Icons.sim_card, // Added icon
-                        label: "SIM No:",
-                        value:
-                            "", // Assuming empty as per image, add if available
-                        theme: theme,
-                      ),
-                      buildInfoRow(
-                        context,
-                        icon: Icons.phone_android, // Added icon
-                        label: "MSDN No:",
-                        value:
-                            "", // Assuming empty as per image, add if available
-                        theme: theme,
-                      ),
-                      buildInfoRow(
-                        context,
-                        icon: Icons.qr_code, // Added icon
-                        label: "Profile Code:",
-                        value: "14683515",
-                        theme: theme,
-                      ),
-                      const SizedBox(height: 20),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 60.0),
-                        child: Divider(height: 1, thickness: 2),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // --- Location History ---
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          "Location History",
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18, // Larger text
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.primary,
-                          ), // Changed color to primary
-                        ),
-                      ),
-                      const SizedBox(height: 100), // Space to allow scrolling
+                      const SizedBox(height: 100),
                     ],
                   ),
                 );

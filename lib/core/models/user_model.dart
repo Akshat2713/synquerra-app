@@ -50,6 +50,7 @@ class UserData {
   final String uniqueId;
   final String firstName;
   final String lastName;
+  final String imei;
   final String email;
   final String mobile;
   final String accessToken;
@@ -60,6 +61,7 @@ class UserData {
     required this.uniqueId,
     required this.firstName,
     required this.lastName,
+    required this.imei,
     required this.email,
     required this.mobile,
     required this.accessToken,
@@ -68,11 +70,17 @@ class UserData {
   });
 
   factory UserData.fromLoginJson(Map<String, dynamic> json) {
+    // OPTIMIZATION: Debug print to see what the model is receiving
+    print("DEBUG: Parsing UserData from JSON: $json");
+
     final tokens = json['tokens'] ?? {};
+
     return UserData(
-      uniqueId: json['uniqueId'] ?? '',
+      uniqueId: json['uniqueId']?.toString() ?? '',
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
+      // Ensure we catch 'imei' even if it comes as an int or string
+      imei: json['imei']?.toString() ?? '',
       email: json['email'] ?? '',
       mobile: json['mobile'] ?? '',
       accessToken: tokens['accessToken'] ?? '',
@@ -83,17 +91,12 @@ class UserData {
 
   factory UserData.fromSignupJson(Map<String, dynamic> json) {
     return UserData(
-      // MAPPING LOGIC: Map the Signup API's "_id" to our App's "uniqueId"
-      uniqueId: json['_id'] ?? '',
-
-      // MAPPING LOGIC: Map the Signup API's "name" to "firstName"
-      firstName: json['name'] ?? '',
-      lastName: '', // Signup doesn't return last name, so we leave it empty
-
+      uniqueId: json['_id'] ?? json['uniqueId'] ?? '',
+      firstName: json['name'] ?? json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
-
-      // These fields are missing in Signup response, so we provide defaults
-      mobile: '',
+      imei: json['imei']?.toString() ?? '', // Try to get IMEI even on signup
+      mobile: json['mobile'] ?? '',
       accessToken: '',
       refreshToken: '',
       lastLoginAt: '',
@@ -105,6 +108,7 @@ class UserData {
       'uniqueId': uniqueId,
       'firstName': firstName,
       'lastName': lastName,
+      'imei': imei,
       'email': email,
       'mobile': mobile,
       'lastLoginAt': lastLoginAt,
