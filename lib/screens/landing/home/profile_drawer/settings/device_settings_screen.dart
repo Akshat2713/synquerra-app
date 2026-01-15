@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/screens/landing/home/profile_drawer/settings/geofence_screen.dart';
 import 'package:synquerra/widgets/edit_value_dialog.dart'; // Import the new dialog
 import 'package:synquerra/theme/colors.dart'; // Import AppColors if needed, e.g., for AppColors.safeGreen
 import 'package:synquerra/widgets/dummy_screen.dart';
@@ -34,6 +35,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
 
   bool _ambientListening = true;
   bool _ledIndicator = true;
+  bool _aeroplaneMode = false;
 
   // --- Helper Methods ---
   void _navigateToDummy(BuildContext context, String title) {
@@ -221,7 +223,10 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                       color: colorScheme.onSurface,
                     ),
                   ), // Theme aware color
-                  onTap: () => _navigateToDummy(context, "Geofences"),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => GeofenceScreen()),
+                  ),
                 ),
                 _buildValueRow(
                   context: context,
@@ -455,6 +460,12 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                   title: "LED Indicator",
                   value: _ledIndicator,
                   onChanged: (value) => setState(() => _ledIndicator = value),
+                ),
+                _buildSwitchRow(
+                  context: context,
+                  title: "Aeroplane Mode",
+                  value: _aeroplaneMode,
+                  onChanged: (value) => setState(() => _aeroplaneMode = value),
                 ),
               ],
             ),

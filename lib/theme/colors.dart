@@ -5,7 +5,7 @@ class AppColors {
   static const Color safeGreen = Color(0xFF34C759); // green for all good
   static const Color warningAmber = Color(0xFFFF9500); // amber for caution
   static const Color navBlue = Color(0xFF007AFF); // blue for navigation
-  static const Color background = Color.fromARGB(255, 200, 200, 200); // white
+  static const Color background = Color.fromARGB(255, 220, 220, 220); // white
   static const Color darkText = Color(0xFF000000); // black text
   static const Color lightText = Color(0xFF8E8E93); // light gray for subtext
   static const Color backgroundContainer =

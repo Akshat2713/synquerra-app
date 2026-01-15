@@ -207,7 +207,7 @@ class _MapScreenState extends State<MapScreen> {
                           child: const Icon(
                             Icons.boy_rounded,
                             color: Colors.green,
-                            size: 40,
+                            size: 50,
                           ),
                         ),
                       ],

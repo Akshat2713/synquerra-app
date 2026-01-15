@@ -7,7 +7,7 @@ class PersonalInformationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("User Profile")),
+      appBar: AppBar(title: const Text("Personal Information")),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -133,6 +133,48 @@ class PersonalInformationScreen extends StatelessWidget {
                 icon: Icons.badge,
                 title: "User ID",
                 value: "G2-FGHIJ456",
+              ),
+              DetailRow(
+                icon: Icons.credit_card,
+                title: "AADHAR",
+                value: "2345-XXXX-XXXX",
+              ),
+              DetailRow(
+                icon: Icons.email,
+                title: "Email",
+                value: "p.sharma@email.com",
+              ),
+              DetailRow(icon: Icons.phone, title: "Phone", value: "9988776644"),
+              DetailRow(
+                icon: Icons.location_on,
+                title: "Address",
+                value: "Dudura, Jammu",
+              ),
+              DetailRow(
+                icon: Icons.location_city,
+                title: "City",
+                value: "Jammu",
+              ),
+              DetailRow(icon: Icons.map, title: "State", value: "J&K"),
+              DetailRow(
+                icon: Icons.local_post_office,
+                title: "PIN Code",
+                value: "181221",
+              ),
+            ],
+          ),
+          InfoContainer(
+            title: "Extra",
+            children: const [
+              DetailRow(
+                icon: Icons.person,
+                title: "Control Room Number",
+                value: "--+911234567890--",
+              ),
+              DetailRow(
+                icon: Icons.badge,
+                title: "Phone Number 4",
+                value: "--+919876543210--",
               ),
               DetailRow(
                 icon: Icons.credit_card,

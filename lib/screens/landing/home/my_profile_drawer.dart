@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:synquerra/providers/theme_provider.dart'; // Import the provider
+import 'package:synquerra/screens/landing/home/profile_drawer/device_information2.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/device_information.dart';
-import 'package:synquerra/screens/landing/home/profile_drawer/device_registration.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/feedback_screen.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/personal_information.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/recharge_and_renewal_options.dart';
@@ -60,18 +60,6 @@ class MyProfileDrawer extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.app_registration),
-                    title: const Text('Device Registration'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DeviceRegistrationScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
                     leading: const Icon(Icons.person),
                     title: const Text('Personal Information'),
                     onTap: () {
@@ -84,7 +72,7 @@ class MyProfileDrawer extends StatelessWidget {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.devices),
+                    leading: const Icon(Icons.app_registration),
                     title: const Text('Device Information'),
                     onTap: () {
                       Navigator.push(
@@ -95,6 +83,19 @@ class MyProfileDrawer extends StatelessWidget {
                       );
                     },
                   ),
+
+                  // ListTile(
+                  //   leading: const Icon(Icons.devices),
+                  //   title: const Text('Device Information'),
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => const DeviceInformationScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   ListTile(
                     leading: const Icon(Icons.subscriptions),
                     title: const Text('Subscription Status'),
