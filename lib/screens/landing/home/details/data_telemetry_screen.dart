@@ -206,8 +206,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               ),
               _StatItem(
                 "Temperature",
-                data?.temperature?.toLowerCase().replaceAll('c', '').trim() ??
-                    '-',
+                data?.temperature ?? '-',
                 "℃",
                 Icons.thermostat,
                 Colors.redAccent,

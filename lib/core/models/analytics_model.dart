@@ -52,7 +52,11 @@ class AnalyticsData {
       signal: json['signal']?.toString(),
       timestamp: json['timestamp'] ?? '',
       alert: json['alert'],
-      temperature: json['rawTemperature']?.toString(),
+      temperature: json['rawTemperature']
+          ?.toString()
+          .toLowerCase()
+          .replaceAll('c', '')
+          .trim(),
     );
   }
 }

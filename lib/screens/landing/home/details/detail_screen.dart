@@ -178,7 +178,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     final double battery =
         double.tryParse(data.battery?.toString() ?? '0') ?? 0;
     final double signal = double.tryParse(data.signal?.toString() ?? '0') ?? 0;
-    final String temp = data.temperature?.replaceAll('c', '').trim() ?? '--';
+    final String temp = data.temperature ?? '--';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
