@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
 import 'package:synquerra/core/services/user_preferences.dart';
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/home/details/distence_history.dart';
 import 'package:synquerra/screens/landing/home/details/detail_screen.dart';
 import 'package:synquerra/core/models/analytics_model.dart';
@@ -17,28 +18,40 @@ class DataTelemetryScreen extends StatefulWidget {
 }
 
 class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Fetch data from global provider on load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _triggerGlobalRefresh();
-    });
+  Future<void> _handleManualRefresh() async {
+    final user = context.read<UserProvider>().user;
+
+    if (!mounted || user == null) return;
+
+    if (widget.imei == user.imei) {
+      await context.read<DeviceProvider>().refreshMyDevice(widget.imei);
+    } else {
+      await context.read<SearchedDeviceProvider>().fetchSearchedDevice(
+        widget.imei,
+      );
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Telemetry Data Updated"),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
+  String _getTimeOnly(String? timestamp) {
+    if (timestamp == null || !timestamp.contains('T')) return '--:--';
+    try {
+      // Extracts HH:MM:SS from ISO string
+      return timestamp.split('T').last.split('.')[0];
+    } catch (e) {
+      return '--:--';
+    }
   }
 
   // Determines which provider to hit based on the IMEI
-  Future<void> _triggerGlobalRefresh() async {
-    final user = await UserPreferences().getUser();
-    if (!mounted) return;
-
-    if (widget.imei == user?.imei) {
-      // Update primary device data
-      context.read<DeviceProvider>().refreshMyDevice(widget.imei);
-    } else {
-      // Update searched device data
-      context.read<SearchedDeviceProvider>().fetchSearchedDevice(widget.imei);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,14 +72,11 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
         : myProv.distanceData;
     final healthData = isSearched ? searchProv.healthData : myProv.healthData;
     final uptimeData = isSearched ? searchProv.uptimeData : myProv.uptimeData;
-    final isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
+    // final isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
 
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black87 : const Color(0xFFF2F4F7);
 
     return Scaffold(
-      backgroundColor: bgColor,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,41 +85,76 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               "Data Telemetry",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text(
-              "IMEI: ${widget.imei}",
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-            ),
+            Text("IMEI: ${widget.imei}", style: const TextStyle(fontSize: 12)),
           ],
         ),
         backgroundColor: AppColors.navBlue,
-        elevation: 0,
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _triggerGlobalRefresh,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        actions: [
+          // --- RECTANGULAR REFRESH BUTTON WITH ROUNDED CORNERS ---
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Row(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _sectionHeader("Live Status", theme),
-                    _buildDeviceStatusCard(latestData, allPackets, theme),
-                    const SizedBox(height: 24),
-                    _sectionHeader("Movement & Travel", theme),
-                    _buildDistanceCard(distanceData, theme),
-                    const SizedBox(height: 24),
-                    _sectionHeader("System Health", theme),
-                    _buildHealthCard(healthData, theme),
-                    const SizedBox(height: 24),
-                    _sectionHeader("Connectivity", theme),
-                    _buildUptimeCard(uptimeData, theme),
-                    const SizedBox(height: 40),
+                    const Text(
+                      "Last Updated",
+                      style: TextStyle(fontSize: 10, color: Colors.white70),
+                    ),
+                    Text(
+                      _getTimeOnly(latestData?.timestamp),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
-              ),
+                const SizedBox(width: 12),
+                TextButton.icon(
+                  onPressed: _handleManualRefresh,
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: const Text(
+                    "Refresh",
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _sectionHeader("Live Status", theme),
+            _buildDeviceStatusCard(latestData, allPackets, theme),
+            const SizedBox(height: 24),
+            _sectionHeader("Movement & Travel", theme),
+            _buildDistanceCard(distanceData, theme),
+            const SizedBox(height: 24),
+            _sectionHeader("System Health", theme),
+            _buildHealthCard(healthData, theme),
+            const SizedBox(height: 24),
+            _sectionHeader("Connectivity", theme),
+            _buildUptimeCard(uptimeData, theme),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
     );
   }
 
@@ -237,8 +282,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      DeviceDetailsScreen(imei: widget.imei, data: allPackets),
+                  builder: (_) => DeviceDetailsScreen(imei: widget.imei),
                 ),
               ),
             ),

@@ -4,13 +4,16 @@ import 'package:synquerra/core/models/analytics_model.dart';
 import 'package:synquerra/core/services/device_service.dart';
 
 class DeviceProvider with ChangeNotifier {
-  final DeviceService _service = DeviceService();
+  // Pass the service through the constructor
+  final DeviceService _service;
+
+  DeviceProvider(this._service);
 
   AnalyticsData? _latestTelemetry;
   AnalyticsHealth? _healthData;
-  List<AnalyticsData> _allPackets = []; // Added
-  List<AnalyticsDistance> _distanceData = []; // Added
-  AnalyticsUptime? _uptimeData; // Added
+  List<AnalyticsData> _allPackets = [];
+  List<AnalyticsDistance> _distanceData = [];
+  AnalyticsUptime? _uptimeData;
   bool _isLoading = false;
 
   AnalyticsData? get latestTelemetry => _latestTelemetry;
@@ -20,7 +23,6 @@ class DeviceProvider with ChangeNotifier {
   AnalyticsUptime? get uptimeData => _uptimeData;
   bool get isLoading => _isLoading;
 
-  // This is only called for the IMEI retrieved during login
   Future<void> refreshMyDevice(String imei) async {
     if (imei.isEmpty) return;
     _isLoading = true;
@@ -37,8 +39,8 @@ class DeviceProvider with ChangeNotifier {
       _allPackets = results[0] as List<AnalyticsData>;
       _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
       _distanceData = results[1] as List<AnalyticsDistance>;
-      _healthData = results[2] as AnalyticsHealth;
-      _uptimeData = results[3] as AnalyticsUptime;
+      _healthData = results[2] as AnalyticsHealth?;
+      _uptimeData = results[3] as AnalyticsUptime?;
     } catch (e) {
       debugPrint("MyDevice Fetch Error: $e");
     } finally {

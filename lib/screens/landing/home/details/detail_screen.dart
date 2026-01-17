@@ -1,63 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Add this
 import 'package:intl/intl.dart';
 import 'package:synquerra/core/models/analytics_model.dart';
-import 'package:synquerra/core/services/device_service.dart';
+import 'package:synquerra/providers/device_provider.dart'; // Import your providers
+import 'package:synquerra/providers/searched_device_provider.dart';
 import 'package:synquerra/theme/colors.dart';
 
-class DeviceDetailsScreen extends StatefulWidget {
+class DeviceDetailsScreen extends StatelessWidget {
   final String imei;
-  final List<AnalyticsData> data;
 
-  const DeviceDetailsScreen({
-    super.key,
-    required this.imei,
-    required this.data,
-  });
-
-  @override
-  State<DeviceDetailsScreen> createState() => _DeviceDetailsScreenState();
-}
-
-class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
-  final DeviceService _analyticsService = DeviceService();
-  List<AnalyticsData> _historyData = [];
-  bool _isLoading = false; // Initial data is available immediately
-
-  @override
-  void initState() {
-    super.initState();
-    // Use the data passed from the previous screen immediately
-    _processPassedData();
-  }
-
-  void _processPassedData() {
-    // Reverse the list to show the most recent logs first
-    // and take the last 50 records as per your requirement
-    setState(() {
-      _historyData = widget.data.reversed.take(50).toList();
-    });
-  }
-
-  Future<void> _fetchData() async {
-    // Manual refresh triggered only by the AppBar icon
-    setState(() => _isLoading = true);
-    try {
-      final allData = await _analyticsService.getAnalyticsByImei(widget.imei);
-      final recentData = allData.reversed.take(50).toList();
-
-      if (!mounted) return;
-      setState(() {
-        _historyData = recentData;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Failed to refresh data: $e")));
-    }
-  }
+  const DeviceDetailsScreen({super.key, required this.imei});
 
   // --- Formatters ---
   String _formatTime(String isoString) {
@@ -83,13 +35,28 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // 1. Determine which provider to watch based on current state
+    final myProv = context.watch<DeviceProvider>();
+    final searchProv = context.watch<SearchedDeviceProvider>();
+    final bool isSearched = searchProv.currentImei == imei;
+
+    // 2. Extract relevant data and loading state directly from Provider
+    final List<AnalyticsData> allPackets = isSearched
+        ? searchProv.allPackets
+        : myProv.allPackets;
+    final bool isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
+
+    // 3. Process data for the list (Reverse and Take 50)
+    final List<AnalyticsData> historyData = allPackets.reversed
+        .take(50)
+        .toList();
+
     return Scaffold(
       backgroundColor: isDark
           ? const Color(0xFF0A0C10)
           : const Color(0xFFF0F2F5),
       appBar: AppBar(
         backgroundColor: AppColors.navBlue,
-        elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -98,7 +65,7 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              "IMEI: ${widget.imei}",
+              "IMEI: $imei",
               style: const TextStyle(
                 fontSize: 14,
                 fontFamily: 'monospace',
@@ -109,25 +76,43 @@ class _DeviceDetailsScreenState extends State<DeviceDetailsScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, size: 28),
-            onPressed: _fetchData, // Explicit reload trigger
+            icon: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.refresh, size: 28),
+            onPressed: () {
+              // 4. Trigger global refresh inside Provider
+              if (isSearched) {
+                context.read<SearchedDeviceProvider>().fetchSearchedDevice(
+                  imei,
+                );
+              } else {
+                context.read<DeviceProvider>().refreshMyDevice(imei);
+              }
+            },
           ),
         ],
       ),
-      // Removed RefreshIndicator to prevent unwanted scroll-based reloads
-      body: _isLoading
+      body: isLoading && historyData.isEmpty
           ? const Center(child: CircularProgressIndicator())
-          : _historyData.isEmpty
+          : historyData.isEmpty
           ? _buildEmptyState(theme)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _historyData.length,
-              itemBuilder: (context, index) {
-                return _buildTelemetryCard(_historyData[index], theme);
-              },
+              itemCount: historyData.length,
+              itemBuilder: (context, index) =>
+                  _buildTelemetryCard(historyData[index], theme),
             ),
     );
   }
+
+  // ... Keep your existing _buildEmptyState, _buildTelemetryCard, and helper methods ...
 
   // --- EMPTY STATE ---
   Widget _buildEmptyState(ThemeData theme) {

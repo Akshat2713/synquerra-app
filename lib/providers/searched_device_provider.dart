@@ -4,13 +4,16 @@ import 'package:synquerra/core/models/analytics_model.dart';
 import 'package:synquerra/core/services/device_service.dart';
 
 class SearchedDeviceProvider with ChangeNotifier {
-  final DeviceService _service = DeviceService();
+  // Pass the service through the constructor
+  final DeviceService _service;
+
+  SearchedDeviceProvider(this._service);
 
   AnalyticsData? _latestTelemetry;
-  List<AnalyticsData> _allPackets = []; // Added
-  List<AnalyticsDistance> _distanceData = []; // Added
+  List<AnalyticsData> _allPackets = [];
+  List<AnalyticsDistance> _distanceData = [];
   AnalyticsHealth? _healthData;
-  AnalyticsUptime? _uptimeData; // Added
+  AnalyticsUptime? _uptimeData;
   bool _isLoading = false;
   String? _currentImei;
 
@@ -38,8 +41,8 @@ class SearchedDeviceProvider with ChangeNotifier {
       _allPackets = results[0] as List<AnalyticsData>;
       _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
       _distanceData = results[1] as List<AnalyticsDistance>;
-      _healthData = results[2] as AnalyticsHealth;
-      _uptimeData = results[3] as AnalyticsUptime;
+      _healthData = results[2] as AnalyticsHealth?;
+      _uptimeData = results[3] as AnalyticsUptime?;
     } catch (e) {
       debugPrint("SearchedDevice Fetch Error: $e");
     } finally {
@@ -51,6 +54,9 @@ class SearchedDeviceProvider with ChangeNotifier {
   void clearSearch() {
     _latestTelemetry = null;
     _allPackets = [];
+    _distanceData = [];
+    _healthData = null;
+    _uptimeData = null;
     _currentImei = null;
     notifyListeners();
   }

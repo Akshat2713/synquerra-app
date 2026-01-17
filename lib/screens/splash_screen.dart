@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/registration/login_page.dart';
 // 1. ADD THESE IMPORTS
 import 'package:synquerra/screens/landing/map_screen.dart';
@@ -42,30 +44,27 @@ class _SplashScreenState extends State<SplashScreen>
 
   // 3. LOGIC TO CHECK USER AND NAVIGATE
   Future<void> _checkLoginStatus() async {
-    // We wait for BOTH the 2-second timer (for visual effect)
-    // AND the UserPreferences check to complete.
-    final List<dynamic> results = await Future.wait([
-      Future.delayed(
-        const Duration(seconds: 2),
-      ), // Ensure logo shows for at least 2s
-      UserPreferences().getUser(), // Check local storage
-    ]);
+    debugPrint("--- [SPLASH SCREEN] Initializing User Provider ---");
+    // 1. Start the Provider initialization and the timer simultaneously
+    // results[0] = timer, results[1] = UserProvider initialization
+    await Future.wait([
+      Future.delayed(const Duration(seconds: 2)),
 
-    // results[0] is the delay (void)
-    // results[1] is the UserData object (or null)
-    final UserData? user = results[1];
+      // Ensure the data is loaded into the Provider's RAM here!
+      context.read<UserProvider>().initUser(),
+    ]);
 
     if (!mounted) return;
 
-    // 4. DECIDE WHERE TO GO
+    // 2. Now check the Provider instead of checking disk again
+    final user = context.read<UserProvider>().user;
+
     if (user != null) {
-      // User is logged in -> Go to Map
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MapScreen()),
       );
     } else {
-      // User is NOT logged in -> Go to Login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),

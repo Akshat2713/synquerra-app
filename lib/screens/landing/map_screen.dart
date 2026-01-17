@@ -20,7 +20,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final MapController _mapController = MapController();
-  double _currentZoom = 13;
+  double _currentZoom = 16;
 
   List<String> _allImeis = [];
   bool _isLoadingImeis = false;
@@ -32,12 +32,12 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint("--- [MAP SCREEN] Initializing User Provider ---");
       final userProv = context.read<UserProvider>();
-      userProv.initUser().then((_) {
-        if (userProv.user?.imei != null) {
-          context.read<DeviceProvider>().refreshMyDevice(userProv.user!.imei);
-        }
-      });
+
+      if (userProv.user?.imei != null) {
+        context.read<DeviceProvider>().refreshMyDevice(userProv.user!.imei);
+      }
     });
 
     _searchFocusNode.addListener(() {
@@ -48,6 +48,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _searchFocusNode.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -55,7 +56,8 @@ class _MapScreenState extends State<MapScreen> {
     if (_hasLoadedImeis || _isLoadingImeis) return;
     setState(() => _isLoadingImeis = true);
     try {
-      final imeis = await DeviceService().getDeviceImeis();
+      final service = context.read<DeviceService>();
+      final imeis = await service.getDeviceImeis();
       if (mounted) {
         setState(() {
           _allImeis = imeis;

@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
+import 'package:synquerra/screens/landing/home/details/data_telemetry_screen.dart';
+// Ensure you import your telemetry screen here
+// import 'package:synquerra/screens/data_telemetry_screen.dart';
 
 class DeviceDetailsSheet extends StatelessWidget {
   final bool showingSearch;
@@ -16,7 +19,6 @@ class DeviceDetailsSheet extends StatelessWidget {
     required this.isHistoryVisible,
   });
 
-  // Helper to split "2026-01-15T13:44:58" into "15/01/2026 13:44:58"
   String _formatDateTime(String? timestamp) {
     if (timestamp == null || !timestamp.contains('T')) return 'Fetching...';
     try {
@@ -34,7 +36,6 @@ class DeviceDetailsSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Watch relevant providers
     final user = context.watch<UserProvider>().user;
     final myProv = context.watch<DeviceProvider>();
     final searchProv = context.watch<SearchedDeviceProvider>();
@@ -46,7 +47,11 @@ class DeviceDetailsSheet extends StatelessWidget {
         ? searchProv.healthData
         : myProv.healthData;
 
-    // Battery Logic
+    // --- HANDLE IMEI EXTRACTION ---
+    final String currentImei = showingSearch
+        ? (searchProv.currentImei ?? "")
+        : (user?.imei ?? "");
+
     final int batteryLevel =
         int.tryParse(activeTelemetry?.battery ?? '100') ?? 100;
     final Color batteryColor = batteryLevel <= 20 ? Colors.red : Colors.green;
@@ -72,7 +77,6 @@ class DeviceDetailsSheet extends StatelessWidget {
             controller: scrollController,
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             children: [
-              // Drag Handle
               Center(
                 child: Container(
                   width: 40,
@@ -84,7 +88,6 @@ class DeviceDetailsSheet extends StatelessWidget {
                 ),
               ),
 
-              // --- HEADER SECTION ---
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -136,7 +139,6 @@ class DeviceDetailsSheet extends StatelessWidget {
               ),
               const Divider(indent: 20, endIndent: 20, thickness: 2.0),
 
-              // --- LIVE DATA FIELDS (Placement from screenshot, styling from code) ---
               _buildInfoRow(
                 theme,
                 icon: Icons.location_history,
@@ -153,27 +155,18 @@ class DeviceDetailsSheet extends StatelessWidget {
                 valueSuffix: " / 100",
                 valueSuffixColor: Colors.blue,
               ),
-
               _buildInfoRow(
                 theme,
                 icon: Icons.speed,
                 label: "Speed",
                 value: "${activeTelemetry?.speed ?? 0.0} Km/hr",
               ),
-
               _buildInfoRow(
                 theme,
                 icon: Icons.thermostat,
                 label: "Temperature",
                 value: "${activeTelemetry?.temperature ?? '32'}°C",
               ),
-              // _buildInfoRow(
-              //   theme,
-              //   icon: Icons.speed,
-              //   label: "${activeTelemetry?.speed ?? 0.0} Km/hr",
-              //   value:
-              //       "${activeTelemetry?.temperature?.replaceAll('c', '').trim() ?? '32'}°C",
-              // ),
               _buildInfoRow(
                 theme,
                 icon: Icons.signal_cellular_alt,
@@ -189,9 +182,61 @@ class DeviceDetailsSheet extends StatelessWidget {
                 value: "--Enable--",
               ),
 
+              // --- NEW: DETAILED TELEMETRY BUTTON ---
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // Navigate to Detailed Telemetry Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DataTelemetryScreen(imei: currentImei),
+                      ),
+                    );
+                    debugPrint(
+                      "Navigating to detailed telemetry for IMEI: $currentImei",
+                    );
+                  },
+                  icon: const Icon(Icons.analytics_outlined),
+                  label: const Text("View Detailed Telemetry"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    foregroundColor: theme.colorScheme.onSecondaryContainer,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 4.0,
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: onToggleHistory,
+                  icon: Icon(
+                    isHistoryVisible ? Icons.layers_clear : Icons.route,
+                  ),
+                  label: Text(
+                    isHistoryVisible
+                        ? "Hide Location History"
+                        : "Show 24h Location History",
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isHistoryVisible
+                        ? Colors.redAccent
+                        : theme.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+
               const Divider(indent: 60, endIndent: 60),
 
-              // --- GUARDIAN CONTACTS ---
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
@@ -211,12 +256,11 @@ class DeviceDetailsSheet extends StatelessWidget {
 
               const Divider(indent: 60, endIndent: 60),
 
-              // --- DEVICE DETAILS ---
               _buildInfoRow(
                 theme,
                 icon: Icons.devices,
                 label: "IMEI (Device):",
-                value: user?.imei ?? "---",
+                value: currentImei.isEmpty ? "---" : currentImei,
               ),
               _buildInfoRow(
                 theme,
@@ -243,34 +287,12 @@ class DeviceDetailsSheet extends StatelessWidget {
                 value: "--14683515--",
               ),
 
-              // --- LOCATION HISTORY BUTTON ---
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: onToggleHistory,
-                  icon: Icon(
-                    isHistoryVisible ? Icons.layers_clear : Icons.route,
-                  ),
-                  label: Text(
-                    isHistoryVisible
-                        ? "Hide Location History"
-                        : "Show 24h Location History",
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isHistoryVisible
-                        ? Colors.redAccent
-                        : theme.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-
               if (showingSearch)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 16.0,
+                  ),
                   child: ElevatedButton(
                     onPressed: () =>
                         context.read<SearchedDeviceProvider>().clearSearch(),
@@ -285,7 +307,7 @@ class DeviceDetailsSheet extends StatelessWidget {
     );
   }
 
-  // Helper widgets maintained from your original code structure
+  // ... (Keep your _buildInfoRow and _buildContactCard helpers as they were)
   Widget _buildInfoRow(
     ThemeData theme, {
     required IconData icon,
@@ -391,13 +413,9 @@ class DeviceDetailsSheet extends StatelessWidget {
   }
 }
 
-
 //______________________________________________________________________________
 // Device Details Sheet Widget
 //______________________________________________________________________________
-
-
-
 
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
