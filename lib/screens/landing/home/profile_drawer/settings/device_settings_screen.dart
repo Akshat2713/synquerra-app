@@ -36,6 +36,8 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
   bool _ambientListening = true;
   bool _ledIndicator = true;
   bool _aeroplaneMode = false;
+  bool _privacyMode = false;
+  bool _incognitoMode = false;
 
   // --- Helper Methods ---
   void _navigateToDummy(BuildContext context, String title) {
@@ -466,6 +468,18 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                   title: "Aeroplane Mode",
                   value: _aeroplaneMode,
                   onChanged: (value) => setState(() => _aeroplaneMode = value),
+                ),
+                _buildSwitchRow(
+                  context: context,
+                  title: "Privacy Mode",
+                  value: _privacyMode,
+                  onChanged: (value) => setState(() => _privacyMode = value),
+                ),
+                _buildSwitchRow(
+                  context: context,
+                  title: "Incognito Mode",
+                  value: _incognitoMode,
+                  onChanged: (value) => setState(() => _incognitoMode = value),
                 ),
               ],
             ),

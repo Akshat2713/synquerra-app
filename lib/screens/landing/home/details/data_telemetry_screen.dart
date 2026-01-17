@@ -18,35 +18,67 @@ class DataTelemetryScreen extends StatefulWidget {
 }
 
 class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
+  bool _isManualRefreshing = false; // Add this state variable
+
   Future<void> _handleManualRefresh() async {
-    final user = context.read<UserProvider>().user;
+    if (_isManualRefreshing) return; // Prevent multiple simultaneous clicks
 
-    if (!mounted || user == null) return;
+    setState(() => _isManualRefreshing = true);
 
-    if (widget.imei == user.imei) {
-      await context.read<DeviceProvider>().refreshMyDevice(widget.imei);
-    } else {
-      await context.read<SearchedDeviceProvider>().fetchSearchedDevice(
-        widget.imei,
-      );
-    }
+    try {
+      final user = context.read<UserProvider>().user;
+      if (!mounted || user == null) return;
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Telemetry Data Updated"),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      if (widget.imei == user.imei) {
+        await context.read<DeviceProvider>().refreshMyDevice(widget.imei);
+      } else {
+        await context.read<SearchedDeviceProvider>().fetchSearchedDevice(
+          widget.imei,
+        );
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Telemetry Data Updated"),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Refresh failed: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isManualRefreshing = false); // Re-enable button
+      }
     }
   }
 
-  String _getTimeOnly(String? timestamp) {
-    if (timestamp == null || !timestamp.contains('T')) return '--:--';
+  String _formatLastSeen(String? timestamp) {
+    if (timestamp == null) return 'Never';
+
     try {
-      // Extracts HH:MM:SS from ISO string
-      return timestamp.split('T').last.split('.')[0];
+      // 1. Parse the ISO string safely
+      final DateTime packetTime = DateTime.parse(timestamp).toLocal();
+      final DateTime now = DateTime.now();
+      final Duration difference = now.difference(packetTime);
+
+      // 2. Logic for "Time Ago" (Relative Time)
+      if (difference.inSeconds < 60) {
+        return '${difference.inSeconds}s ago';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes}m ago';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours}h ago';
+      } else {
+        // 3. Logic for "Time Only" (Absolute Time)
+        // If it's more than 24 hours old, just show the HH:MM
+        final String hour = packetTime.hour.toString().padLeft(2, '0');
+        final String minute = packetTime.minute.toString().padLeft(2, '0');
+        return '$hour:$minute';
+      }
     } catch (e) {
+      debugPrint("Timestamp Parse Error: $e");
       return '--:--';
     }
   }
@@ -104,7 +136,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                       style: TextStyle(fontSize: 10, color: Colors.white70),
                     ),
                     Text(
-                      _getTimeOnly(latestData?.timestamp),
+                      _formatLastSeen(latestData?.timestamp),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -115,18 +147,29 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                 ),
                 const SizedBox(width: 12),
                 TextButton.icon(
-                  onPressed: _handleManualRefresh,
+                  onPressed: _isManualRefreshing ? null : _handleManualRefresh,
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: _isManualRefreshing
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.white.withOpacity(0.2),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                   ),
-                  icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text(
-                    "Refresh",
+                  icon: _isManualRefreshing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.refresh, size: 16),
+                  label: Text(
+                    _isManualRefreshing ? "Refreshing..." : "Refresh",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                 ),

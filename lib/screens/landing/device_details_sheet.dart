@@ -147,6 +147,14 @@ class DeviceDetailsSheet extends StatelessWidget {
                 valueSuffix: "-- Safe Zone--",
                 valueSuffixColor: Colors.green,
               ),
+
+              _buildInfoRow(
+                theme,
+                icon: Icons.location_history,
+                label: "GEO ID:",
+                value: "${activeTelemetry?.geoid ?? 'N/A'}",
+              ),
+
               _buildInfoRow(
                 theme,
                 icon: Icons.score,
@@ -175,6 +183,13 @@ class DeviceDetailsSheet extends StatelessWidget {
                 valueSuffix: "${activeTelemetry?.signal ?? 74}%",
                 valueSuffixColor: Colors.green,
               ),
+
+              _buildInfoRow(
+                theme,
+                icon: Icons.timer,
+                label: "Interval",
+                value: "${activeTelemetry?.interval ?? '--'} sec",
+              ),
               _buildInfoRow(
                 theme,
                 icon: Icons.sos,
@@ -183,34 +198,6 @@ class DeviceDetailsSheet extends StatelessWidget {
               ),
 
               // --- NEW: DETAILED TELEMETRY BUTTON ---
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to Detailed Telemetry Screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            DataTelemetryScreen(imei: currentImei),
-                      ),
-                    );
-                    debugPrint(
-                      "Navigating to detailed telemetry for IMEI: $currentImei",
-                    );
-                  },
-                  icon: const Icon(Icons.analytics_outlined),
-                  label: const Text("View Detailed Telemetry"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.secondaryContainer,
-                    foregroundColor: theme.colorScheme.onSecondaryContainer,
-                  ),
-                ),
-              ),
-
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -252,6 +239,34 @@ class DeviceDetailsSheet extends StatelessWidget {
                 name: "--Rajesh Kumar--",
                 phoneNumber: "--9988XXXXXX--",
                 secondaryPhone: "--8899XXXXXX--",
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // Navigate to Detailed Telemetry Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DataTelemetryScreen(imei: currentImei),
+                      ),
+                    );
+                    debugPrint(
+                      "Navigating to detailed telemetry for IMEI: $currentImei",
+                    );
+                  },
+                  icon: const Icon(Icons.analytics_outlined),
+                  label: const Text("View Detailed Telemetry"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                    foregroundColor: theme.colorScheme.onSecondaryContainer,
+                  ),
+                ),
               ),
 
               const Divider(indent: 60, endIndent: 60),
@@ -393,6 +408,7 @@ class DeviceDetailsSheet extends StatelessWidget {
               ),
             ],
           ),
+
           if (secondaryPhone != null)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

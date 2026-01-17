@@ -8,6 +8,8 @@ class DeviceProvider with ChangeNotifier {
   final DeviceService _service;
 
   DeviceProvider(this._service);
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
 
   AnalyticsData? _latestTelemetry;
   AnalyticsHealth? _healthData;
@@ -26,6 +28,7 @@ class DeviceProvider with ChangeNotifier {
   Future<void> refreshMyDevice(String imei) async {
     if (imei.isEmpty) return;
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -43,6 +46,7 @@ class DeviceProvider with ChangeNotifier {
       _uptimeData = results[3] as AnalyticsUptime?;
     } catch (e) {
       debugPrint("MyDevice Fetch Error: $e");
+      _errorMessage = "Network error. Please check your internet.";
     } finally {
       _isLoading = false;
       notifyListeners();

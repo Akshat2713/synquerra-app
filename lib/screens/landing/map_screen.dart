@@ -88,6 +88,19 @@ class _MapScreenState extends State<MapScreen> {
     final myProv = context.watch<DeviceProvider>();
     final searchProv = context.watch<SearchedDeviceProvider>();
 
+    if (myProv.errorMessage != null && !myProv.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(myProv.errorMessage!),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3), //
+          ),
+        );
+      });
+    }
+
     final bool showingSearch = searchProv.currentImei != null;
     final activeTelemetry = showingSearch
         ? searchProv.latestTelemetry
@@ -301,7 +314,7 @@ class _MapScreenState extends State<MapScreen> {
                 key: ValueKey(_hasLoadedImeis),
                 optionsBuilder: (textValue) async {
                   if (!_hasLoadedImeis) {
-                    _loadImeis();
+                    // _loadImeis();
                     return const Iterable<String>.empty();
                   }
                   if (textValue.text == '') return _allImeis.take(5);
