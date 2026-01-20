@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/models/user_model.dart';
-import '../core/services/user_preferences.dart';
+import '../core/preferences/user_preferences.dart';
 
 class UserProvider with ChangeNotifier {
   UserData? _user;

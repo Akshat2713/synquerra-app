@@ -5,7 +5,7 @@ import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/registration/login_page.dart';
 // 1. ADD THESE IMPORTS
 import 'package:synquerra/screens/landing/map_screen.dart';
-import '../../core/services/user_preferences.dart';
+import '../core/preferences/user_preferences.dart';
 import '../../core/models/user_model.dart'; // Required to recognize UserData type
 
 class SplashScreen extends StatefulWidget {

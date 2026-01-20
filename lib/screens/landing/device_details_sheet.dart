@@ -141,6 +141,13 @@ class DeviceDetailsSheet extends StatelessWidget {
 
               _buildInfoRow(
                 theme,
+                icon: Icons.person_2_outlined,
+                label: "Role:",
+                value: user!.userType,
+              ),
+
+              _buildInfoRow(
+                theme,
                 icon: Icons.location_history,
                 label: "GEO Number:",
                 value: "--3--",
@@ -152,7 +159,7 @@ class DeviceDetailsSheet extends StatelessWidget {
                 theme,
                 icon: Icons.location_history,
                 label: "GEO ID:",
-                value: "${activeTelemetry?.geoid ?? 'N/A'}",
+                value: activeTelemetry?.geoid ?? 'N/A',
               ),
 
               _buildInfoRow(

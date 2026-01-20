@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
-import 'package:synquerra/core/services/user_preferences.dart';
+import 'package:synquerra/core/preferences/user_preferences.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/home/details/distence_history.dart';
 import 'package:synquerra/screens/landing/home/details/detail_screen.dart';

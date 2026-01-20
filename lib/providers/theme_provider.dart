@@ -1,16 +1,29 @@
 // lib/providers/theme_provider.dart
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:synquerra/core/preferences/theme_preferences.dart';
 
-class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+class ThemeProvider with ChangeNotifier {
+  final ThemePreferences _prefs = ThemePreferences();
 
-  ThemeMode get themeMode => _themeMode;
+  bool _isDarkMode = false;
 
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool get isDarkMode => _isDarkMode;
+  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
 
-  void toggleTheme(bool isOn) {
-    _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
+  // Constructor: Load the saved theme immediately
+  ThemeProvider() {
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    _isDarkMode = await _prefs.getTheme();
+    notifyListeners(); // Update the UI once data is moved from Disk to RAM
+  }
+
+  Future<void> toggleTheme() async {
+    _isDarkMode = !_isDarkMode;
+    await _prefs.setTheme(_isDarkMode); // Save to Disk
+    notifyListeners(); // Update RAM for all active widgets
   }
 }

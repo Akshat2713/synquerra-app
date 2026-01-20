@@ -53,6 +53,7 @@ class UserData {
   final String imei;
   final String email;
   final String mobile;
+  final String userType;
   final String accessToken;
   final String refreshToken;
   final String lastLoginAt;
@@ -64,6 +65,7 @@ class UserData {
     required this.imei,
     required this.email,
     required this.mobile,
+    required this.userType,
     required this.accessToken,
     required this.refreshToken,
     required this.lastLoginAt,
@@ -83,6 +85,7 @@ class UserData {
       imei: json['imei']?.toString() ?? '',
       email: json['email'] ?? '',
       mobile: json['mobile'] ?? '',
+      userType: json['userType'] ?? '',
       accessToken: tokens['accessToken'] ?? '',
       refreshToken: tokens['refreshToken'] ?? '',
       lastLoginAt: json['lastLoginAt'] ?? '',
@@ -94,9 +97,10 @@ class UserData {
       uniqueId: json['_id'] ?? json['uniqueId'] ?? '',
       firstName: json['name'] ?? json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
-      email: json['email'] ?? '',
+      email: json['email'] ?? 'N/A',
       imei: json['imei']?.toString() ?? '', // Try to get IMEI even on signup
       mobile: json['mobile'] ?? '',
+      userType: json['userType'] ?? '',
       accessToken: '',
       refreshToken: '',
       lastLoginAt: '',
@@ -111,6 +115,7 @@ class UserData {
       'imei': imei,
       'email': email,
       'mobile': mobile,
+      'userType': userType,
       'lastLoginAt': lastLoginAt,
       'tokens': {'accessToken': accessToken, 'refreshToken': refreshToken},
     };

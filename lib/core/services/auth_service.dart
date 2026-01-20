@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../../core/models/signup_input.dart';
-import '../../core/services/user_preferences.dart';
+import '../preferences/user_preferences.dart';
 
 class AuthService {
   static const String _baseUrl = 'https://api.synquerra.com';
@@ -16,8 +16,8 @@ class AuthService {
 
     final Map<String, dynamic> body = {
       "query":
-          // ADDED 'imei' into the fields list below
-          "mutation { signin(input: { email: \"$email\", password: \"$password\" }) { uniqueId firstName lastName imei email mobile tokens { accessToken refreshToken } lastLoginAt message } }",
+          // ADDED 'imei' and 'userType' into the fields list below
+          "mutation { signin(input: { email: \"$email\", password: \"$password\" }) { uniqueId firstName lastName imei email mobile userType tokens { accessToken refreshToken } lastLoginAt message } }",
     };
 
     try {

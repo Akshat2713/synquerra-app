@@ -9,7 +9,7 @@ import 'package:synquerra/screens/landing/home/profile_drawer/recharge_and_renew
 import 'package:synquerra/screens/landing/home/profile_drawer/subscription_status.dart';
 import 'package:synquerra/screens/landing/settings_screen.dart';
 
-import 'package:synquerra/core/services/user_preferences.dart';
+import 'package:synquerra/core/preferences/user_preferences.dart';
 import 'package:synquerra/screens/registration/login_page.dart';
 
 class MyProfileDrawer extends StatelessWidget {
@@ -140,19 +140,19 @@ class MyProfileDrawer extends StatelessWidget {
                       );
                     },
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.dark_mode),
+                  SwitchListTile(
+                    // leading: const Icon(Icons.dark_mode),
                     title: const Text('Dark Mode'),
-                    trailing: Switch(
-                      value: themeProvider.isDarkMode,
-                      onChanged: (value) {
-                        final provider = Provider.of<ThemeProvider>(
-                          context,
-                          listen: false,
-                        );
-                        provider.toggleTheme(value);
-                      },
+                    secondary: Icon(
+                      context.watch<ThemeProvider>().isDarkMode
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
                     ),
+
+                    value: context.watch<ThemeProvider>().isDarkMode,
+                    onChanged: (bool value) {
+                      context.read<ThemeProvider>().toggleTheme();
+                    },
                   ),
                 ],
               ),
