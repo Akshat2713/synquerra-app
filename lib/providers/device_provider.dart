@@ -40,7 +40,27 @@ class DeviceProvider with ChangeNotifier {
       ]);
 
       _allPackets = results[0] as List<AnalyticsData>;
-      _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
+
+      _latestTelemetry = null;
+
+      if (_allPackets.isNotEmpty) {
+        // Iterate backwards from the end of the list
+        for (int i = _allPackets.length - 1; i >= 0; i--) {
+          // final packet = _allPackets[i];
+
+          // Check for non-null and non-zero coordinates (Null Island check)
+          if (_allPackets[i].latitude != null &&
+              _allPackets[i].longitude != null) {
+            _latestTelemetry = _allPackets[i];
+            debugPrint(
+              "Found valid telemetry at index $i: ${_allPackets[i].latitude}, ${_allPackets[i].longitude}, ${_allPackets[i].timestamp}",
+            );
+            break; // Stop once we find the most recent valid location
+          }
+        }
+      }
+
+      // _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
       _distanceData = results[1] as List<AnalyticsDistance>;
       _healthData = results[2] as AnalyticsHealth?;
       _uptimeData = results[3] as AnalyticsUptime?;

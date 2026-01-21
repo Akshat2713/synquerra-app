@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/theme/colors.dart';
 import 'package:synquerra/widgets/dummy_screen.dart';
+import 'package:synquerra/widgets/reusable_map.dart';
 
 class GeofenceScreen extends StatefulWidget {
   const GeofenceScreen({super.key});
@@ -15,12 +20,34 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
   final TextEditingController _countController = TextEditingController(
     text: "15",
   );
+  final List<TextEditingController> _xControllers = List.generate(
+    5,
+    (_) => TextEditingController(),
+  );
+  final List<TextEditingController> _yControllers = List.generate(
+    5,
+    (_) => TextEditingController(),
+  );
+
+  // final MapController _geofenceMapController = MapController();
 
   final TextStyle _valueTextStyle = const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
     color: Colors.blueAccent,
   );
+
+  @override
+  void dispose() {
+    for (var c in _xControllers) {
+      c.dispose();
+    }
+    for (var c in _yControllers) {
+      c.dispose();
+    }
+    _countController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,24 +135,49 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
           children: [
             Expanded(child: _buildInputField("Geofence Number", "3")),
             const SizedBox(width: 12),
-            Expanded(child: _buildInputField("Geofence ID", "1665164")),
+            // Matches the image: Safe Zone checkbox next to the label
+            Expanded(
+              child: Row(
+                children: [
+                  const Text(
+                    "Safe Zone",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  Checkbox(
+                    value: true,
+                    onChanged: (v) {},
+                    activeColor: AppColors.safeGreen,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
+        const SizedBox(height: 12),
+        // Full width Geofence ID field
+        _buildInputField("Geofence ID", "1665164"),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSwitchTile("Outside Access", true),
+            _buildSwitchTile("Outside access", true),
             _buildSwitchTile("Incognito", true),
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            _buildSwitchTile("Aeroplane Activate", true),
             _buildSwitchTile("Privacy Zone", true),
-            _buildSwitchTile("Safe Zone", true),
           ],
         ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     _buildSwitchTile("Default Time", true),
+        //     _buildSwitchTile("Accl.", true),
+        //   ],
+        // ),
       ],
     );
   }
@@ -144,35 +196,63 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
           children: [
             Column(
               children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.location_on,
-                    size: 50,
-                    color: Colors.green,
+                GestureDetector(
+                  onTap: () async {
+                    // Get location from Provider
+                    final telemetry = context
+                        .read<DeviceProvider>()
+                        .latestTelemetry;
+                    final center = (telemetry?.latitude != null)
+                        ? LatLng(telemetry!.latitude!, telemetry!.longitude!)
+                        : const LatLng(28.3702, 77.1236);
+
+                    // Open the Square Widget Dialog
+                    final List<LatLng>? results = await showDialog(
+                      context: context,
+                      builder: (context) =>
+                          GeofenceMapPicker(initialCenter: center),
+                    );
+
+                    if (results != null && results.isNotEmpty) {
+                      setState(() {
+                        for (int i = 0; i < results.length && i < 5; i++) {
+                          _xControllers[i].text = results[i].latitude
+                              .toStringAsFixed(6);
+                          _yControllers[i].text = results[i].longitude
+                              .toStringAsFixed(6);
+                        }
+                      });
+                    }
+                  },
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.location_on,
+                      size: 50,
+                      color: Colors.green,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   "Choose from map",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.green,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.green),
                 ),
               ],
             ),
             const SizedBox(width: 15),
             Expanded(
               child: Column(
-                children: List.generate(5, (index) => _buildCoordRow(index)),
+                children: List.generate(
+                  5,
+                  (index) => _buildCoordRow(index + 1),
+                ),
               ),
             ),
           ],
@@ -180,6 +260,71 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
       ],
     );
   }
+
+  // Widget _buildCoordinateGrid(BuildContext context) {
+  //   // Get current device location from Provider
+  //   final deviceLatLng = context.read<DeviceProvider>().latestTelemetry;
+  //   final LatLng initialPos = deviceLatLng?.latitude != null
+  //       ? LatLng(deviceLatLng!.latitude!, deviceLatLng!.longitude!)
+  //       : const LatLng(28.3702, 77.1236);
+
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text(
+  //         "Co-ordinates",
+  //         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+  //       ),
+  //       const SizedBox(height: 15),
+  //       Row(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Column(
+  //             children: [
+  //               GestureDetector(
+  //                 onTap: () => Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) =>
+  //                         FullScreenMapSelector(initialCenter: initialPos),
+  //                   ),
+  //                 ),
+  //                 child: Container(
+  //                   width: 100,
+  //                   height: 100,
+  //                   decoration: BoxDecoration(
+  //                     color: Colors.green.withOpacity(0.1),
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     border: Border.all(color: Colors.green, width: 2),
+  //                   ),
+  //                   child: const Icon(
+  //                     Icons.location_on,
+  //                     size: 50,
+  //                     color: Colors.green,
+  //                   ),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 8),
+  //               const Text(
+  //                 "Choose from map",
+  //                 style: TextStyle(fontSize: 11, color: Colors.green),
+  //               ),
+  //             ],
+  //           ),
+  //           const SizedBox(width: 15),
+  //           Expanded(
+  //             child: Column(
+  //               children: List.generate(
+  //                 5,
+  //                 (index) => _buildCoordRow(index + 1),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 
   // --- 3. MAIN SCREEN CONTROL BUTTONS ---
   Widget _buildControlButtonsRow() {
@@ -261,25 +406,32 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
 
   Widget _buildCoordRow(int i) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 6.0),
       child: Row(
         children: [
-          const Text("X:", style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            "X$i:",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
           const SizedBox(width: 4),
-          Expanded(child: _buildMiniField()),
-          const SizedBox(width: 10),
-          const Text("Y:", style: TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: _buildMiniField(_xControllers[i - 1])),
+          const SizedBox(width: 8),
+          Text(
+            "Y$i:",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
           const SizedBox(width: 4),
-          Expanded(child: _buildMiniField()),
+          Expanded(child: _buildMiniField(_yControllers[i - 1])),
         ],
       ),
     );
   }
 
-  Widget _buildMiniField() {
-    return const SizedBox(
+  Widget _buildMiniField(TextEditingController controller) {
+    return SizedBox(
       height: 30,
       child: TextField(
+        controller: controller,
         style: TextStyle(fontSize: 12),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(horizontal: 4),
