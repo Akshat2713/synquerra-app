@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
-import 'package:synquerra/core/preferences/user_preferences.dart';
+// import 'package:synquerra/core/preferences/user_preferences.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/home/details/distence_history.dart';
 import 'package:synquerra/screens/landing/home/details/detail_screen.dart';
@@ -95,10 +95,12 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
     // If the current search IMEI matches this screen, use searchProv, else use myProv
     final bool isSearched = searchProv.currentImei == widget.imei;
 
-    final latestData = isSearched
-        ? searchProv.latestTelemetry
-        : myProv.latestTelemetry;
+    // final latestData = isSearched
+    //     ? searchProv.latestTelemetry
+    //     : myProv.latestTelemetry;
     final allPackets = isSearched ? searchProv.allPackets : myProv.allPackets;
+    //  lastData = allPackets.last;
+    final latestData = allPackets.last;
     final distanceData = isSearched
         ? searchProv.distanceData
         : myProv.distanceData;

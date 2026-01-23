@@ -50,7 +50,9 @@ class DeviceProvider with ChangeNotifier {
 
           // Check for non-null and non-zero coordinates (Null Island check)
           if (_allPackets[i].latitude != null &&
-              _allPackets[i].longitude != null) {
+              _allPackets[i].longitude != null &&
+              !(_allPackets[i].latitude == 0.0000 &&
+                  _allPackets[i].longitude == 0.0000)) {
             _latestTelemetry = _allPackets[i];
             debugPrint(
               "Found valid telemetry at index $i: ${_allPackets[i].latitude}, ${_allPackets[i].longitude}, ${_allPackets[i].timestamp}",

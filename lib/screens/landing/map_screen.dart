@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'dart:math' as math;
 import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
@@ -28,6 +29,9 @@ class _MapScreenState extends State<MapScreen> {
   bool _showHistory = false;
   final FocusNode _searchFocusNode = FocusNode();
 
+  Map<String, dynamic>? _cachedHistory;
+  List<dynamic>? _lastPackets;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +54,20 @@ class _MapScreenState extends State<MapScreen> {
     _searchFocusNode.dispose();
     _mapController.dispose();
     super.dispose();
+  }
+
+  double _getBearing(LatLng start, LatLng end) {
+    double lat1 = start.latitude * math.pi / 180;
+    double lon1 = start.longitude * math.pi / 180;
+    double lat2 = end.latitude * math.pi / 180;
+    double lon2 = end.longitude * math.pi / 180;
+
+    double dLon = lon2 - lon1;
+    double y = math.sin(dLon) * math.cos(lat2);
+    double x =
+        math.cos(lat1) * math.sin(lat2) -
+        math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
+    return math.atan2(y, x);
   }
 
   Future<void> _loadImeis() async {
@@ -82,6 +100,89 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Map<String, dynamic> _getHistoryData(
+    List<dynamic> packets,
+    LatLng currentPos,
+  ) {
+    final now = DateTime.now();
+    final cutoff = now.subtract(const Duration(hours: 24));
+    List<LatLng> points = [currentPos];
+    List<Marker> dots = [];
+
+    // We add the current position as the start of our "line"
+    // points.add(currentPos);
+    debugPrint("--- [MAP HISTORY] Starting Line Build ---");
+    debugPrint("Live Point: ${currentPos.latitude}, ${currentPos.longitude}");
+    LatLng nextPoint = currentPos;
+
+    // final int startIndex = packets.length > 1
+    //     ? packets.length - 2
+    //     : packets.length - 1;
+
+    // Iterate backwards to get the most recent history first
+    for (int i = packets.length - 5; i >= 0; i -= 5) {
+      final p = packets[i];
+      if (p.latitude == null || p.longitude == null || p.timestamp == null)
+        continue;
+
+      final packetTime = DateTime.parse(p.timestamp!).toLocal();
+      if (packetTime.isBefore(cutoff)) break;
+
+      final pos = LatLng(p.latitude!, p.longitude!);
+      points.add(pos);
+      debugPrint(
+        "History Point [$i]: Lat: ${p.latitude}, Lng: ${p.longitude}, Time: ${p.timestamp}",
+      );
+      double rotation = _getBearing(pos, nextPoint);
+
+      // Create a SMALLER dot
+      dots.add(
+        Marker(
+          point: pos,
+          width: 20, // Reduced size
+          height: 20, // Reduced size
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              final timeLabel =
+                  "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Device was here at $timeLabel"),
+                  behavior: SnackBarBehavior.floating,
+
+                  // width: 300,
+                  shape: RoundedSuperellipseBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.8),
+                shape: BoxShape.circle,
+                // borderRadius: BorderRadius.circular(6),
+                // Subtle border
+              ),
+              child: Transform.rotate(
+                angle: rotation,
+                child: const Icon(
+                  Icons.navigation,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      nextPoint = pos;
+    }
+    debugPrint("--- [MAP HISTORY] Total Points: ${points.length} ---");
+    return {'points': points, 'markers': dots};
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -109,15 +210,41 @@ class _MapScreenState extends State<MapScreen> {
         ? searchProv.isLoading
         : myProv.isLoading;
 
-    final LatLng deviceLatLng = activeTelemetry?.latitude != null
+    final LatLng? deviceLatLng =
+        (activeTelemetry?.latitude != null &&
+            activeTelemetry?.longitude != null)
         ? LatLng(activeTelemetry!.latitude!, activeTelemetry!.longitude!)
-        : const LatLng(28.3702, 77.1236);
+        : null;
 
+    final rawPackets = (showingSearch
+        ? searchProv.allPackets
+        : myProv.allPackets);
+
+    final LatLng initialMapCenter =
+        deviceLatLng ?? const LatLng(28.3702, 77.1236);
+
+    // final now = DateTime.now();
+    // final twentyFourHoursAgo = now.subtract(const Duration(hours: 24));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (activeTelemetry?.latitude != null && !isLoadingData) {
-        _mapController.move(deviceLatLng, _currentZoom);
+        _mapController.move(deviceLatLng!, _currentZoom);
       }
     });
+
+    // Calculate history data once per build to save battery and CPU
+    if (_showHistory && deviceLatLng != null) {
+      // We only recalculate if the actual data list (rawPackets) has changed
+      // or if we haven't cached anything yet.
+      if (_lastPackets != rawPackets || _cachedHistory == null) {
+        _cachedHistory = _getHistoryData(rawPackets, deviceLatLng);
+        _lastPackets = rawPackets;
+      }
+    } else {
+      _cachedHistory = null;
+      _lastPackets = null;
+    }
+
+    final historyData = _cachedHistory;
 
     return PopScope(
       canPop: !showingSearch,
@@ -137,7 +264,7 @@ class _MapScreenState extends State<MapScreen> {
               FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: deviceLatLng,
+                  initialCenter: initialMapCenter,
                   initialZoom: _currentZoom,
                   onPositionChanged: (pos, gesture) {
                     if (pos.zoom != _currentZoom) _currentZoom = pos.zoom;
@@ -152,74 +279,29 @@ class _MapScreenState extends State<MapScreen> {
                   ),
 
                   // --- 1. HISTORY LAYER (Should be below the marker) ---
-                  if (_showHistory && activeTelemetry != null)
+                  // --- 1. INTEGRATED HISTORY LAYER ---
+                  if (historyData != null) ...[
+                    // The Line
                     PolylineLayer(
                       polylines: [
                         Polyline(
-                          points: () {
-                            // 1. Get the raw list
-                            final rawPackets = (showingSearch
-                                ? searchProv.allPackets
-                                : myProv.allPackets);
-
-                            if (rawPackets.isEmpty) return <LatLng>[];
-
-                            // 2. Identify the "Last 1000" range safely
-                            // If list is 5000: start at 4000, end at 5000.
-                            // If list is 500: start at 0, end at 500.
-                            final int totalCount = rawPackets.length;
-                            final int start = totalCount > 100
-                                ? totalCount - 100
-                                : 0;
-
-                            final recentPackets = rawPackets.sublist(
-                              start,
-                              totalCount,
-                            );
-
-                            // 3. Extract points using alternate step (every 5th)
-                            List<LatLng> filteredPoints = [];
-                            for (int i = 0; i < recentPackets.length; i += 5) {
-                              final p = recentPackets[i];
-                              if (p.latitude != null && p.longitude != null) {
-                                debugPrint(
-                                  "Packet[$i]: Lat: ${p.latitude}, Lng: ${p.longitude} (Time: ${p.timestamp})",
-                                );
-                                filteredPoints.add(
-                                  LatLng(p.latitude!, p.longitude!),
-                                );
-                              }
-                            }
-
-                            // 4. Critical: Always force the very last (latest) packet into the line
-                            // even if it wasn't a multiple of 5, so the line connects to the current marker.
-                            if (recentPackets.last.latitude != null) {
-                              final lastP = recentPackets.last;
-                              final lastLatLng = LatLng(
-                                lastP.latitude!,
-                                lastP.longitude!,
-                              );
-                              if (!filteredPoints.contains(lastLatLng)) {
-                                filteredPoints.add(lastLatLng);
-                              }
-                            }
-
-                            return filteredPoints;
-                          }(),
-                          strokeWidth: 4.0,
-                          color: Colors.blue.withOpacity(0.5),
+                          points: historyData['points'],
+                          strokeWidth: 3.0, // Thinner line for cleaner look
+                          color: Colors.blue.withOpacity(0.4),
                           strokeCap: StrokeCap.round,
-                          strokeJoin: StrokeJoin.round,
                         ),
                       ],
                     ),
+                    // The Dots (Now perfectly aligned because they share the same historyData)
+                    MarkerLayer(markers: historyData['markers']),
+                  ],
 
-                  // --- 2. LIVE MARKER LAYER ---
+                  // --- 2. LIVE DEVICE MARKER (Always on Top) ---
                   if (activeTelemetry != null)
                     MarkerLayer(
                       markers: [
                         Marker(
-                          point: deviceLatLng,
+                          point: deviceLatLng!,
                           width: 80,
                           height: 80,
                           child: const Icon(
@@ -231,6 +313,7 @@ class _MapScreenState extends State<MapScreen> {
                       ],
                     ),
 
+                  // --- 3. CURRENT LIVE MARKER (Topmost Layer) ---
                   MapCompass(
                     icon: const Icon(
                       Icons.explore_outlined,
@@ -270,7 +353,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
 
               // Loading Overlay
-              if (isLoadingData)
+              if (isLoadingData || deviceLatLng == null)
                 Container(
                   color: Colors.black.withOpacity(0.4),
                   child: const Center(
