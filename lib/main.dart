@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:synquerra/core/services/update_device_service.dart';
+import 'package:synquerra/providers/intervals_provider.dart';
 import 'package:synquerra/providers/theme_provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
@@ -20,6 +22,7 @@ void main() async {
         // 1. Core Providers
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => IntervalsProvider()),
 
         // 2. Logic Layer: Injects token from UserProvider into DeviceService
         ProxyProvider<UserProvider, DeviceService>(
@@ -34,14 +37,26 @@ void main() async {
         // 3. UI Providers: Depend on the pre-configured DeviceService
         ChangeNotifierProxyProvider<DeviceService, DeviceProvider>(
           create: (context) => DeviceProvider(context.read<DeviceService>()),
-          update: (context, service, previous) => DeviceProvider(service),
+          update: (context, service, previous) {
+            // REUSE the previous instance if it exists
+            if (previous != null) return previous;
+            return DeviceProvider(service);
+          },
         ),
 
         ChangeNotifierProxyProvider<DeviceService, SearchedDeviceProvider>(
           create: (context) =>
               SearchedDeviceProvider(context.read<DeviceService>()),
-          update: (context, service, previous) =>
-              SearchedDeviceProvider(service),
+          update: (context, service, previous) {
+            // REUSE the previous instance if it exists
+            if (previous != null) return previous;
+            return SearchedDeviceProvider(service);
+          },
+        ),
+
+        ProxyProvider<UserProvider, UpdateDeviceService>(
+          update: (context, userProv, _) =>
+              UpdateDeviceService(BaseApiService(userProv.user?.accessToken)),
         ),
       ],
       child: const MyApp(),

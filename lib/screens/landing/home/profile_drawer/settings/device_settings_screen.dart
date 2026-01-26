@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:synquerra/core/preferences/interval_preferences.dart';
+import 'package:synquerra/core/services/update_device_service.dart';
+import 'package:synquerra/providers/intervals_provider.dart';
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/settings/geofence_screen.dart';
-import 'package:synquerra/widgets/edit_value_dialog.dart'; // Import the new dialog
-import 'package:synquerra/theme/colors.dart'; // Import AppColors if needed, e.g., for AppColors.safeGreen
-import 'package:synquerra/widgets/dummy_screen.dart';
+import 'package:synquerra/widgets/edit_value_dialog.dart';
+import 'package:synquerra/theme/colors.dart';
 
 class DeviceSettingsScreen extends StatefulWidget {
   const DeviceSettingsScreen({super.key});
@@ -12,42 +16,55 @@ class DeviceSettingsScreen extends StatefulWidget {
 }
 
 class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
-  // --- State Variables ---
-  String? _selectedDevice =
-      'Rahul Kumar (f5v11vfx)'; // Initial value for dropdown
+  String? _selectedDevice = 'Rahul Kumar (f5v11vfx)';
   final List<String> _devices = [
     'Rahul Kumar (f5v11vfx)',
     'Anjali Sharma (g8h22wgy)',
     'Office Tracker (z1k99abc)',
     'Dad\'s Car (h4j55xyz)',
     'Mom\'s Phone (p9q88lmn)',
-  ]; // Example devices
+  ];
 
-  // Editable Values
-  String _speedLimit = "70 KM/hr"; // Initial value set here
-  String _tempLimit = "32°C"; // Initial value set here
-  String _normalInterval = "300s";
-  String _sosInterval = "60s";
-  String _gpsInterval = "200s";
-  String _aeroplaneInterval = "300s";
-  String _lowBatDataInterval = "900s";
-  String _lowBatGpsInterval = "600s";
-
+  // Hardware switches
   bool _ambientListening = true;
   bool _ledIndicator = true;
   bool _aeroplaneMode = false;
   bool _privacyMode = false;
   bool _incognitoMode = false;
 
-  // --- Helper Methods ---
-  void _navigateToDummy(BuildContext context, String title) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => DummyScreen(title: title)),
-    );
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<IntervalsProvider>().loadSettingsFromDisk();
+    });
   }
 
-  // Method to show the edit dialog
+  Future<void> _updateIntervalSetting(String key, String value) async {
+    final intervalsProv = context.read<IntervalsProvider>();
+    final updateService = context.read<UpdateDeviceService>();
+    final userProv = context.read<UserProvider>();
+    final imei = userProv.user?.imei;
+
+    if (imei == null) return;
+
+    try {
+      await intervalsProv.setSetting(key, value);
+      final response = await updateService.updateDeviceSettings(
+        imei: imei,
+        settings: {key: value},
+      );
+
+      if (response.status == 'SENT' && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Device updated: ${response.note}")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Update failed for $key: $e");
+    }
+  }
+
   void _showEditDialog({
     required BuildContext context,
     required String title,
@@ -62,7 +79,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
         return EditValueDialog(
           title: title,
           initialValue: currentValue,
-          onSave: onSave, // Pass the callback directly
+          onSave: onSave,
           keyboardType: keyboardType,
           valueSuffix: valueSuffix,
         );
@@ -70,32 +87,34 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
     );
   }
 
-  // Helper for underlined text style
+  // Styles
   final TextStyle _underlinedTextStyle = const TextStyle(
     decoration: TextDecoration.underline,
-    decorationColor: Colors.grey, // Adjust underline color if needed
+    decorationColor: Colors.grey,
     decorationThickness: 1,
     fontSize: 17,
     fontWeight: FontWeight.w500,
   );
 
-  // Helper style for normal clickable text in sections
   final TextStyle _clickableTextStyle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w500,
   );
 
-  // Helper style for the blue value text
   final TextStyle _valueTextStyle = const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: Colors.blueAccent, // Color from the image
+    color: Colors.blueAccent,
   );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final settings = context.watch<IntervalsProvider>().localSettings;
+
+    // Helper to fetch data safely
+    String val(String key, String def) => settings[key] ?? def;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Device Settings")),
@@ -103,95 +122,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
         padding: const EdgeInsets.all(16.0),
         children: [
           // --- Choose Device Section ---
-          Padding(
-            padding: const EdgeInsets.only(bottom: 15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline,
-                      color: colorScheme.primary,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Choose a device",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 36.0,
-                  ), // Indent under icon
-                  child: Text(
-                    "to view setting of that device",
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // --- Standard DropdownButton with Decoration ---
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 4.0,
-                  ), // Padding inside container
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withOpacity(
-                      0.5,
-                    ), // Subtle background
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant,
-                    ), // Border
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    // Remove default underline
-                    child: DropdownButton<String>(
-                      value: _selectedDevice,
-                      isExpanded: true, // Make dropdown take available width
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: colorScheme.onSurfaceVariant,
-                      ), // Arrow icon
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                      ), // Text style for selected item
-                      dropdownColor: colorScheme
-                          .surfaceContainerHighest, // Background color of the dropdown menu
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedDevice = newValue;
-                        });
-                        // TODO: Add logic to load settings for the selected device
-                        print('Selected device: $newValue');
-                      },
-                      items: _devices.map<DropdownMenuItem<String>>((
-                        String value,
-                      ) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            // Optional: Style for items in the dropdown list
-                            // style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                // --- End Standard DropdownButton ---
-              ],
-            ),
-          ),
+          _buildDeviceSelector(theme, colorScheme),
 
           // --- Alerts and Safety Section ---
           _buildSectionCard(
@@ -199,78 +130,63 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  // Title with Icon
-                  children: [
-                    Icon(
-                      Icons.shield_outlined,
-                      color: colorScheme.primary,
-                      size: 28,
-                    ), // Added icon
-                    const SizedBox(width: 8),
-                    Text(
-                      "Alerts and Safety",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                _buildHeader(Icons.shield_outlined, "Alerts and Safety", theme),
                 const SizedBox(height: 15),
                 _buildNavigationRow(
                   context: context,
-                  titleWidget: Text(
-                    "Geofences",
-                    style: _underlinedTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ), // Theme aware color
+                  title: "Geofences",
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => GeofenceScreen()),
+                    MaterialPageRoute(builder: (_) => const GeofenceScreen()),
                   ),
                 ),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "Speed Limit",
-                    style: _underlinedTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ), // Theme aware color
-                  value: _speedLimit, // Use state variable
-                  valueStyle: _valueTextStyle,
+                  title: "Speed Limit",
+                  value:
+                      "${val(IntervalPreferences.keySpeedLimit, "70")} KM/hr",
                   onTap: () => _showEditDialog(
-                    // Show dialog on tap
                     context: context,
                     title: "Set Speed Limit",
-                    currentValue: _speedLimit,
+                    currentValue: val(IntervalPreferences.keySpeedLimit, "70"),
                     keyboardType: TextInputType.number,
                     valueSuffix: " KM/hr",
-                    onSave: (newValue) =>
-                        setState(() => _speedLimit = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keySpeedLimit,
+                      v,
+                    ),
                   ),
                 ),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "Temperature Limit",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ), // Theme aware color
-                  value: _tempLimit, // Use state variable
-                  valueStyle: _valueTextStyle,
+                  title: "Temperature Limit",
+                  value: "${val(IntervalPreferences.keyTempLimit, "32")}°C",
                   onTap: () => _showEditDialog(
-                    // Show dialog on tap
                     context: context,
                     title: "Set Temperature Limit",
-                    currentValue: _tempLimit,
-                    keyboardType: TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    currentValue: val(IntervalPreferences.keyTempLimit, "32"),
+                    keyboardType: TextInputType.number,
                     valueSuffix: "°C",
-                    onSave: (newValue) => setState(() => _tempLimit = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyTempLimit,
+                      v,
+                    ),
+                  ),
+                ),
+                _buildValueRow(
+                  context: context,
+                  title: "Low Battery Limit",
+                  value: "${val(IntervalPreferences.keyLowBatLimit, "20")}%",
+                  onTap: () => _showEditDialog(
+                    context: context,
+                    title: "Set Low Battery Limit",
+                    currentValue: val(IntervalPreferences.keyLowBatLimit, "20"),
+                    keyboardType: TextInputType.number,
+                    valueSuffix: "%",
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyLowBatLimit,
+                      v,
+                    ),
                   ),
                 ),
               ],
@@ -284,142 +200,111 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  // Title with Icon
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      color: colorScheme.primary,
-                      size: 28,
-                    ), // Added icon
-                    const SizedBox(width: 8),
-                    Text(
-                      "Intervals",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                _buildHeader(Icons.timer_outlined, "Intervals", theme),
                 const SizedBox(height: 15),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "Normal Sending Interval",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  value: _normalInterval,
-                  valueStyle: _valueTextStyle,
+                  title: "Normal Sending Interval",
+                  value: "${val(IntervalPreferences.keyNormalSending, "300")}s",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Normal Sending Interval",
-                    currentValue: _normalInterval,
+                    currentValue: val(
+                      IntervalPreferences.keyNormalSending,
+                      "300",
+                    ),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _normalInterval = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyNormalSending,
+                      v,
+                    ),
                   ),
                 ),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "SOS Sending Interval",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  value: _sosInterval,
-                  valueStyle: _valueTextStyle,
+                  title: "SOS Sending Interval",
+                  value: "${val(IntervalPreferences.keySOSSending, "60")}s",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "SOS Sending Interval",
-                    currentValue: _sosInterval,
+                    currentValue: val(IntervalPreferences.keySOSSending, "60"),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _sosInterval = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keySOSSending,
+                      v,
+                    ),
                   ),
                 ),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "Normal GPS Sending Interval (>4)",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  value: _gpsInterval,
-                  valueStyle: _valueTextStyle,
+                  title: "Normal GPS Scan Interval",
+                  value:
+                      "${val(IntervalPreferences.keyNormalScanning, "200")}s",
                   onTap: () => _showEditDialog(
                     context: context,
-                    title: "Normal GPS Sending Interval",
-                    currentValue: _gpsInterval,
+                    title: "Normal Scanning Interval",
+                    currentValue: val(
+                      IntervalPreferences.keyNormalScanning,
+                      "200",
+                    ),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _gpsInterval = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyNormalScanning,
+                      v,
+                    ),
                   ),
                 ),
                 _buildValueRow(
                   context: context,
-                  titleWidget: Text(
-                    "Aeroplane Scan Interval",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  value: _aeroplaneInterval,
-                  valueStyle: _valueTextStyle,
+                  title: "Aeroplane Scan Interval",
+                  value: "${val(IntervalPreferences.keyAirplane, "300")}s",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Aeroplane Scan Interval",
-                    currentValue: _aeroplaneInterval,
+                    currentValue: val(IntervalPreferences.keyAirplane, "300"),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _aeroplaneInterval = newValue),
-                  ),
-                ),
-                _buildValueRow(
-                  context: context,
-                  titleWidget: Text(
-                    "Low battery Data Sending Interval",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyAirplane,
+                      v,
                     ),
                   ),
-                  value: _lowBatDataInterval,
-                  valueStyle: _valueTextStyle,
+                ),
+                // RESTORED: Low Battery Data Interval
+                _buildValueRow(
+                  context: context,
+                  title: "Low battery Data Sending Interval",
+                  value: "${val(IntervalPreferences.keyLowBatData, "900")}s",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Low Battery Data Interval",
-                    currentValue: _lowBatDataInterval,
+                    currentValue: val(IntervalPreferences.keyLowBatData, "900"),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _lowBatDataInterval = newValue),
-                  ),
-                ),
-                _buildValueRow(
-                  context: context,
-                  titleWidget: Text(
-                    "Low battery GPS Sending Interval",
-                    style: _clickableTextStyle.copyWith(
-                      color: colorScheme.onSurface,
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyLowBatData,
+                      v,
                     ),
                   ),
-                  value: _lowBatGpsInterval,
-                  valueStyle: _valueTextStyle,
+                ),
+                // RESTORED: Low Battery GPS Interval
+                _buildValueRow(
+                  context: context,
+                  title: "Low battery GPS Sending Interval",
+                  value: "${val(IntervalPreferences.keyLowBatGps, "600")}s",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Low Battery GPS Interval",
-                    currentValue: _lowBatGpsInterval,
+                    currentValue: val(IntervalPreferences.keyLowBatGps, "600"),
                     keyboardType: TextInputType.number,
                     valueSuffix: "s",
-                    onSave: (newValue) =>
-                        setState(() => _lowBatGpsInterval = newValue),
+                    onSave: (v) => _updateIntervalSetting(
+                      IntervalPreferences.keyLowBatGps,
+                      v,
+                    ),
                   ),
                 ),
               ],
@@ -433,83 +318,116 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.settings_remote_outlined,
-                      color: colorScheme.primary,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Hardware Controls",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                _buildHeader(
+                  Icons.settings_remote_outlined,
+                  "Hardware Controls",
+                  theme,
                 ),
                 const SizedBox(height: 5),
                 _buildSwitchRow(
-                  context: context,
-                  title: "Ambient Listening",
-                  value: _ambientListening,
-                  onChanged: (value) =>
-                      setState(() => _ambientListening = value),
+                  context,
+                  "Ambient Listening",
+                  _ambientListening,
+                  (v) => setState(() => _ambientListening = v),
                 ),
                 _buildSwitchRow(
-                  context: context,
-                  title: "LED Indicator",
-                  value: _ledIndicator,
-                  onChanged: (value) => setState(() => _ledIndicator = value),
+                  context,
+                  "LED Indicator",
+                  _ledIndicator,
+                  (v) => setState(() => _ledIndicator = v),
                 ),
                 _buildSwitchRow(
-                  context: context,
-                  title: "Aeroplane Mode",
-                  value: _aeroplaneMode,
-                  onChanged: (value) => setState(() => _aeroplaneMode = value),
+                  context,
+                  "Aeroplane Mode",
+                  _aeroplaneMode,
+                  (v) => setState(() => _aeroplaneMode = v),
                 ),
                 _buildSwitchRow(
-                  context: context,
-                  title: "Privacy Mode",
-                  value: _privacyMode,
-                  onChanged: (value) => setState(() => _privacyMode = value),
+                  context,
+                  "Privacy Mode",
+                  _privacyMode,
+                  (v) => setState(() => _privacyMode = v),
                 ),
                 _buildSwitchRow(
-                  context: context,
-                  title: "Incognito Mode",
-                  value: _incognitoMode,
-                  onChanged: (value) => setState(() => _incognitoMode = value),
+                  context,
+                  "Incognito Mode",
+                  _incognitoMode,
+                  (v) => setState(() => _incognitoMode = v),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
 
-          // --- Firmware Version Section ---
           _buildVersionCard(
-            context: context,
-            icon: Icons.memory_outlined,
-            title: "Firmware version",
-            version: "1.4.2-Build-301",
+            context,
+            Icons.memory_outlined,
+            "Firmware version",
+            "1.4.2-Build-301",
           ),
           const SizedBox(height: 20),
-
-          // --- Software Version Section ---
           _buildVersionCard(
-            context: context,
-            icon: Icons.developer_mode_outlined,
-            title: "Software version",
-            version: "3.06.19",
+            context,
+            Icons.developer_mode_outlined,
+            "Software version",
+            "3.06.19",
           ),
         ],
       ),
     );
   }
 
-  // --- Helper Widgets ---
+  // UI Helpers (Simplified for clarity)
+  Widget _buildHeader(IconData icon, String title, ThemeData theme) {
+    return Row(
+      children: [
+        Icon(icon, color: theme.colorScheme.primary, size: 28),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
 
-  // Helper for the main section cards (borders removed)
+  Widget _buildDeviceSelector(ThemeData theme, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(Icons.person_outline, "Choose a device", theme),
+          const Padding(
+            padding: EdgeInsets.only(left: 36.0),
+            child: Text("to view setting of that device"),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedDevice,
+                isExpanded: true,
+                onChanged: (v) => setState(() => _selectedDevice = v),
+                items: _devices
+                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                    .toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionCard({
     required BuildContext context,
     required Widget child,
@@ -517,10 +435,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
     return Card(
       elevation: 4,
       color: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        // REMOVED: side: BorderSide(...)
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
         child: child,
@@ -528,59 +443,12 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
     );
   }
 
-  // Helper for rows with text and a trailing value (clickable)
   Widget _buildValueRow({
     required BuildContext context,
-    Widget? titleWidget,
-    String? title,
+    required String title,
     required String value,
-    TextStyle? valueStyle,
-    VoidCallback? onTap, // Make sure this is passed if needed by dialog
-  }) {
-    assert(
-      title != null || titleWidget != null,
-      'Provide either title or titleWidget',
-    );
-    final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Use titleWidget if provided, otherwise create Text from title
-            titleWidget ??
-                Text(
-                  title!,
-                  style: _clickableTextStyle.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-            Text(
-              value,
-              style:
-                  valueStyle ??
-                  _valueTextStyle.copyWith(color: colorScheme.secondary),
-            ), // Example: using secondary color
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Helper for rows with text and a trailing arrow (clickable)
-  Widget _buildNavigationRow({
-    required BuildContext context,
-    Widget? titleWidget,
-    String? title,
     VoidCallback? onTap,
   }) {
-    assert(
-      title != null || titleWidget != null,
-      'Provide either title or titleWidget',
-    );
-    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -588,17 +456,42 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Use titleWidget if provided, otherwise create Text from title
-            titleWidget ??
-                Text(
-                  title!,
-                  style: _underlinedTextStyle.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+            Text(
+              title,
+              style: _clickableTextStyle.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            Text(value, style: _valueTextStyle),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationRow({
+    required BuildContext context,
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: _underlinedTextStyle.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
             Icon(
               Icons.chevron_right,
-              color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withOpacity(0.7),
             ),
           ],
         ),
@@ -606,79 +499,60 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
     );
   }
 
-  // Helper for rows with text and a trailing switch
-  Widget _buildSwitchRow({
-    required BuildContext context,
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: _clickableTextStyle.copyWith(
-              color: theme.colorScheme.onSurface,
-            ),
+  Widget _buildSwitchRow(
+    BuildContext context,
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: _clickableTextStyle.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.safeGreen, // Using specific green
-            // inactiveTrackColor: theme.colorScheme.surfaceVariant, // Optional: customize inactive color
-            // inactiveThumbColor: theme.colorScheme.outline, // Optional: customize inactive color
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: AppColors.safeGreen,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVersionCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String version,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return _buildSectionCard(
+      context: context,
+      child: Row(
+        children: [
+          Icon(icon, color: colorScheme.primary, size: 28),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                version,
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  // Helper for the version cards at the bottom (borders removed)
-  Widget _buildVersionCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String version,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Card(
-      elevation: 4,
-      color: colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        // REMOVED: side: BorderSide(...)
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-        child: Row(
-          children: [
-            Icon(icon, color: colorScheme.primary, size: 28),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                Text(
-                  version,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

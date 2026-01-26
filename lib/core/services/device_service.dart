@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:synquerra/core/services/base_api_service.dart';
 import '../models/analytics_model.dart';
 
@@ -131,4 +130,6 @@ class DeviceService {
     }
     return null;
   }
+
+  // lib/core/services/device_service.dart
 }

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 import 'package:flutter_map_compass/flutter_map_compass.dart';
+import 'package:synquerra/core/services/update_device_service.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
@@ -29,9 +30,8 @@ class _MapScreenState extends State<MapScreen> {
   bool _showHistory = false;
   final FocusNode _searchFocusNode = FocusNode();
 
-  Map<String, dynamic>? _cachedHistory;
-  List<dynamic>? _lastPackets;
-
+  bool _isRefreshingManually = false;
+  // bool _isRefreshing = false;
   @override
   void initState() {
     super.initState();
@@ -56,19 +56,87 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  double _getBearing(LatLng start, LatLng end) {
-    double lat1 = start.latitude * math.pi / 180;
-    double lon1 = start.longitude * math.pi / 180;
-    double lat2 = end.latitude * math.pi / 180;
-    double lon2 = end.longitude * math.pi / 180;
+  Future<void> _handleManualRefresh() async {
+    final user = context.read<UserProvider>().user;
+    // final deviceService = context.read<DeviceService>();
+    final deviceProv = context.read<DeviceProvider>();
+    final updateService = context.read<UpdateDeviceService>();
 
-    double dLon = lon2 - lon1;
-    double y = math.sin(dLon) * math.cos(lat2);
-    double x =
-        math.cos(lat1) * math.sin(lat2) -
-        math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
-    return math.atan2(y, x);
+    if (user?.imei == null) return;
+
+    setState(() => _isRefreshingManually = true);
+
+    try {
+      // 1. Direct Service Call (Fire and Forget)
+      // No need to store this in Provider because it's a transient action
+      final response = await updateService.queryNormal(
+        imei: user!.imei,
+        params: {},
+      );
+
+      if (response.status == 'SENT') {
+        // 2. Short delay to allow the hardware/broker to process
+        await Future.delayed(const Duration(seconds: 1));
+
+        // 3. Provider Call (Update State)
+        // This uses your optimized Background Isolate loop to refresh data
+        await deviceProv.refreshMyDevice(user.imei);
+      }
+    } catch (e) {
+      debugPrint("Refresh sequence failed: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Refresh failed: $e"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRefreshingManually = false);
+    }
   }
+
+  // Future<void> _handleManualRefresh() async {
+  //   final deviceProv = context.read<DeviceProvider>();
+  //   final userProv = context.read<UserProvider>();
+  //   final imei = userProv.user?.imei;
+
+  //   if (imei == null) return;
+
+  //   setState(() => _isRefreshingManually = true);
+
+  //   try {
+  //     // 1. Send the command (QUERY_NORMAL)
+  //     // Assuming you implemented sendDeviceCommand in your provider as discussed
+  //     final success = await deviceProv.queryNormal(imei, params: {});
+
+  //     if (success) {
+  //       // 2. Wait a brief moment for the device to process and server to update
+  //       await Future.delayed(const Duration(seconds: 1));
+
+  //       // 3. Refresh the telemetry data
+  //       await deviceProv.refreshMyDevice(imei);
+
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text("Command sent and data updated!")),
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text("Refresh failed: $e"),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //     }
+  //   } finally {
+  //     if (mounted) setState(() => _isRefreshingManually = false);
+  //   }
+  // }
 
   Future<void> _loadImeis() async {
     if (_hasLoadedImeis || _isLoadingImeis) return;
@@ -98,89 +166,6 @@ class _MapScreenState extends State<MapScreen> {
     } else {
       await context.read<SearchedDeviceProvider>().fetchSearchedDevice(imei);
     }
-  }
-
-  Map<String, dynamic> _getHistoryData(
-    List<dynamic> packets,
-    LatLng currentPos,
-  ) {
-    final now = DateTime.now();
-    final cutoff = now.subtract(const Duration(hours: 24));
-    List<LatLng> points = [currentPos];
-    List<Marker> dots = [];
-
-    // We add the current position as the start of our "line"
-    // points.add(currentPos);
-    debugPrint("--- [MAP HISTORY] Starting Line Build ---");
-    debugPrint("Live Point: ${currentPos.latitude}, ${currentPos.longitude}");
-    LatLng nextPoint = currentPos;
-
-    // final int startIndex = packets.length > 1
-    //     ? packets.length - 2
-    //     : packets.length - 1;
-
-    // Iterate backwards to get the most recent history first
-    for (int i = packets.length - 5; i >= 0; i -= 5) {
-      final p = packets[i];
-      if (p.latitude == null || p.longitude == null || p.timestamp == null)
-        continue;
-
-      final packetTime = DateTime.parse(p.timestamp!).toLocal();
-      if (packetTime.isBefore(cutoff)) break;
-
-      final pos = LatLng(p.latitude!, p.longitude!);
-      points.add(pos);
-      debugPrint(
-        "History Point [$i]: Lat: ${p.latitude}, Lng: ${p.longitude}, Time: ${p.timestamp}",
-      );
-      double rotation = _getBearing(pos, nextPoint);
-
-      // Create a SMALLER dot
-      dots.add(
-        Marker(
-          point: pos,
-          width: 20, // Reduced size
-          height: 20, // Reduced size
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              final timeLabel =
-                  "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Device was here at $timeLabel"),
-                  behavior: SnackBarBehavior.floating,
-
-                  // width: 300,
-                  shape: RoundedSuperellipseBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.8),
-                shape: BoxShape.circle,
-                // borderRadius: BorderRadius.circular(6),
-                // Subtle border
-              ),
-              child: Transform.rotate(
-                angle: rotation,
-                child: const Icon(
-                  Icons.navigation,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      nextPoint = pos;
-    }
-    debugPrint("--- [MAP HISTORY] Total Points: ${points.length} ---");
-    return {'points': points, 'markers': dots};
   }
 
   @override
@@ -231,21 +216,6 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
 
-    // Calculate history data once per build to save battery and CPU
-    if (_showHistory && deviceLatLng != null) {
-      // We only recalculate if the actual data list (rawPackets) has changed
-      // or if we haven't cached anything yet.
-      if (_lastPackets != rawPackets || _cachedHistory == null) {
-        _cachedHistory = _getHistoryData(rawPackets, deviceLatLng);
-        _lastPackets = rawPackets;
-      }
-    } else {
-      _cachedHistory = null;
-      _lastPackets = null;
-    }
-
-    final historyData = _cachedHistory;
-
     return PopScope(
       canPop: !showingSearch,
       onPopInvokedWithResult: (didPop, result) {
@@ -259,6 +229,25 @@ class _MapScreenState extends State<MapScreen> {
         child: Scaffold(
           key: _scaffoldKey,
           endDrawer: const MyProfileDrawer(),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(
+              bottom: 90.0,
+            ), // Adjust based on your sheet height
+            child: FloatingActionButton(
+              backgroundColor: theme.colorScheme.primary,
+              onPressed: _isRefreshingManually ? null : _handleManualRefresh,
+              child: _isRefreshingManually
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ),
           body: Stack(
             children: [
               FlutterMap(
@@ -280,22 +269,66 @@ class _MapScreenState extends State<MapScreen> {
 
                   // --- 1. HISTORY LAYER (Should be below the marker) ---
                   // --- 1. INTEGRATED HISTORY LAYER ---
-                  if (historyData != null) ...[
-                    // The Line
+                  // Inside FlutterMap children:
+                  if (_showHistory && myProv.historyPoints.isNotEmpty) ...[
                     PolylineLayer(
                       polylines: [
                         Polyline(
-                          points: historyData['points'],
-                          strokeWidth: 3.0, // Thinner line for cleaner look
+                          points: myProv.historyPoints,
+                          strokeWidth: 3.0,
                           color: Colors.blue.withOpacity(0.4),
-                          strokeCap: StrokeCap.round,
                         ),
                       ],
                     ),
-                    // The Dots (Now perfectly aligned because they share the same historyData)
-                    MarkerLayer(markers: historyData['markers']),
-                  ],
+                    MarkerLayer(
+                      markers: List.generate(myProv.historyBearings.length, (
+                        index,
+                      ) {
+                        // We get the packet corresponding to this dot to show the time
+                        // Index + 1 because the first point in historyPoints is the live location
+                        final point = myProv.historyPoints[index + 1];
 
+                        return Marker(
+                          point: point,
+                          width: 20,
+                          height: 20,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              final rawTime = myProv.historyTimestamps[index];
+                              final packetTime = DateTime.parse(
+                                rawTime,
+                              ).toLocal();
+
+                              final timeLabel =
+                                  "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
+                              // Optional: Show a snackbar with the time for this specific dot
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Device was here at $timeLabel",
+                                  ),
+                                  duration: const Duration(seconds: 1),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Transform.rotate(
+                              angle: myProv.historyBearings[index],
+                              child: const Icon(
+                                Icons.navigation,
+                                color: Colors.blue,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                   // --- 2. LIVE DEVICE MARKER (Always on Top) ---
                   if (activeTelemetry != null)
                     MarkerLayer(
@@ -380,7 +413,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // ... (Keep your existing _buildSearchBar and _buildZoomControls methods)
   Widget _buildSearchBar(ColorScheme colorScheme) {
     return Material(
       elevation: 4,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../core/models/user_model.dart';
 import '../core/preferences/user_preferences.dart';
@@ -18,6 +19,7 @@ class UserProvider with ChangeNotifier {
 
     debugPrint("--- [USER PROVIDER] Initializing User Session ---");
     try {
+      // _user = await compute(_loadUserInBackground, null);
       _user = await UserPreferences().getUser();
       _isInitialized = true;
 
@@ -50,3 +52,7 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+
+// Future<UserData?> _loadUserInBackground(_) async {
+//   return await UserPreferences().getUser();
+// }
