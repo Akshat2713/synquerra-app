@@ -30,7 +30,10 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
       if (!mounted || user == null) return;
 
       if (widget.imei == user.imei) {
-        await context.read<DeviceProvider>().refreshMyDevice(widget.imei);
+        await context.read<DeviceProvider>().refreshMyDevice(
+          widget.imei,
+          forceRefresh: true,
+        );
       } else {
         await context.read<SearchedDeviceProvider>().fetchSearchedDevice(
           widget.imei,
@@ -106,7 +109,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
         : myProv.distanceData;
     final healthData = isSearched ? searchProv.healthData : myProv.healthData;
     final uptimeData = isSearched ? searchProv.uptimeData : myProv.uptimeData;
-    // final isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
+    final isLoading = isSearched ? searchProv.isLoading : myProv.isLoading;
 
     final theme = Theme.of(context);
 
@@ -445,7 +448,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
           const SizedBox(height: 16),
           _detailRow(
             "Temperature Status",
-            data?.temperatureStatus.toUpperCase() ?? "UNKNOWN",
+            data?.temperatureStatus!.toUpperCase() ?? "UNKNOWN",
             theme,
           ),
           const Divider(height: 24),
@@ -517,7 +520,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${data?.score.toStringAsFixed(1)} / 100",
+                    "${data!.score!.toStringAsFixed(1)} / 100",
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -558,7 +561,7 @@ class _TelemetryDashboardScreenState extends State<DataTelemetryScreen> {
               ),
               _StatItem(
                 "Max Gap",
-                "${data?.largestGap.toStringAsFixed(0)}",
+                "${data.largestGap!.toStringAsFixed(0)}",
                 "sec",
                 Icons.timer_off,
                 Colors.orange,

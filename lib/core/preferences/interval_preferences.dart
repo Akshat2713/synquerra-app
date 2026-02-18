@@ -28,6 +28,8 @@ class IntervalPreferences {
       keyTempLimit: prefs.getString(keyTempLimit) ?? "00",
       keySpeedLimit: prefs.getString(keySpeedLimit) ?? "00",
       keyLowBatLimit: prefs.getString(keyLowBatLimit) ?? "00",
+      keyLowBatData: prefs.getString(keyLowBatData) ?? "00",
+      keyLowBatGps: prefs.getString(keyLowBatGps) ?? "00",
     };
   }
 }

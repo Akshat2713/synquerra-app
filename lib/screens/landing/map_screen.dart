@@ -9,6 +9,7 @@ import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/providers/device_provider.dart';
 import 'package:synquerra/providers/searched_device_provider.dart';
 import 'package:synquerra/screens/landing/device_details_sheet.dart';
+import 'package:synquerra/widgets/history_dot.dart';
 import '../../core/services/device_service.dart';
 import '../../screens/landing/home/my_profile_drawer.dart';
 
@@ -35,14 +36,22 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      debugPrint("--- [MAP SCREEN] Initializing User Provider ---");
-      final userProv = context.read<UserProvider>();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   debugPrint("--- [MAP SCREEN] Initializing User Provider ---");
+    //   debugPrint(
+    //     "--- [MAP SCREEN] 1. initState: PostFrameCallback triggered ---",
+    //   );
+    //   final userProv = context.read<UserProvider>();
 
-      if (userProv.user?.imei != null) {
-        context.read<DeviceProvider>().refreshMyDevice(userProv.user!.imei);
-      }
-    });
+    //   if (userProv.user?.imei != null) {
+    //     debugPrint(
+    //       "--- [MAP SCREEN] 2. imei found: ${userProv.user!.imei}, calling refresh ---",
+    //     );
+    //     context.read<DeviceProvider>().refreshMyDevice(userProv.user!.imei);
+    //   } else {
+    //     debugPrint("--- [MAP SCREEN] ERROR: imei is NULL in initState ---");
+    //   }
+    // });
 
     _searchFocusNode.addListener(() {
       if (_searchFocusNode.hasFocus && !_hasLoadedImeis) _loadImeis();
@@ -97,47 +106,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // Future<void> _handleManualRefresh() async {
-  //   final deviceProv = context.read<DeviceProvider>();
-  //   final userProv = context.read<UserProvider>();
-  //   final imei = userProv.user?.imei;
-
-  //   if (imei == null) return;
-
-  //   setState(() => _isRefreshingManually = true);
-
-  //   try {
-  //     // 1. Send the command (QUERY_NORMAL)
-  //     // Assuming you implemented sendDeviceCommand in your provider as discussed
-  //     final success = await deviceProv.queryNormal(imei, params: {});
-
-  //     if (success) {
-  //       // 2. Wait a brief moment for the device to process and server to update
-  //       await Future.delayed(const Duration(seconds: 1));
-
-  //       // 3. Refresh the telemetry data
-  //       await deviceProv.refreshMyDevice(imei);
-
-  //       if (mounted) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text("Command sent and data updated!")),
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text("Refresh failed: $e"),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //     }
-  //   } finally {
-  //     if (mounted) setState(() => _isRefreshingManually = false);
-  //   }
-  // }
-
   Future<void> _loadImeis() async {
     if (_hasLoadedImeis || _isLoadingImeis) return;
     setState(() => _isLoadingImeis = true);
@@ -168,11 +136,41 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  // lib/screens/landing/map_screen.dart
+
+  void _showTimeSnippet(BuildContext context, String rawTime) {
+    final packetTime = DateTime.parse(rawTime).toLocal();
+    final timeLabel =
+        "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Device was here at $timeLabel"),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    debugPrint("--- [MAP SCREEN] 3. Building Widget Tree ---");
     final theme = Theme.of(context);
+    // final user = context.watch<UserProvider>().user;
     final myProv = context.watch<DeviceProvider>();
     final searchProv = context.watch<SearchedDeviceProvider>();
+
+    // if (user?.imei != null) {
+    //   // The Provider now decides if work is actually needed.
+    //   Future.microtask(
+    //     () => context.read<DeviceProvider>().refreshMyDevice(user!.imei),
+    //   );
+    // }
+
+    debugPrint(
+      "--- [MAP SCREEN] 4. Provider State: isLoading=${myProv.isLoading}, hasError=${myProv.errorMessage != null} ---",
+    );
 
     if (myProv.errorMessage != null && !myProv.isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -181,7 +179,7 @@ class _MapScreenState extends State<MapScreen> {
             content: Text(myProv.errorMessage!),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3), //
+            duration: const Duration(seconds: 2), //
           ),
         );
       });
@@ -280,42 +278,25 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                       ],
                     ),
+
                     MarkerLayer(
                       markers: List.generate(myProv.historyBearings.length, (
                         index,
                       ) {
-                        // We get the packet corresponding to this dot to show the time
-                        // Index + 1 because the first point in historyPoints is the live location
+                        // Raw Data from Provider
                         final point = myProv.historyPoints[index + 1];
+                        final bearing = myProv.historyBearings[index];
 
                         return Marker(
                           point: point,
                           width: 20,
                           height: 20,
                           child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              final rawTime = myProv.historyTimestamps[index];
-                              final packetTime = DateTime.parse(
-                                rawTime,
-                              ).toLocal();
-
-                              final timeLabel =
-                                  "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
-                              // Optional: Show a snackbar with the time for this specific dot
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Device was here at $timeLabel",
-                                  ),
-                                  duration: const Duration(seconds: 1),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            },
+                            onTap: () => _showTimeSnippet(
+                              context,
+                              myProv.historyTimestamps[index],
+                            ),
+                            // The UI logic (HistoryDot) lives here in the View layer
                             child: Transform.rotate(
                               angle: myProv.historyBearings[index],
                               child: const Icon(
@@ -328,6 +309,55 @@ class _MapScreenState extends State<MapScreen> {
                         );
                       }),
                     ),
+
+                    // MarkerLayer(
+                    //   markers: List.generate(myProv.historyBearings.length, (
+                    //     index,
+                    //   ) {
+                    //     // We get the packet corresponding to this dot to show the time
+                    //     // Index + 1 because the first point in historyPoints is the live location
+                    //     final point = myProv.historyPoints[index + 1];
+
+                    //     return Marker(
+                    //       point: point,
+                    //       width: 20,
+                    //       height: 20,
+                    //       child: GestureDetector(
+                    //         behavior: HitTestBehavior.opaque,
+                    //         onTap: () {
+                    //           final rawTime = myProv.historyTimestamps[index];
+                    //           final packetTime = DateTime.parse(
+                    //             rawTime,
+                    //           ).toLocal();
+
+                    //           final timeLabel =
+                    //               "${packetTime.hour.toString().padLeft(2, '0')}:${packetTime.minute.toString().padLeft(2, '0')} on ${packetTime.day}/${packetTime.month}/${packetTime.year}";
+                    //           // Optional: Show a snackbar with the time for this specific dot
+                    //           ScaffoldMessenger.of(context).showSnackBar(
+                    //             SnackBar(
+                    //               content: Text(
+                    //                 "Device was here at $timeLabel",
+                    //               ),
+                    //               duration: const Duration(seconds: 1),
+                    //               behavior: SnackBarBehavior.floating,
+                    //               shape: RoundedRectangleBorder(
+                    //                 borderRadius: BorderRadius.circular(10),
+                    //               ),
+                    //             ),
+                    //           );
+                    //         },
+                    //         child: Transform.rotate(
+                    //           angle: myProv.historyBearings[index],
+                    //           child: const Icon(
+                    //             Icons.navigation,
+                    //             color: Colors.blue,
+                    //             size: 14,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   }),
+                    // ),
                   ],
                   // --- 2. LIVE DEVICE MARKER (Always on Top) ---
                   if (activeTelemetry != null)

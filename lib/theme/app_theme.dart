@@ -44,7 +44,8 @@ class AppTheme {
       primary: AppColors.navBlue,
       surface: AppColors.backgroundContainer,
       onSurface: AppColors.darkText, // Text on cards
-      surfaceContainerHighest: Color(0xFFE5E8EB), // Input fields background
+      surfaceContainerHighest:
+          AppColors.containerSurfaceHighest, // Input fields background
     ),
 
     // 5. Text Theme (Light Mode)
@@ -87,7 +88,8 @@ class AppTheme {
       primary: AppColors.navBlue,
       surface: AppColors.backgroundContainerDark,
       onSurface: Colors.white, // Text on cards
-      surfaceContainerHighest: Color(0xFF2C2F33), // Input fields background
+      surfaceContainerHighest:
+          AppColors.containerSurfaceHighestDark, // Input fields background
     ),
 
     // 5. Text Theme (Dark Mode)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:synquerra/core/models/signup_input.dart';
 import 'package:synquerra/core/services/auth_service.dart';
 import 'package:synquerra/screens/registration/login_page.dart';
@@ -74,7 +75,9 @@ class _SignupScreenDemoState extends State<SignupScreenDemo> {
 
     try {
       // 3. Call API
-      await AuthService().signup(input);
+      // await AuthService(null).signup(input);
+      final authService = context.read<AuthService>();
+      await authService.signup(input);
 
       if (!mounted) return;
 
@@ -93,7 +96,7 @@ class _SignupScreenDemoState extends State<SignupScreenDemo> {
         (route) => false,
       );
     } catch (e) {
-      print('Signup Error: $e');
+      debugPrint('Signup Error: $e');
       // 6. Error
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

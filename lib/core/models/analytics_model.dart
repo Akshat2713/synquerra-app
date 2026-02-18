@@ -30,14 +30,20 @@ class AnalyticsData {
     this.temperature,
   });
 
+  static double? parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  static String? _cleanTemperature(dynamic val) {
+    if (val == null) return null;
+    return val.toString().split(RegExp(r'[cC]')).first.trim();
+  }
+
   factory AnalyticsData.fromJson(Map<String, dynamic> json) {
     // Helper to safely parse numbers that might come as Strings "23.5" or Doubles 23.5
-    double? parseDouble(dynamic value) {
-      if (value == null) return null;
-      if (value is num) return value.toDouble();
-      if (value is String) return double.tryParse(value);
-      return null;
-    }
 
     return AnalyticsData(
       id: json['id'] ?? '',
@@ -52,11 +58,7 @@ class AnalyticsData {
       signal: json['signal']?.toString(),
       timestamp: json['timestamp'] ?? '',
       alert: json['alert'],
-      temperature: json['rawTemperature']
-          ?.toString()
-          .toLowerCase()
-          .replaceAll('c', '')
-          .trim(),
+      temperature: _cleanTemperature(json['rawTemperature']),
     );
   }
 }
@@ -84,10 +86,10 @@ class AnalyticsDistance {
 }
 
 class AnalyticsHealth {
-  final double gpsScore;
-  final String temperatureStatus;
-  final double temperatureIndex;
-  final List<String> movementStats;
+  final double? gpsScore;
+  final String? temperatureStatus;
+  final double? temperatureIndex;
+  final List<String>? movementStats;
   // We can add movement stats later if needed for a chart
 
   AnalyticsHealth({
@@ -111,11 +113,11 @@ class AnalyticsHealth {
 }
 
 class AnalyticsUptime {
-  final double score;
-  final int expected;
-  final int received;
-  final double largestGap;
-  final int dropouts;
+  final double? score;
+  final int? expected;
+  final int? received;
+  final double? largestGap;
+  final int? dropouts;
 
   AnalyticsUptime({
     required this.score,
@@ -127,11 +129,11 @@ class AnalyticsUptime {
 
   factory AnalyticsUptime.fromJson(Map<String, dynamic> json) {
     return AnalyticsUptime(
-      score: (json['score'] as num?)?.toDouble() ?? 0.0,
-      expected: json['expectedPackets'] ?? 0,
-      received: json['receivedPackets'] ?? 0,
-      largestGap: (json['largestGapSec'] as num?)?.toDouble() ?? 0.0,
-      dropouts: json['dropouts'] ?? 0,
+      score: (json['score'] as num?)?.toDouble(),
+      expected: json['expectedPackets'],
+      received: json['receivedPackets'],
+      largestGap: (json['largestGapSec'] as num?)?.toDouble(),
+      dropouts: json['dropouts'],
     );
   }
 }

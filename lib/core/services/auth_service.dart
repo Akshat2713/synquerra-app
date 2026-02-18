@@ -1,129 +1,84 @@
-// lib/services/auth_service.dart
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../models/user_model.dart';
+import 'package:flutter/material.dart';
+import 'package:synquerra/core/models/user_model.dart';
+
+// import '../models/auth_response.dart';
 import '../../core/models/signup_input.dart';
-import '../preferences/user_preferences.dart';
+import '../constants/auth_queries.dart';
+import 'base_api_service.dart';
 
-class AuthService {
-  static const String _baseUrl = 'https://api.synquerra.com';
-
-  // Returns AuthResponse on success, throws Exception on failure
-  // lib/services/auth_service.dart
+class AuthService extends BaseApiService {
+  AuthService(super.token);
 
   Future<AuthResponse> login(String email, String password) async {
-    final url = Uri.parse('$_baseUrl/auth/signin-query');
-
-    final Map<String, dynamic> body = {
-      "query":
-          // ADDED 'imei' and 'userType' into the fields list below
-          "mutation { signin(input: { email: \"$email\", password: \"$password\" }) { uniqueId firstName lastName imei email mobile userType tokens { accessToken refreshToken } lastLoginAt message } }",
+    final body = {
+      "query": AuthQueries.loginMutation(email, password),
+      // "variables": {"email": email, "password": password},
     };
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
+    final response = await post('/auth/signin-query', body);
+    final jsonResponse = jsonDecode(response.body);
 
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+    if (jsonResponse['errors'] != null) {
+      throw Exception(jsonResponse['errors'][0]['message']);
+    }
 
-      if (jsonResponse['errors'] != null) {
-        throw Exception(jsonResponse['errors'][0]['message']);
+    final authResponse = AuthResponse.fromJson(jsonResponse);
+
+    // RESTORED: Your professional validation logic
+    if (authResponse.code == 200 && authResponse.status == 'success') {
+      if (authResponse.data?.imei.isEmpty ?? true) {
+        debugPrint(
+          "CRITICAL: Login succeeded but IMEI is still empty from API!",
+        );
       }
-
-      final authResponse = AuthResponse.fromJson(jsonResponse);
-
-      if (authResponse.code == 200 && authResponse.status == 'success') {
-        // PRO-TIP: Verify the object has an IMEI before returning
-        if (authResponse.data?.imei.isEmpty ?? true) {
-          print("CRITICAL: Login succeeded but IMEI is still empty from API!");
-        }
-        return authResponse;
-      } else {
-        throw Exception(authResponse.message);
-      }
-    } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      return authResponse;
+    } else {
+      throw Exception(authResponse.message);
     }
   }
 
   Future<SignupResponse> signup(SignupInput input) async {
-    final url = Uri.parse('$_baseUrl/auth/signup-query');
+    final body = {
+      "query": AuthQueries.signupMutation({
+        'firstName': input.firstName,
+        'lastName': input.lastName,
+        'email': input.email,
+        'password': input.password,
+        'mobile': input.mobile,
+      }),
+      // "variables": {
+      //   "input": {
+      //     "firstName": input.firstName,
+      //     "middleName": input.middleName,
+      //     "lastName": input.lastName,
+      //     "email": input.email,
+      //     "mobile": input.mobile,
+      //     "password": input.password,
+      //   },
+      // },
+    };
 
-    // Using Triple Quotes (""") makes the GraphQL string much easier to read
-    // and handles the inner quotes automatically.
-    String mutation =
-        """
-      mutation {
-        signup(input: {
-          firstName: "${input.firstName}",
-          middleName: "${input.middleName}",
-          lastName: "${input.lastName}",
-          email: "${input.email}",
-          mobile: "${input.mobile}",
-          password: "${input.password}"
-        }) {
-          status
-          data {
-            user {
-              _id
-              name
-              email
-            }
-          }
-        }
-      }
-    """;
+    final response = await post('/auth/signup-query', body);
+    final jsonResponse = jsonDecode(response.body);
 
-    final Map<String, dynamic> body = {"query": mutation};
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
-
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-
-      // 1. Check for API-level errors (e.g. "Email already exists")
-      if (jsonResponse['errors'] != null) {
-        throw Exception(jsonResponse['errors'][0]['message']);
-      }
-
-      // 2. Parse using the shared model we created
-      return SignupResponse.fromJson(jsonResponse);
-    } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    if (jsonResponse['errors'] != null) {
+      throw Exception(jsonResponse['errors'][0]['message']);
     }
+
+    return SignupResponse.fromJson(jsonResponse);
   }
 
+  // RESTORED: Device IMEI fetching logic
   Future<List<String>> getDeviceImeis() async {
-    final url = Uri.parse('$_baseUrl/device/device-master-query');
-
-    // Get the token to authenticate the request
-    final token = await UserPreferences().getAccessToken();
-
-    final Map<String, dynamic> body = {"query": "{ devices { imei } }"};
+    final body = {"query": AuthQueries.deviceImeiQuery};
 
     try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Assuming your API needs auth
-        },
-        body: jsonEncode(body),
-      );
-
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      final response = await post('/device/device-master-query', body);
+      final jsonResponse = jsonDecode(response.body);
 
       if (jsonResponse['status'] == 'success') {
         final List<dynamic> devices = jsonResponse['data']['devices'] ?? [];
-
-        // Extract just the IMEIs into a List<String>
         return devices
             .map<String>((device) => device['imei'].toString())
             .toList();
@@ -131,8 +86,8 @@ class AuthService {
         throw Exception('Failed to load devices');
       }
     } catch (e) {
-      print("Error fetching IMEIs: $e");
-      return []; // Return empty list on error so app doesn't crash
+      debugPrint("Error fetching IMEIs: $e");
+      return [];
     }
   }
 }

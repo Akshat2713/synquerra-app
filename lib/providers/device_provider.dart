@@ -2,12 +2,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:synquerra/core/models/analytics_model.dart';
 import 'package:synquerra/core/services/device_service.dart';
-import 'package:synquerra/widgets/history_dot.dart';
+// import 'package:synquerra/widgets/history_dot.dart';
 
 class DeviceProvider with ChangeNotifier {
   // Pass the service through the constructor
@@ -32,114 +32,187 @@ class DeviceProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   List<LatLng> _historyPoints = [];
-  List<Marker> _historyMarkers = [];
+  // List<Marker> _historyMarkers = [];
   List<double> _historyBearings = []; // Added this
   List<String> _historyTimestamps = [];
 
   List<LatLng> get historyPoints => _historyPoints;
-  List<Marker> get historyMarkers => _historyMarkers;
+  // List<Marker> get historyMarkers => _historyMarkers;
   List<double> get historyBearings => _historyBearings;
   List<String> get historyTimestamps => _historyTimestamps;
 
-  Future<void> refreshMyDevice(String imei) async {
-    if (imei.isEmpty) return;
-
-    if (_isLoading) return;
+  Future<void> refreshMyDevice(String imei, {bool forceRefresh = false}) async {
+    if (imei.isEmpty || _isLoading) return;
+    if (_latestTelemetry != null && !forceRefresh) return;
 
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-    // WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
 
     try {
-      final results = await Future.wait([
-        _service.getAnalyticsByImei(imei),
-        _service.getDistance24(imei),
-        _service.getHealth(imei),
-        _service.getUptime(imei),
-      ]);
-
-      _allPackets = results[0] as List<AnalyticsData>;
-
-      _latestTelemetry = null;
+      // STEP 1: CRITICAL PATH (The Map)
+      // Fetch only Analytics first so we can show the location ASAP
+      _allPackets = await _service.getAnalyticsByImei(imei);
 
       if (_allPackets.isNotEmpty) {
-        // Iterate backwards from the end of the list
-        // final packet = _allPackets[i];
+        // Find the latest valid point in a background isolate (Your existing function)
+        _latestTelemetry = await compute(
+          _findLatestValidTelemetry,
+          _allPackets,
+        );
 
-        // Check for non-null and non-zero coordinates (Null Island check)
-        if (_allPackets.isNotEmpty) {
-          _latestTelemetry = await compute(
-            _findLatestValidTelemetry,
-            _allPackets,
-          );
+        // --- PERFORMANCE WIN: STOP LOADING HERE ---
+        // The Map will now show the boy icon and center itself immediately.
+        _isLoading = false;
+        notifyListeners();
 
-          if (_latestTelemetry != null) {
-            debugPrint(
-              "Found valid telemetry in Background Isolate: ${_latestTelemetry!.latitude}, ${_latestTelemetry!.longitude}",
-            );
-          }
-
-          if (_allPackets.isNotEmpty && _latestTelemetry != null) {
-            // 1. Process data in Isolate
-            final result = await compute(_processHistoryInBackground, {
-              'packets': _allPackets,
-              'currentPos': LatLng(
-                _latestTelemetry!.latitude!,
-                _latestTelemetry!.longitude!,
-              ),
-            });
-
-            // 2. Map results to UI components (Markers) ONLY ONCE
-            _historyPoints = result.points;
-            _historyBearings = result.bearings;
-            _historyTimestamps = result.timestamps;
-            _historyMarkers = [];
-
-            for (int i = 0; i < result.bearings.length; i++) {
-              _historyMarkers.add(
-                Marker(
-                  point:
-                      _historyPoints[i +
-                          1], // Offset by 1 because points[0] is live
-                  width: 20,
-                  height: 20,
-                  child: HistoryDot(rotation: result.bearings[i]),
-                ),
-              );
-            }
-          }
-        } else {
-          _latestTelemetry = null;
-        }
+        // STEP 2: SECONDARY PATH (The Details & History)
+        // We run these without 'awaiting' the first one, so they don't block the UI
+        _fetchSecondaryData(imei);
+        _processHistoryData(_allPackets, _latestTelemetry!);
       }
-
-      // _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
-      _distanceData = results[1] as List<AnalyticsDistance>;
-      _healthData = results[2] as AnalyticsHealth?;
-      _uptimeData = results[3] as AnalyticsUptime?;
     } catch (e) {
-      debugPrint("MyDevice Fetch Error: $e");
-      _errorMessage = "Network error. Please check your internet.";
-    } finally {
+      _errorMessage = "Tracking sync failed.";
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // Inside DeviceProvider
-  // Future<bool> sendDeviceCommand(String imei, String command) async {
-  //   try {
-  //     final response = await _service.queryNormal(
-  //       imei: imei,
-  //       params: {
-  //         // Add any necessary parameters here
-  //       },
+  Future<void> _fetchSecondaryData(String imei) async {
+    try {
+      final results = await Future.wait([
+        _service.getDistance24(imei),
+        _service.getHealth(imei),
+        _service.getUptime(imei),
+      ]);
+      _distanceData = results[0] as List<AnalyticsDistance>;
+      _healthData = results[1] as AnalyticsHealth?;
+      _uptimeData = results[2] as AnalyticsUptime?;
+      notifyListeners(); // Updates the Bottom Sheet once data arrives
+    } catch (e) {
+      debugPrint("Secondary data fetch failed: $e");
+    }
+  }
+
+  Future<void> _processHistoryData(
+    List<AnalyticsData> packets,
+    AnalyticsData latest,
+  ) async {
+    try {
+      final result = await compute(_processHistoryInBackground, {
+        'packets': packets,
+        'currentPos': LatLng(latest.latitude!, latest.longitude!),
+      });
+      _historyPoints = result.points;
+      _historyBearings = result.bearings;
+      _historyTimestamps = result.timestamps;
+      notifyListeners(); // Draws the blue history lines once processed
+    } catch (e) {
+      debugPrint("History processing failed: $e");
+    }
+  }
+  // Future<void> refreshMyDevice(String imei, {bool forceRefresh = false}) async {
+  //   debugPrint(
+  //     "--- [DEVICE PROVIDER] 1. refreshMyDevice called for: $imei ---",
+  //   );
+  //   if (imei.isEmpty || _isLoading) return;
+
+  //   if (_latestTelemetry != null && !forceRefresh) {
+  //     debugPrint(
+  //       "--- [DEVICE PROVIDER] Data already exists. Skipping redundant fetch. ---",
   //     );
-  //     return response.status == 'SENT'; // Using the model we created
+  //     return;
+  //   }
+
+  //   // if (_isLoading) return;
+
+  //   _isLoading = true;
+  //   _errorMessage = null;
+  //   notifyListeners();
+  //   // WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+
+  //   try {
+  //     debugPrint(
+  //       "--- [DEVICE PROVIDER] 2. Starting Parallel API Calls (Future.wait) ---",
+  //     );
+
+  //     final results = await Future.wait([
+  //       _service.getAnalyticsByImei(imei),
+  //       _service.getDistance24(imei),
+  //       _service.getHealth(imei),
+  //       _service.getUptime(imei),
+  //     ]).timeout(const Duration(seconds: 15));
+
+  //     debugPrint(
+  //       "--- [DEVICE PROVIDER] 3. API Calls COMPLETED. Packets received: ${(results[0] as List).length} ---",
+  //     );
+
+  //     _allPackets = results[0] as List<AnalyticsData>;
+
+  //     _latestTelemetry = null;
+
+  //     if (_allPackets.isNotEmpty) {
+  //       // Iterate backwards from the end of the list
+  //       // final packet = _allPackets[i];
+
+  //       // Check for non-null and non-zero coordinates (Null Island check)
+  //       if (_allPackets.isNotEmpty) {
+  //         debugPrint(
+  //           "--- [DEVICE PROVIDER] 4. Starting Background Isolate processing ---",
+  //         );
+  //         _latestTelemetry = await compute(
+  //           _findLatestValidTelemetry,
+  //           _allPackets,
+  //         );
+
+  //         if (_latestTelemetry != null) {
+  //           debugPrint(
+  //             "Found valid telemetry in Background Isolate: ${_latestTelemetry!.latitude}, ${_latestTelemetry!.longitude}",
+  //           );
+  //         }
+
+  //         if (_allPackets.isNotEmpty && _latestTelemetry != null) {
+  //           // 1. Process data in Isolate
+  //           final result = await compute(_processHistoryInBackground, {
+  //             'packets': _allPackets,
+  //             'currentPos': LatLng(
+  //               _latestTelemetry!.latitude!,
+  //               _latestTelemetry!.longitude!,
+  //             ),
+  //           });
+
+  //           // 2. Map results to UI components (Markers) ONLY ONCE
+  //           _historyPoints = result.points;
+  //           _historyBearings = result.bearings;
+  //           _historyTimestamps = result.timestamps;
+  //           // _historyMarkers = [];
+  //         }
+  //         debugPrint(
+  //           "--- [DEVICE PROVIDER] 5. Isolate processing FINISHED ---",
+  //         );
+  //       } else {
+  //         _latestTelemetry = null;
+  //       }
+  //     }
+
+  //     // _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
+  //     _distanceData = results[1] as List<AnalyticsDistance>;
+  //     _healthData = results[2] as AnalyticsHealth?;
+  //     _uptimeData = results[3] as AnalyticsUptime?;
   //   } catch (e) {
-  //     debugPrint("Command failed: $e");
-  //     return false;
+  //     // debugPrint("MyDevice Fetch Error: $e");
+  //     debugPrint("--- [CRITICAL ERROR] MyDevice Refresh Failed: $e ---");
+  //     debugPrint("--- [DEVICE PROVIDER] EXCEPTION CAUGHT: $e ---");
+  //     // Friendly error for the user
+  //     _errorMessage = e.toString().contains('SocketException')
+  //         ? "No internet connection. Please check your network."
+  //         : "Failed to update tracking data.";
+  //   } finally {
+  //     _isLoading = false;
+  //     debugPrint(
+  //       "--- [DEVICE PROVIDER] 6. finally: isLoading set to false, notifying UI ---",
+  //     );
+  //     notifyListeners();
   //   }
   // }
 }

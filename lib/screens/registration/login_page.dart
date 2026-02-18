@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/map_screen.dart';
 import 'package:synquerra/screens/registration/signup_screen1.dart';
 import 'package:synquerra/theme/colors.dart';
@@ -19,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
 
-  final AuthService _authService = AuthService();
+  // final AuthService _authService = AuthService(null);
 
   @override
   void dispose() {
@@ -42,18 +44,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
     FocusScope.of(context).unfocus();
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      final AuthResponse authResponse = await _authService.login(
+      final authService = context.read<AuthService>();
+      final AuthResponse authResponse = await authService.login(
         email,
         password,
       );
 
       if (authResponse.data != null) {
         await UserPreferences().saveUser(authResponse.data!);
+
+        if (mounted) {
+          context.read<UserProvider>().setUser(authResponse.data!);
+        }
+
+        debugPrint(
+          "--- [LOGIN] Session updated. ProxyProvider will now trigger auto-fetch. ---",
+        );
       }
 
       if (!mounted) return;
@@ -100,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final Color textColor = colorScheme.onSurface; // Color for text on surface
     final Color hintColor = colorScheme.onSurfaceVariant; // Color for hints
     final Color fieldBackgroundColor =
-        colorScheme.surfaceVariant; // Color for text field background
+        colorScheme.surfaceContainerHighest; // Color for text field background
     final Color linkColor = AppColors.navBlue; // Color for links
 
     return Scaffold(

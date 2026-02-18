@@ -166,7 +166,7 @@ class DeviceDetailsSheet extends StatelessWidget {
                 theme,
                 icon: Icons.score,
                 label: "GPS Score:",
-                value: "${activeHealth?.gpsScore.toInt() ?? 0}",
+                value: "${activeHealth?.gpsScore?.toInt() ?? 0}",
                 valueSuffix: " / 100",
                 valueSuffixColor: Colors.blue,
               ),

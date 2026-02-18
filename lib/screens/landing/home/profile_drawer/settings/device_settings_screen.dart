@@ -143,8 +143,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Speed Limit",
-                  value:
-                      "${val(IntervalPreferences.keySpeedLimit, "70")} KM/hr",
+                  value: "${val(IntervalPreferences.keySpeedLimit, "70")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Set Speed Limit",
@@ -160,7 +159,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Temperature Limit",
-                  value: "${val(IntervalPreferences.keyTempLimit, "32")}°C",
+                  value: "${val(IntervalPreferences.keyTempLimit, "32")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Set Temperature Limit",
@@ -176,7 +175,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Low Battery Limit",
-                  value: "${val(IntervalPreferences.keyLowBatLimit, "20")}%",
+                  value: "${val(IntervalPreferences.keyLowBatLimit, "20")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Set Low Battery Limit",
@@ -205,7 +204,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Normal Sending Interval",
-                  value: "${val(IntervalPreferences.keyNormalSending, "300")}s",
+                  value: "${val(IntervalPreferences.keyNormalSending, "300")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Normal Sending Interval",
@@ -224,7 +223,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "SOS Sending Interval",
-                  value: "${val(IntervalPreferences.keySOSSending, "60")}s",
+                  value: "${val(IntervalPreferences.keySOSSending, "60")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "SOS Sending Interval",
@@ -240,8 +239,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Normal GPS Scan Interval",
-                  value:
-                      "${val(IntervalPreferences.keyNormalScanning, "200")}s",
+                  value: "${val(IntervalPreferences.keyNormalScanning, "200")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Normal Scanning Interval",
@@ -260,7 +258,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Aeroplane Scan Interval",
-                  value: "${val(IntervalPreferences.keyAirplane, "300")}s",
+                  value: "${val(IntervalPreferences.keyAirplane, "300")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Aeroplane Scan Interval",
@@ -277,7 +275,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Low battery Data Sending Interval",
-                  value: "${val(IntervalPreferences.keyLowBatData, "900")}s",
+                  value: "${val(IntervalPreferences.keyLowBatData, "900")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Low Battery Data Interval",
@@ -294,7 +292,7 @@ class _DeviceSettingsScreenState extends State<DeviceSettingsScreen> {
                 _buildValueRow(
                   context: context,
                   title: "Low battery GPS Sending Interval",
-                  value: "${val(IntervalPreferences.keyLowBatGps, "600")}s",
+                  value: "${val(IntervalPreferences.keyLowBatGps, "600")}",
                   onTap: () => _showEditDialog(
                     context: context,
                     title: "Low Battery GPS Interval",

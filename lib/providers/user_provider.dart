@@ -11,8 +11,8 @@ class UserProvider with ChangeNotifier {
   UserData? get user => _user;
   bool get isInitialized => _isInitialized;
 
-  /// Structural Fix: Loads UserData from SharedPreferences into RAM exactly once.
-  /// This prevents the repetitive JSON parsing seen in debug logs.
+  String? get accessToken => _user?.accessToken;
+
   Future<void> initUser() async {
     // Optimization: If already in memory, don't hit the disk again
     if (_isInitialized) return;
@@ -33,13 +33,14 @@ class UserProvider with ChangeNotifier {
     } catch (e) {
       debugPrint("--- [USER PROVIDER] Initialization Error: $e ---");
     } finally {
-      notifyListeners(); // Updates the MapScreen and other listeners
+      notifyListeners();
     }
   }
 
   /// Updates the user data in memory and on disk simultaneously
-  Future<void> updateUser(UserData newUser) async {
+  Future<void> setUser(UserData newUser) async {
     _user = newUser;
+    // _isInitialized = true;
     await UserPreferences().saveUser(newUser);
     notifyListeners();
   }

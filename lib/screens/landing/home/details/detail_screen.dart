@@ -12,7 +12,7 @@ class DeviceDetailsScreen extends StatelessWidget {
   const DeviceDetailsScreen({super.key, required this.imei});
 
   // --- Formatters ---
-  String _formatTime(String isoString) {
+  static String _formatTime(String isoString) {
     try {
       final dt = DateTime.parse(isoString).toLocal();
       return DateFormat('HH:mm:ss').format(dt);
@@ -21,7 +21,7 @@ class DeviceDetailsScreen extends StatelessWidget {
     }
   }
 
-  String _formatDate(String isoString) {
+  static String _formatDate(String isoString) {
     try {
       final dt = DateTime.parse(isoString).toLocal();
       return DateFormat('MMM dd, yyyy').format(dt);

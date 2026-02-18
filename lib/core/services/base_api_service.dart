@@ -13,10 +13,7 @@ class BaseApiService {
   };
 
   Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
-    return await http.post(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: _headers,
-      body: jsonEncode(body),
-    );
+    final url = Uri.parse('$baseUrl$endpoint');
+    return await http.post(url, headers: _headers, body: jsonEncode(body));
   }
 }

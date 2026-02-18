@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:synquerra/providers/theme_provider.dart'; // Import the provider
+import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/device_information2.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/device_information.dart';
 import 'package:synquerra/screens/landing/home/profile_drawer/feedback_screen.dart';
@@ -17,8 +18,12 @@ class MyProfileDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user;
     // Access the theme provider
     final themeProvider = Provider.of<ThemeProvider>(context);
+
+    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+    final theme = Theme.of(context);
 
     return Drawer(
       // The drawer's background color will be set by your app's theme
@@ -144,12 +149,10 @@ class MyProfileDrawer extends StatelessWidget {
                     // leading: const Icon(Icons.dark_mode),
                     title: const Text('Dark Mode'),
                     secondary: Icon(
-                      context.watch<ThemeProvider>().isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
+                      isDarkMode ? Icons.dark_mode : Icons.light_mode,
                     ),
 
-                    value: context.watch<ThemeProvider>().isDarkMode,
+                    value: isDarkMode,
                     onChanged: (bool value) {
                       context.read<ThemeProvider>().toggleTheme();
                     },
