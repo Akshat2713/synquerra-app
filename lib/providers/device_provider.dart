@@ -41,6 +41,11 @@ class DeviceProvider with ChangeNotifier {
   List<double> get historyBearings => _historyBearings;
   List<String> get historyTimestamps => _historyTimestamps;
 
+  DateTime? _lastDataTimestamp;
+  int _lastPacketCount = 0;
+  DateTime? get lastDataTimestamp => _lastDataTimestamp;
+  int get lastPacketCount => _lastPacketCount;
+
   Future<void> refreshMyDevice(String imei, {bool forceRefresh = false}) async {
     if (imei.isEmpty || _isLoading) return;
     if (_latestTelemetry != null && !forceRefresh) return;
@@ -53,6 +58,7 @@ class DeviceProvider with ChangeNotifier {
       // STEP 1: CRITICAL PATH (The Map)
       // Fetch only Analytics first so we can show the location ASAP
       _allPackets = await _service.getAnalyticsByImei(imei);
+      _lastPacketCount = _allPackets.length;
 
       if (_allPackets.isNotEmpty) {
         // Find the latest valid point in a background isolate (Your existing function)
@@ -60,6 +66,10 @@ class DeviceProvider with ChangeNotifier {
           _findLatestValidTelemetry,
           _allPackets,
         );
+
+        if (_latestTelemetry != null && _latestTelemetry!.timestamp != null) {
+          _lastDataTimestamp = DateTime.parse(_latestTelemetry!.timestamp!);
+        }
 
         // --- PERFORMANCE WIN: STOP LOADING HERE ---
         // The Map will now show the boy icon and center itself immediately.
@@ -111,110 +121,21 @@ class DeviceProvider with ChangeNotifier {
       debugPrint("History processing failed: $e");
     }
   }
-  // Future<void> refreshMyDevice(String imei, {bool forceRefresh = false}) async {
-  //   debugPrint(
-  //     "--- [DEVICE PROVIDER] 1. refreshMyDevice called for: $imei ---",
-  //   );
-  //   if (imei.isEmpty || _isLoading) return;
 
-  //   if (_latestTelemetry != null && !forceRefresh) {
-  //     debugPrint(
-  //       "--- [DEVICE PROVIDER] Data already exists. Skipping redundant fetch. ---",
-  //     );
-  //     return;
-  //   }
+  bool hasNewData(List<AnalyticsData> newPackets) {
+    if (newPackets.isEmpty) return false;
+    if (_allPackets.isEmpty) return true;
 
-  //   // if (_isLoading) return;
-
-  //   _isLoading = true;
-  //   _errorMessage = null;
-  //   notifyListeners();
-  //   // WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-
-  //   try {
-  //     debugPrint(
-  //       "--- [DEVICE PROVIDER] 2. Starting Parallel API Calls (Future.wait) ---",
-  //     );
-
-  //     final results = await Future.wait([
-  //       _service.getAnalyticsByImei(imei),
-  //       _service.getDistance24(imei),
-  //       _service.getHealth(imei),
-  //       _service.getUptime(imei),
-  //     ]).timeout(const Duration(seconds: 15));
-
-  //     debugPrint(
-  //       "--- [DEVICE PROVIDER] 3. API Calls COMPLETED. Packets received: ${(results[0] as List).length} ---",
-  //     );
-
-  //     _allPackets = results[0] as List<AnalyticsData>;
-
-  //     _latestTelemetry = null;
-
-  //     if (_allPackets.isNotEmpty) {
-  //       // Iterate backwards from the end of the list
-  //       // final packet = _allPackets[i];
-
-  //       // Check for non-null and non-zero coordinates (Null Island check)
-  //       if (_allPackets.isNotEmpty) {
-  //         debugPrint(
-  //           "--- [DEVICE PROVIDER] 4. Starting Background Isolate processing ---",
-  //         );
-  //         _latestTelemetry = await compute(
-  //           _findLatestValidTelemetry,
-  //           _allPackets,
-  //         );
-
-  //         if (_latestTelemetry != null) {
-  //           debugPrint(
-  //             "Found valid telemetry in Background Isolate: ${_latestTelemetry!.latitude}, ${_latestTelemetry!.longitude}",
-  //           );
-  //         }
-
-  //         if (_allPackets.isNotEmpty && _latestTelemetry != null) {
-  //           // 1. Process data in Isolate
-  //           final result = await compute(_processHistoryInBackground, {
-  //             'packets': _allPackets,
-  //             'currentPos': LatLng(
-  //               _latestTelemetry!.latitude!,
-  //               _latestTelemetry!.longitude!,
-  //             ),
-  //           });
-
-  //           // 2. Map results to UI components (Markers) ONLY ONCE
-  //           _historyPoints = result.points;
-  //           _historyBearings = result.bearings;
-  //           _historyTimestamps = result.timestamps;
-  //           // _historyMarkers = [];
-  //         }
-  //         debugPrint(
-  //           "--- [DEVICE PROVIDER] 5. Isolate processing FINISHED ---",
-  //         );
-  //       } else {
-  //         _latestTelemetry = null;
-  //       }
-  //     }
-
-  //     // _latestTelemetry = _allPackets.isNotEmpty ? _allPackets.last : null;
-  //     _distanceData = results[1] as List<AnalyticsDistance>;
-  //     _healthData = results[2] as AnalyticsHealth?;
-  //     _uptimeData = results[3] as AnalyticsUptime?;
-  //   } catch (e) {
-  //     // debugPrint("MyDevice Fetch Error: $e");
-  //     debugPrint("--- [CRITICAL ERROR] MyDevice Refresh Failed: $e ---");
-  //     debugPrint("--- [DEVICE PROVIDER] EXCEPTION CAUGHT: $e ---");
-  //     // Friendly error for the user
-  //     _errorMessage = e.toString().contains('SocketException')
-  //         ? "No internet connection. Please check your network."
-  //         : "Failed to update tracking data.";
-  //   } finally {
-  //     _isLoading = false;
-  //     debugPrint(
-  //       "--- [DEVICE PROVIDER] 6. finally: isLoading set to false, notifying UI ---",
-  //     );
-  //     notifyListeners();
-  //   }
-  // }
+    try {
+      // Compare by timestamp if available
+      final newestNew = DateTime.parse(newPackets.last.timestamp!);
+      final newestOld = DateTime.parse(_allPackets.last.timestamp!);
+      return newestNew.isAfter(newestOld);
+    } catch (e) {
+      // Fallback to packet count comparison
+      return newPackets.length > _allPackets.length;
+    }
+  }
 }
 
 AnalyticsData? _findLatestValidTelemetry(List<AnalyticsData> packets) {
@@ -264,8 +185,9 @@ HistoryResult _processHistoryInBackground(Map<String, dynamic> params) {
     if (p.latitude == null ||
         p.longitude == null ||
         p.timestamp == null ||
-        p.latitude == 0.0 && p.longitude == 0.0)
+        p.latitude == 0.0 && p.longitude == 0.0) {
       continue;
+    }
 
     final packetTime = DateTime.parse(p.timestamp!).toLocal();
     if (packetTime.isBefore(cutoff)) break;

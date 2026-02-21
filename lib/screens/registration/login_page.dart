@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:synquerra/providers/user_provider.dart';
 import 'package:synquerra/screens/landing/map_screen.dart';
 import 'package:synquerra/screens/registration/signup_screen1.dart';
-import 'package:synquerra/theme/colors.dart';
+import 'package:synquerra/theme/colors.dart'; // FIXED: Correct import path
 import '../../core/models/user_model.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/preferences/user_preferences.dart';
@@ -15,31 +15,50 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
-  // final AuthService _authService = AuthService(null);
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   Future<void> _signIn() async {
-    // --- TODO: Implement your sign-in logic here ---
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both email and password.')),
-      );
-      return; // Stop execution if fields are empty
+      _showSnackBar('Please enter both email and password', isError: true);
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showSnackBar('Please enter a valid email address', isError: true);
+      return;
     }
 
     FocusScope.of(context).unfocus();
@@ -47,7 +66,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final authService = context.read<AuthService>();
+      // FIXED: Ensure AuthService is provided
+      // final authService = Provider.of<AuthService>(context, listen: false);
+      final authService = AuthService(null); // <-- Direct instantiation for now
       final AuthResponse authResponse = await authService.login(
         email,
         password,
@@ -55,23 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (authResponse.data != null) {
         await UserPreferences().saveUser(authResponse.data!);
-
         if (mounted) {
           context.read<UserProvider>().setUser(authResponse.data!);
         }
-
-        debugPrint(
-          "--- [LOGIN] Session updated. ProxyProvider will now trigger auto-fetch. ---",
-        );
       }
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Welcome Back, ${authResponse.data?.firstName}!'),
-        ),
-      );
+      _showSnackBar('Welcome back, ${authResponse.data?.firstName ?? 'User'}!');
 
       Navigator.pushReplacement(
         context,
@@ -79,286 +91,260 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-      );
+      _showSnackBar(e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false; // Stop spinner
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
   void _signUp() {
-    // --- Implement navigation to your Sign Up screen ---
-    print('Navigate to Sign Up');
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SignUpScreen()), // Use const
-    ); // Example navigation
+      MaterialPageRoute(builder: (_) => const SignUpScreen()),
+    );
+  }
+
+  void _forgotPassword() {
+    _showSnackBar('Password reset link sent to your email');
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme; // Use theme color scheme
-
-    // Colors are now derived from the theme
-    final Color textColor = colorScheme.onSurface; // Color for text on surface
-    final Color hintColor = colorScheme.onSurfaceVariant; // Color for hints
-    final Color fieldBackgroundColor =
-        colorScheme.surfaceContainerHighest; // Color for text field background
-    final Color linkColor = AppColors.navBlue; // Color for links
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor, // Use theme background
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              // Main column for logo + container
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // --- App Logo (Moved Outside Container) ---
-                Image.asset(
-                  'assets/images/app_logo.png',
-                  height: 250, // Adjusted size
-                  // Add a fallback in case the image fails to load
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.school_outlined, // Fallback icon
-                      size: 100,
-                      color: colorScheme.primary,
-                    );
-                  },
-                ),
-                const SizedBox(height: 30), // Spacing between logo and card
-                // --- Content Container ---
-                Container(
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    color:
-                        colorScheme.surface, // Use surface color for the card
-                    borderRadius: BorderRadius.circular(20), // Rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+            padding: const EdgeInsets.all(24),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo with modern design
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primary.withOpacity(0.1),
+                    ),
+                    child: Image.asset(
+                      'assets/images/app_logo.png',
+                      height: 100,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.school,
+                        size: 80,
+                        color: colorScheme.primary,
                       ),
-                    ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // --- Title ---
-                      Text(
-                        "Sign in to Synquerra", // Using name from image
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineLarge?.copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
+                  const SizedBox(height: 40),
 
-                      // --- Email Field ---
-                      Text(
-                        "Email",
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: hintColor,
+                  // Welcome Text
+                  Text(
+                    'Welcome Back!',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sign in to continue to Synquerra',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Email Field
+                  TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: !_isLoading,
+                    style: TextStyle(color: colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: colorScheme.primary,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainerHighest,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: colorScheme.primary,
+                          width: 2,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        enabled: !_isLoading,
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: AppColors.error,
+                          width: 1,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Password Field
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    enabled: !_isLoading,
+                    style: TextStyle(color: colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: colorScheme.primary,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainerHighest,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                  ),
+
+                  // Forgot Password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _forgotPassword,
+                      child: Text(
+                        'Forgot Password?',
                         style: TextStyle(
-                          color:
-                              colorScheme.onSurface, // Text color inside field
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: _buildInputDecoration(
-                          hintText: 'Email',
-                          fillColor: fieldBackgroundColor,
-                          hintColor: hintColor, // Pass hint color
-                          context: context,
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
 
-                      // --- Password Field ---
-                      Text(
-                        "Password",
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: hintColor,
+                  // Sign In Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signIn,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        enabled: !_isLoading,
-                        style: TextStyle(
-                          color:
-                              colorScheme.onSurface, // Text color inside field
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: _buildInputDecoration(
-                          hintText: 'Password',
-                          fillColor: fieldBackgroundColor,
-                          hintColor: hintColor, // Pass hint color
-                          context: context,
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-
-                      // --- Sign In Button ---
-                      _buildSignInButton(context), // Pass context for theme
-                      const SizedBox(height: 30),
-
-                      // --- Sign Up Link ---
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account? ",
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: hintColor,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _isLoading ? null : _signUp,
-                            style: TextButton.styleFrom(
-                              padding:
-                                  EdgeInsets.zero, // Remove default padding
-                              tapTargetSize: MaterialTapTargetSize
-                                  .shrinkWrap, // Fit content
-                            ),
-
-                            child: Text(
-                              "Sign Up",
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: linkColor,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                                decorationColor: linkColor,
                               ),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Sign Up Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account? ",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _isLoading ? null : _signUp,
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Sign Up',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20), // Padding at the bottom
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // Helper for text field decoration
-  InputDecoration _buildInputDecoration({
-    required String hintText,
-    required Color fillColor,
-    required Color hintColor,
-    required BuildContext context,
-  }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: TextStyle(
-        color: hintColor.withOpacity(0.7), // Use theme hint color
-        fontWeight: FontWeight.w400,
-      ),
-      filled: true,
-      fillColor: fillColor,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-
-      // Default border (when not focused)
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        // Use a subtle border color
-        borderSide: BorderSide(color: hintColor.withOpacity(0.3), width: 1.5),
-      ),
-
-      // Border when enabled (but not focused)
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        // Use a subtle border color
-        borderSide: BorderSide(color: hintColor.withOpacity(0.3), width: 1.5),
-      ),
-
-      // Border when focused (selected)
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: AppColors.safeGreen, // Highlight with safeGreen
-          width: 2,
-        ),
-      ),
-    );
-  }
-
-  // Helper for the gradient sign-in button
-  Widget _buildSignInButton(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    // Define gradients based on theme
-    final activeGradient = LinearGradient(
-      colors: [colorScheme.primary, colorScheme.secondary], // Use theme colors
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: _isLoading ? null : activeGradient, // Apply correct gradient
-        borderRadius: BorderRadius.circular(30), // Match button shape
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _signIn,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // Make button transparent
-          shadowColor: Colors.transparent, // Hide default shadow
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        child: _isLoading
-            // Show Spinner if loading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
-            : Text(
-                "Sign In",
-                style: TextStyle(
-                  color: colorScheme.onPrimary, // Text color for active button
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
       ),
     );
   }

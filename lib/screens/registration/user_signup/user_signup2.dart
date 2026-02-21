@@ -316,7 +316,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
                   vertical: 8.0,
                 ),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant, // As requested
+                  color: colorScheme.surfaceContainerHighest, // As requested
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 child: Column(
@@ -463,7 +463,9 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
 
       Color boxColor = isActive
           ? AppColors.safeGreen
-          : (isCompleted ? AppColors.safeGreen : colorScheme.surfaceVariant);
+          : (isCompleted
+                ? AppColors.safeGreen
+                : colorScheme.surfaceContainerHighest);
       Color textColor = isActive
           ? Colors.white
           : (isCompleted
@@ -605,7 +607,7 @@ class _RegistrationStep2State extends State<RegistrationStep2> {
           style: theme.textTheme.bodyLarge?.copyWith(
             color: colorScheme.onSurface,
           ),
-          dropdownColor: colorScheme.surfaceVariant,
+          dropdownColor: colorScheme.surfaceContainerHighest,
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));

@@ -232,7 +232,7 @@ class DeviceDetailsScreen extends StatelessWidget {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceVariant
+                                color: theme.colorScheme.surfaceContainerHighest
                                     .withOpacity(0.3),
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -435,7 +435,7 @@ class DeviceDetailsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(

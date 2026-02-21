@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Centralized color constants for the entire app
-/// This file contains ONLY color definitions - no logic, no extensions
 class AppColors {
   AppColors._(); // Prevent instantiation
 
@@ -112,7 +110,6 @@ class AppColors {
     Color(0xFFFFB340),
   ];
 
-  /// Old colours
   static const Color emergencyRed = Color(0xFFFF3B30); // bright red for danger
   static const Color safeGreen = Color(0xFF34C759); // green for all good
   static const Color warningAmber = Color(0xFFFF9500); // amber for caution
