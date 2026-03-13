@@ -1,5 +1,4 @@
 // lib/providers/theme_provider.dart
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:synquerra/core/preferences/theme_preferences.dart';
 
