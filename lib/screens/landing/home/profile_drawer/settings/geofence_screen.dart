@@ -203,7 +203,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
                         .read<DeviceProvider>()
                         .latestTelemetry;
                     final center = (telemetry?.latitude != null)
-                        ? LatLng(telemetry!.latitude!, telemetry!.longitude!)
+                        ? LatLng(telemetry!.latitude!, telemetry.longitude!)
                         : const LatLng(28.3702, 77.1236);
 
                     // Open the Square Widget Dialog
@@ -399,7 +399,11 @@ class _GeofenceScreenState extends State<GeofenceScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(title, style: const TextStyle(fontSize: 13)),
-        Switch(value: val, onChanged: (v) {}, activeColor: AppColors.safeGreen),
+        Switch(
+          value: val,
+          onChanged: (v) {},
+          activeThumbColor: AppColors.safeGreen,
+        ),
       ],
     );
   }

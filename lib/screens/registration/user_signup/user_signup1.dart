@@ -162,7 +162,9 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
       Color boxColor = isActive
           ? AppColors
                 .safeGreen // Active step color
-          : (isCompleted ? colorScheme.primary : colorScheme.surfaceVariant);
+          : (isCompleted
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest);
       Color textColor = isActive
           ? Colors.white
           : (isCompleted
@@ -233,7 +235,7 @@ class _RegistrationStep1State extends State<RegistrationStep1> {
         labelText: labelText,
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+        fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,

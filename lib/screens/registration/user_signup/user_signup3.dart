@@ -527,7 +527,9 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
 
       Color boxColor = isActive
           ? AppColors.safeGreen
-          : (isCompleted ? AppColors.safeGreen : colorScheme.surfaceVariant);
+          : (isCompleted
+                ? AppColors.safeGreen
+                : colorScheme.surfaceContainerHighest);
       Color textColor = isActive
           ? Colors.white
           : (isCompleted
@@ -614,7 +616,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
         labelText: labelText,
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+        fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -647,7 +649,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.5),
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: colorScheme.outlineVariant, width: 1.5),
       ),
@@ -666,7 +668,7 @@ class _RegistrationStep3State extends State<RegistrationStep3> {
           style: theme.textTheme.bodyLarge?.copyWith(
             color: colorScheme.onSurface,
           ),
-          dropdownColor: colorScheme.surfaceVariant,
+          dropdownColor: colorScheme.surfaceContainerHighest,
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));

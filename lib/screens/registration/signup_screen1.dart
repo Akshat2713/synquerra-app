@@ -166,7 +166,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final Color cardColor = isSelected
         ? AppColors
               .safeGreen // Highlighted color
-        : colorScheme.surfaceVariant; // Default container color from theme
+        : colorScheme
+              .surfaceContainerHighest; // Default container color from theme
     final Color contentColor = isSelected
         ? colorScheme
               .onPrimary // Text/icon color on primary
