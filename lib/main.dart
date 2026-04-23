@@ -1,19 +1,60 @@
+// New App
+
+// lib/main.dart
+// import 'package:flutter/material.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'di/injection_container.dart' as di;
+// import 'presentation/app/my_app.dart';
+// import 'data/network/ssl_config.dart';
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   // Configure SSL for development (if needed)
+//   SslConfig.configureSsl();
+
+//   // Initialize Firebase
+//   await Firebase.initializeApp();
+
+//   // Initialize dependency injection - THIS MUST BE CALLED
+//   await di.initializeDependencies();
+
+//   runApp(const MyApp());
+// }
+
+// Old App
+
+import 'dart:io'; // 1. ADDED THIS IMPORT
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:synquerra/core/services/update_device_service.dart';
-import 'package:synquerra/providers/intervals_provider.dart';
-import 'package:synquerra/providers/theme_provider.dart';
-import 'package:synquerra/providers/device_provider.dart';
-import 'package:synquerra/providers/searched_device_provider.dart';
-import 'package:synquerra/providers/user_provider.dart';
-import 'package:synquerra/theme/app_theme.dart';
-import 'package:synquerra/core/services/base_api_service.dart';
-import 'package:synquerra/core/services/device_service.dart';
-import 'screens/splash/splash_screen.dart';
+import 'package:synquerra/old/core/services/update_device_service.dart';
+import 'package:synquerra/old/providers/intervals_provider.dart';
+import 'package:synquerra/old/providers/theme_provider.dart';
+import 'package:synquerra/old/providers/device_provider.dart';
+import 'package:synquerra/old/providers/searched_device_provider.dart';
+import 'package:synquerra/old/providers/user_provider.dart';
+import 'package:synquerra/old/theme/app_theme.dart';
+import 'package:synquerra/old/core/services/base_api_service.dart';
+import 'package:synquerra/old/core/services/device_service.dart';
+import 'package:synquerra/old/screens/splash/splash_screen.dart';
+
+// 2. ADD THIS CLASS TO BYPASS SSL
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 3. APPLY THE OVERRIDE HERE
+  HttpOverrides.global = MyHttpOverrides();
+
   await Firebase.initializeApp();
 
   runApp(
@@ -25,7 +66,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => IntervalsProvider()),
 
         // 2. Service Layer: Injects token from UserProvider into DeviceService
-        // Whenever UserProvider updates (login/logout), this service recreates with the right token
         ProxyProvider<UserProvider, DeviceService>(
           update: (_, userProv, __) {
             final String? token = userProv.user?.accessToken;
@@ -34,7 +74,6 @@ void main() async {
         ),
 
         // 3. Logic Layer: The Consolidated DeviceProvider
-        // We use ProxyProvider2 because it needs BOTH the User (for IMEI) and Service (for API calls)
         ChangeNotifierProxyProvider2<
           UserProvider,
           DeviceService,
@@ -42,10 +81,8 @@ void main() async {
         >(
           create: (context) => DeviceProvider(context.read<DeviceService>()),
           update: (_, userProv, deviceService, deviceProv) {
-            // Precise Logic: Auto-trigger refresh ONLY when a valid IMEI exists
             final imei = userProv.user?.imei;
             if (imei != null && imei.isNotEmpty) {
-              // This is safe because refreshMyDevice has internal guard clauses
               deviceProv!.refreshMyDevice(imei);
             }
             return deviceProv!;
@@ -75,7 +112,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Optimization: Using context.select to only rebuild if themeMode changes
     final themeMode = context.select<ThemeProvider, ThemeMode>(
       (p) => p.themeMode,
     );
@@ -86,7 +122,7 @@ class MyApp extends StatelessWidget {
       themeMode: themeMode,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }
