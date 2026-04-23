@@ -56,6 +56,14 @@ dependencies:
   #firebase dependencies
   firebase_core: ^4.3.0
 
+  #bloc dependencies
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
+  dartz: ^0.10.1
+  get_it: ^9.2.1
+  flutter_secure_storage: ^10.0.0
+  either_dart: ^1.0.0
+
 
   
 dev_dependencies:
