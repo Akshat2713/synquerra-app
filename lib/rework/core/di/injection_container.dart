@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
 
 // Network
+import '../../data/datasources/local/theme_local_datasource.dart';
 import '../../data/network/dio_client.dart';
 
 // Auth
@@ -52,6 +54,12 @@ Future<void> initDependencies() async {
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
     ),
   );
+
+  // ── Theme ───────────────────────────────────────
+
+  sl.registerLazySingleton(() => ThemeCubit(sl()));
+
+  sl.registerLazySingleton(() => ThemeLocalDataSource(sl()));
 
   // ── Network ───────────────────────────────────────
   sl.registerLazySingleton<DioClient>(() => DioClient(sl()));

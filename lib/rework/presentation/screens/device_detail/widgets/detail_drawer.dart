@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
 import '../../../app/app_router.dart';
+// import '../../../blocs/theme/theme_cubit.dart';
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
@@ -106,21 +109,23 @@ class DetailDrawer extends StatelessWidget {
             const Divider(indent: 16, endIndent: 16),
 
             // ── Theme toggle ─────────────────────────
-            _drawerItem(
-              context: context,
-              icon: Icons.dark_mode_outlined,
-              label: 'Theme',
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: trigger ThemeBloc toggle
+            BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, themeMode) {
+                final isDark = themeMode == ThemeMode.dark;
+                return _drawerItem(
+                  context: context,
+                  icon: isDark
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                  label: isDark ? 'Dark Mode' : 'Light Mode',
+                  onTap: () => context.read<ThemeCubit>().toggle(),
+                  trailing: Switch(
+                    value: isDark,
+                    onChanged: (_) => context.read<ThemeCubit>().toggle(),
+                    activeColor: colors.primary,
+                  ),
+                );
               },
-              trailing: Switch(
-                value: Theme.of(context).brightness == Brightness.dark,
-                onChanged: (_) {
-                  Navigator.pop(context);
-                  // TODO: trigger ThemeBloc toggle
-                },
-              ),
             ),
 
             const Spacer(),
@@ -134,7 +139,7 @@ class DetailDrawer extends StatelessWidget {
               labelColor: colors.error,
               onTap: () {
                 Navigator.pop(context);
-                // TODO: dispatch AuthLogoutRequested + navigate to login
+                // TODO: dispatch AuthLogoutRequested
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   AppRoutes.login,
