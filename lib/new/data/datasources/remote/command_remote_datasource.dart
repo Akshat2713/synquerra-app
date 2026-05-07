@@ -1,6 +1,6 @@
 // lib/data/datasources/remote/command_remote_datasource.dart
 import 'dart:convert';
-import 'package:synquerra/data/models/send_command_model.dart';
+import 'package:synquerra/new/data/models/send_command_model.dart';
 
 import '../../network/api_client.dart';
 // import '../models/send_command_model.dart';

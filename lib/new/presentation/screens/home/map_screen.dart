@@ -69,7 +69,10 @@ class _MapScreenState extends State<MapScreen> {
         builder: (context, state) {
           // Loading State
           if (state is DeviceLoading) {
-            return const AppLoading(message: 'Loading device data...', fullScreen: true);
+            return const AppLoading(
+              message: 'Loading device data...',
+              fullScreen: true,
+            );
           }
 
           // Error State
@@ -116,11 +119,12 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     // Tile Layer - OpenStreetMap (free, no API key)
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.synquerra.app',
                       subdomains: ['a', 'b', 'c'],
                     ),
-                    
+
                     // History Polyline Layer
                     if (_showHistory && state.historyPoints.isNotEmpty)
                       PolylineLayer(
@@ -132,7 +136,7 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                         ],
                       ),
-                    
+
                     // Device Marker Layer
                     MarkerLayer(
                       markers: [

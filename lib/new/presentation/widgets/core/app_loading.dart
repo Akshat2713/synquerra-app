@@ -10,15 +10,22 @@ class AppLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     final loader = Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)),
+          const SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(strokeWidth: 3),
+          ),
           if (message != null) ...[
             const SizedBox(height: 20),
-            Text(message!, style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            Text(
+              message!,
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
           ],
         ],
       ),

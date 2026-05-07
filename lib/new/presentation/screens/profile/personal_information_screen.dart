@@ -1,8 +1,8 @@
 // lib/presentation/screens/profile/personal_information_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/widgets/common/detail_row.dart';
-import 'package:synquerra/presentation/widgets/common/info_container.dart';
+import 'package:synquerra/new/presentation/widgets/common/detail_row.dart';
+import 'package:synquerra/new/presentation/widgets/common/info_container.dart';
 import '../../../business/blocs/auth_bloc/auth_bloc.dart';
 import '../../widgets/profile/profile_avatar.dart';
 

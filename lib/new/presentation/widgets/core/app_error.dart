@@ -27,11 +27,7 @@ class AppError extends StatelessWidget {
               color: Colors.red.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            child: const Icon(Icons.error_outline, size: 64, color: Colors.red),
           ),
           const SizedBox(height: 24),
           Text(
@@ -45,10 +41,7 @@ class AppError extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             message,
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),

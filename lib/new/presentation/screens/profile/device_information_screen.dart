@@ -1,6 +1,6 @@
 // lib/presentation/screens/profile/device_information_screen.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/widgets/common/info_container.dart';
+import 'package:synquerra/new/presentation/widgets/common/info_container.dart';
 import '../../widgets/common/detail_row.dart';
 import '../../themes/colors.dart';
 

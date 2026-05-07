@@ -99,10 +99,9 @@
 //   }
 // }
 
-
 // lib/presentation/screens/home/details/distance_history_screen.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/business/entities/analytics_entity.dart';
+import 'package:synquerra/new/business/entities/analytics_entity.dart';
 import '../../../widgets/core/app_card.dart';
 import '../../../widgets/core/app_button.dart';
 import '../../../widgets/core/app_empty.dart';
@@ -127,9 +126,11 @@ class DistanceHistoryScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    
+
     final displayList = data.reversed.toList();
-    final totalDistance = displayList.isNotEmpty ? displayList.first.cumulative : 0.0;
+    final totalDistance = displayList.isNotEmpty
+        ? displayList.first.cumulative
+        : 0.0;
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black87 : const Color(0xFFF2F4F7),
@@ -231,7 +232,7 @@ class DistanceHistoryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Title
           Text(
             "Total Distance",
@@ -242,7 +243,7 @@ class DistanceHistoryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           // Distance Value
           Text(
             "${totalDistance.toStringAsFixed(2)} km",
@@ -253,7 +254,7 @@ class DistanceHistoryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           // Subtitle
           Text(
             "Last 24 Hours",
@@ -263,14 +264,17 @@ class DistanceHistoryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // IMEI Badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             child: Text(
               "IMEI: $imei",
