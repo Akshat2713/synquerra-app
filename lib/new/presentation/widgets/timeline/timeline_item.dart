@@ -1,6 +1,6 @@
 // lib/presentation/widgets/timeline/timeline_item.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/new/presentation/themes/colors.dart';
 import '../../../business/entities/analytics_entity.dart';
 
 class TimelineItem extends StatelessWidget {

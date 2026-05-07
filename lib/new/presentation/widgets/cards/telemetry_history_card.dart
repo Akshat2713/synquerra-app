@@ -1,9 +1,9 @@
 // lib/presentation/widgets/cards/telemetry_history_card.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/utils/color_utils.dart';
-import 'package:synquerra/presentation/utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/utils/telemetry_formatter.dart';
+import 'package:synquerra/new/presentation/themes/colors.dart';
+import 'package:synquerra/new/presentation/utils/color_utils.dart';
+import 'package:synquerra/new/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/new/presentation/utils/telemetry_formatter.dart';
 import '../../../business/entities/analytics_entity.dart';
 
 class TelemetryHistoryCard extends StatelessWidget {

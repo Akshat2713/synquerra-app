@@ -1,6 +1,6 @@
 // lib/data/datasources/local/auth_local_datasource.dart
 import 'dart:convert';
-import 'package:synquerra/data/models/user_model.dart';
+import 'package:synquerra/new/data/models/user_model.dart';
 import 'secure_storage_service.dart';
 
 class AuthLocalDataSource {

@@ -1,15 +1,15 @@
 // lib/presentation/screens/auth/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/business/blocs/auth_bloc/auth_bloc.dart';
-import 'package:synquerra/business/entities/signup_input_entity.dart';
-import 'package:synquerra/di/injection_container.dart' as di;
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/widgets/auth/auth_footer.dart';
-import 'package:synquerra/presentation/widgets/auth/auth_header.dart';
-import 'package:synquerra/presentation/widgets/buttons/loading_button.dart';
-import 'package:synquerra/presentation/widgets/feedback/custom_snackbar.dart';
-import 'package:synquerra/presentation/widgets/forms/custom_text_field.dart';
+import 'package:synquerra/new/business/blocs/auth_bloc/auth_bloc.dart';
+import 'package:synquerra/new/business/entities/signup_input_entity.dart';
+import 'package:synquerra/new/di/injection_container.dart' as di;
+import 'package:synquerra/new/presentation/themes/colors.dart';
+import 'package:synquerra/new/presentation/widgets/auth/auth_footer.dart';
+import 'package:synquerra/new/presentation/widgets/auth/auth_header.dart';
+import 'package:synquerra/new/presentation/widgets/buttons/loading_button.dart';
+import 'package:synquerra/new/presentation/widgets/feedback/custom_snackbar.dart';
+import 'package:synquerra/new/presentation/widgets/forms/custom_text_field.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});

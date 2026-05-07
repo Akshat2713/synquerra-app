@@ -35,10 +35,10 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null && !isLoading;
-    
+
     Color? bgColor = backgroundColor;
     Color? fgColor = textColor;
-    
+
     if (isDanger && !isOutlined && !isText) {
       bgColor = Colors.red;
       fgColor = Colors.white;
@@ -52,7 +52,9 @@ class AppButton extends StatelessWidget {
         onPressed: isEnabled ? onPressed : null,
         style: TextButton.styleFrom(
           minimumSize: Size(width, height),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           foregroundColor: fgColor ?? colorScheme.primary,
         ),
         child: _buildChild(),
@@ -64,7 +66,9 @@ class AppButton extends StatelessWidget {
         onPressed: isEnabled ? onPressed : null,
         style: OutlinedButton.styleFrom(
           minimumSize: Size(width, height),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           side: BorderSide(color: bgColor ?? colorScheme.primary),
           foregroundColor: fgColor ?? colorScheme.primary,
         ),
@@ -78,7 +82,9 @@ class AppButton extends StatelessWidget {
         backgroundColor: bgColor ?? colorScheme.primary,
         foregroundColor: fgColor ?? Colors.white,
         minimumSize: Size(width, height),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
         elevation: isEnabled ? 2 : 0,
       ),
       child: _buildChild(),
@@ -87,10 +93,17 @@ class AppButton extends StatelessWidget {
 
   Widget _buildChild() {
     if (isLoading) {
-      return const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2));
+      return const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
     }
     if (icon != null) {
-      return Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 20), const SizedBox(width: 8), Text(label)]);
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [Icon(icon, size: 20), const SizedBox(width: 8), Text(label)],
+      );
     }
     return Text(label);
   }

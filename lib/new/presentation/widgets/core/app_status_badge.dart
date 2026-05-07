@@ -27,10 +27,24 @@ class AppStatusBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showDot) ...[
-            Container(width: 8, height: 8, decoration: BoxDecoration(color: isActive ? color : Colors.grey, shape: BoxShape.circle)),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isActive ? color : Colors.grey,
+                shape: BoxShape.circle,
+              ),
+            ),
             const SizedBox(width: 6),
           ],
-          Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

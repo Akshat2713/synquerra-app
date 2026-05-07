@@ -1,7 +1,7 @@
 // lib/data/datasources/remote/device_remote_datasource.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:synquerra/data/models/analytics_model.dart';
+import 'package:synquerra/new/data/models/analytics_model.dart';
 
 import '../../network/api_client.dart';
 import '../graphql/device_queries.dart';

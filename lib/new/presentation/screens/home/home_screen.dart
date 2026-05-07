@@ -35,8 +35,14 @@ class HomeView extends StatelessWidget {
             index: state.selectedIndex,
             children: const [
               MapScreen(),
-              _ComingSoonScreen(title: "Location History", icon: Icons.history_edu_sharp),
-              _ComingSoonScreen(title: "Notifications", icon: Icons.notifications),
+              _ComingSoonScreen(
+                title: "Location History",
+                icon: Icons.history_edu_sharp,
+              ),
+              _ComingSoonScreen(
+                title: "Notifications",
+                icon: Icons.notifications,
+              ),
               SettingsScreen(),
             ],
           ),
@@ -85,10 +91,7 @@ class _ComingSoonScreen extends StatelessWidget {
   final String title;
   final IconData icon;
 
-  const _ComingSoonScreen({
-    required this.title,
-    required this.icon,
-  });
+  const _ComingSoonScreen({required this.title, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -105,13 +108,20 @@ class _ComingSoonScreen extends StatelessWidget {
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.navBlue.withValues(alpha: 0.1), AppColors.navBlue.withValues(alpha: 0.05)],
+                  colors: [
+                    AppColors.navBlue.withValues(alpha: 0.1),
+                    AppColors.navBlue.withValues(alpha: 0.05),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 64, color: AppColors.navBlue.withValues(alpha: 0.6)),
+              child: Icon(
+                icon,
+                size: 64,
+                color: AppColors.navBlue.withValues(alpha: 0.6),
+              ),
             ),
             const SizedBox(height: 32),
             Text(

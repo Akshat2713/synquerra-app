@@ -32,17 +32,39 @@ class AppSection extends StatelessWidget {
           child: Row(
             children: [
               if (icon != null) ...[
-                Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: headerColor.withValues(alpha: 0.15), shape: BoxShape.circle), child: Icon(icon, size: 16, color: headerColor)),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: headerColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 16, color: headerColor),
+                ),
                 const SizedBox(width: 10),
               ],
-              Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: headerColor, letterSpacing: 0.5)),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: headerColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ],
           ),
         ),
-        Padding(padding: padding, child: Column(children: children)),
+        Padding(
+          padding: padding,
+          child: Column(children: children),
+        ),
         if (showDivider) ...[
           const SizedBox(height: 16),
-          Divider(color: colorScheme.outlineVariant.withValues(alpha: 0.3), indent: 20, endIndent: 20),
+          Divider(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            indent: 20,
+            endIndent: 20,
+          ),
         ],
       ],
     );

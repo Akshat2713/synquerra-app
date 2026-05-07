@@ -1,7 +1,7 @@
 // lib/presentation/screens/profile/my_profile_drawer.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/widgets/feedback/feedback_screen.dart';
+import 'package:synquerra/new/presentation/widgets/feedback/feedback_screen.dart';
 import '../../../business/blocs/auth_bloc/auth_bloc.dart';
 import '../../../business/blocs/theme_bloc/theme_bloc.dart';
 import '../../widgets/dialogs/logout_dialog.dart';

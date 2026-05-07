@@ -26,9 +26,9 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     BoxDecoration decoration;
-    
+
     if (hasGradient && gradientColors != null) {
       decoration = BoxDecoration(
         gradient: LinearGradient(
@@ -42,17 +42,37 @@ class AppCard extends StatelessWidget {
       decoration = BoxDecoration(
         color: backgroundColor ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3), width: 1),
-        boxShadow: hasShadow ? [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 5)),
-        ] : null,
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: hasShadow
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 5),
+                ),
+              ]
+            : null,
       );
     }
 
-    Widget card = Container(decoration: decoration, padding: padding, child: child);
+    Widget card = Container(
+      decoration: decoration,
+      padding: padding,
+      child: child,
+    );
 
     if (onTap != null) {
-      card = Material(color: Colors.transparent, child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(borderRadius), child: card));
+      card = Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: card,
+        ),
+      );
     }
 
     return card;

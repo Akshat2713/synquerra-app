@@ -1,9 +1,9 @@
 // lib/presentation/screens/profile/feedback_screen.dart
 import 'package:flutter/material.dart';
-import '../../widgets/feedback/satisfaction_emoji_selector.dart';
-import '../../widgets/feedback/follow_up_radio_group.dart';
-import '../../widgets/buttons/loading_button.dart';
-import '../../widgets/feedback/custom_snackbar.dart';
+import 'satisfaction_emoji_selector.dart';
+import 'follow_up_radio_group.dart';
+import '../buttons/loading_button.dart';
+import 'custom_snackbar.dart';
 import '../../themes/colors.dart';
 
 class FeedbackScreen extends StatefulWidget {

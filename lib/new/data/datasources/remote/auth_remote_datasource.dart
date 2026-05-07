@@ -1,7 +1,7 @@
 // lib/data/datasources/remote/auth_remote_datasource.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:synquerra/data/models/user_model.dart';
+import 'package:synquerra/new/data/models/user_model.dart';
 
 import '../../network/api_client.dart';
 import '../graphql/auth_queries.dart';
