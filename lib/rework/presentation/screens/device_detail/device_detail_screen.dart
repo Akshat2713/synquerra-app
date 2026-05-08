@@ -95,7 +95,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         if (_showTimeline) {
           setState(() => _showTimeline = false);
           context.read<AnalyticsBloc>().add(
-            AnalyticsLoadDefault(widget.device.imei),
+            AnalyticsFilterChanged(
+              imei: widget.device.imei,
+              filter: AnalyticsFilter.latest,
+            ),
           );
         }
         if (didPop) {
@@ -106,6 +109,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         drawer: DetailDrawer(
           userName: widget.device.studentName,
           imei: widget.device.imei,
+          device: widget.device,
         ),
         body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
           listenWhen: (prev, curr) =>

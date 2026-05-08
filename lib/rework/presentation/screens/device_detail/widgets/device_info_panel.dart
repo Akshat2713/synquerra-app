@@ -20,9 +20,9 @@ class DeviceInfoPanel extends StatelessWidget {
     return DraggableScrollableSheet(
       initialChildSize: 0.32,
       minChildSize: 0.14,
-      maxChildSize: 0.72,
+      maxChildSize: 0.60,
       snap: true,
-      snapSizes: const [0.14, 0.32, 0.72],
+      snapSizes: const [0.14, 0.32, 0.60],
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -217,26 +217,25 @@ class DeviceInfoPanel extends StatelessWidget {
                     ),
 
                     // Analytics section — only when loaded
-                    if (loaded != null && loaded!.points.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      _sectionLabel('Analytics', colors),
-                      const SizedBox(height: 8),
-                      _fieldRow([
-                        _fieldData(
-                          icon: Icons.analytics_rounded,
-                          label: 'Data Points',
-                          value: '${loaded!.points.length}',
-                          colors: colors,
-                        ),
-                        _fieldData(
-                          icon: Icons.route_rounded,
-                          label: 'Mapped Points',
-                          value: '${loaded!.mappablePoints.length}',
-                          colors: colors,
-                        ),
-                      ]),
-                    ],
-
+                    // if (loaded != null && loaded!.points.isNotEmpty) ...[
+                    //   const SizedBox(height: 16),
+                    //   _sectionLabel('Analytics', colors),
+                    //   const SizedBox(height: 8),
+                    //   _fieldRow([
+                    //     _fieldData(
+                    //       icon: Icons.analytics_rounded,
+                    //       label: 'Data Points',
+                    //       value: '${loaded!.points.length}',
+                    //       colors: colors,
+                    //     ),
+                    //     _fieldData(
+                    //       icon: Icons.route_rounded,
+                    //       label: 'Mapped Points',
+                    //       value: '${loaded!.mappablePoints.length}',
+                    //       colors: colors,
+                    //     ),
+                    //   ]),
+                    // ],
                     const SizedBox(height: 24),
                   ]),
                 ),
@@ -389,21 +388,6 @@ class DeviceInfoPanel extends StatelessWidget {
   String _statusLabel(DeviceEntity device) {
     if (device.battery == null) return 'Offline';
     return 'Online';
-  }
-
-  String _formatTimestamp(String? ts) {
-    if (ts == null) return 'N/A';
-    try {
-      final dt = DateTime.parse(ts).toLocal();
-      final now = DateTime.now();
-      final diff = now.difference(dt);
-      if (diff.inMinutes < 1) return 'just now';
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      return '${dt.day}/${dt.month} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return ts;
-    }
   }
 }
 

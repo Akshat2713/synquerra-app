@@ -41,11 +41,13 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     emit(AnalyticsLoading());
 
     final now = DateTime.now().toUtc();
-    DateTime startDate;
+    DateTime? startDate;
+    int? limit;
 
     switch (event.filter) {
       case AnalyticsFilter.latest:
-        return; // handled by AnalyticsLoadDefault
+        limit = 1;
+        break;
       case AnalyticsFilter.lastHour:
         startDate = now.subtract(const Duration(hours: 1));
         break;
@@ -65,6 +67,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       filter: event.filter,
       startDate: startDate,
       endDate: now,
+      limit: limit,
     );
   }
 

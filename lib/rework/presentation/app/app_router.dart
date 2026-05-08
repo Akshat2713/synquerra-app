@@ -9,6 +9,9 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
 import '../screens/device_detail/device_detail_screen.dart';
+import '../screens/telemetry_history/telemetry_history_screen.dart';
+// import '../screens/telemetry_history/telemetry_history_screen.dart'; // ← new
+// import '../screens/alert_codes/alert_codes_page.dart';               // ← new
 
 // ── Route names ───────────────────────────────────────
 class AppRoutes {
@@ -19,6 +22,8 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String home = '/home';
   static const String deviceDetail = '/device-detail';
+  static const String telemetryHistory = '/telemetry-history'; // ← new
+  static const String alertCodes = '/alert-codes'; // ← new
 }
 
 // ── Router ────────────────────────────────────────────
@@ -61,6 +66,23 @@ class AppRouter {
           BlocProvider(
             create: (_) => sl<AnalyticsBloc>(),
             child: DeviceDetailScreen(device: device),
+          ),
+        );
+
+      // ── Telemetry History ──────────────────────────────────────────
+      // Push from anywhere with:
+      //   Navigator.pushNamed(
+      //     context,
+      //     AppRoutes.telemetryHistory,
+      //     arguments: device, // DeviceEntity
+      //   );
+      case AppRoutes.telemetryHistory:
+        final device = settings.arguments as DeviceEntity;
+        return _buildRoute(
+          settings,
+          BlocProvider(
+            create: (_) => sl<AnalyticsBloc>(),
+            child: TelemetryHistoryScreen(device: device),
           ),
         );
 

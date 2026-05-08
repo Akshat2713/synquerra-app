@@ -7,8 +7,14 @@ import '../../../app/app_router.dart';
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
+  final device; // DeviceEntity
 
-  const DetailDrawer({super.key, required this.userName, required this.imei});
+  const DetailDrawer({
+    super.key,
+    required this.userName,
+    required this.imei,
+    required this.device,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +89,13 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.analytics_outlined,
               label: 'Telemetry History',
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                // Push from anywhere with:
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.telemetryHistory,
+                  arguments: device, // DeviceEntity
+                );
                 // TODO: Navigator.pushNamed(context, AppRoutes.telemetryHistory);
               },
             ),
