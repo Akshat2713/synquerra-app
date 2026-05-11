@@ -5,21 +5,24 @@ import '../../network/api_constants.dart';
 import '../../models/alerts/alert_error_model.dart';
 import '../../../core/error/app_exceptions.dart';
 
-class AlertsRemoteDataSource {
+class AlertErrorsRemoteDataSource {
   final DioClient _dioClient;
 
-  AlertsRemoteDataSource(this._dioClient);
+  AlertErrorsRemoteDataSource(this._dioClient);
 
-  Future<List<AlertErrorModel>> getAlerts(String? imei) async {
-    debugPrint('[AlertsRemoteDataSource] getAlerts() called');
+  Future<List<AlertErrorModel>> getAlertsErrors(String imei) async {
+    debugPrint('[AlertErrorsRemoteDataSource] getAlertsErrors() called');
 
-    final response = await _dioClient.dio.get(ApiConstants.alerts);
+    final response = await _dioClient.dio.get(
+      ApiConstants.alertErrors,
+      queryParameters: {'imei': imei},
+    );
 
     final body = response.data as Map<String, dynamic>;
 
     if (body['status'] != 'success') {
       throw ServerException(
-        message: body['message'] ?? 'Failed to fetch alerts.',
+        message: body['message'] ?? 'Failed to fetch alerts and errors.',
         statusCode: body['code'] as int?,
       );
     }
@@ -27,14 +30,16 @@ class AlertsRemoteDataSource {
     final rawList = body['data'] as List<dynamic>;
 
     // Parse list off the main thread
-    final alerts = await Isolate.run(
+    final alertsErrors = await Isolate.run(
       () => rawList
           .map((e) => AlertErrorModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-    debugPrint('[AlertsRemoteDataSource] Fetched ${alerts.length} alerts');
+    debugPrint(
+      '[AlertErrorsRemoteDataSource] Fetched ${alertsErrors.length} alerts and errors',
+    );
 
-    return alerts;
+    return alertsErrors;
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/alerts/alert_entity.dart';
+import '../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/failures/failure.dart';
 import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
@@ -66,8 +66,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
 
     final alerts = alertsResult.fold(
-      (_) => <AlertEntity>[],
-      (a) => a as List<AlertEntity>,
+      (_) => <AlertErrorEntity>[],
+      (a) => a as List<AlertErrorEntity>,
     );
     final devices = devicesResult.fold(
       (_) => <DeviceEntity>[],

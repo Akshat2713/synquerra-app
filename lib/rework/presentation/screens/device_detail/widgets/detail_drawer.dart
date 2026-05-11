@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
+import '../../../../domain/entities/device/device_entity.dart';
 import '../../../app/app_router.dart';
+// import '../../../blocs/theme/theme_cubit.dart';
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
+  final DeviceEntity device; // DeviceEntity
 
-  const DetailDrawer({super.key, required this.userName, required this.imei});
+  const DetailDrawer({
+    super.key,
+    required this.userName,
+    required this.imei,
+    required this.device,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +90,13 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.analytics_outlined,
               label: 'Telemetry History',
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                // Push from anywhere with:
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.telemetryHistory,
+                  arguments: device, // DeviceEntity
+                );
                 // TODO: Navigator.pushNamed(context, AppRoutes.telemetryHistory);
               },
             ),
@@ -89,7 +105,12 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.notifications_outlined,
               label: 'Notifications',
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.alertsErrors,
+                  arguments: device.imei, // String
+                );
+                // Navigator.pop(context);
                 // TODO: Navigator.pushNamed(context, AppRoutes.notifications);
               },
             ),
@@ -106,21 +127,23 @@ class DetailDrawer extends StatelessWidget {
             const Divider(indent: 16, endIndent: 16),
 
             // ── Theme toggle ─────────────────────────
-            _drawerItem(
-              context: context,
-              icon: Icons.dark_mode_outlined,
-              label: 'Theme',
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: trigger ThemeBloc toggle
+            BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, themeMode) {
+                final isDark = themeMode == ThemeMode.dark;
+                return _drawerItem(
+                  context: context,
+                  icon: isDark
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                  label: isDark ? 'Dark Mode' : 'Light Mode',
+                  onTap: () => context.read<ThemeCubit>().toggle(),
+                  trailing: Switch(
+                    value: isDark,
+                    onChanged: (_) => context.read<ThemeCubit>().toggle(),
+                    activeColor: colors.primary,
+                  ),
+                );
               },
-              trailing: Switch(
-                value: Theme.of(context).brightness == Brightness.dark,
-                onChanged: (_) {
-                  Navigator.pop(context);
-                  // TODO: trigger ThemeBloc toggle
-                },
-              ),
             ),
 
             const Spacer(),
@@ -134,7 +157,7 @@ class DetailDrawer extends StatelessWidget {
               labelColor: colors.error,
               onTap: () {
                 Navigator.pop(context);
-                // TODO: dispatch AuthLogoutRequested + navigate to login
+                // TODO: dispatch AuthLogoutRequested
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   AppRoutes.login,

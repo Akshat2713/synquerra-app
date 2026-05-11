@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/rework/presentation/utils/date_time_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 
 class TimelineSlider extends StatelessWidget {
@@ -55,11 +56,9 @@ class TimelineSlider extends StatelessWidget {
               children: [
                 _infoChip(
                   icon: Icons.access_time_rounded,
-                  label: current.deviceTimestamp
-                      .split('T')
-                      .last
-                      .split('.')
-                      .first,
+                  label: DateTimeFormatter.toFullDateTime(
+                    current.deviceTimestamp,
+                  ),
                   colors: colors,
                 ),
                 _infoChip(

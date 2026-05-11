@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/device/device_entity.dart';
-import '../../domain/entities/alerts/alert_entity.dart';
+import '../../domain/entities/alerts/alert_error_entity.dart';
+import '../app/app_router.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
   final bool isActive;
-  final List<AlertEntity> deviceAlerts;
+  final List<AlertErrorEntity> deviceAlerts;
   final VoidCallback onTap;
   final VoidCallback onToggleActive;
 
@@ -153,8 +154,25 @@ class DeviceCard extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'details':
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.telemetryHistory,
+                                arguments: device, // your DeviceEntity object
+                              );
+                              break;
+                            case 'alerts':
+                              // TODO
+                              break;
+                            case 'settings':
+                              // TODO
+                              break;
+                          }
+                        },
                         itemBuilder: (_) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'details',
                             child: Text('View Details'),
                           ),

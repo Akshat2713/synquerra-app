@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:synquerra/rework/presentation/blocs/alerts/alerts_bloc.dart';
+import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
 
 // Network
+import '../../data/datasources/local/theme_local_datasource.dart';
+import '../../data/datasources/remote/alerts_errors_remote_datasource.dart';
 import '../../data/network/dio_client.dart';
 
 // Auth
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../data/repositories_impl/alerts_errors_repository_impl.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
+import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
+import '../../domain/usecases/alerts_errors/get_device_alerts_usecase.dart';
+import '../../domain/usecases/alerts_errors/get_device_errors_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/entities/auth/user_entity.dart';
@@ -34,6 +43,7 @@ import '../../domain/repositories/analytics_repository.dart';
 import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 
 // Blocs
+import '../../presentation/blocs/errors/errors_bloc.dart';
 import '../../presentation/blocs/home/home_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 
@@ -52,6 +62,12 @@ Future<void> initDependencies() async {
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
     ),
   );
+
+  // ── Theme ───────────────────────────────────────
+
+  sl.registerLazySingleton(() => ThemeCubit(sl()));
+
+  sl.registerLazySingleton(() => ThemeLocalDataSource(sl()));
 
   // ── Network ───────────────────────────────────────
   sl.registerLazySingleton<DioClient>(() => DioClient(sl()));
@@ -89,6 +105,17 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetAlertsUseCase(sl()));
 
+  // ── Alerts and Errors ────────────────────────────────────────
+  sl.registerLazySingleton<AlertErrorsRemoteDataSource>(
+    () => AlertErrorsRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<AlertsErrorsRepository>(
+    () => AlertsErrorsRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetAlertsErrorsUseCase(sl()));
+
+  sl.registerLazySingleton(() => GetDeviceAlertsUseCase(sl()));
+  sl.registerLazySingleton(() => GetDeviceErrorsUseCase(sl()));
   // ── Device ────────────────────────────────────────
   sl.registerLazySingleton<DeviceRemoteDataSource>(
     () => DeviceRemoteDataSource(sl()),
@@ -115,6 +142,13 @@ Future<void> initDependencies() async {
   // ── Analytics BLoC ────────────────────────────────
   sl.registerFactory<AnalyticsBloc>(
     () => AnalyticsBloc(getAnalyticsUseCase: sl()),
+  );
+  // ── Alerts & Errors BLoCs ─────────────────────────
+  sl.registerFactory<AlertsBloc>(
+    () => AlertsBloc(getDeviceAlertsUseCase: sl()),
+  );
+  sl.registerFactory<ErrorsBloc>(
+    () => ErrorsBloc(getDeviceErrorsUseCase: sl()),
   );
 }
 

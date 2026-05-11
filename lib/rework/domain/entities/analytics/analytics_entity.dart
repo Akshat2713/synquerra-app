@@ -11,6 +11,16 @@ class AnalyticsEntity extends Equatable {
   final String? battery;
   final String? signal;
   final String? geoid;
+  final int? interval;
+  final String? alert;
+  final String? timestamp;
+  final String? deviceRawTimestamp;
+  final String? type;
+  final String? temperature;
+  final String? phone1;
+  final String? phone2;
+  final String? controlPhone;
+  final String? rawAlert;
   final String deviceTimestamp;
 
   const AnalyticsEntity({
@@ -24,6 +34,16 @@ class AnalyticsEntity extends Equatable {
     this.battery,
     this.signal,
     this.geoid,
+    this.interval,
+    this.alert,
+    this.timestamp,
+    this.deviceRawTimestamp,
+    this.type,
+    this.temperature,
+    this.phone1,
+    this.phone2,
+    this.controlPhone,
+    this.rawAlert,
     required this.deviceTimestamp,
   });
 
@@ -41,6 +61,16 @@ class AnalyticsEntity extends Equatable {
     battery,
     signal,
     geoid,
+    interval,
+    alert,
+    timestamp,
+    deviceRawTimestamp,
+    type,
+    temperature,
+    phone1,
+    phone2,
+    controlPhone,
+    rawAlert,
     deviceTimestamp,
   ];
 }

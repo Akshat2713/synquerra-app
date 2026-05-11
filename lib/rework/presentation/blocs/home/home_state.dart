@@ -7,7 +7,7 @@ class HomeInitial extends HomeState {}
 class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
-  final List<AlertEntity> alerts;
+  final List<AlertErrorEntity> alerts;
   final List<DeviceEntity> devices;
   final Set<String> toggledImeis; // tracks visual active/inactive toggles
 
@@ -32,7 +32,7 @@ class HomeLoaded extends HomeState {
   }
 
   HomeLoaded copyWith({
-    List<AlertEntity>? alerts,
+    List<AlertErrorEntity>? alerts,
     List<DeviceEntity>? devices,
     Set<String>? toggledImeis,
   }) {

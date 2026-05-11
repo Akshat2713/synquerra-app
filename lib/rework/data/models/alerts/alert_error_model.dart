@@ -1,6 +1,6 @@
-import '../../../domain/entities/alerts/alert_entity.dart';
+import '../../../domain/entities/alerts/alert_error_entity.dart';
 
-class AlertModel {
+class AlertErrorModel {
   final String id;
   final String imei;
   final String topic;
@@ -12,7 +12,7 @@ class AlertModel {
   final String createdAt;
   final String updatedAt;
 
-  const AlertModel({
+  const AlertErrorModel({
     required this.id,
     required this.imei,
     required this.topic,
@@ -25,30 +25,31 @@ class AlertModel {
     required this.updatedAt,
   });
 
-  factory AlertModel.fromJson(Map<String, dynamic> json) => AlertModel(
-    id: json['id'] as String,
-    imei: json['imei'] as String,
-    topic: json['topic'] as String,
-    code: json['code'] as String,
-    type: json['type'] as String,
-    severity: json['severity'] as String,
-    isAcknowledged: json['is_acknowledged'] as bool,
-    description: json['description'] as String,
-    createdAt: json['createdAt'] as String,
-    updatedAt: json['updatedAt'] as String,
-  );
+  factory AlertErrorModel.fromJson(Map<String, dynamic> json) =>
+      AlertErrorModel(
+        id: json['id'] as String,
+        imei: json['imei'] as String,
+        topic: json['topic'] as String,
+        code: json['code'] as String,
+        type: json['type'] as String,
+        severity: json['severity'] as String,
+        isAcknowledged: json['is_acknowledged'] as bool,
+        description: json['description'] as String,
+        createdAt: json['createdAt'] as String,
+        updatedAt: json['updatedAt'] as String,
+      );
 
-  AlertEntity toEntity() => AlertEntity(
+  AlertErrorEntity toEntity() => AlertErrorEntity(
     id: id,
     imei: imei,
     topic: topic,
     code: code,
-    type: type == 'alert' ? AlertType.alert : AlertType.unknown,
+    type: type == 'alert' ? AlertErrorType.alert : AlertErrorType.error,
     severity: severity == 'critical'
         ? AlertSeverity.critical
         : severity == 'advisory'
         ? AlertSeverity.advisory
-        : AlertSeverity.unknown,
+        : AlertSeverity.warning,
     isAcknowledged: isAcknowledged,
     description: description,
     createdAt: createdAt,
