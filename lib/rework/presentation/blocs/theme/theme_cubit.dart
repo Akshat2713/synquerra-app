@@ -11,16 +11,18 @@ class ThemeCubit extends Cubit<ThemeMode> {
   Future<void> _init() async {
     final savedMode = await _localDataSource.getLastThemeMode();
     emit(savedMode);
-    debugPrint('[ThemeCubit] init → current: $savedMode');
+    debugPrint('[ThemeCubit] init → Start: $savedMode');
   }
 
-  void toggle() {
+  void toggle() async {
     debugPrint('[ThemeCubit] toggle → current: $state');
-    if (state == ThemeMode.dark) {
-      emit(ThemeMode.light);
-    } else {
-      emit(ThemeMode.dark);
-    }
+    final newMode = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+
+    // UI update
+    emit(newMode);
+
+    // Persistence through the DataSource
+    await _localDataSource.cacheThemeMode(newMode);
     debugPrint('[ThemeCubit] toggled → new: $state');
   }
 

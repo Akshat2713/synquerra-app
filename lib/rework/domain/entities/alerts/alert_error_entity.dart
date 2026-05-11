@@ -1,22 +1,22 @@
 import 'package:equatable/equatable.dart';
 
-enum AlertSeverity { critical, advisory, unknown }
+enum AlertSeverity { critical, advisory, warning }
 
-enum AlertType { alert, unknown }
+enum AlertErrorType { alert, error }
 
-class AlertEntity extends Equatable {
+class AlertErrorEntity extends Equatable {
   final String id;
   final String imei;
   final String topic;
   final String code;
-  final AlertType type;
+  final AlertErrorType type;
   final AlertSeverity severity;
   final bool isAcknowledged;
   final String description;
   final String createdAt;
   final String updatedAt;
 
-  const AlertEntity({
+  const AlertErrorEntity({
     required this.id,
     required this.imei,
     required this.topic,

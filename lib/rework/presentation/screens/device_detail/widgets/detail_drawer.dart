@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
+import '../../../../domain/entities/device/device_entity.dart';
 import '../../../app/app_router.dart';
 // import '../../../blocs/theme/theme_cubit.dart';
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
-  final device; // DeviceEntity
+  final DeviceEntity device; // DeviceEntity
 
   const DetailDrawer({
     super.key,
@@ -104,7 +105,12 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.notifications_outlined,
               label: 'Notifications',
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.alertsErrors,
+                  arguments: device.imei, // String
+                );
+                // Navigator.pop(context);
                 // TODO: Navigator.pushNamed(context, AppRoutes.notifications);
               },
             ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/device/device_entity.dart';
-import '../../domain/entities/alerts/alert_entity.dart';
+import '../../domain/entities/alerts/alert_error_entity.dart';
 import '../app/app_router.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
   final bool isActive;
-  final List<AlertEntity> deviceAlerts;
+  final List<AlertErrorEntity> deviceAlerts;
   final VoidCallback onTap;
   final VoidCallback onToggleActive;
 

@@ -14,6 +14,7 @@ class ApiConstants {
 
   // ── Alerts ────────────────────────────────────────
   static const String alerts = 'alerts-errors/alerts';
+  static const String alertErrors = 'alerts-errors/device';
 
   // ── Analytics ─────────────────────────────────────
   static const String analytics = 'analytics/analytics-query';
