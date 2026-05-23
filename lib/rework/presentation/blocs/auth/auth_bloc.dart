@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synquerra/rework/domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/entities/auth/user_entity.dart';
 import '../../../domain/failures/failure.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
@@ -12,15 +13,18 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase _loginUseCase;
   final CheckAuthStatusUseCase _checkAuthStatusUseCase;
-  final AuthRepository _authRepository;
+  // final AuthRepository _authRepository;
+  final LogoutUseCase _logoutUseCase;
 
   AuthBloc({
     required LoginUseCase loginUseCase,
     required CheckAuthStatusUseCase checkAuthStatusUseCase,
-    required AuthRepository authRepository,
+    // required AuthRepository authRepository,
+    required LogoutUseCase logoutUseCase,
   }) : _loginUseCase = loginUseCase,
        _checkAuthStatusUseCase = checkAuthStatusUseCase,
-       _authRepository = authRepository,
+       //  _authRepository = authRepository,
+       _logoutUseCase = logoutUseCase,
        super(AuthInitial()) {
     on<AuthCheckStatusRequested>(_onCheckStatus);
     on<AuthLoginRequested>(_onLogin);
@@ -59,8 +63,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    await _authRepository.logout();
-    emit(AuthUnauthenticated());
+    final result = await _logoutUseCase(NoParams()); // ← now used
+    result.fold(
+      (failure) => emit(AuthError(_mapFailure(failure))),
+      (_) => emit(AuthUnauthenticated()),
+    );
   }
 
   String _mapFailure(Failure failure) {

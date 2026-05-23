@@ -1,24 +1,24 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import '../../domain/entities/alerts/alert_error_entity.dart';
+import '../../domain/entities/geofence/geofence_entity.dart';
 import '../../domain/failures/failure.dart';
-import '../../domain/repositories/alerts_errors_repository.dart';
+import '../../domain/repositories/geofence_repository.dart';
 import '../../core/error/app_exceptions.dart';
-import '../datasources/remote/alerts_errors_remote_datasource.dart';
+// import '../../core/error/failure_mapper.dart';
+import '../datasources/remote/geofence_remote_datasource.dart';
 import '../mappers/faulure_mapper.dart';
 
-class AlertsErrorsRepositoryImpl implements AlertsErrorsRepository {
-  final AlertErrorsRemoteDataSource _remote;
-
-  AlertsErrorsRepositoryImpl({required AlertErrorsRemoteDataSource remote})
+class GeofenceRepositoryImpl implements GeofenceRepository {
+  final GeofenceRemoteDataSource _remote;
+  GeofenceRepositoryImpl({required GeofenceRemoteDataSource remote})
     : _remote = remote;
 
   @override
-  Future<Either<Failure, List<AlertErrorEntity>>> getDeviceAlertsErrors(
+  Future<Either<Failure, List<GeofenceEntity>>> getDeviceGeofences(
     String imei,
   ) async {
     try {
-      final models = await _remote.getAlertsErrors(imei);
+      final models = await _remote.getGeofences(imei);
       return Right(models.map((m) => m.toEntity()).toList());
     } catch (e) {
       final cause = (e is DioException && e.error is AppException)

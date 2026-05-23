@@ -19,6 +19,9 @@ class ApiConstants {
   // ── Analytics ─────────────────────────────────────
   static const String analytics = 'analytics/analytics-query';
 
+  // ── Geofences ─────────────────────────────────────
+  static const String geofences = 'geofence/list';
+
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;
   static const int receiveTimeoutMs = 30000;

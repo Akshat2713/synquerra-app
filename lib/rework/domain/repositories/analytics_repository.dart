@@ -7,6 +7,7 @@ abstract class AnalyticsRepository {
     required String imei,
     int? skip,
     int? limit,
+    int? dataInterval,
     String? startDate,
     String? endDate,
   });
