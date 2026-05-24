@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/device/device_entity.dart';
-import '../blocs/alerts/alerts_bloc.dart';
-import '../blocs/errors/errors_bloc.dart';
+// import '../blocs/alerts/alerts_bloc.dart';
+import '../blocs/alerts_errors/alerts_errors_bloc.dart';
+// import '../blocs/errors/errors_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/home/home_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -89,11 +90,8 @@ class AppRouter {
         final imei = settings.arguments as String;
         return _slide(
           settings,
-          MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => sl<AlertsBloc>()),
-              BlocProvider(create: (_) => sl<ErrorsBloc>()),
-            ],
+          BlocProvider(
+            create: (_) => sl<AlertsErrorsBloc>(),
             child: AlertsErrorsScreen(imei: imei),
           ),
         );

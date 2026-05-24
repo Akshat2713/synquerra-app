@@ -6,7 +6,7 @@ import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/analytics_repository.dart';
 import '../datasources/remote/analytics_remote_datasource.dart';
-import '../mappers/faulure_mapper.dart';
+import '../mappers/failure_mapper.dart';
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
   final AnalyticsRemoteDataSource _remote;

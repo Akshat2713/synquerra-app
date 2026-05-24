@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../domain/entities/alerts/alert_error_entity.dart';
-import '../../../blocs/errors/errors_bloc.dart';
+// import '../../../blocs/errors/errors_bloc.dart';
+import '../../../blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../../widgets/alert_error_card.dart';
 import 'empty_view.dart';
 import 'failure_view.dart';
@@ -30,22 +31,16 @@ class ErrorsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ErrorsBloc, ErrorsState>(
+    return BlocBuilder<AlertsErrorsBloc, AlertsErrorsState>(
       builder: (context, state) {
-        final isLoading = state is ErrorsLoading;
-        final items = switch (state) {
-          ErrorsLoaded() => state.errors,
-          _ => _fakeItems,
-        };
-
-        if (state is ErrorsFailure) {
+        if (state is AlertsErrorsFailure) {
           return FailureView(message: state.message);
         }
-
-        if (state is ErrorsLoaded && state.errors.isEmpty) {
+        if (state is AlertsErrorsLoaded && state.errors.isEmpty) {
           return const EmptyView(label: 'No errors found');
         }
-
+        final isLoading = state is AlertsErrorsLoading;
+        final items = state is AlertsErrorsLoaded ? state.errors : _fakeItems;
         return Skeletonizer(
           enabled: isLoading,
           child: ListView.builder(

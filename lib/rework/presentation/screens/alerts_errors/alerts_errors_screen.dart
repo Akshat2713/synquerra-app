@@ -1,9 +1,7 @@
 // presentation/pages/alerts_errors/alerts_errors_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import '../../../core/di/injection_container.dart';
-import '../../blocs/alerts/alerts_bloc.dart';
-import '../../blocs/errors/errors_bloc.dart';
+import '../../blocs/alerts_errors/alerts_errors_bloc.dart';
 import 'widgets/alerts_tab.dart';
 import 'widgets/errors_tab.dart';
 
@@ -23,8 +21,9 @@ class _AlertsErrorsScreenState extends State<AlertsErrorsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    context.read<AlertsBloc>().add(AlertsLoadRequested(widget.imei));
-    context.read<ErrorsBloc>().add(ErrorsLoadRequested(widget.imei));
+    context.read<AlertsErrorsBloc>().add(
+      AlertsErrorsLoadRequested(widget.imei),
+    );
   }
 
   @override

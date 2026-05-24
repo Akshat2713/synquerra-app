@@ -13,8 +13,8 @@ class DioClient {
   DioClient(FlutterSecureStorage secureStorage) {
     _dio = Dio(
       BaseOptions(
-        // baseUrl: ApiConstants.baseUrl,
-        baseUrl: ApiConstants.devBaseUrl, // ⚠️ DEV ONLY
+        baseUrl: ApiConstants.baseUrl,
+        // baseUrl: ApiConstants.devBaseUrl, // ⚠️ DEV ONLY
         connectTimeout: const Duration(
           milliseconds: ApiConstants.connectTimeoutMs,
         ),
