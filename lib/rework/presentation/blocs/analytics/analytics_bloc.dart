@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/failures/failure.dart';
+import '../../../domain/usecases/analytics/compute_analytics_params_usecase.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
 
 part 'analytics_event.dart';
@@ -9,10 +10,14 @@ part 'analytics_state.dart';
 
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final GetAnalyticsUseCase _getAnalyticsUseCase;
+  final ComputeAnalyticsParamsUseCase _computeParams;
 
-  AnalyticsBloc({required GetAnalyticsUseCase getAnalyticsUseCase})
-    : _getAnalyticsUseCase = getAnalyticsUseCase,
-      super(AnalyticsInitial()) {
+  AnalyticsBloc({
+    required GetAnalyticsUseCase getAnalyticsUseCase,
+    required ComputeAnalyticsParamsUseCase computeAnalyticsParamsUseCase,
+  }) : _getAnalyticsUseCase = getAnalyticsUseCase,
+       _computeParams = computeAnalyticsParamsUseCase,
+       super(AnalyticsInitial()) {
     on<AnalyticsLoadDefault>(_onLoadDefault);
     on<AnalyticsFilterChanged>(_onFilterChanged);
     on<AnalyticsCustomRangeSelected>(_onCustomRange);
@@ -109,14 +114,26 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     DateTime? endDate,
     DateTime? startDateDt,
     DateTime? endDateDt,
+    int? dataInterval,
     int? limit,
   }) async {
+    final fetchParams = _computeParams(
+      filter: filter,
+      startDate: startDate,
+      endDate: endDate,
+    );
+    debugPrint(
+      '[AnalyticsBloc] Fetch → filter: $filter'
+      ', limit: ${fetchParams.limit}'
+      ', interval: ${fetchParams.dataInterval}',
+    );
     final result = await _getAnalyticsUseCase(
       AnalyticsParams(
         imei: imei,
         startDate: startDate != null ? _toIso(startDate) : null,
         endDate: endDate != null ? _toIso(endDate) : null,
-        limit: limit,
+        limit: fetchParams.limit,
+        dataInterval: fetchParams.dataInterval,
       ),
     );
 

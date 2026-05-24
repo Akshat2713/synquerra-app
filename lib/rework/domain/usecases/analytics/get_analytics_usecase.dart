@@ -8,6 +8,7 @@ class AnalyticsParams {
   final String imei;
   final int? skip;
   final int? limit;
+  final int? dataInterval;
   final String? startDate;
   final String? endDate;
 
@@ -15,6 +16,7 @@ class AnalyticsParams {
     required this.imei,
     this.skip,
     this.limit,
+    this.dataInterval,
     this.startDate,
     this.endDate,
   });
@@ -32,6 +34,7 @@ class GetAnalyticsUseCase
       imei: params.imei,
       skip: params.skip,
       limit: params.limit,
+      dataInterval: params.dataInterval,
       startDate: params.startDate,
       endDate: params.endDate,
     );

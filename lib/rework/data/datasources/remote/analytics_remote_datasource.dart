@@ -14,12 +14,14 @@ class AnalyticsRemoteDataSource {
     required String imei,
     int? skip,
     int? limit,
+    int? dataInterval,
     String? startDate,
     String? endDate,
   }) async {
     debugPrint(
       '[AnalyticsRemoteDataSource] getAnalytics() → imei: $imei'
       '${limit != null ? ', limit: $limit' : ''}'
+      '${dataInterval != null ? ', dataInterval: $dataInterval' : ''}'
       '${startDate != null ? ', from: $startDate' : ''}'
       '${endDate != null ? ', to: $endDate' : ''}',
     );
@@ -32,6 +34,7 @@ class AnalyticsRemoteDataSource {
             'imei: "$imei"'
             ', skip: ${skip ?? 0}'
             '${limit != null ? ', limit: $limit' : ''}'
+            '${dataInterval != null ? ', dataInterval: $dataInterval' : ''}'
             '${startDate != null ? ', startDate: "$startDate"' : ''}'
             '${endDate != null ? ', endDate: "$endDate"' : ''}'
             ') { id topic imei packet latitude longitude speed battery signal geoid deviceTimestamp  } }',

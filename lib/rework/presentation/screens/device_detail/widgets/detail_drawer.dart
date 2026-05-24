@@ -81,8 +81,13 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               onTap: () {
-                Navigator.pop(context);
+                // Navigator.pop(context);
                 // TODO: Navigator.pushNamed(context, AppRoutes.profile);
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.profile,
+                  arguments: device, // DeviceEntity
+                );
               },
             ),
             _drawerItem(
@@ -148,23 +153,6 @@ class DetailDrawer extends StatelessWidget {
 
             const Spacer(),
 
-            // ── Logout ───────────────────────────────
-            _drawerItem(
-              context: context,
-              icon: Icons.logout_rounded,
-              label: 'Logout',
-              iconColor: colors.error,
-              labelColor: colors.error,
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: dispatch AuthLogoutRequested
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.login,
-                  (_) => false,
-                );
-              },
-            ),
             const SizedBox(height: 12),
           ],
         ),

@@ -1,14 +1,14 @@
 import 'package:dartz/dartz.dart';
-// import '../../domain/entities/alerts/alert_error_entity.dart';
+import 'package:dio/dio.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/alerts_repository.dart';
 import '../../core/error/app_exceptions.dart';
 import '../datasources/remote/alerts_remote_datasource.dart';
+import '../mappers/faulure_mapper.dart';
 
 class AlertsRepositoryImpl implements AlertsRepository {
   final AlertsRemoteDataSource _remote;
-
   AlertsRepositoryImpl({required AlertsRemoteDataSource remote})
     : _remote = remote;
 
@@ -17,12 +17,11 @@ class AlertsRepositoryImpl implements AlertsRepository {
     try {
       final models = await _remote.getAlerts(null);
       return Right(models.map((m) => m.toEntity()).toList());
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (_) {
-      return const Left(UnknownFailure());
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
     }
   }
 
@@ -33,12 +32,11 @@ class AlertsRepositoryImpl implements AlertsRepository {
     try {
       final models = await _remote.getAlerts(imei);
       return Right(models.map((m) => m.toEntity()).toList());
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
-    } catch (_) {
-      return const Left(UnknownFailure());
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
     }
   }
 }

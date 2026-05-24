@@ -1,20 +1,25 @@
+// lib/presentation/app/app_router.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../blocs/alerts/alerts_bloc.dart';
 import '../blocs/errors/errors_bloc.dart';
-import '../blocs/auth/auth_bloc.dart';
+import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/home/home_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
+import '../blocs/profile/profile_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
 import '../screens/device_detail/device_detail_screen.dart';
 import '../screens/telemetry_history/telemetry_history_screen.dart';
 
-// ── Route names ───────────────────────────────────────
+// ── Route names ───────────────────────────────────────────────────────────────
+
 class AppRoutes {
   AppRoutes._();
 
@@ -26,34 +31,24 @@ class AppRoutes {
   static const String telemetryHistory = '/telemetry-history';
   static const String alertCodes = '/alert-codes';
   static const String alertsErrors = '/alerts-errors';
+  static const String profile = '/profile'; // ← new
 }
 
-// ── Router ────────────────────────────────────────────
+// ── Router ────────────────────────────────────────────────────────────────────
+
 class AppRouter {
   AppRouter._();
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.splash:
-        return _buildRoute(
-          settings,
-          BlocProvider(
-            create: (_) => sl<AuthBloc>(),
-            child: const SplashScreen(),
-          ),
-        );
+        return _fade(settings, const SplashScreen());
 
       case AppRoutes.login:
-        return _buildRoute(
-          settings,
-          BlocProvider(
-            create: (_) => sl<AuthBloc>(),
-            child: const LoginScreen(),
-          ),
-        );
+        return _fade(settings, const LoginScreen());
 
       case AppRoutes.home:
-        return _buildRoute(
+        return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<HomeBloc>(),
@@ -63,24 +58,23 @@ class AppRouter {
 
       case AppRoutes.deviceDetail:
         final device = settings.arguments as DeviceEntity;
-        return _buildRoute(
+        return _slide(
           settings,
-          BlocProvider(
-            create: (_) => sl<AnalyticsBloc>(),
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<AnalyticsBloc>()),
+              BlocProvider(create: (_) => sl<GeofenceBloc>()),
+            ],
             child: DeviceDetailScreen(device: device),
           ),
         );
 
-      // ── Telemetry History ──────────────────────────────────────────
-      // Push from anywhere with:
-      //   Navigator.pushNamed(
-      //     context,
-      //     AppRoutes.telemetryHistory,
-      //     arguments: device, // DeviceEntity
-      //   );
+      // Push with:
+      //   Navigator.pushNamed(context, AppRoutes.telemetryHistory,
+      //       arguments: device);
       case AppRoutes.telemetryHistory:
         final device = settings.arguments as DeviceEntity;
-        return _buildRoute(
+        return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<AnalyticsBloc>(),
@@ -88,14 +82,12 @@ class AppRouter {
           ),
         );
 
-      //Navigator.pushNamed(
-      //   context,
-      //   AppRoutes.alertsErrors,
-      //   arguments: imei, // String
-      // );
+      // Push with:
+      //   Navigator.pushNamed(context, AppRoutes.alertsErrors,
+      //       arguments: imei);
       case AppRoutes.alertsErrors:
         final imei = settings.arguments as String;
-        return _buildRoute(
+        return _slide(
           settings,
           MultiBlocProvider(
             providers: [
@@ -106,18 +98,45 @@ class AppRouter {
           ),
         );
 
+      // Push with:
+      //   Navigator.pushNamed(context, AppRoutes.profile,
+      //       arguments: imei);
+      case AppRoutes.profile:
+        final device = settings.arguments as DeviceEntity;
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) => sl<ProfileBloc>(),
+            child: ProfileScreen(device: device),
+          ),
+        );
+
       default:
-        return _buildRoute(
+        return _fade(
           settings,
           const Scaffold(body: Center(child: Text('404 — Route not found'))),
         );
     }
   }
 
-  static MaterialPageRoute<dynamic> _buildRoute(
+  // ── Transition helpers ──────────────────────────────────────────────────────
+
+  /// Standard slide-up for main content screens.
+  static MaterialPageRoute<dynamic> _slide(
     RouteSettings settings,
     Widget child,
   ) {
     return MaterialPageRoute(settings: settings, builder: (_) => child);
+  }
+
+  /// Fade for auth / splash (no back-stack feel).
+  static PageRouteBuilder<dynamic> _fade(RouteSettings settings, Widget child) {
+    return PageRouteBuilder(
+      settings: settings,
+      pageBuilder: (_, __, ___) => child,
+      transitionsBuilder: (_, animation, __, c) =>
+          FadeTransition(opacity: animation, child: c),
+      transitionDuration: const Duration(milliseconds: 300),
+    );
   }
 }

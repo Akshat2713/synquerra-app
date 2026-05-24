@@ -7,6 +7,7 @@ import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
 // Network
 import '../../data/datasources/local/theme_local_datasource.dart';
 import '../../data/datasources/remote/alerts_errors_remote_datasource.dart';
+import '../../data/datasources/remote/geofence_remote_datasource.dart';
 import '../../data/network/dio_client.dart';
 
 // Auth
@@ -14,14 +15,19 @@ import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/repositories_impl/alerts_errors_repository_impl.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
+import '../../data/repositories_impl/geofence_repository_impl.dart';
 import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/geofence_repository.dart';
 import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
 import '../../domain/usecases/alerts_errors/get_device_alerts_usecase.dart';
 import '../../domain/usecases/alerts_errors/get_device_errors_usecase.dart';
+import '../../domain/usecases/analytics/compute_analytics_params_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/entities/auth/user_entity.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/geofence/get_geofences_usecase.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 
 // Alerts
@@ -44,8 +50,10 @@ import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 
 // Blocs
 import '../../presentation/blocs/errors/errors_bloc.dart';
+import '../../presentation/blocs/geofence/geofence_bloc.dart';
 import '../../presentation/blocs/home/home_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
+import '../../presentation/blocs/profile/profile_bloc.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -88,11 +96,12 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => CheckAuthStatusUseCase(sl()));
-  sl.registerFactory<AuthBloc>(
+  sl.registerLazySingleton(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton<AuthBloc>(
     () => AuthBloc(
       loginUseCase: sl(),
       checkAuthStatusUseCase: sl(),
-      authRepository: sl(),
+      logoutUseCase: sl(),
     ),
   );
 
@@ -141,14 +150,43 @@ Future<void> initDependencies() async {
 
   // ── Analytics BLoC ────────────────────────────────
   sl.registerFactory<AnalyticsBloc>(
-    () => AnalyticsBloc(getAnalyticsUseCase: sl()),
+    () => AnalyticsBloc(
+      getAnalyticsUseCase: sl(),
+      computeAnalyticsParamsUseCase: sl(),
+    ),
   );
+  sl.registerLazySingleton(
+    () => const ComputeAnalyticsParamsUseCase(
+      assumedPingIntervalSeconds: 1000, // ← tune to your device
+      targetPointCount: 300,
+    ),
+  );
+  // Profile ───────────────────────────────────────────────
+  sl.registerFactory<ProfileBloc>(
+    () => ProfileBloc(
+      // Inject any use cases your ProfileBloc requires here. For example:
+      // getProfileUseCase: sl(),
+    ),
+  );
+
   // ── Alerts & Errors BLoCs ─────────────────────────
   sl.registerFactory<AlertsBloc>(
     () => AlertsBloc(getDeviceAlertsUseCase: sl()),
   );
   sl.registerFactory<ErrorsBloc>(
     () => ErrorsBloc(getDeviceErrorsUseCase: sl()),
+  );
+  // ── Geofence ─────────────────────────────────────
+  sl.registerLazySingleton<GeofenceRemoteDataSource>(
+    () => GeofenceRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<GeofenceRepository>(
+    () => GeofenceRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetGeofencesUseCase(sl()));
+
+  sl.registerFactory<GeofenceBloc>(
+    () => GeofenceBloc(getGeofencesUseCase: sl()),
   );
 }
 

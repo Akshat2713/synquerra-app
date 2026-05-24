@@ -7,6 +7,7 @@ import '../../../data/network/map_tile_config.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
+import '../../blocs/geofence/geofence_bloc.dart';
 import 'widgets/filter_bottom_sheet.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/device_info_panel.dart';
@@ -14,7 +15,6 @@ import 'widgets/detail_drawer.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final DeviceEntity device;
-
   const DeviceDetailScreen({super.key, required this.device});
 
   @override
@@ -30,6 +30,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     super.initState();
     _mapController = MapController();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.imei));
+    context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
     debugPrint('[DeviceDetailScreen] initState → imei: ${widget.device.imei}');
   }
 
@@ -101,9 +102,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             ),
           );
         }
-        if (didPop) {
-          return;
-        }
+        if (didPop) return;
       },
       child: Scaffold(
         drawer: DetailDrawer(
@@ -148,7 +147,33 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       userAgentPackageName: MapTileConfig.userAgentPackageName,
                     ),
 
-                    // Route polyline
+                    // ── Geofence polygons ────────────────
+                    BlocBuilder<GeofenceBloc, GeofenceState>(
+                      builder: (context, geofenceState) {
+                        if (geofenceState is! GeofenceLoaded) {
+                          return const SizedBox.shrink();
+                        }
+                        return PolygonLayer(
+                          polygons: geofenceState.activeGeofences.map((g) {
+                            final fillColor = _hexToColor(
+                              g.geofenceColor,
+                            ).withValues(alpha: 0.2);
+                            final borderColor = _hexToColor(g.geofenceColor);
+                            return Polygon(
+                              points: g.coordinates
+                                  .map((c) => LatLng(c.lat, c.lng))
+                                  .toList(),
+                              color: fillColor,
+                              borderColor: borderColor,
+                              borderStrokeWidth: 2,
+                              // isFilled: true,
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+
+                    // ── Route polyline ───────────────────
                     if (loaded != null && loaded.mappablePoints.length > 1)
                       PolylineLayer(
                         polylines: [
@@ -162,7 +187,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                         ],
                       ),
 
-                    // All points markers
+                    // ── All point markers ────────────────
                     if (loaded != null)
                       MarkerLayer(
                         markers: loaded.mappablePoints
@@ -197,6 +222,53 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   ],
                 ),
 
+                if (loaded != null && loaded.points.isEmpty)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 12,
+                    left: 64, // Leaves space for the menu button
+                    right: 64, // Leaves space for the filter button
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.errorContainer.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: colors.onErrorContainer,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'No data found for this timeframe.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colors.onErrorContainer,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // ── Top left: menu button ────────────────
                 SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -211,21 +283,13 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                           colors: colors,
                         ),
                         const SizedBox(width: 8),
-                        // Expanded(
-                        //   child: _studentNameContainer(
-                        //     widget.device.studentName,
-                        //     colors,
-                        //   ),
-                        // ),
-                        const SizedBox(
-                          width: 48,
-                        ), // Gap to prevent overlapping with filter
+                        const SizedBox(width: 48),
                       ],
                     ),
                   ),
                 ),
 
-                // 4. Top Right: Filter + Horizontal Zoom
+                // ── Top right: filter + zoom ─────────────
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 8,
                   right: 12,
@@ -264,10 +328,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   ),
                 ),
 
-                // 5. Bottom Right: My Location
+                // ── Bottom right: my location ────────────
                 Positioned(
                   right: 12,
-                  // Moves up when timeline slider appears
                   bottom: _showTimeline ? 160 : 180,
                   child: _mapIconButton(
                     icon: Icons.my_location_rounded,
@@ -305,6 +368,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     );
   }
 
+  /// Converts a hex color string (e.g. "#FF0000") to a [Color].
+  Color _hexToColor(String hex) {
+    final cleaned = hex.replaceFirst('#', '');
+    final value = int.tryParse(cleaned, radix: 16);
+    if (value == null) return Colors.blue;
+    return Color(0xFF000000 | value);
+  }
+
   Widget _mapIconButton({
     required IconData icon,
     required VoidCallback onTap,
@@ -338,11 +409,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 // import 'package:flutter_map/flutter_map.dart';
 // import 'package:latlong2/latlong.dart';
 // import 'package:skeletonizer/skeletonizer.dart';
+// import '../../../data/network/map_tile_config.dart';
 // import '../../../domain/entities/analytics/analytics_entity.dart';
 // import '../../../domain/entities/device/device_entity.dart';
-// // import '../../../core/di/injection_container.dart';
 // import '../../blocs/analytics/analytics_bloc.dart';
-// // import '../../app/app_router.dart';
 // import 'widgets/filter_bottom_sheet.dart';
 // import 'widgets/timeline_slider.dart';
 // import 'widgets/device_info_panel.dart';
@@ -366,6 +436,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 //     super.initState();
 //     _mapController = MapController();
 //     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.imei));
+//     debugPrint('[DeviceDetailScreen] initState → imei: ${widget.device.imei}');
 //   }
 
 //   @override
@@ -375,6 +446,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 //   }
 
 //   void _openFilterSheet() {
+//     debugPrint('[DeviceDetailScreen] open filter sheet');
 //     showModalBottomSheet(
 //       context: context,
 //       isScrollControlled: true,
@@ -406,7 +478,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 //     if (mappable.length == 1) {
 //       _mapController.move(
 //         LatLng(mappable.first.latitude!, mappable.first.longitude!),
-//         15,
+//         MapTileConfig.defaultZoom,
 //       );
 //       return;
 //     }
@@ -416,214 +488,225 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 //     _mapController.fitCamera(
 //       CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48)),
 //     );
+//     debugPrint('[DeviceDetailScreen] fit map to ${mappable.length} points');
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     final colors = Theme.of(context).colorScheme;
-//     // final user = sl<UserHolder>().user;
 
-//     return Scaffold(
-//       drawer: DetailDrawer(
-//         userName: widget.device.studentName,
-//         imei: widget.device.imei,
-//       ),
-//       body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
-//         listener: (context, state) {
-//           if (state is AnalyticsLoaded && state.mappablePoints.isNotEmpty) {
-//             WidgetsBinding.instance.addPostFrameCallback(
-//               (_) => _fitMapToPoints(state.points),
-//             );
-//           }
-//         },
-//         builder: (context, state) {
-//           final isLoading = state is AnalyticsLoading;
-//           final loaded = state is AnalyticsLoaded ? state : null;
+//     return PopScope(
+//       canPop: !_showTimeline,
+//       onPopInvokedWithResult: (didPop, result) async {
+//         if (_showTimeline) {
+//           setState(() => _showTimeline = false);
+//           context.read<AnalyticsBloc>().add(
+//             AnalyticsFilterChanged(
+//               imei: widget.device.imei,
+//               filter: AnalyticsFilter.latest,
+//             ),
+//           );
+//         }
+//         if (didPop) {
+//           return;
+//         }
+//       },
+//       child: Scaffold(
+//         drawer: DetailDrawer(
+//           userName: widget.device.studentName,
+//           imei: widget.device.imei,
+//           device: widget.device,
+//         ),
+//         body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
+//           listenWhen: (prev, curr) =>
+//               prev is! AnalyticsLoaded ||
+//               (curr is AnalyticsLoaded && prev.points != curr.points),
+//           listener: (context, state) {
+//             if (state is AnalyticsLoaded && state.mappablePoints.isNotEmpty) {
+//               WidgetsBinding.instance.addPostFrameCallback(
+//                 (_) => _fitMapToPoints(state.points),
+//               );
+//             }
+//           },
+//           builder: (context, state) {
+//             final isLoading = state is AnalyticsLoading;
+//             final loaded = state is AnalyticsLoaded ? state : null;
 
-//           // Default map center — device last known or India center
-//           final defaultCenter = widget.device.hasLocation
-//               ? LatLng(
-//                   double.parse(widget.device.latitude!),
-//                   double.parse(widget.device.longitude!),
-//                 )
-//               : const LatLng(28.6172, 77.2094); // New Delhi, India
+//             final defaultCenter = widget.device.hasLocation
+//                 ? LatLng(
+//                     double.parse(widget.device.latitude!),
+//                     double.parse(widget.device.longitude!),
+//                   )
+//                 : const LatLng(28.6172, 77.2094); // New Delhi fallback
 
-//           return Stack(
-//             children: [
-//               // ── Full screen map ──────────────────────
-//               FlutterMap(
-//                 mapController: _mapController,
-//                 options: MapOptions(
-//                   initialCenter: defaultCenter,
-//                   initialZoom: 14,
-//                 ),
-//                 children: [
-//                   TileLayer(
-//                     urlTemplate:
-//                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-//                     userAgentPackageName: 'com.synquerra.app',
+//             return Stack(
+//               children: [
+//                 // ── Full screen map ──────────────────────
+//                 FlutterMap(
+//                   mapController: _mapController,
+//                   options: MapOptions(
+//                     initialCenter: defaultCenter,
+//                     initialZoom: MapTileConfig.defaultZoom,
 //                   ),
-
-//                   // Route polyline
-//                   if (loaded != null && loaded.mappablePoints.length > 1)
-//                     PolylineLayer(
-//                       polylines: [
-//                         Polyline(
-//                           points: loaded.mappablePoints
-//                               .map((p) => LatLng(p.latitude!, p.longitude!))
-//                               .toList(),
-//                           color: colors.primary,
-//                           strokeWidth: 3,
-//                         ),
-//                       ],
+//                   children: [
+//                     TileLayer(
+//                       urlTemplate: MapTileConfig.tileUrlTemplate,
+//                       userAgentPackageName: MapTileConfig.userAgentPackageName,
 //                     ),
 
-//                   // All points markers
-//                   if (loaded != null)
-//                     MarkerLayer(
-//                       markers: loaded.mappablePoints
-//                           .asMap()
-//                           .entries
-//                           .map(
-//                             (e) => Marker(
-//                               point: LatLng(
-//                                 e.value.latitude!,
-//                                 e.value.longitude!,
-//                               ),
-//                               width: 12,
-//                               height: 12,
-//                               child: Container(
-//                                 decoration: BoxDecoration(
-//                                   color: e.key == loaded.sliderIndex
-//                                       ? colors.primary
-//                                       : colors.primary.withOpacity(0.4),
-//                                   shape: BoxShape.circle,
-//                                   border: Border.all(
-//                                     color: Colors.white,
-//                                     width: e.key == loaded.sliderIndex ? 2 : 1,
+//                     // Route polyline
+//                     if (loaded != null && loaded.mappablePoints.length > 1)
+//                       PolylineLayer(
+//                         polylines: [
+//                           Polyline(
+//                             points: loaded.mappablePoints
+//                                 .map((p) => LatLng(p.latitude!, p.longitude!))
+//                                 .toList(),
+//                             color: colors.primary,
+//                             strokeWidth: 3,
+//                           ),
+//                         ],
+//                       ),
+
+//                     // All points markers
+//                     if (loaded != null)
+//                       MarkerLayer(
+//                         markers: loaded.mappablePoints
+//                             .asMap()
+//                             .entries
+//                             .map(
+//                               (e) => Marker(
+//                                 point: LatLng(
+//                                   e.value.latitude!,
+//                                   e.value.longitude!,
+//                                 ),
+//                                 width: e.key == loaded.sliderIndex ? 18 : 12,
+//                                 height: e.key == loaded.sliderIndex ? 18 : 12,
+//                                 child: Container(
+//                                   decoration: BoxDecoration(
+//                                     color: e.key == loaded.sliderIndex
+//                                         ? colors.primary
+//                                         : colors.primary.withValues(alpha: 0.4),
+//                                     shape: BoxShape.circle,
+//                                     border: Border.all(
+//                                       color: Colors.white,
+//                                       width: e.key == loaded.sliderIndex
+//                                           ? 2
+//                                           : 1,
+//                                     ),
 //                                   ),
 //                                 ),
 //                               ),
-//                             ),
-//                           )
-//                           .toList(),
+//                             )
+//                             .toList(),
+//                       ),
+//                   ],
+//                 ),
+
+//                 SafeArea(
+//                   child: Padding(
+//                     padding: const EdgeInsets.symmetric(
+//                       horizontal: 12,
+//                       vertical: 8,
 //                     ),
-//                 ],
-//               ),
-
-//               // ── Top bar ──────────────────────────────
-//               SafeArea(
-//                 child: Padding(
-//                   padding: const EdgeInsets.symmetric(
-//                     horizontal: 12,
-//                     vertical: 8,
-//                   ),
-//                   child: Row(
-//                     children: [
-//                       // Drawer button
-//                       _mapIconButton(
-//                         icon: Icons.menu_rounded,
-//                         onTap: () => Scaffold.of(context).openDrawer(),
-//                         colors: colors,
-//                       ),
-//                       const SizedBox(width: 8),
-
-//                       // Student name chip
-//                       Expanded(
-//                         child: Container(
-//                           padding: const EdgeInsets.symmetric(
-//                             horizontal: 14,
-//                             vertical: 8,
-//                           ),
-//                           decoration: BoxDecoration(
-//                             color: colors.surface,
-//                             borderRadius: BorderRadius.circular(12),
-//                             boxShadow: [
-//                               BoxShadow(
-//                                 color: Colors.black.withOpacity(0.08),
-//                                 blurRadius: 8,
-//                               ),
-//                             ],
-//                           ),
-//                           child: Text(
-//                             widget.device.studentName,
-//                             style: TextStyle(
-//                               fontWeight: FontWeight.w600,
-//                               fontSize: 14,
-//                               color: colors.onSurface,
-//                             ),
-//                             overflow: TextOverflow.ellipsis,
-//                           ),
+//                     child: Row(
+//                       children: [
+//                         _mapIconButton(
+//                           icon: Icons.menu_rounded,
+//                           onTap: () => Scaffold.of(context).openDrawer(),
+//                           colors: colors,
 //                         ),
-//                       ),
-//                       const SizedBox(width: 8),
+//                         const SizedBox(width: 8),
+//                         // Expanded(
+//                         //   child: _studentNameContainer(
+//                         //     widget.device.studentName,
+//                         //     colors,
+//                         //   ),
+//                         // ),
+//                         const SizedBox(
+//                           width: 48,
+//                         ), // Gap to prevent overlapping with filter
+//                       ],
+//                     ),
+//                   ),
+//                 ),
 
-//                       // Filter button
+//                 // 4. Top Right: Filter + Horizontal Zoom
+//                 Positioned(
+//                   top: MediaQuery.of(context).padding.top + 8,
+//                   right: 12,
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.end,
+//                     children: [
 //                       _mapIconButton(
 //                         icon: Icons.filter_list_rounded,
 //                         onTap: _openFilterSheet,
 //                         colors: colors,
 //                         highlighted: _showTimeline,
 //                       ),
+//                       const SizedBox(height: 8),
+//                       Column(
+//                         children: [
+//                           _mapIconButton(
+//                             icon: Icons.add_rounded,
+//                             onTap: () => _mapController.move(
+//                               _mapController.camera.center,
+//                               _mapController.camera.zoom + 1,
+//                             ),
+//                             colors: colors,
+//                           ),
+//                           const SizedBox(height: 8),
+//                           _mapIconButton(
+//                             icon: Icons.remove_rounded,
+//                             onTap: () => _mapController.move(
+//                               _mapController.camera.center,
+//                               _mapController.camera.zoom - 1,
+//                             ),
+//                             colors: colors,
+//                           ),
+//                         ],
+//                       ),
 //                     ],
 //                   ),
 //                 ),
-//               ),
 
-//               // ── Zoom controls ────────────────────────
-//               Positioned(
-//                 right: 12,
-//                 bottom: _showTimeline ? 280 : 200,
-//                 child: Column(
-//                   children: [
-//                     _mapIconButton(
-//                       icon: Icons.add_rounded,
-//                       onTap: () => _mapController.move(
-//                         _mapController.camera.center,
-//                         _mapController.camera.zoom + 1,
-//                       ),
-//                       colors: colors,
-//                     ),
-//                     const SizedBox(height: 8),
-//                     _mapIconButton(
-//                       icon: Icons.remove_rounded,
-//                       onTap: () => _mapController.move(
-//                         _mapController.camera.center,
-//                         _mapController.camera.zoom - 1,
-//                       ),
-//                       colors: colors,
-//                     ),
-//                     const SizedBox(height: 8),
-//                     _mapIconButton(
-//                       icon: Icons.my_location_rounded,
-//                       onTap: () => _mapController.move(defaultCenter, 14),
-//                       colors: colors,
-//                     ),
-//                   ],
+//                 // 5. Bottom Right: My Location
+//                 Positioned(
+//                   right: 12,
+//                   // Moves up when timeline slider appears
+//                   bottom: _showTimeline ? 160 : 180,
+//                   child: _mapIconButton(
+//                     icon: Icons.my_location_rounded,
+//                     onTap: () => _mapController.move(defaultCenter, 14),
+//                     colors: colors,
+//                   ),
 //                 ),
-//               ),
 
-//               // ── Bottom panel ─────────────────────────
-//               Positioned(
-//                 left: 0,
-//                 right: 0,
-//                 bottom: 0,
-//                 child: Skeletonizer(
-//                   enabled: isLoading,
-//                   child: _showTimeline && loaded != null
-//                       ? TimelineSlider(
-//                           points: loaded.mappablePoints,
-//                           currentIndex: loaded.sliderIndex,
-//                           onChanged: (i) => context.read<AnalyticsBloc>().add(
-//                             AnalyticsSliderChanged(i),
-//                           ),
-//                         )
-//                       : DeviceInfoPanel(device: widget.device, loaded: loaded),
+//                 // ── Bottom panel ─────────────────────────
+//                 Positioned.fill(
+//                   child: Align(
+//                     alignment: Alignment.bottomCenter,
+//                     child: Skeletonizer(
+//                       enabled: isLoading,
+//                       child: _showTimeline && loaded != null
+//                           ? TimelineSlider(
+//                               points: loaded.mappablePoints,
+//                               currentIndex: loaded.sliderIndex,
+//                               onChanged: (i) => context
+//                                   .read<AnalyticsBloc>()
+//                                   .add(AnalyticsSliderChanged(i)),
+//                             )
+//                           : DeviceInfoPanel(
+//                               device: widget.device,
+//                               loaded: loaded,
+//                             ),
+//                     ),
+//                   ),
 //                 ),
-//               ),
-//             ],
-//           );
-//         },
+//               ],
+//             );
+//           },
+//         ),
 //       ),
 //     );
 //   }
