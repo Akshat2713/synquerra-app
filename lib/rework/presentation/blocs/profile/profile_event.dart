@@ -9,8 +9,9 @@ abstract class ProfileEvent {
 }
 
 class ProfileLoadRequested extends ProfileEvent {
-  final String imei;
-  const ProfileLoadRequested(this.imei);
+  final DeviceEntity device;
+  final AnalyticsEntity? analytics; // ← new field
+  const ProfileLoadRequested(this.device, this.analytics);
 }
 
 class ProfileModeChanged extends ProfileEvent {

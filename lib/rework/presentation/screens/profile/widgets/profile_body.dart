@@ -15,13 +15,13 @@ import 'guardians_section.dart';
 
 class ProfileBody extends StatelessWidget {
   final ProfileEntity profile;
-  final VoidCallback onSignOut;
+  // final VoidCallback onSignOut;
   final DeviceEntity device; // DeviceEntity
 
   const ProfileBody({
     super.key,
     required this.profile,
-    required this.onSignOut,
+    // required this.onSignOut,
     required this.device,
   });
 
@@ -48,39 +48,35 @@ class ProfileBody extends StatelessWidget {
         const SectionLabel(text: 'NETWORK · DUAL ESIM'),
         const SizedBox(height: 8),
         NetworkCard(
-          sim1Label: profile.sim1Label,
-          sim1Carrier: profile.sim1Carrier,
-          sim1DataLeft: profile.sim1DataLeft,
-          sim1SignalBars: profile.sim1SignalBars,
-          sim2Label: profile.sim2Label,
-          sim2Carrier: profile.sim2Carrier,
-          sim2DataLeft: profile.sim2DataLeft,
-          sim2SignalBars: profile.sim2SignalBars,
+          sim1: profile.sim1,
+          sim2: profile.sim2,
           onSwitchSim: () => bloc.add(const ProfileSimSwitchRequested()),
         ),
         const SizedBox(height: 20),
         const SectionLabel(text: 'BATTERY'),
         const SizedBox(height: 8),
         BatterySection(
-          percent: int.parse(device.battery!), // Use battery from DeviceEntity
-          chargeByTime: profile.batteryChargeByTime,
-          statusText: profile.batteryStatus,
+          percent:
+              int.tryParse(device.battery ?? '0') ??
+              0, // ← from device, not profile
+          chargeByTime: 'Charge before 4:00 am', // from profile API when wired
+          statusText: 'Discharging', // from profile API when wired
         ),
         const SizedBox(height: 20),
         const SectionLabel(text: 'NOTIFICATIONS'),
         const SizedBox(height: 8),
         NotificationsSection(
-          emergency: profile.notifyEmergency,
-          daily: profile.notifyDaily,
-          movement: profile.notifyMovement,
-          battery: profile.notifyBattery,
+          emergency: profile.notifications.emergency,
+          daily: profile.notifications.daily,
+          movement: profile.notifications.movement,
+          battery: profile.notifications.battery,
           onChanged: (type, value) =>
               bloc.add(ProfileNotificationToggled(type, value)),
         ),
         const SizedBox(height: 20),
         const SectionLabel(text: 'GUARDIANS'),
         const SizedBox(height: 8),
-        GuardiansSection(guardians: profile.guardians, onSignOut: onSignOut),
+        GuardiansSection(guardians: profile.guardians),
         const SizedBox(height: 32),
       ],
     );

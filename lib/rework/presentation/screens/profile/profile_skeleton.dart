@@ -11,26 +11,38 @@ const _fakeProfile = ProfileEntity(
   roleBadge: 'Guardian',
   isPro: true,
   operatingMode: OperatingMode.normal,
-  sim1Label: 'S1 · Active',
-  sim1Carrier: 'Airtel 4G',
-  sim1DataLeft: '2.4 GB left',
-  sim1SignalBars: 4,
-  sim2Label: 'S2 · Switch',
-  sim2Carrier: 'Jio 5G',
-  sim2DataLeft: '8.1 GB left',
-  sim2SignalBars: 3,
-  batteryPercent: 78,
-  batteryChargeByTime: 'Charge before 4:00 am',
-  batteryStatus: 'Discharging ~14 hrs remaining',
-  notifyEmergency: true,
-  notifyDaily: true,
-  notifyMovement: false,
-  notifyBattery: true,
+  sim1: SimInfo(
+    label: 'S1 · Active',
+    carrier: 'Airtel 4G',
+    dataLeft: '2.4 GB left',
+    signalBars: 4,
+  ),
+  sim2: SimInfo(
+    label: 'S2 · Switch',
+    carrier: 'Jio 5G',
+    dataLeft: '8.1 GB left',
+    signalBars: 3,
+  ),
+  notifications: NotificationSettings(
+    emergency: true,
+    daily: true,
+    movement: false,
+    battery: true,
+  ),
   guardians: [
-    GuardianEntity(name: 'Meera Sharma', isPrimary: true),
-    GuardianEntity(name: 'Raj Sharma', isPrimary: false),
+    GuardianEntity(
+      name: 'Meera Sharma',
+      phoneNumber: '9876543210',
+      isPrimary: true,
+    ),
+    GuardianEntity(
+      name: 'Raj Sharma',
+      phoneNumber: '9876543211',
+      isPrimary: false,
+    ),
   ],
 );
+
 const _fakeDevice = DeviceEntity(
   topic: '862942074957887/pub',
   imei: '862942074957887',
@@ -68,7 +80,7 @@ class ProfileSkeleton extends StatelessWidget {
       ),
       child: ProfileBody(
         profile: _fakeProfile,
-        onSignOut: () {},
+        // onSignOut: () {},
         device: _fakeDevice,
       ),
     );

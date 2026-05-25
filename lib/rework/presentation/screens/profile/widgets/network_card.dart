@@ -1,57 +1,42 @@
 import 'package:flutter/material.dart';
 
+import '../../../../domain/entities/profile/profile_entity.dart';
+
 class NetworkCard extends StatelessWidget {
-  final String sim1Label;
-  final String sim1Carrier;
-  final String sim1DataLeft;
-  final int sim1SignalBars;
-
-  final String sim2Label;
-  final String sim2Carrier;
-  final String sim2DataLeft;
-  final int sim2SignalBars;
-
+  final SimInfo sim1;
+  final SimInfo sim2;
   final VoidCallback onSwitchSim;
 
   const NetworkCard({
     super.key,
-    required this.sim1Label,
-    required this.sim1Carrier,
-    required this.sim1DataLeft,
-    required this.sim1SignalBars,
-    required this.sim2Label,
-    required this.sim2Carrier,
-    required this.sim2DataLeft,
-    required this.sim2SignalBars,
+    required this.sim1,
+    required this.sim2,
     required this.onSwitchSim,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return Row(
       children: [
-        // SIM 1 – active
         Expanded(
           child: _SimTile(
-            label: sim1Label,
-            carrier: sim1Carrier,
-            dataLeft: sim1DataLeft,
-            signalBars: sim1SignalBars,
+            label: sim1.label,
+            carrier: sim1.carrier,
+            dataLeft: sim1.dataLeft,
+            signalBars: sim1.signalBars,
             isActive: true,
             onTap: null,
             colors: colors,
           ),
         ),
         const SizedBox(width: 8),
-        // SIM 2 – switch
         Expanded(
           child: _SimTile(
-            label: sim2Label,
-            carrier: sim2Carrier,
-            dataLeft: sim2DataLeft,
-            signalBars: sim2SignalBars,
+            label: sim2.label,
+            carrier: sim2.carrier,
+            dataLeft: sim2.dataLeft,
+            signalBars: sim2.signalBars,
             isActive: false,
             onTap: onSwitchSim,
             colors: colors,

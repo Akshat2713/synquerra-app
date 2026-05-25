@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
+import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../app/app_router.dart';
+import '../../../blocs/analytics/analytics_bloc.dart';
 // import '../../../blocs/theme/theme_cubit.dart';
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
   final DeviceEntity device; // DeviceEntity
+  // final AnalyticsEntity? analytics; // 1. Add this field
 
   const DetailDrawer({
     super.key,
     required this.userName,
     required this.imei,
     required this.device,
+    // required this.analytics, // 2. Optional parameter
   });
 
   @override
@@ -81,12 +85,22 @@ class DetailDrawer extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               onTap: () {
+                final state = context.read<AnalyticsBloc>().state;
+                AnalyticsEntity? latest;
+                if (state is AnalyticsLoaded && state.points.isNotEmpty) {
+                  latest = state.points.first; // Grab the point
+                }
+
+                debugPrint('Passing to profile! Phone1 is: ${latest?.phone1}');
                 // Navigator.pop(context);
                 // TODO: Navigator.pushNamed(context, AppRoutes.profile);
                 Navigator.pushNamed(
                   context,
                   AppRoutes.profile,
-                  arguments: device, // DeviceEntity
+                  arguments: {
+                    'device': device, // DeviceEntity
+                    'analytics': latest, // AnalyticsEntity?
+                  }, // DeviceEntity
                 );
               },
             ),

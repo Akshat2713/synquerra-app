@@ -37,7 +37,7 @@ class AnalyticsRemoteDataSource {
             '${dataInterval != null ? ', dataInterval: $dataInterval' : ''}'
             '${startDate != null ? ', startDate: "$startDate"' : ''}'
             '${endDate != null ? ', endDate: "$endDate"' : ''}'
-            ') { id topic imei packet latitude longitude speed battery signal geoid deviceTimestamp  } }',
+            ') {id topic imei interval geoid packet latitude longitude speed battery signal alert timestamp deviceTimestamp deviceRawTimestamp rawAlert type rawTemperature rawPhone1 rawPhone2 rawControlPhone} }',
       },
     );
 

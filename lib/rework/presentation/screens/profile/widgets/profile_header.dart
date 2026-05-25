@@ -78,14 +78,14 @@ class _ProBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_rounded, size: 12, color: colors.tertiary),
+          Icon(Icons.star_rounded, size: 12, color: colors.onTertiaryContainer),
           const SizedBox(width: 3),
           Text(
             'Pro',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: colors.tertiary,
+              color: colors.onTertiaryContainer,
             ),
           ),
         ],

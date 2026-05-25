@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/repositories_impl/device_repository_impl.dart';
 import '../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/failures/failure.dart';
+import '../../../domain/repositories/device_repository.dart';
 import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
 import '../../../domain/usecases/base_usecase.dart';
@@ -13,12 +15,16 @@ part 'home_state.dart';
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetAlertsUseCase _getAlertsUseCase;
   final GetDeviceListUseCase _getDeviceListUseCase;
+  final DeviceRepository _deviceRepository;
 
   HomeBloc({
     required GetAlertsUseCase getAlertsUseCase,
     required GetDeviceListUseCase getDeviceListUseCase,
+    required DeviceRepository deviceRepository,
   }) : _getAlertsUseCase = getAlertsUseCase,
        _getDeviceListUseCase = getDeviceListUseCase,
+       _deviceRepository = deviceRepository,
+
        super(HomeInitial()) {
     on<HomeLoadRequested>(_onLoad);
     on<HomeRefreshRequested>(_onRefresh);
@@ -34,7 +40,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     HomeRefreshRequested event,
     Emitter<HomeState> emit,
   ) async {
-    // keep existing data visible while refreshing
+    (_deviceRepository as DeviceRepositoryImpl).invalidateCache(); // bust cache
     await _fetchData(emit);
   }
 

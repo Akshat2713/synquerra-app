@@ -144,7 +144,11 @@ Future<void> initDependencies() async {
 
   // ── Home ──────────────────────────────────────────
   sl.registerFactory<HomeBloc>(
-    () => HomeBloc(getAlertsUseCase: sl(), getDeviceListUseCase: sl()),
+    () => HomeBloc(
+      getAlertsUseCase: sl(),
+      getDeviceListUseCase: sl(),
+      deviceRepository: sl(),
+    ),
   );
 
   // ── Analytics BLoC ────────────────────────────────

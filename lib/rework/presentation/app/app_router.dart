@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection_container.dart';
+import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
 // import '../blocs/alerts/alerts_bloc.dart';
 import '../blocs/alerts_errors/alerts_errors_bloc.dart';
@@ -100,12 +101,15 @@ class AppRouter {
       //   Navigator.pushNamed(context, AppRoutes.profile,
       //       arguments: imei);
       case AppRoutes.profile:
-        final device = settings.arguments as DeviceEntity;
+        // final device = settings.arguments as DeviceEntity;
+        final args = settings.arguments as Map<String, dynamic>;
+        final device = args['device'] as DeviceEntity;
+        final analytics = args['analytics'] as AnalyticsEntity?;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<ProfileBloc>(),
-            child: ProfileScreen(device: device),
+            child: ProfileScreen(device: device, analytics: analytics),
           ),
         );
 
