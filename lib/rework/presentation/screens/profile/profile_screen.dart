@@ -36,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state is ProfileInitial || state is ProfileLoading) {
-            return const ProfileSkeleton();
+            return ProfileSkeleton(device: widget.device);
           }
           if (state is ProfileError) {
             return _ErrorView(

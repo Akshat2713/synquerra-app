@@ -1,3 +1,5 @@
+// presentation/screens/device_detail/device_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -8,7 +10,8 @@ import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
-import 'widgets/filter_bottom_sheet.dart';
+import '../../widgets/analytics_filter_sheet.dart';
+import 'widgets/map_icon_button.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/device_info_panel.dart';
 import 'widgets/detail_drawer.dart';
@@ -42,28 +45,32 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
   void _openFilterSheet() {
     debugPrint('[DeviceDetailScreen] open filter sheet');
-    showModalBottomSheet(
+
+    // Retrieve the active filter from the bloc state, defaulting to latest
+    final currentState = context.read<AnalyticsBloc>().state;
+    final activeFilter = currentState is AnalyticsLoaded
+        ? currentState.activeFilter
+        : AnalyticsFilter.latest;
+
+    showAnalyticsFilterSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => FilterBottomSheet(
-        onFilterSelected: (filter) {
-          setState(() => _showTimeline = true);
-          context.read<AnalyticsBloc>().add(
-            AnalyticsFilterChanged(imei: widget.device.imei, filter: filter),
-          );
-        },
-        onCustomSelected: (start, end) {
-          setState(() => _showTimeline = true);
-          context.read<AnalyticsBloc>().add(
-            AnalyticsCustomRangeSelected(
-              imei: widget.device.imei,
-              startDate: start,
-              endDate: end,
-            ),
-          );
-        },
-      ),
+      activeFilter: activeFilter,
+      onFilterSelected: (filter) {
+        setState(() => _showTimeline = true);
+        context.read<AnalyticsBloc>().add(
+          AnalyticsFilterChanged(imei: widget.device.imei, filter: filter),
+        );
+      },
+      onCustomSelected: (start, end) {
+        setState(() => _showTimeline = true);
+        context.read<AnalyticsBloc>().add(
+          AnalyticsCustomRangeSelected(
+            imei: widget.device.imei,
+            startDate: start,
+            endDate: end,
+          ),
+        );
+      },
     );
   }
 
@@ -108,7 +115,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         drawer: DetailDrawer(
           userName: widget.device.studentName,
           imei: widget.device.imei,
-          device: widget.device, // TODO: pass real analytics data here
+          device: widget.device,
         ),
         body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
           listenWhen: (prev, curr) =>
@@ -126,10 +133,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             final loaded = state is AnalyticsLoaded ? state : null;
 
             final defaultCenter = widget.device.hasLocation
-                ? LatLng(
-                    double.parse(widget.device.latitude!),
-                    double.parse(widget.device.longitude!),
-                  )
+                ? LatLng(widget.device.latitude!, widget.device.longitude!)
                 : const LatLng(28.6172, 77.2094); // New Delhi fallback
 
             return Stack(
@@ -277,7 +281,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        _mapIconButton(
+                        MapIconButton(
                           icon: Icons.menu_rounded,
                           onTap: () => Scaffold.of(context).openDrawer(),
                           colors: colors,
@@ -296,7 +300,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _mapIconButton(
+                      MapIconButton(
                         icon: Icons.filter_list_rounded,
                         onTap: _openFilterSheet,
                         colors: colors,
@@ -305,7 +309,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       const SizedBox(height: 8),
                       Column(
                         children: [
-                          _mapIconButton(
+                          MapIconButton(
                             icon: Icons.add_rounded,
                             onTap: () => _mapController.move(
                               _mapController.camera.center,
@@ -314,7 +318,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                             colors: colors,
                           ),
                           const SizedBox(height: 8),
-                          _mapIconButton(
+                          MapIconButton(
                             icon: Icons.remove_rounded,
                             onTap: () => _mapController.move(
                               _mapController.camera.center,
@@ -332,7 +336,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 Positioned(
                   right: 12,
                   bottom: _showTimeline ? 160 : 180,
-                  child: _mapIconButton(
+                  child: MapIconButton(
                     icon: Icons.my_location_rounded,
                     onTap: () => _mapController.move(defaultCenter, 14),
                     colors: colors,
@@ -374,32 +378,5 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     final value = int.tryParse(cleaned, radix: 16);
     if (value == null) return Colors.blue;
     return Color(0xFF000000 | value);
-  }
-
-  Widget _mapIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required ColorScheme colors,
-    bool highlighted = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: highlighted ? colors.primary : colors.surface,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8),
-          ],
-        ),
-        child: Icon(
-          icon,
-          size: 20,
-          color: highlighted ? colors.onPrimary : colors.onSurface,
-        ),
-      ),
-    );
   }
 }

@@ -1,7 +1,11 @@
+// presentation/widgets/device_card.dart
+
 import 'package:flutter/material.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
 import '../app/app_router.dart';
+import '../themes/colors.dart';
+import '../utils/colour_util.dart'; // Added AppColors import
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -28,9 +32,9 @@ class DeviceCard extends StatelessWidget {
       (a) => a.severity == AlertSeverity.advisory && !a.isAcknowledged,
     );
 
-    if (hasCritical) return const Color(0xFFFF4444);
-    if (hasAdvisory) return const Color(0xFFFFAA00);
-    return const Color(0xFF22C55E);
+    if (hasCritical) return AppColors.alertCritical;
+    if (hasAdvisory) return AppColors.alertWarning;
+    return AppColors.alertSuccess;
   }
 
   Color _borderColorLight() => _borderColor().withOpacity(0.15);
@@ -172,7 +176,7 @@ class DeviceCard extends StatelessWidget {
                           }
                         },
                         itemBuilder: (_) => [
-                          PopupMenuItem(
+                          const PopupMenuItem(
                             value: 'details',
                             child: Text('View Details'),
                           ),
@@ -198,7 +202,7 @@ class DeviceCard extends StatelessWidget {
                         value: device.battery != null
                             ? '${device.battery}%'
                             : null,
-                        color: _batteryColor(device.battery),
+                        color: batteryColor(device.battery),
                       ),
                       const SizedBox(width: 16),
                       _statChip(
@@ -267,12 +271,12 @@ class DeviceCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isActive
-                                ? const Color(0xFF22C55E).withOpacity(0.12)
+                                ? AppColors.alertSuccess.withOpacity(0.12)
                                 : colors.onSurfaceVariant.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isActive
-                                  ? const Color(0xFF22C55E)
+                                  ? AppColors.alertSuccess
                                   : colors.onSurfaceVariant.withOpacity(0.4),
                               width: 1,
                             ),
@@ -285,7 +289,7 @@ class DeviceCard extends StatelessWidget {
                                 height: 7,
                                 decoration: BoxDecoration(
                                   color: isActive
-                                      ? const Color(0xFF22C55E)
+                                      ? AppColors.alertSuccess
                                       : colors.onSurfaceVariant,
                                   shape: BoxShape.circle,
                                 ),
@@ -297,7 +301,7 @@ class DeviceCard extends StatelessWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: isActive
-                                      ? const Color(0xFF22C55E)
+                                      ? AppColors.alertSuccess
                                       : colors.onSurfaceVariant,
                                 ),
                               ),
@@ -314,13 +318,5 @@ class DeviceCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _batteryColor(String? battery) {
-    if (battery == null) return Colors.grey;
-    final value = int.tryParse(battery) ?? 0;
-    if (value <= 20) return const Color(0xFFFF4444);
-    if (value <= 50) return const Color(0xFFFFAA00);
-    return const Color(0xFF22C55E);
   }
 }

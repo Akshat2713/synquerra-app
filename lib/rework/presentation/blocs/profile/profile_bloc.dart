@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/profile/profile_entity.dart';
+import '../../../presentation/screens/profile/profile_skeleton.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -33,29 +34,45 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       debugPrint('Using phone1: $phone1');
 
       final phone2 = event.analytics!.phone2;
-      final mock = ProfileEntity(
-        fullName: event.device.studentName, // ← pull from real device
-        roleBadge: 'Guardian',
-        isPro: true,
-        operatingMode: OperatingMode.normal,
-        sim1: const SimInfo(
-          label: 'S1 · Active',
-          carrier: 'Airtel 4G',
-          dataLeft: '2.4 GB left',
-          signalBars: 4,
-        ),
-        sim2: const SimInfo(
-          label: 'S2 · Switch',
-          carrier: 'Jio 5G',
-          dataLeft: '8.1 GB left',
-          signalBars: 3,
-        ),
-        notifications: const NotificationSettings(
-          emergency: true,
-          daily: true,
-          movement: false,
-          battery: true,
-        ),
+      // final mock = ProfileEntity(
+      //   fullName: event.device.studentName, // ← pull from real device
+      //   roleBadge: 'Guardian',
+      //   isPro: true,
+      //   operatingMode: OperatingMode.normal,
+      //   sim1: const SimInfo(
+      //     label: 'S1 · Active',
+      //     carrier: 'Airtel 4G',
+      //     dataLeft: '2.4 GB left',
+      //     signalBars: 4,
+      //   ),
+      //   sim2: const SimInfo(
+      //     label: 'S2 · Switch',
+      //     carrier: 'Jio 5G',
+      //     dataLeft: '8.1 GB left',
+      //     signalBars: 3,
+      //   ),
+      //   notifications: const NotificationSettings(
+      //     emergency: true,
+      //     daily: true,
+      //     movement: false,
+      //     battery: true,
+      //   ),
+      //   guardians: [
+      //     GuardianEntity(
+      //       name: 'Meera Sharma',
+      //       phoneNumber: phone1!,
+      //       isPrimary: true,
+      //     ),
+      //     GuardianEntity(
+      //       name: 'Raj Sharma',
+      //       phoneNumber: phone2!,
+      //       isPrimary: false,
+      //     ),
+      //   ],
+      // );
+
+      final mock = fakeProfileEntity.copyWith(
+        fullName: event.device.studentName,
         guardians: [
           GuardianEntity(
             name: 'Meera Sharma',
@@ -69,6 +86,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           ),
         ],
       );
+
       emit(ProfileLoaded(mock));
     } catch (e) {
       emit(ProfileError(e.toString()));

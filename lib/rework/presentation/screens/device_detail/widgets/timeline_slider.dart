@@ -63,7 +63,7 @@ class TimelineSlider extends StatelessWidget {
                 ),
                 _infoChip(
                   icon: Icons.speed_rounded,
-                  label: current.speed ?? 'N/A',
+                  label: current.speed?.toString() ?? 'N/A',
                   colors: colors,
                 ),
                 _infoChip(

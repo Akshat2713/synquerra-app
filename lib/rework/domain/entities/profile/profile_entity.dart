@@ -65,18 +65,20 @@ class ProfileEntity {
   });
 
   ProfileEntity copyWith({
+    String? fullName,
+    List<GuardianEntity>? guardians,
     OperatingMode? operatingMode,
     SimInfo? sim1,
     SimInfo? sim2,
     NotificationSettings? notifications,
   }) => ProfileEntity(
-    fullName: fullName,
+    fullName: fullName ?? this.fullName,
     roleBadge: roleBadge,
     isPro: isPro,
     operatingMode: operatingMode ?? this.operatingMode,
     sim1: sim1 ?? this.sim1,
     sim2: sim2 ?? this.sim2,
     notifications: notifications ?? this.notifications,
-    guardians: guardians,
+    guardians: guardians ?? this.guardians,
   );
 }

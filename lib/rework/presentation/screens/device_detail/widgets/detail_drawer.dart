@@ -1,11 +1,13 @@
+// presentation/screens/device_detail/widgets/detail_drawer.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
+import 'package:synquerra/rework/presentation/screens/device_detail/widgets/drawer_item.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../app/app_router.dart';
 import '../../../blocs/analytics/analytics_bloc.dart';
-// import '../../../blocs/theme/theme_cubit.dart';
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
@@ -80,8 +82,7 @@ class DetailDrawer extends StatelessWidget {
             const SizedBox(height: 8),
 
             // ── Menu items ───────────────────────────
-            _drawerItem(
-              context: context,
+            DrawerItem(
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               onTap: () {
@@ -104,8 +105,7 @@ class DetailDrawer extends StatelessWidget {
                 );
               },
             ),
-            _drawerItem(
-              context: context,
+            DrawerItem(
               icon: Icons.analytics_outlined,
               label: 'Telemetry History',
               onTap: () {
@@ -119,8 +119,7 @@ class DetailDrawer extends StatelessWidget {
                 // TODO: Navigator.pushNamed(context, AppRoutes.telemetryHistory);
               },
             ),
-            _drawerItem(
-              context: context,
+            DrawerItem(
               icon: Icons.notifications_outlined,
               label: 'Notifications',
               onTap: () {
@@ -133,8 +132,7 @@ class DetailDrawer extends StatelessWidget {
                 // TODO: Navigator.pushNamed(context, AppRoutes.notifications);
               },
             ),
-            _drawerItem(
-              context: context,
+            DrawerItem(
               icon: Icons.settings_outlined,
               label: 'Settings',
               onTap: () {
@@ -149,8 +147,7 @@ class DetailDrawer extends StatelessWidget {
             BlocBuilder<ThemeCubit, ThemeMode>(
               builder: (context, themeMode) {
                 final isDark = themeMode == ThemeMode.dark;
-                return _drawerItem(
-                  context: context,
+                return DrawerItem(
                   icon: isDark
                       ? Icons.dark_mode_rounded
                       : Icons.light_mode_rounded,
@@ -173,36 +170,6 @@ class DetailDrawer extends StatelessWidget {
       ),
     );
   }
-
-  Widget _drawerItem({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    Color? iconColor,
-    Color? labelColor,
-    Widget? trailing,
-  }) {
-    final colors = Theme.of(context).colorScheme;
-
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: iconColor ?? colors.onSurfaceVariant,
-        size: 22,
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: labelColor ?? colors.onSurface,
-        ),
-      ),
-      trailing: trailing,
-      onTap: onTap,
-      horizontalTitleGap: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    );
-  }
 }
+
+// ── Extracted StatelessWidget ────────────────────────────────────────────────

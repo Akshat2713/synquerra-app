@@ -56,9 +56,7 @@ class ProfileBody extends StatelessWidget {
         const SectionLabel(text: 'BATTERY'),
         const SizedBox(height: 8),
         BatterySection(
-          percent:
-              int.tryParse(device.battery ?? '0') ??
-              0, // ← from device, not profile
+          percent: device.battery ?? 0, // ← from device, not profile
           chargeByTime: 'Charge before 4:00 am', // from profile API when wired
           statusText: 'Discharging', // from profile API when wired
         ),

@@ -1,3 +1,5 @@
+// data/models/analytics_model.dart
+
 import '../../../domain/entities/analytics/analytics_entity.dart';
 
 class AnalyticsModel {
@@ -79,9 +81,9 @@ class AnalyticsModel {
     packet: packet,
     latitude: latitude != null ? double.tryParse(latitude!) : null,
     longitude: longitude != null ? double.tryParse(longitude!) : null,
-    speed: speed.toString(),
-    battery: battery,
-    signal: signal,
+    speed: speed, // Keep as double
+    battery: battery != null ? int.tryParse(battery!) : null,
+    signal: signal != null ? int.tryParse(signal!) : null,
     geoid: geoid,
     interval: interval,
     alert: alert,

@@ -29,6 +29,14 @@ class AppColors {
   static const Color infoLight = Color(0xFF7A78E0);
   static const Color infoDark = Color(0xFF3F3E9C);
 
+  // ===== ALERT COLORS =====
+  static const Color alertCritical = Color(0xFFFF4444);
+  static const Color alertCriticalBg = Color(0xFFFFEBEB);
+  static const Color alertCriticalText = Color(0xFFCC0000);
+  static const Color alertWarning = Color(0xFFFFAA00);
+  static const Color alertSuccess = Color(0xFF22C55E);
+  static const Color failureRed = Color(0xFFDC2626);
+
   // ===== LIGHT THEME COLORS =====
   // Backgrounds & Surfaces
   static const Color lightBackground = Color(0xFFF5F5F5);

@@ -1,17 +1,26 @@
 part of 'home_bloc.dart';
 
-abstract class HomeState {}
+abstract class HomeState extends Equatable {
+  const HomeState();
 
-class HomeInitial extends HomeState {}
+  @override
+  List<Object?> get props => [];
+}
 
-class HomeLoading extends HomeState {}
+class HomeInitial extends HomeState {
+  const HomeInitial();
+}
+
+class HomeLoading extends HomeState {
+  const HomeLoading();
+}
 
 class HomeLoaded extends HomeState {
   final List<AlertErrorEntity> alerts;
   final List<DeviceEntity> devices;
   final Set<String> toggledImeis; // tracks visual active/inactive toggles
 
-  HomeLoaded({
+  const HomeLoaded({
     required this.alerts,
     required this.devices,
     this.toggledImeis = const {},
@@ -42,9 +51,16 @@ class HomeLoaded extends HomeState {
       toggledImeis: toggledImeis ?? this.toggledImeis,
     );
   }
+
+  @override
+  List<Object?> get props => [alerts, devices, toggledImeis];
 }
 
 class HomeError extends HomeState {
   final String message;
-  HomeError(this.message);
+
+  const HomeError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

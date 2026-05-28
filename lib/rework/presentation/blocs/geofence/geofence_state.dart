@@ -1,22 +1,38 @@
 part of 'geofence_bloc.dart';
 
-abstract class GeofenceState {}
+abstract class GeofenceState extends Equatable {
+  const GeofenceState();
 
-class GeofenceInitial extends GeofenceState {}
+  @override
+  List<Object?> get props => [];
+}
 
-class GeofenceLoading extends GeofenceState {}
+class GeofenceInitial extends GeofenceState {
+  const GeofenceInitial();
+}
+
+class GeofenceLoading extends GeofenceState {
+  const GeofenceLoading();
+}
 
 class GeofenceLoaded extends GeofenceState {
   final List<GeofenceEntity> geofences;
 
-  GeofenceLoaded(this.geofences);
+  const GeofenceLoaded(this.geofences);
 
   // Only active geofences should be rendered on the map
   List<GeofenceEntity> get activeGeofences =>
       geofences.where((g) => g.isActive).toList();
+
+  @override
+  List<Object?> get props => [geofences];
 }
 
 class GeofenceError extends GeofenceState {
   final String message;
-  GeofenceError(this.message);
+
+  const GeofenceError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

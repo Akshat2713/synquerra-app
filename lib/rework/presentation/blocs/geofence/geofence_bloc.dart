@@ -1,7 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../domain/failures/failure.dart';
+import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/geofence/get_geofences_usecase.dart';
 
 part 'geofence_event.dart';
@@ -25,20 +27,12 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     result.fold(
       (failure) {
         debugPrint('[GeofenceBloc] Load failed: ${failure.message}');
-        emit(GeofenceError(_mapFailure(failure)));
+        emit(GeofenceError(mapFailureToMessage(failure)));
       },
       (geofences) {
         debugPrint('[GeofenceBloc] Loaded ${geofences.length} geofences');
         emit(GeofenceLoaded(geofences));
       },
     );
-  }
-
-  String _mapFailure(Failure failure) {
-    if (failure is NetworkFailure) return 'No internet connection.';
-    if (failure is ServerFailure) {
-      return failure.message.isNotEmpty ? failure.message : 'Server error.';
-    }
-    return 'Something went wrong.';
   }
 }
