@@ -19,7 +19,6 @@ import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/geofence_repository.dart';
 import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
-import '../../domain/usecases/analytics/compute_analytics_params_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/entities/auth/user_entity.dart';
@@ -151,16 +150,7 @@ Future<void> initDependencies() async {
 
   // ── Analytics BLoC ────────────────────────────────
   sl.registerFactory<AnalyticsBloc>(
-    () => AnalyticsBloc(
-      getAnalyticsUseCase: sl(),
-      computeAnalyticsParamsUseCase: sl(),
-    ),
-  );
-  sl.registerLazySingleton(
-    () => const ComputeAnalyticsParamsUseCase(
-      assumedPingIntervalSeconds: 1000, // ← tune to your device
-      targetPointCount: 300,
-    ),
+    () => AnalyticsBloc(getAnalyticsUseCase: sl()),
   );
   // Profile ───────────────────────────────────────────────
   sl.registerFactory<ProfileBloc>(

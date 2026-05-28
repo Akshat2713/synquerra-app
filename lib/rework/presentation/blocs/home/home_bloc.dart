@@ -27,14 +27,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
        _getDeviceListUseCase = getDeviceListUseCase,
        _deviceRepository = deviceRepository,
 
-       super(HomeInitial()) {
+       super(const HomeInitial()) {
     on<HomeLoadRequested>(_onLoad);
     on<HomeRefreshRequested>(_onRefresh);
     on<HomeDeviceToggled>(_onDeviceToggled);
   }
 
   Future<void> _onLoad(HomeLoadRequested event, Emitter<HomeState> emit) async {
-    emit(HomeLoading());
+    emit(const HomeLoading());
     await _fetchData(emit);
   }
 
@@ -47,16 +47,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _fetchData(Emitter<HomeState> emit) async {
-    debugPrint('[HomeBloc] Fetching alerts and devices simultaneously');
+    debugPrint('[HomeBloc] Fetching alerts and devices');
 
-    // Fire both calls at the same time
-    final results = await Future.wait([
-      _getAlertsUseCase(NoParams()),
-      _getDeviceListUseCase(NoParams()),
-    ]);
+    final alertsFuture = _getAlertsUseCase(NoParams());
+    final devicesFuture = _getDeviceListUseCase(NoParams());
 
-    final alertsResult = results[0];
-    final devicesResult = results[1];
+    final alertsResult = await alertsFuture;
+    final devicesResult = await devicesFuture;
 
     // if either fails, emit error
     if (alertsResult.isLeft()) {
@@ -73,14 +70,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       return;
     }
 
-    final alerts = alertsResult.fold(
-      (_) => <AlertErrorEntity>[],
-      (a) => a as List<AlertErrorEntity>,
-    );
-    final devices = devicesResult.fold(
-      (_) => <DeviceEntity>[],
-      (d) => d as List<DeviceEntity>,
-    );
+    // Now fold with perfect type safety! No casting required.
+    final alerts = alertsResult.fold((_) => <AlertErrorEntity>[], (a) => a);
+
+    final devices = devicesResult.fold((_) => <DeviceEntity>[], (d) => d);
 
     debugPrint(
       '[HomeBloc] Loaded ${alerts.length} alerts, ${devices.length} devices',

@@ -4,23 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
 import 'package:synquerra/rework/presentation/screens/device_detail/widgets/drawer_item.dart';
-import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
-import '../../../app/app_router.dart';
-import '../../../blocs/analytics/analytics_bloc.dart';
+
+// Notice: Removed app_router.dart, analytics_entity.dart, and analytics_bloc.dart imports!
 
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
-  final DeviceEntity device; // DeviceEntity
-  // final AnalyticsEntity? analytics; // 1. Add this field
+  final DeviceEntity device;
+  final VoidCallback onProfileTap;
+  final VoidCallback onHistoryTap;
+  final VoidCallback onAlertsTap;
+  final VoidCallback onSettingsTap;
 
   const DetailDrawer({
     super.key,
     required this.userName,
     required this.imei,
     required this.device,
-    // required this.analytics, // 2. Optional parameter
+    required this.onProfileTap,
+    required this.onHistoryTap,
+    required this.onAlertsTap,
+    required this.onSettingsTap,
   });
 
   @override
@@ -85,60 +90,22 @@ class DetailDrawer extends StatelessWidget {
             DrawerItem(
               icon: Icons.person_outline_rounded,
               label: 'Profile',
-              onTap: () {
-                final state = context.read<AnalyticsBloc>().state;
-                AnalyticsEntity? latest;
-                if (state is AnalyticsLoaded && state.points.isNotEmpty) {
-                  latest = state.points.first; // Grab the point
-                }
-
-                debugPrint('Passing to profile! Phone1 is: ${latest?.phone1}');
-                // Navigator.pop(context);
-                // TODO: Navigator.pushNamed(context, AppRoutes.profile);
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.profile,
-                  arguments: {
-                    'device': device, // DeviceEntity
-                    'analytics': latest, // AnalyticsEntity?
-                  }, // DeviceEntity
-                );
-              },
+              onTap: onProfileTap, // Delegated to parent
             ),
             DrawerItem(
               icon: Icons.analytics_outlined,
               label: 'Telemetry History',
-              onTap: () {
-                // Navigator.pop(context);
-                // Push from anywhere with:
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.telemetryHistory,
-                  arguments: device, // DeviceEntity
-                );
-                // TODO: Navigator.pushNamed(context, AppRoutes.telemetryHistory);
-              },
+              onTap: onHistoryTap, // Delegated to parent
             ),
             DrawerItem(
               icon: Icons.notifications_outlined,
               label: 'Notifications',
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.alertsErrors,
-                  arguments: device.imei, // String
-                );
-                // Navigator.pop(context);
-                // TODO: Navigator.pushNamed(context, AppRoutes.notifications);
-              },
+              onTap: onAlertsTap, // Delegated to parent
             ),
             DrawerItem(
               icon: Icons.settings_outlined,
               label: 'Settings',
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigator.pushNamed(context, AppRoutes.settings);
-              },
+              onTap: onSettingsTap, // Delegated to parent
             ),
 
             const Divider(indent: 16, endIndent: 16),
@@ -163,7 +130,6 @@ class DetailDrawer extends StatelessWidget {
             ),
 
             const Spacer(),
-
             const SizedBox(height: 12),
           ],
         ),
@@ -171,5 +137,3 @@ class DetailDrawer extends StatelessWidget {
     );
   }
 }
-
-// ── Extracted StatelessWidget ────────────────────────────────────────────────

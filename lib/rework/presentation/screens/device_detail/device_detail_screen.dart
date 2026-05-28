@@ -8,6 +8,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../data/network/map_tile_config.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../app/app_router.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../widgets/analytics_filter_sheet.dart';
@@ -116,6 +117,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           userName: widget.device.studentName,
           imei: widget.device.imei,
           device: widget.device,
+          onProfileTap: _navigateToProfile,
+          onHistoryTap: _navigateToHistory,
+          onAlertsTap: _navigateToAlerts,
+          onSettingsTap: _navigateToSettings,
         ),
         body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
           listenWhen: (prev, curr) =>
@@ -378,5 +383,49 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     final value = int.tryParse(cleaned, radix: 16);
     if (value == null) return Colors.blue;
     return Color(0xFF000000 | value);
+  }
+
+  // ── Navigation Helpers ──────────────────────────────────────────────
+
+  void _navigateToProfile() {
+    // 1. Close the drawer
+    Navigator.pop(context);
+
+    // 2. Read the state
+    final state = context.read<AnalyticsBloc>().state;
+    AnalyticsEntity? latest;
+    if (state is AnalyticsLoaded && state.points.isNotEmpty) {
+      latest = state.points.first;
+    }
+
+    // 3. Navigate
+    Navigator.pushNamed(
+      context,
+      AppRoutes.profile,
+      arguments: {'device': widget.device, 'analytics': latest},
+    );
+  }
+
+  void _navigateToHistory() {
+    Navigator.pop(context); // Close drawer
+    Navigator.pushNamed(
+      context,
+      AppRoutes.telemetryHistory,
+      arguments: widget.device,
+    );
+  }
+
+  void _navigateToAlerts() {
+    Navigator.pop(context); // Close drawer
+    Navigator.pushNamed(
+      context,
+      AppRoutes.alertsErrors,
+      arguments: widget.device.imei,
+    );
+  }
+
+  void _navigateToSettings() {
+    Navigator.pop(context); // Close drawer
+    // TODO: Navigator.pushNamed(context, AppRoutes.settings);
   }
 }

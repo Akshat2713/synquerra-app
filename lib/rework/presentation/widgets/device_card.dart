@@ -3,9 +3,8 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
-import '../app/app_router.dart';
 import '../themes/colors.dart';
-import '../utils/colour_util.dart'; // Added AppColors import
+import '../utils/colour_util.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -13,6 +12,9 @@ class DeviceCard extends StatelessWidget {
   final List<AlertErrorEntity> deviceAlerts;
   final VoidCallback onTap;
   final VoidCallback onToggleActive;
+  final VoidCallback? onViewDetailsTap; // Added new callback
+  final VoidCallback? onViewAlertsTap; // Added callback
+  final VoidCallback? onSettingsTap;
 
   const DeviceCard({
     super.key,
@@ -21,6 +23,9 @@ class DeviceCard extends StatelessWidget {
     required this.deviceAlerts,
     required this.onTap,
     required this.onToggleActive,
+    this.onViewDetailsTap, // Added new callback
+    this.onViewAlertsTap, // Added callback
+    this.onSettingsTap,
   });
 
   // Border color based on alert severity for this device
@@ -161,17 +166,19 @@ class DeviceCard extends StatelessWidget {
                         onSelected: (value) {
                           switch (value) {
                             case 'details':
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.telemetryHistory,
-                                arguments: device, // your DeviceEntity object
-                              );
+                              if (onViewDetailsTap != null) {
+                                onViewDetailsTap!(); // Trigger the callback
+                              }
                               break;
                             case 'alerts':
-                              // TODO
+                              if (onViewAlertsTap != null) {
+                                onViewAlertsTap!(); // Trigger the callback
+                              }
                               break;
                             case 'settings':
-                              // TODO
+                              if (onSettingsTap != null) {
+                                onSettingsTap!(); // Trigger the callback
+                              }
                               break;
                           }
                         },

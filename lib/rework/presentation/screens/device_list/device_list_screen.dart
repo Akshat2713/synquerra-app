@@ -234,7 +234,20 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                                   onToggleActive: () => context
                                       .read<HomeBloc>()
                                       .add(HomeDeviceToggled(device.imei)),
-                                );
+                                  onViewDetailsTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.telemetryHistory,
+                                    arguments: device,
+                                  ),
+                                  onViewAlertsTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.alertsErrors,
+                                    arguments: device.imei,
+                                  ),
+                                  onSettingsTap: () => {},
+                                )
+                                // Trigger the routing from the screen level!
+                                ;
                               }, childCount: state.devices.length),
                             ),
 
