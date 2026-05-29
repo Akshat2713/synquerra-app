@@ -1,8 +1,12 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/repositories_impl/device_repository_impl.dart';
 import '../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../../../domain/failures/failure.dart';
+// import '../../../domain/failures/failure.dart';
+import '../../../domain/failures/failure_extentions.dart';
+import '../../../domain/repositories/device_repository.dart';
 import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
 import '../../../domain/usecases/base_usecase.dart';
@@ -13,20 +17,24 @@ part 'home_state.dart';
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetAlertsUseCase _getAlertsUseCase;
   final GetDeviceListUseCase _getDeviceListUseCase;
+  final DeviceRepository _deviceRepository;
 
   HomeBloc({
     required GetAlertsUseCase getAlertsUseCase,
     required GetDeviceListUseCase getDeviceListUseCase,
+    required DeviceRepository deviceRepository,
   }) : _getAlertsUseCase = getAlertsUseCase,
        _getDeviceListUseCase = getDeviceListUseCase,
-       super(HomeInitial()) {
+       _deviceRepository = deviceRepository,
+
+       super(const HomeInitial()) {
     on<HomeLoadRequested>(_onLoad);
     on<HomeRefreshRequested>(_onRefresh);
     on<HomeDeviceToggled>(_onDeviceToggled);
   }
 
   Future<void> _onLoad(HomeLoadRequested event, Emitter<HomeState> emit) async {
-    emit(HomeLoading());
+    emit(const HomeLoading());
     await _fetchData(emit);
   }
 
@@ -34,45 +42,38 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     HomeRefreshRequested event,
     Emitter<HomeState> emit,
   ) async {
-    // keep existing data visible while refreshing
+    (_deviceRepository as DeviceRepositoryImpl).invalidateCache(); // bust cache
     await _fetchData(emit);
   }
 
   Future<void> _fetchData(Emitter<HomeState> emit) async {
-    debugPrint('[HomeBloc] Fetching alerts and devices simultaneously');
+    debugPrint('[HomeBloc] Fetching alerts and devices');
 
-    // Fire both calls at the same time
-    final results = await Future.wait([
-      _getAlertsUseCase(NoParams()),
-      _getDeviceListUseCase(NoParams()),
-    ]);
+    final alertsFuture = _getAlertsUseCase(NoParams());
+    final devicesFuture = _getDeviceListUseCase(NoParams());
 
-    final alertsResult = results[0];
-    final devicesResult = results[1];
+    final alertsResult = await alertsFuture;
+    final devicesResult = await devicesFuture;
 
     // if either fails, emit error
     if (alertsResult.isLeft()) {
       final failure = alertsResult.fold((f) => f, (_) => null)!;
       debugPrint('[HomeBloc] Alerts fetch failed: ${failure.message}');
-      emit(HomeError(_mapFailure(failure)));
+      emit(HomeError(mapFailureToMessage(failure)));
       return;
     }
 
     if (devicesResult.isLeft()) {
       final failure = devicesResult.fold((f) => f, (_) => null)!;
       debugPrint('[HomeBloc] Devices fetch failed: ${failure.message}');
-      emit(HomeError(_mapFailure(failure)));
+      emit(HomeError(mapFailureToMessage(failure)));
       return;
     }
 
-    final alerts = alertsResult.fold(
-      (_) => <AlertErrorEntity>[],
-      (a) => a as List<AlertErrorEntity>,
-    );
-    final devices = devicesResult.fold(
-      (_) => <DeviceEntity>[],
-      (d) => d as List<DeviceEntity>,
-    );
+    // Now fold with perfect type safety! No casting required.
+    final alerts = alertsResult.fold((_) => <AlertErrorEntity>[], (a) => a);
+
+    final devices = devicesResult.fold((_) => <DeviceEntity>[], (d) => d);
 
     debugPrint(
       '[HomeBloc] Loaded ${alerts.length} alerts, ${devices.length} devices',
@@ -97,12 +98,5 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
 
     emit(current.copyWith(toggledImeis: toggled));
-  }
-
-  String _mapFailure(Failure failure) {
-    if (failure is NetworkFailure) return 'No internet connection.';
-    if (failure is ServerFailure)
-      return failure.message.isNotEmpty ? failure.message : 'Server error.';
-    return 'Something went wrong.';
   }
 }

@@ -1,3 +1,5 @@
+// domain/entities/device/device_entity.dart
+
 import 'package:equatable/equatable.dart';
 
 class DeviceEntity extends Equatable {
@@ -6,15 +8,15 @@ class DeviceEntity extends Equatable {
   final int interval;
   final String geoid;
   final String? packet;
-  final String? latitude;
-  final String? longitude;
-  final String? speed;
+  final double? latitude; // Changed to double?
+  final double? longitude; // Changed to double?
+  final double? speed; // Changed to double?
   final String? temperature;
   final String currentMode;
   final String ledStatus;
   final String? timestamp;
-  final String? battery;
-  final String? signal;
+  final int? battery; // Changed to int?
+  final int? signal; // Changed to int?
   final String? gpsStrength;
   final String studentName;
   final String studentId;

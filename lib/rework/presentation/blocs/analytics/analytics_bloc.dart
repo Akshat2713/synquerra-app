@@ -1,23 +1,21 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
-import '../../../domain/failures/failure.dart';
-import '../../../domain/usecases/analytics/compute_analytics_params_usecase.dart';
+import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
+import '../../../domain/utils/analytics_params_computer.dart';
 
 part 'analytics_event.dart';
 part 'analytics_state.dart';
 
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final GetAnalyticsUseCase _getAnalyticsUseCase;
-  final ComputeAnalyticsParamsUseCase _computeParams;
+  // final AnalyticsFetchParams _computeParams;
 
-  AnalyticsBloc({
-    required GetAnalyticsUseCase getAnalyticsUseCase,
-    required ComputeAnalyticsParamsUseCase computeAnalyticsParamsUseCase,
-  }) : _getAnalyticsUseCase = getAnalyticsUseCase,
-       _computeParams = computeAnalyticsParamsUseCase,
-       super(AnalyticsInitial()) {
+  AnalyticsBloc({required GetAnalyticsUseCase getAnalyticsUseCase})
+    : _getAnalyticsUseCase = getAnalyticsUseCase,
+      super(AnalyticsInitial()) {
     on<AnalyticsLoadDefault>(_onLoadDefault);
     on<AnalyticsFilterChanged>(_onFilterChanged);
     on<AnalyticsCustomRangeSelected>(_onCustomRange);
@@ -117,7 +115,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     int? dataInterval,
     int? limit,
   }) async {
-    final fetchParams = _computeParams(
+    final fetchParams = computeAnalyticsParams(
       filter: filter,
       startDate: startDate,
       endDate: endDate,
@@ -140,7 +138,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     result.fold(
       (failure) {
         debugPrint('[AnalyticsBloc] Fetch failed: ${failure.message}');
-        emit(AnalyticsError(_mapFailure(failure)));
+        emit(AnalyticsError(mapFailureToMessage(failure)));
       },
       (points) {
         debugPrint('[AnalyticsBloc] Fetched ${points.length} points');
@@ -158,11 +156,4 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   }
 
   String _toIso(DateTime dt) => '${dt.toIso8601String().split('.').first}Z';
-
-  String _mapFailure(Failure failure) {
-    if (failure is NetworkFailure) return 'No internet connection.';
-    if (failure is ServerFailure)
-      return failure.message.isNotEmpty ? failure.message : 'Server error.';
-    return 'Something went wrong.';
-  }
 }

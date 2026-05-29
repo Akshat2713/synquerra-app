@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/old/theme/colors.dart'; // Updated import path
-import 'app_text_styles.dart'; // Import text styles
+import 'package:synquerra/rework/presentation/themes/colors.dart';
+import 'app_text_styles.dart';
 
 /// Theme data configuration for the entire app
 /// This file handles ONLY theme creation and configuration

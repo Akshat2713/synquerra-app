@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import '../../../../domain/entities/profile/profile_entity.dart';
 
 class GuardiansSection extends StatelessWidget {
-  final List<GuardianEntity> guardians; // ← GuardianEntity, not GuardianItem
-  final VoidCallback onSignOut;
+  final List<GuardianEntity> guardians;
+  // final VoidCallback onSignOut;
 
   const GuardiansSection({
     super.key,
     required this.guardians,
-    required this.onSignOut,
+    // required this.onSignOut,
   });
 
   @override
@@ -36,54 +36,6 @@ class GuardiansSection extends StatelessWidget {
             );
           }),
           Divider(height: 1, color: colors.outlineVariant),
-          InkWell(
-            onTap: () => _confirmSignOut(context),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  Icon(Icons.logout_rounded, size: 18, color: colors.error),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: colors.error,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmSignOut(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will be returned to the login screen.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: colors.error),
-            onPressed: () {
-              Navigator.pop(context);
-              onSignOut();
-            },
-            child: const Text('Sign out'),
-          ),
         ],
       ),
     );
@@ -128,6 +80,13 @@ class _GuardianTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  guardian.phoneNumber,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 if (guardian.isPrimary)

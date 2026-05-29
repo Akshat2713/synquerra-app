@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
@@ -11,7 +12,9 @@ import 'widgets/profile_body.dart';
 class ProfileScreen extends StatefulWidget {
   // final String imei;
   final DeviceEntity device;
-  const ProfileScreen({super.key, required this.device});
+  final AnalyticsEntity? analytics;
+
+  const ProfileScreen({super.key, required this.device, this.analytics});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -21,8 +24,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(ProfileLoadRequested(widget.device.imei));
-    // context.read<>
+    context.read<ProfileBloc>().add(
+      ProfileLoadRequested(widget.device, widget.analytics),
+    ); // context.read<>
   }
 
   @override
@@ -32,23 +36,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state is ProfileInitial || state is ProfileLoading) {
-            return const ProfileSkeleton();
+            return ProfileSkeleton(device: widget.device);
           }
           if (state is ProfileError) {
             return _ErrorView(
               message: state.message,
               onRetry: () => context.read<ProfileBloc>().add(
-                ProfileLoadRequested(widget.device.imei),
+                ProfileLoadRequested(widget.device, widget.analytics),
               ),
             );
           }
           if (state is ProfileLoaded) {
-            return ProfileBody(
-              profile: state.profile,
-              device: widget.device,
-              onSignOut: () =>
-                  context.read<AuthBloc>().add(AuthLogoutRequested()),
-            );
+            return ProfileBody(profile: state.profile, device: widget.device);
           }
           return const SizedBox.shrink();
         },

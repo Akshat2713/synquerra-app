@@ -1,11 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/alerts_errors_repository.dart';
-import '../../core/error/app_exceptions.dart';
 import '../datasources/remote/alerts_errors_remote_datasource.dart';
-import '../mappers/faulure_mapper.dart';
+import 'repository_helper.dart';
 
 class AlertsErrorsRepositoryImpl implements AlertsErrorsRepository {
   final AlertErrorsRemoteDataSource _remote;
@@ -16,15 +14,8 @@ class AlertsErrorsRepositoryImpl implements AlertsErrorsRepository {
   @override
   Future<Either<Failure, List<AlertErrorEntity>>> getDeviceAlertsErrors(
     String imei,
-  ) async {
-    try {
-      final models = await _remote.getAlertsErrors(imei);
-      return Right(models.map((m) => m.toEntity()).toList());
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
-  }
+  ) => safeListCall(
+    call: () => _remote.getAlertsErrors(imei),
+    toEntity: (m) => m.toEntity(),
+  );
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/new/presentation/app/app_router.dart';
+import '../../app/app_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Replace with your named route
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRouter.home,
+            AppRoutes.home,
             (route) => false,
           );
         } else if (state is AuthError) {

@@ -2,7 +2,13 @@ part of 'analytics_bloc.dart';
 
 enum AnalyticsFilter { latest, lastHour, last24Hours, lastWeek, custom }
 
-abstract class AnalyticsState {}
+// 1. Extend Equatable on the base class
+abstract class AnalyticsState extends Equatable {
+  const AnalyticsState();
+
+  @override
+  List<Object?> get props => [];
+}
 
 class AnalyticsInitial extends AnalyticsState {}
 
@@ -15,7 +21,8 @@ class AnalyticsLoaded extends AnalyticsState {
   final DateTime? endDate;
   final int sliderIndex;
 
-  AnalyticsLoaded({
+  const AnalyticsLoaded({
+    // Added const
     required this.points,
     required this.activeFilter,
     this.startDate,
@@ -47,9 +54,24 @@ class AnalyticsLoaded extends AnalyticsState {
       sliderIndex: sliderIndex ?? this.sliderIndex,
     );
   }
+
+  // 2. Override props with all fields that determine state equality
+  @override
+  List<Object?> get props => [
+    points,
+    activeFilter,
+    startDate,
+    endDate,
+    sliderIndex,
+  ];
 }
 
 class AnalyticsError extends AnalyticsState {
   final String message;
-  AnalyticsError(this.message);
+
+  const AnalyticsError(this.message); // Added const
+
+  // 3. Override props for the error message
+  @override
+  List<Object?> get props => [message];
 }

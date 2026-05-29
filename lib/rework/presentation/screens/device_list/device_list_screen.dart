@@ -18,16 +18,18 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeBloc>().add(HomeLoadRequested());
+    context.read<HomeBloc>().add(const HomeLoadRequested());
   }
 
   Future<void> _onRefresh() async {
-    context.read<HomeBloc>().add(HomeRefreshRequested());
+    final homebloc = context.read<HomeBloc>();
+    homebloc.add(const HomeRefreshRequested());
     // wait until state changes from loading
-    await Future.doWhile(() async {
-      await Future.delayed(const Duration(milliseconds: 100));
-      return context.read<HomeBloc>().state is HomeLoading;
-    });
+    // await Future.doWhile(() async {
+    //   await Future.delayed(const Duration(milliseconds: 100));
+    //   return homebloc.state is HomeLoading;
+    // });
+    await homebloc.stream.firstWhere((s) => s is! HomeLoading);
   }
 
   @override
@@ -122,7 +124,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 ],
                 onSelected: (value) {
                   if (value == 'logout') {
-                    context.read<AuthBloc>().add(AuthLogoutRequested());
+                    context.read<AuthBloc>().add(const AuthLogoutRequested());
                   }
                 },
               ),
@@ -232,7 +234,20 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                                   onToggleActive: () => context
                                       .read<HomeBloc>()
                                       .add(HomeDeviceToggled(device.imei)),
-                                );
+                                  onViewDetailsTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.telemetryHistory,
+                                    arguments: device,
+                                  ),
+                                  onViewAlertsTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.alertsErrors,
+                                    arguments: device.imei,
+                                  ),
+                                  onSettingsTap: () => {},
+                                )
+                                // Trigger the routing from the screen level!
+                                ;
                               }, childCount: state.devices.length),
                             ),
 

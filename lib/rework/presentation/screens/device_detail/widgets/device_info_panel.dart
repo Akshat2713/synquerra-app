@@ -1,7 +1,11 @@
+// presentation/screens/device_detail/widgets/device_info_panel.dart
+
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../blocs/analytics/analytics_bloc.dart';
+import '../../../utils/colour_util.dart';
 import '../../../utils/date_time_formatter.dart';
+import '../../../themes/colors.dart'; // Added AppColors import
 
 class DeviceInfoPanel extends StatelessWidget {
   final DeviceEntity device;
@@ -162,7 +166,7 @@ class DeviceInfoPanel extends StatelessWidget {
                         value: device.battery != null
                             ? '${device.battery}%'
                             : 'N/A',
-                        valueColor: _batteryColor(device.battery),
+                        valueColor: batteryColor(device.battery),
                         colors: colors,
                       ),
                       _fieldData(
@@ -194,7 +198,8 @@ class DeviceInfoPanel extends StatelessWidget {
                       _fieldData(
                         icon: Icons.speed_rounded,
                         label: 'Speed',
-                        value: device.speed ?? 'N/A',
+                        // Updated for double interpolation
+                        value: device.speed != null ? '${device.speed}' : 'N/A',
                         colors: colors,
                       ),
                       _fieldData(
@@ -216,26 +221,6 @@ class DeviceInfoPanel extends StatelessWidget {
                       monospace: true,
                     ),
 
-                    // Analytics section — only when loaded
-                    // if (loaded != null && loaded!.points.isNotEmpty) ...[
-                    //   const SizedBox(height: 16),
-                    //   _sectionLabel('Analytics', colors),
-                    //   const SizedBox(height: 8),
-                    //   _fieldRow([
-                    //     _fieldData(
-                    //       icon: Icons.analytics_rounded,
-                    //       label: 'Data Points',
-                    //       value: '${loaded!.points.length}',
-                    //       colors: colors,
-                    //     ),
-                    //     _fieldData(
-                    //       icon: Icons.route_rounded,
-                    //       label: 'Mapped Points',
-                    //       value: '${loaded!.mappablePoints.length}',
-                    //       colors: colors,
-                    //     ),
-                    //   ]),
-                    // ],
                     const SizedBox(height: 24),
                   ]),
                 ),
@@ -372,17 +357,9 @@ class DeviceInfoPanel extends StatelessWidget {
     );
   }
 
-  Color _batteryColor(String? battery) {
-    if (battery == null) return Colors.grey;
-    final v = int.tryParse(battery) ?? 0;
-    if (v <= 20) return const Color(0xFFFF4444);
-    if (v <= 50) return const Color(0xFFFFAA00);
-    return const Color(0xFF22C55E);
-  }
-
   Color _statusColor(DeviceEntity device) {
     if (device.battery == null) return Colors.grey;
-    return const Color(0xFF22C55E);
+    return AppColors.alertSuccess; // Updated from hardcoded hex
   }
 
   String _statusLabel(DeviceEntity device) {

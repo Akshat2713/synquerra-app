@@ -35,7 +35,7 @@ class GeofenceModel {
     id: json['id'] as String,
     imei: json['imei'] as String,
     geofenceName: json['geofence_name'] as String,
-    geofenceNumber: json['geofence_number'] as String,
+    geofenceNumber: json['geofence_number'] as String? ?? '-1',
     geofenceId: json['geofence_id'] as String,
     isActive: json['is_active'] as bool,
     coordinates: (json['coordinates'] as List<dynamic>)

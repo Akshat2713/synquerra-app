@@ -1,15 +1,14 @@
+// data/repositories_impl/analytics_repository_impl.dart
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
-import '../../core/error/app_exceptions.dart';
-// import '../../core/error/failure_mapper.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/analytics_repository.dart';
 import '../datasources/remote/analytics_remote_datasource.dart';
-import '../mappers/faulure_mapper.dart';
+import 'repository_helper.dart'; // Added import for the shared helper
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
   final AnalyticsRemoteDataSource _remote;
+
   AnalyticsRepositoryImpl({required AnalyticsRemoteDataSource remote})
     : _remote = remote;
 
@@ -21,22 +20,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     int? dataInterval,
     String? startDate,
     String? endDate,
-  }) async {
-    try {
-      final models = await _remote.getAnalytics(
+  }) {
+    return safeListCall(
+      call: () => _remote.getAnalytics(
         imei: imei,
         skip: skip,
         limit: limit,
         dataInterval: dataInterval,
         startDate: startDate,
         endDate: endDate,
-      );
-      return Right(models.map((m) => m.toEntity()).toList());
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
+      ),
+      toEntity: (m) => m.toEntity(),
+    );
   }
 }

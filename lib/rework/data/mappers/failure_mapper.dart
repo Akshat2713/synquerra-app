@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-
 import '../../core/error/app_exceptions.dart';
 import '../../domain/failures/failure.dart';
 

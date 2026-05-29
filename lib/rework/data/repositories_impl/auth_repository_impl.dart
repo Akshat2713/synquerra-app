@@ -8,7 +8,7 @@ import '../../core/error/app_exceptions.dart';
 import '../../core/di/injection_container.dart';
 import '../datasources/remote/auth_remote_datasource.dart';
 import '../datasources/local/auth_local_datasource.dart';
-import '../mappers/faulure_mapper.dart';
+import '../mappers/failure_mapper.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remote;

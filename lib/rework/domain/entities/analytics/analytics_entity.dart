@@ -1,3 +1,5 @@
+// domain/entities/analytics/analytics_entity.dart
+
 import 'package:equatable/equatable.dart';
 
 class AnalyticsEntity extends Equatable {
@@ -7,9 +9,9 @@ class AnalyticsEntity extends Equatable {
   final String? packet;
   final double? latitude;
   final double? longitude;
-  final String? speed;
-  final String? battery;
-  final String? signal;
+  final double? speed; // Changed to double?
+  final int? battery; // Changed to int?
+  final int? signal; // Changed to int?
   final String? geoid;
   final int? interval;
   final String? alert;
