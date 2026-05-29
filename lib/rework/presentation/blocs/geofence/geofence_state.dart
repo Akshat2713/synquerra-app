@@ -36,3 +36,25 @@ class GeofenceError extends GeofenceState {
   @override
   List<Object?> get props => [message];
 }
+
+class GeofenceOperationLoading extends GeofenceState {
+  const GeofenceOperationLoading();
+}
+
+class GeofenceCreated extends GeofenceState {
+  final GeofenceEntity geofence;
+  const GeofenceCreated(this.geofence);
+  @override
+  List<Object?> get props => [geofence];
+}
+
+class GeofenceDeleted extends GeofenceState {
+  const GeofenceDeleted();
+}
+
+class GeofenceOperationError extends GeofenceState {
+  final String message;
+  const GeofenceOperationError(this.message);
+  @override
+  List<Object?> get props => [message];
+}

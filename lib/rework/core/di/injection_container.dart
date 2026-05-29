@@ -23,6 +23,8 @@ import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/entities/auth/user_entity.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/geofence/create_geofence_usecase.dart';
+import '../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../domain/usecases/geofence/get_geofences_usecase.dart';
 import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -165,23 +167,24 @@ Future<void> initDependencies() async {
   sl.registerFactory<AlertsErrorsBloc>(
     () => AlertsErrorsBloc(getAlertsErrors: sl()),
   );
-  // sl.registerFactory<AlertsBloc>(
-  //   () => AlertsBloc(getDeviceAlertsUseCase: sl()),
-  // );
-  // sl.registerFactory<ErrorsBloc>(
-  //   () => ErrorsBloc(getDeviceErrorsUseCase: sl()),
-  // );
+
   // ── Geofence ─────────────────────────────────────
   sl.registerLazySingleton<GeofenceRemoteDataSource>(
     () => GeofenceRemoteDataSource(sl()),
   );
+  sl.registerLazySingleton(() => CreateGeofenceUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteGeofenceUseCase(sl()));
   sl.registerLazySingleton<GeofenceRepository>(
     () => GeofenceRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetGeofencesUseCase(sl()));
 
   sl.registerFactory<GeofenceBloc>(
-    () => GeofenceBloc(getGeofencesUseCase: sl()),
+    () => GeofenceBloc(
+      getGeofencesUseCase: sl(),
+      createGeofenceUseCase: sl(),
+      deleteGeofenceUseCase: sl(),
+    ),
   );
 }
 

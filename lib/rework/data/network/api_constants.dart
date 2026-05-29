@@ -20,7 +20,9 @@ class ApiConstants {
   static const String analytics = 'analytics/analytics-query';
 
   // ── Geofences ─────────────────────────────────────
-  static const String geofences = 'geofence/list';
+  static const String getGeofences = 'geofence/list';
+  static const String createGeofence = 'geofence/create';
+  static const String deleteGeofence = 'geofence/delete';
 
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;

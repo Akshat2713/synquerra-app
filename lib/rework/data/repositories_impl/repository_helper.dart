@@ -20,3 +20,18 @@ Future<Either<Failure, List<E>>> safeListCall<M, E>({
     return Left(mapExceptionToFailure(cause));
   }
 }
+
+Future<Either<Failure, E>> safeCall<M, E>({
+  required Future<M> Function() call,
+  required E Function(M) toEntity,
+}) async {
+  try {
+    final model = await call();
+    return Right(toEntity(model));
+  } catch (e) {
+    final cause = (e is DioException && e.error is AppException)
+        ? e.error as AppException
+        : e;
+    return Left(mapExceptionToFailure(cause));
+  }
+}
