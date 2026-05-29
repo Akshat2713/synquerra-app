@@ -24,6 +24,8 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
        _deleteGeofenceUseCase = deleteGeofenceUseCase,
        super(GeofenceInitial()) {
     on<GeofenceLoad>(_onLoad);
+    on<GeofenceCreate>(_onCreate);
+    on<GeofenceDelete>(_onDelete);
   }
 
   Future<void> _onLoad(GeofenceLoad event, Emitter<GeofenceState> emit) async {

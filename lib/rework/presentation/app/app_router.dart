@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
@@ -13,7 +14,10 @@ import '../blocs/home/home_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
+import '../screens/geofence/add_geofence_page.dart';
+import '../screens/geofence/geofence_list_page.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -33,7 +37,10 @@ class AppRoutes {
   static const String telemetryHistory = '/telemetry-history';
   static const String alertCodes = '/alert-codes';
   static const String alertsErrors = '/alerts-errors';
-  static const String profile = '/profile'; // ← new
+  static const String profile = '/profile';
+  static const String settings = '/settings';
+  static const String geofence = '/geofence';
+  static const String addGeofence = '/addFeofence';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -110,6 +117,41 @@ class AppRouter {
           BlocProvider(
             create: (_) => sl<ProfileBloc>(),
             child: ProfileScreen(device: device, analytics: analytics),
+          ),
+        );
+
+      case AppRoutes.settings:
+        final args = settings.arguments as Map<String, dynamic>;
+        final imei = args['imei'] as String;
+        final center = args['center'] as LatLng;
+        return _slide(
+          settings,
+          SettingsScreen(imei: imei, initialCenter: center),
+        );
+
+      case AppRoutes.geofence:
+        final args = settings.arguments as Map<String, dynamic>;
+        final imei = args['imei'] as String;
+        final center = args['center'] as LatLng;
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) => sl<GeofenceBloc>(),
+            child: GeofenceListPage(imei: imei, initialCenter: center),
+          ),
+        );
+
+      case AppRoutes.addGeofence:
+        final args = settings.arguments as Map<String, dynamic>;
+        final imei = args['imei'] as String;
+        final center = args['center'] as LatLng;
+        return _slide(
+          settings,
+          // No BlocProvider here — inherits from GeofenceListPage's route?
+          // NO — new route = new scope. Must provide again.
+          BlocProvider(
+            create: (_) => sl<GeofenceBloc>(),
+            child: AddGeofencePage(imei: imei, initialCenter: center),
           ),
         );
 

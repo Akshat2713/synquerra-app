@@ -12,6 +12,7 @@ import '../../app/app_router.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../widgets/analytics_filter_sheet.dart';
+import '../../widgets/geofence_polygon_layer.dart';
 import 'widgets/map_icon_button.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/device_info_panel.dart';
@@ -37,6 +38,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
     debugPrint('[DeviceDetailScreen] initState → imei: ${widget.device.imei}');
   }
+
+  LatLng get _defaultCenter => widget.device.hasLocation
+      ? LatLng(widget.device.latitude!, widget.device.longitude!)
+      : const LatLng(28.6172, 77.2094);
 
   @override
   void dispose() {
@@ -96,8 +101,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return PopScope(
       canPop: !_showTimeline,
       onPopInvokedWithResult: (didPop, result) async {
@@ -122,7 +125,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           onAlertsTap: _navigateToAlerts,
           onSettingsTap: _navigateToSettings,
         ),
-        body: BlocConsumer<AnalyticsBloc, AnalyticsState>(
+        body: BlocListener<AnalyticsBloc, AnalyticsState>(
           listenWhen: (prev, curr) =>
               prev is! AnalyticsLoaded ||
               (curr is AnalyticsLoaded && prev.points != curr.points),
@@ -133,21 +136,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               );
             }
           },
-          builder: (context, state) {
-            final isLoading = state is AnalyticsLoading;
-            final loaded = state is AnalyticsLoaded ? state : null;
-
-            final defaultCenter = widget.device.hasLocation
-                ? LatLng(widget.device.latitude!, widget.device.longitude!)
-                : const LatLng(28.6172, 77.2094); // New Delhi fallback
-
-            return Stack(
-              children: [
-                // ── Full screen map ──────────────────────
-                FlutterMap(
+          child: Stack(
+            children: [
+              // ── Map — never rebuilds ─────────────────────
+              RepaintBoundary(
+                child: FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: defaultCenter,
+                    initialCenter: _defaultCenter,
                     initialZoom: MapTileConfig.defaultZoom,
                   ),
                   children: [
@@ -155,87 +151,102 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       urlTemplate: MapTileConfig.tileUrlTemplate,
                       userAgentPackageName: MapTileConfig.userAgentPackageName,
                     ),
-
-                    // ── Geofence polygons ────────────────
-                    BlocBuilder<GeofenceBloc, GeofenceState>(
-                      builder: (context, geofenceState) {
-                        if (geofenceState is! GeofenceLoaded) {
+                    // Geofence — only rebuilds on GeofenceBloc changes
+                    GeofencePolygonLayer(onGeofenceTap: (_) {}),
+                    // Route polyline — only rebuilds when points list changes
+                    BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                      buildWhen: (prev, curr) {
+                        if (prev is AnalyticsLoaded &&
+                            curr is AnalyticsLoaded) {
+                          return prev.points.isEmpty != curr.points.isEmpty;
+                        }
+                        return prev.runtimeType != curr.runtimeType;
+                      },
+                      builder: (context, state) {
+                        final loaded = state is AnalyticsLoaded ? state : null;
+                        if (loaded == null ||
+                            loaded.mappablePoints.length < 2) {
                           return const SizedBox.shrink();
                         }
-                        return PolygonLayer(
-                          polygons: geofenceState.activeGeofences.map((g) {
-                            final fillColor = _hexToColor(
-                              g.geofenceColor,
-                            ).withValues(alpha: 0.2);
-                            final borderColor = _hexToColor(g.geofenceColor);
-                            return Polygon(
-                              points: g.coordinates
-                                  .map((c) => LatLng(c.lat, c.lng))
+                        return PolylineLayer(
+                          polylines: [
+                            Polyline(
+                              points: loaded.mappablePoints
+                                  .map((p) => LatLng(p.latitude!, p.longitude!))
                                   .toList(),
-                              color: fillColor,
-                              borderColor: borderColor,
-                              borderStrokeWidth: 2,
-                              // isFilled: true,
-                            );
-                          }).toList(),
+                              color: Theme.of(context).colorScheme.primary,
+                              strokeWidth: 3,
+                            ),
+                          ],
                         );
                       },
                     ),
-
-                    // ── Route polyline ───────────────────
-                    if (loaded != null && loaded.mappablePoints.length > 1)
-                      PolylineLayer(
-                        polylines: [
-                          Polyline(
-                            points: loaded.mappablePoints
-                                .map((p) => LatLng(p.latitude!, p.longitude!))
-                                .toList(),
-                            color: colors.primary,
-                            strokeWidth: 3,
-                          ),
-                        ],
-                      ),
-
-                    // ── All point markers ────────────────
-                    if (loaded != null)
-                      MarkerLayer(
-                        markers: loaded.mappablePoints
-                            .asMap()
-                            .entries
-                            .map(
-                              (e) => Marker(
-                                point: LatLng(
-                                  e.value.latitude!,
-                                  e.value.longitude!,
-                                ),
-                                width: e.key == loaded.sliderIndex ? 18 : 12,
-                                height: e.key == loaded.sliderIndex ? 18 : 12,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: e.key == loaded.sliderIndex
-                                        ? colors.primary
-                                        : colors.primary.withValues(alpha: 0.4),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: e.key == loaded.sliderIndex
-                                          ? 2
-                                          : 1,
+                    // Markers — rebuilds on slider OR points change
+                    BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                      buildWhen: (prev, curr) {
+                        if (prev is AnalyticsLoaded &&
+                            curr is AnalyticsLoaded) {
+                          return prev.sliderIndex != curr.sliderIndex ||
+                              prev.points != curr.points;
+                        }
+                        return prev.runtimeType != curr.runtimeType;
+                      },
+                      builder: (context, state) {
+                        final loaded = state is AnalyticsLoaded ? state : null;
+                        if (loaded == null) return const SizedBox.shrink();
+                        final colors = Theme.of(context).colorScheme;
+                        return MarkerLayer(
+                          markers: loaded.mappablePoints
+                              .asMap()
+                              .entries
+                              .map(
+                                (e) => Marker(
+                                  point: LatLng(
+                                    e.value.latitude!,
+                                    e.value.longitude!,
+                                  ),
+                                  width: e.key == loaded.sliderIndex ? 18 : 12,
+                                  height: e.key == loaded.sliderIndex ? 18 : 12,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: e.key == loaded.sliderIndex
+                                          ? colors.primary
+                                          : colors.primary.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: e.key == loaded.sliderIndex
+                                            ? 2
+                                            : 1,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                              )
+                              .toList(),
+                        );
+                      },
+                    ),
                   ],
                 ),
+              ),
 
-                if (loaded != null && loaded.points.isEmpty)
-                  Positioned(
+              // ── No data banner ───────────────────────────
+              BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                buildWhen: (prev, curr) =>
+                    (prev is AnalyticsLoaded) != (curr is AnalyticsLoaded),
+                builder: (context, state) {
+                  final loaded = state is AnalyticsLoaded ? state : null;
+                  if (loaded == null || loaded.points.isNotEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  final colors = Theme.of(context).colorScheme;
+                  return Positioned(
                     top: MediaQuery.of(context).padding.top + 12,
-                    left: 64, // Leaves space for the menu button
-                    right: 64, // Leaves space for the filter button
+                    left: 64,
+                    right: 64,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -275,116 +286,117 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                         ],
                       ),
                     ),
-                  ),
+                  );
+                },
+              ),
 
-                // ── Top left: menu button ────────────────
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        MapIconButton(
-                          icon: Icons.menu_rounded,
-                          onTap: () => Scaffold.of(context).openDrawer(),
-                          colors: colors,
-                        ),
-                        const SizedBox(width: 8),
-                        const SizedBox(width: 48),
-                      ],
-                    ),
+              // ── Top left: menu button ────────────────────
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                ),
-
-                // ── Top right: filter + zoom ─────────────
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  right: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Row(
                     children: [
-                      MapIconButton(
-                        icon: Icons.filter_list_rounded,
-                        onTap: _openFilterSheet,
-                        colors: colors,
-                        highlighted: _showTimeline,
-                      ),
-                      const SizedBox(height: 8),
-                      Column(
-                        children: [
-                          MapIconButton(
-                            icon: Icons.add_rounded,
-                            onTap: () => _mapController.move(
-                              _mapController.camera.center,
-                              _mapController.camera.zoom + 1,
-                            ),
-                            colors: colors,
-                          ),
-                          const SizedBox(height: 8),
-                          MapIconButton(
-                            icon: Icons.remove_rounded,
-                            onTap: () => _mapController.move(
-                              _mapController.camera.center,
-                              _mapController.camera.zoom - 1,
-                            ),
-                            colors: colors,
-                          ),
-                        ],
+                      Builder(
+                        builder: (innerContext) => MapIconButton(
+                          icon: Icons.menu_rounded,
+                          onTap: () => Scaffold.of(innerContext).openDrawer(),
+                          colors: Theme.of(innerContext).colorScheme,
+                        ),
                       ),
                     ],
                   ),
                 ),
+              ),
 
-                // ── Bottom right: my location ────────────
-                Positioned(
-                  right: 12,
-                  bottom: _showTimeline ? 160 : 180,
-                  child: MapIconButton(
-                    icon: Icons.my_location_rounded,
-                    onTap: () => _mapController.move(defaultCenter, 14),
-                    colors: colors,
-                  ),
-                ),
-
-                // ── Bottom panel ─────────────────────────
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Skeletonizer(
-                      enabled: isLoading,
-                      child: _showTimeline && loaded != null
-                          ? TimelineSlider(
-                              points: loaded.mappablePoints,
-                              currentIndex: loaded.sliderIndex,
-                              onChanged: (i) => context
-                                  .read<AnalyticsBloc>()
-                                  .add(AnalyticsSliderChanged(i)),
-                            )
-                          : DeviceInfoPanel(
-                              device: widget.device,
-                              loaded: loaded,
-                            ),
+              // ── Top right: filter + zoom ─────────────────
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    MapIconButton(
+                      icon: Icons.filter_list_rounded,
+                      onTap: _openFilterSheet,
+                      colors: Theme.of(context).colorScheme,
+                      highlighted: _showTimeline,
                     ),
+                    const SizedBox(height: 8),
+                    MapIconButton(
+                      icon: Icons.add_rounded,
+                      onTap: () => _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom + 1,
+                      ),
+                      colors: Theme.of(context).colorScheme,
+                    ),
+                    const SizedBox(height: 8),
+                    MapIconButton(
+                      icon: Icons.remove_rounded,
+                      onTap: () => _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom - 1,
+                      ),
+                      colors: Theme.of(context).colorScheme,
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Bottom right: my location ────────────────
+              Positioned(
+                right: 12,
+                bottom: _showTimeline ? 160 : 180,
+                child: MapIconButton(
+                  icon: Icons.my_location_rounded,
+                  onTap: () => _mapController.move(_defaultCenter, 14),
+                  colors: Theme.of(context).colorScheme,
+                ),
+              ),
+
+              // ── Bottom panel ─────────────────────────────
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                    buildWhen: (prev, curr) {
+                      if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
+                        return prev.sliderIndex != curr.sliderIndex ||
+                            prev.points != curr.points;
+                      }
+                      return prev.runtimeType != curr.runtimeType;
+                    },
+                    builder: (context, state) {
+                      final isLoading = state is AnalyticsLoading;
+                      final loaded = state is AnalyticsLoaded ? state : null;
+                      return Skeletonizer(
+                        enabled: isLoading,
+                        child: _showTimeline && loaded != null
+                            ? TimelineSlider(
+                                points: loaded.mappablePoints,
+                                currentIndex: loaded.sliderIndex,
+                                onChanged: (i) => context
+                                    .read<AnalyticsBloc>()
+                                    .add(AnalyticsSliderChanged(i)),
+                              )
+                            : DeviceInfoPanel(
+                                device: widget.device,
+                                loaded: loaded,
+                              ),
+                      );
+                    },
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  /// Converts a hex color string (e.g. "#FF0000") to a [Color].
-  Color _hexToColor(String hex) {
-    final cleaned = hex.replaceFirst('#', '');
-    final value = int.tryParse(cleaned, radix: 16);
-    if (value == null) return Colors.blue;
-    return Color(0xFF000000 | value);
-  }
-
   // ── Navigation Helpers ──────────────────────────────────────────────
 
   void _navigateToProfile() {
@@ -426,6 +438,12 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
   void _navigateToSettings() {
     Navigator.pop(context); // Close drawer
-    // TODO: Navigator.pushNamed(context, AppRoutes.settings);
+    Navigator.pushNamed(
+      context,
+      AppRoutes.settings,
+      arguments: {'imei': widget.device.imei, 'center': _defaultCenter},
+    ).then((_) {
+      context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
+    });
   }
 }
