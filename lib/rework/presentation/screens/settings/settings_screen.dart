@@ -42,7 +42,22 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
+          Text(
+            'Modes Configuration',
+            style: textTheme.labelSmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SettingsTile(
+            icon: Icons.tune_rounded,
+            title: 'Modes',
+            subtitle: 'Configure device tracking and power modes',
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.modes, arguments: imei),
+          ),
+          const SizedBox(height: 16),
           // Future settings panels go here
           Text(
             'Coming Soon',

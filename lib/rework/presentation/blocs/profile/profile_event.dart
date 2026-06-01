@@ -19,6 +19,12 @@ class ProfileModeChanged extends ProfileEvent {
   const ProfileModeChanged(this.mode);
 }
 
+class ProfileModeSwitchRequested extends ProfileEvent {
+  final String imei;
+  final String modeId;
+  const ProfileModeSwitchRequested({required this.imei, required this.modeId});
+}
+
 class ProfileNotificationToggled extends ProfileEvent {
   final NotificationType type;
   final bool value;

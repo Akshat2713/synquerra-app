@@ -1,19 +1,15 @@
-// lib/presentation/pages/profile/profile_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import 'profile_skeleton.dart';
 import 'widgets/profile_body.dart';
 
 class ProfileScreen extends StatefulWidget {
-  // final String imei;
   final DeviceEntity device;
   final AnalyticsEntity? analytics;
-
   const ProfileScreen({super.key, required this.device, this.analytics});
 
   @override
@@ -26,14 +22,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     context.read<ProfileBloc>().add(
       ProfileLoadRequested(widget.device, widget.analytics),
-    ); // context.read<>
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Profile'), centerTitle: false),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        // Only listen when loaded — avoids firing on initial/loading states
+        listenWhen: (previous, current) {
+          // Only react to transitions out of switching state
+          if (previous is ProfileLoaded && current is ProfileLoaded) {
+            return previous.isSwitchingMode && !current.isSwitchingMode;
+          }
+          return false;
+        },
+
+        listener: (context, state) {
+          if (state is! ProfileLoaded) return;
+
+          // Show error snackbar after failed switch
+          if (state.modeSwitchError != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.modeSwitchError!),
+                backgroundColor: colors.error,
+              ),
+            );
+          }
+
+          // Refresh analytics after successful switch
+          // Condition: was switching, now not switching, no error
+          if (!state.isSwitchingMode && state.modeSwitchError == null) {
+            context.read<AnalyticsBloc>().add(
+              AnalyticsLoadDefault(widget.device.imei),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is ProfileInitial || state is ProfileLoading) {
             return ProfileSkeleton(device: widget.device);
@@ -47,7 +75,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           }
           if (state is ProfileLoaded) {
-            return ProfileBody(profile: state.profile, device: widget.device);
+            return ProfileBody(
+              profile: state.profile,
+              modes: state.modes,
+              activeModeId: state.activeModeId,
+              isSwitchingMode: state.isSwitchingMode,
+              device: widget.device,
+            );
           }
           return const SizedBox.shrink();
         },

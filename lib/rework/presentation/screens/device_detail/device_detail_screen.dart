@@ -414,7 +414,11 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     Navigator.pushNamed(
       context,
       AppRoutes.profile,
-      arguments: {'device': widget.device, 'analytics': latest},
+      arguments: {
+        'device': widget.device,
+        'analytics': latest,
+        'analyticsBloc': context.read<AnalyticsBloc>(),
+      },
     );
   }
 

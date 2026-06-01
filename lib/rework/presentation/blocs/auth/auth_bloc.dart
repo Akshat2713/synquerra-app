@@ -6,7 +6,6 @@ import '../../../domain/failures/failure.dart';
 import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/check_auth_status_usecase.dart';
-import '../../../domain/repositories/auth_repository.dart';
 import '../../../domain/usecases/base_usecase.dart';
 
 part 'auth_event.dart';

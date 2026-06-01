@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import '../../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../../widgets/alert_error_card.dart';
 import 'alert_error_skeleton.dart';
