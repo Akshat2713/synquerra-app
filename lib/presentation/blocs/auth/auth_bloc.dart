@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/rework/domain/usecases/auth/logout_usecase.dart';
+import 'package:synquerra/domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/entities/auth/user_entity.dart';
 import '../../../domain/failures/failure.dart';
 import '../../../domain/failures/failure_extentions.dart';

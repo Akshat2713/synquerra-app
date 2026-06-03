@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/rework/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
 import 'app_text_styles.dart';
 
 /// Theme data configuration for the entire app

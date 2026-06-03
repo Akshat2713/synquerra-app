@@ -1,8 +1,7 @@
 // lib/presentation/pages/profile/widgets/notifications_section.dart
 
 import 'package:flutter/material.dart';
-import '../../../../presentation/blocs/profile/profile_bloc.dart'
-    show NotificationType;
+import '../../../blocs/profile/profile_bloc.dart' show NotificationType;
 
 /// Callback signature: (type, newValue)
 typedef NotificationToggleCallback =

@@ -15,18 +15,11 @@ class GeofenceListTile extends StatelessWidget {
     required this.onDelete,
   });
 
-  Color _hexToColor(String hex) {
-    final cleaned = hex.replaceFirst('#', '');
-    final value = int.tryParse(cleaned, radix: 16);
-    if (value == null) return Colors.blue;
-    return Color(0xFF000000 | value);
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final zoneColor = _hexToColor(geofence.geofenceColor);
+    // final zoneColor = _hexToColor(geofence.geofenceColor);
 
     return InkWell(
       onTap: onTap,

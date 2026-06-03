@@ -1,6 +1,6 @@
 // presentation/widgets/alert_error_card.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/rework/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
 // your toFullDateTime lives here
 
@@ -80,7 +80,9 @@ class AlertErrorCard extends StatelessWidget {
                       Text(
                         DateTimeFormatter.toFullDateTime(item.createdAt),
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ),
                     ],

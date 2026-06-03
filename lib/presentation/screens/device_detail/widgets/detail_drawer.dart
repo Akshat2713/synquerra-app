@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/rework/presentation/blocs/theme/theme_cubit.dart';
-import 'package:synquerra/rework/presentation/screens/device_detail/widgets/drawer_item.dart';
+import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
+import 'package:synquerra/presentation/screens/device_detail/widgets/drawer_item.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 
 // Notice: Removed app_router.dart, analytics_entity.dart, and analytics_bloc.dart imports!

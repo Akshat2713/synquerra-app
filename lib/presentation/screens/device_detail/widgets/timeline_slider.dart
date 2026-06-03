@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/rework/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 
 class TimelineSlider extends StatelessWidget {
