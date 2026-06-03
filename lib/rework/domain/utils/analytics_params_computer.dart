@@ -21,13 +21,11 @@ AnalyticsFetchParams computeAnalyticsParams({
   int assumedPingIntervalSeconds = 1000,
   int targetPointCount = 300,
 }) {
-  // Nested helper for interval computation
   int? computeInterval(int durationSeconds) {
     final totalPackets = durationSeconds ~/ assumedPingIntervalSeconds;
-    if (totalPackets <= targetPointCount) return null; // no skipping needed
-
+    if (totalPackets <= targetPointCount) return null;
     final interval = (totalPackets / targetPointCount).floor();
-    return interval < 2 ? null : interval; // interval=1 is same as no interval
+    return interval < 2 ? null : interval;
   }
 
   switch (filter) {
@@ -35,22 +33,28 @@ AnalyticsFetchParams computeAnalyticsParams({
       return const AnalyticsFetchParams(limit: 1);
 
     case AnalyticsFilter.lastHour:
-      return const AnalyticsFetchParams(limit: 120);
+      // Hour is short — fetch all, no interval needed
+      return const AnalyticsFetchParams(limit: 0);
 
     case AnalyticsFilter.last24Hours:
-      return AnalyticsFetchParams(dataInterval: computeInterval(24 * 60 * 60));
+      return AnalyticsFetchParams(
+        limit: 0,
+        dataInterval: computeInterval(24 * 60 * 60),
+      );
 
     case AnalyticsFilter.lastWeek:
       return AnalyticsFetchParams(
+        limit: 0,
         dataInterval: computeInterval(7 * 24 * 60 * 60),
       );
 
     case AnalyticsFilter.custom:
       if (startDate == null || endDate == null) {
-        return const AnalyticsFetchParams();
+        return const AnalyticsFetchParams(limit: 0);
       }
       final durationSeconds = endDate.difference(startDate).inSeconds.abs();
       return AnalyticsFetchParams(
+        limit: 0,
         dataInterval: computeInterval(durationSeconds),
       );
   }

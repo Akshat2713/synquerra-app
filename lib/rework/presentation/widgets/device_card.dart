@@ -11,10 +11,10 @@ class DeviceCard extends StatelessWidget {
   final bool isActive;
   final List<AlertErrorEntity> deviceAlerts;
   final VoidCallback onTap;
-  final VoidCallback onToggleActive;
   final VoidCallback? onViewDetailsTap; // Added new callback
   final VoidCallback? onViewAlertsTap; // Added callback
   final VoidCallback? onSettingsTap;
+  final VoidCallback? onViewModesTap; // Added callback
 
   const DeviceCard({
     super.key,
@@ -22,10 +22,10 @@ class DeviceCard extends StatelessWidget {
     required this.isActive,
     required this.deviceAlerts,
     required this.onTap,
-    required this.onToggleActive,
     this.onViewDetailsTap, // Added new callback
     this.onViewAlertsTap, // Added callback
     this.onSettingsTap,
+    this.onViewModesTap, // Added callback
   });
 
   // Border color based on alert severity for this device
@@ -72,6 +72,7 @@ class DeviceCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final border = _borderColor();
     final borderLight = _borderColorLight();
+    final currentMode = device.currentMode;
 
     return GestureDetector(
       onTap: onTap,
@@ -175,6 +176,11 @@ class DeviceCard extends StatelessWidget {
                                 onViewAlertsTap!(); // Trigger the callback
                               }
                               break;
+                            case 'modes':
+                              if (onViewModesTap != null) {
+                                onViewModesTap!(); // Trigger the callback
+                              }
+                              break;
                             case 'settings':
                               if (onSettingsTap != null) {
                                 onSettingsTap!(); // Trigger the callback
@@ -190,6 +196,23 @@ class DeviceCard extends StatelessWidget {
                           const PopupMenuItem(
                             value: 'alerts',
                             child: Text('View Alerts'),
+                          ),
+                          PopupMenuItem(
+                            value: 'modes',
+                            child: Column(
+                              children: [
+                                Text('View Modes'),
+                                SizedBox(width: 6),
+                                Text(
+                                  currentMode,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.info,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const PopupMenuItem(
                             value: 'settings',
@@ -268,52 +291,50 @@ class DeviceCard extends StatelessWidget {
                       const Spacer(),
 
                       // Active/Inactive toggle
-                      GestureDetector(
-                        onTap: onToggleActive,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.alertSuccess.withValues(alpha: 0.12)
+                              : colors.onSurfaceVariant.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
                             color: isActive
-                                ? AppColors.alertSuccess.withOpacity(0.12)
-                                : colors.onSurfaceVariant.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isActive
-                                  ? AppColors.alertSuccess
-                                  : colors.onSurfaceVariant.withOpacity(0.4),
-                              width: 1,
+                                ? AppColors.alertSuccess
+                                : colors.onSurfaceVariant.withValues(
+                                    alpha: 0.4,
+                                  ),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.alertSuccess
+                                    : colors.onSurfaceVariant,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? AppColors.alertSuccess
-                                      : colors.onSurfaceVariant,
-                                  shape: BoxShape.circle,
-                                ),
+                            const SizedBox(width: 5),
+                            Text(
+                              isActive ? 'Active' : 'Inactive',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isActive
+                                    ? AppColors.alertSuccess
+                                    : colors.onSurfaceVariant,
                               ),
-                              const SizedBox(width: 5),
-                              Text(
-                                isActive ? 'Active' : 'Inactive',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isActive
-                                      ? AppColors.alertSuccess
-                                      : colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

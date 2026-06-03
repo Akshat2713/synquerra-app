@@ -1,21 +1,30 @@
-// lib/presentation/blocs/profile/profile_bloc.dart
-
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/profile/profile_entity.dart';
-import '../../../presentation/screens/profile/profile_skeleton.dart';
+import '../../../domain/failures/failure_extentions.dart';
+import '../../../domain/usecases/modes/get_modes_usecase.dart';
+import '../../../domain/usecases/modes/switch_mode_usecase.dart';
+import '../../screens/profile/profile_skeleton.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc() : super(ProfileInitial()) {
+  final GetModesUseCase _getModesUseCase;
+  final SwitchModeUseCase _switchModeUseCase;
+
+  ProfileBloc({
+    required GetModesUseCase getModesUseCase,
+    required SwitchModeUseCase switchModeUseCase,
+  }) : _getModesUseCase = getModesUseCase,
+       _switchModeUseCase = switchModeUseCase,
+       super(ProfileInitial()) {
     on<ProfileLoadRequested>(_onLoad);
-    on<ProfileModeChanged>(_onModeChanged);
+    on<ProfileModeSwitchRequested>(_onModeSwitch);
     on<ProfileNotificationToggled>(_onNotificationToggled);
     on<ProfileSimSwitchRequested>(_onSimSwitch);
   }
@@ -26,52 +35,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     emit(ProfileLoading());
     try {
-      // TODO: replace with real use-case call
-      // final result = await _getProfileUseCase(event.device.imei);
-      // await Future.delayed(const Duration(milliseconds: 800));
       final phone1 = event.analytics!.phone1;
-
-      debugPrint('Using phone1: $phone1');
-
       final phone2 = event.analytics!.phone2;
-      // final mock = ProfileEntity(
-      //   fullName: event.device.studentName, // ← pull from real device
-      //   roleBadge: 'Guardian',
-      //   isPro: true,
-      //   operatingMode: OperatingMode.normal,
-      //   sim1: const SimInfo(
-      //     label: 'S1 · Active',
-      //     carrier: 'Airtel 4G',
-      //     dataLeft: '2.4 GB left',
-      //     signalBars: 4,
-      //   ),
-      //   sim2: const SimInfo(
-      //     label: 'S2 · Switch',
-      //     carrier: 'Jio 5G',
-      //     dataLeft: '8.1 GB left',
-      //     signalBars: 3,
-      //   ),
-      //   notifications: const NotificationSettings(
-      //     emergency: true,
-      //     daily: true,
-      //     movement: false,
-      //     battery: true,
-      //   ),
-      //   guardians: [
-      //     GuardianEntity(
-      //       name: 'Meera Sharma',
-      //       phoneNumber: phone1!,
-      //       isPrimary: true,
-      //     ),
-      //     GuardianEntity(
-      //       name: 'Raj Sharma',
-      //       phoneNumber: phone2!,
-      //       isPrimary: false,
-      //     ),
-      //   ],
-      // );
 
-      final mock = fakeProfileEntity.copyWith(
+      // Fetch modes in parallel — failure just gives empty list, not a crash
+      final modesResult = await _getModesUseCase();
+      final modes = modesResult.fold((_) => <ModeEntity>[], (m) => m);
+
+      final profile = fakeProfileEntity.copyWith(
         fullName: event.device.studentName,
         guardians: [
           GuardianEntity(
@@ -87,17 +58,62 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ],
       );
 
-      emit(ProfileLoaded(mock));
+      emit(
+        ProfileLoaded(
+          profile: profile,
+          modes: modes,
+          activeModeId: modes
+              .firstWhere(
+                (m) =>
+                    m.name.toLowerCase() ==
+                    event.device.currentMode.toLowerCase(),
+                orElse: () => modes.first,
+              )
+              .id, // seed from device
+        ),
+      );
     } catch (e) {
+      debugPrint('[ProfileBloc] Load error: $e');
       emit(ProfileError(e.toString()));
     }
   }
 
-  void _onModeChanged(ProfileModeChanged event, Emitter<ProfileState> emit) {
+  Future<void> _onModeSwitch(
+    ProfileModeSwitchRequested event,
+    Emitter<ProfileState> emit,
+  ) async {
     if (state is! ProfileLoaded) return;
-    final current = (state as ProfileLoaded).profile;
-    emit(ProfileLoaded(current.copyWith(operatingMode: event.mode)));
-    // TODO: sl<UpdateOperatingModeUseCase>().call(event.mode)
+    final current = state as ProfileLoaded;
+
+    debugPrint('[ProfileBloc] SwitchMode → ${event.modeId}');
+    emit(current.copyWith(isSwitchingMode: true, modeSwitchError: null));
+
+    final result = await _switchModeUseCase(
+      imei: event.imei,
+      modeId: event.modeId,
+    );
+
+    result.fold(
+      (failure) {
+        debugPrint('[ProfileBloc] SwitchMode failed: ${failure.message}');
+        emit(
+          current.copyWith(
+            isSwitchingMode: false,
+            modeSwitchError: mapFailureToMessage(failure),
+          ),
+        );
+      },
+      (_) {
+        debugPrint('[ProfileBloc] SwitchMode success');
+        emit(
+          current.copyWith(
+            isSwitchingMode: false,
+            activeModeId: event.modeId,
+            modeSwitchError: null, // sentinel clears it
+          ),
+        );
+      },
+    );
   }
 
   void _onNotificationToggled(
@@ -108,8 +124,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final current = (state as ProfileLoaded).profile;
     final n = current.notifications;
     emit(
-      ProfileLoaded(
-        current.copyWith(
+      (state as ProfileLoaded).copyWith(
+        profile: current.copyWith(
           notifications: n.copyWith(
             emergency: event.type == NotificationType.emergency
                 ? event.value
@@ -132,12 +148,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) {
     if (state is! ProfileLoaded) return;
-    final current = (state as ProfileLoaded).profile;
-
-    // Swap the SIMs
+    final current = (state as ProfileLoaded);
     emit(
-      ProfileLoaded(current.copyWith(sim1: current.sim2, sim2: current.sim1)),
+      current.copyWith(
+        profile: current.profile.copyWith(
+          sim1: current.profile.sim2,
+          sim2: current.profile.sim1,
+        ),
+      ),
     );
-    // TODO: sl<SwitchSimUseCase>().call()
   }
 }

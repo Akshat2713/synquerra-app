@@ -28,12 +28,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   ) async {
     debugPrint('[AnalyticsBloc] LoadDefault → imei: ${event.imei}');
     emit(AnalyticsLoading());
-    await _fetch(
-      emit: emit,
-      imei: event.imei,
-      filter: AnalyticsFilter.latest,
-      limit: 1,
-    );
+    await _fetch(emit: emit, imei: event.imei, filter: AnalyticsFilter.latest);
   }
 
   Future<void> _onFilterChanged(
@@ -45,11 +40,9 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
     final now = DateTime.now().toUtc();
     DateTime? startDate;
-    int? limit;
 
     switch (event.filter) {
       case AnalyticsFilter.latest:
-        limit = 1;
         break;
       case AnalyticsFilter.lastHour:
         startDate = now.subtract(const Duration(hours: 1));
@@ -61,7 +54,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
         startDate = now.subtract(const Duration(days: 7));
         break;
       case AnalyticsFilter.custom:
-        return; // handled by AnalyticsCustomRangeSelected
+        return;
     }
 
     await _fetch(
@@ -70,7 +63,6 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       filter: event.filter,
       startDate: startDate,
       endDate: now,
-      limit: limit,
     );
   }
 
@@ -112,19 +104,19 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     DateTime? endDate,
     DateTime? startDateDt,
     DateTime? endDateDt,
-    int? dataInterval,
-    int? limit,
   }) async {
     final fetchParams = computeAnalyticsParams(
       filter: filter,
       startDate: startDate,
       endDate: endDate,
     );
+
     debugPrint(
       '[AnalyticsBloc] Fetch → filter: $filter'
       ', limit: ${fetchParams.limit}'
       ', interval: ${fetchParams.dataInterval}',
     );
+
     final result = await _getAnalyticsUseCase(
       AnalyticsParams(
         imei: imei,

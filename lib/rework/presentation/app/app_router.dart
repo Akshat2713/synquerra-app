@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:synquerra/rework/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
-// import '../blocs/alerts/alerts_bloc.dart';
 import '../blocs/alerts_errors/alerts_errors_bloc.dart';
-// import '../blocs/errors/errors_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/home/home_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
+import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
@@ -41,6 +41,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String geofence = '/geofence';
   static const String addGeofence = '/addFeofence';
+  static const String modes = '/modes';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -108,14 +109,17 @@ class AppRouter {
       //   Navigator.pushNamed(context, AppRoutes.profile,
       //       arguments: imei);
       case AppRoutes.profile:
-        // final device = settings.arguments as DeviceEntity;
         final args = settings.arguments as Map<String, dynamic>;
         final device = args['device'] as DeviceEntity;
         final analytics = args['analytics'] as AnalyticsEntity?;
+        final analyticsBloc = args['analyticsBloc'] as AnalyticsBloc;
         return _slide(
           settings,
-          BlocProvider(
-            create: (_) => sl<ProfileBloc>(),
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<ProfileBloc>()),
+              BlocProvider.value(value: analyticsBloc),
+            ],
             child: ProfileScreen(device: device, analytics: analytics),
           ),
         );
@@ -152,6 +156,18 @@ class AppRouter {
           BlocProvider(
             create: (_) => sl<GeofenceBloc>(),
             child: AddGeofencePage(imei: imei, initialCenter: center),
+          ),
+        );
+
+      case AppRoutes.modes:
+        final args = settings.arguments as Map<String, dynamic>;
+        final imei = args['imei'] as String;
+        final currentModeName = args['currentModeName'] as String;
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) => sl<ModeBloc>(),
+            child: ModesScreen(imei: imei, currentModeName: currentModeName),
           ),
         );
 

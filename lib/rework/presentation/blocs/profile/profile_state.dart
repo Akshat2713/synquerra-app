@@ -14,9 +14,46 @@ class ProfileLoading extends ProfileState {}
 
 class ProfileLoaded extends ProfileState {
   final ProfileEntity profile;
-  const ProfileLoaded(this.profile);
+  final List<ModeEntity> modes;
+  final String? activeModeId;
+  final bool isSwitchingMode;
+  final String? modeSwitchError;
+
+  const ProfileLoaded({
+    required this.profile,
+    this.modes = const [],
+    this.activeModeId,
+    this.isSwitchingMode = false,
+    this.modeSwitchError,
+  });
+
+  // Use a private sentinel so we can explicitly pass null to clear error
+  static const _keep = Object();
+
+  ProfileLoaded copyWith({
+    ProfileEntity? profile,
+    List<ModeEntity>? modes,
+    String? activeModeId,
+    bool? isSwitchingMode,
+    Object? modeSwitchError = _keep,
+  }) => ProfileLoaded(
+    profile: profile ?? this.profile,
+    modes: modes ?? this.modes,
+    activeModeId: activeModeId ?? this.activeModeId,
+    isSwitchingMode: isSwitchingMode ?? this.isSwitchingMode,
+    modeSwitchError: modeSwitchError == _keep
+        ? this.modeSwitchError
+        : modeSwitchError as String?,
+  );
+
   @override
-  List<Object?> get props => [profile];
+  List<Object?> get props => [
+    profile,
+    modes,
+    activeModeId,
+    isSwitchingMode,
+    modeSwitchError,
+  ];
 }
 
 class ProfileError extends ProfileState {

@@ -24,6 +24,10 @@ class ApiConstants {
   static const String createGeofence = 'geofence/create';
   static const String deleteGeofence = 'geofence/delete';
 
+  // ── Modes ─────────────────────────────────────────
+  static const String getModes = '/mode/list';
+  static const String switchMode = '/device/switch-mode';
+
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;
   static const int receiveTimeoutMs = 30000;

@@ -45,7 +45,6 @@ const fakeProfileEntity = ProfileEntity(
 
 class ProfileSkeleton extends StatelessWidget {
   final DeviceEntity device;
-
   const ProfileSkeleton({super.key, required this.device});
 
   @override
@@ -58,7 +57,10 @@ class ProfileSkeleton extends StatelessWidget {
       ),
       child: ProfileBody(
         profile: fakeProfileEntity,
-        device: device, // ← Now passes the real device straight through
+        device: device,
+        modes: const [], // skeleton — no real modes yet
+        activeModeId: null, // nothing selected
+        isSwitchingMode: false, // not switching
       ),
     );
   }
