@@ -44,7 +44,7 @@ class TelemetryList extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          color: colors.primaryContainer.withOpacity(0.4),
+          color: colors.primaryContainer.withValues(alpha: 0.4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [

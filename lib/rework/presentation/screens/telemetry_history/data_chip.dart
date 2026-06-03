@@ -22,7 +22,7 @@ class DataChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.surface.withOpacity(0.7),
+        color: colors.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: colors.outlineVariant),
       ),
@@ -39,7 +39,7 @@ class DataChip extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 9,
-                  color: colors.onSurfaceVariant.withOpacity(0.7),
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.7),
                   letterSpacing: 0.3,
                 ),
               ),

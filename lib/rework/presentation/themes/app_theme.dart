@@ -104,10 +104,10 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       cardColor: AppColors.lightSurface,
       dividerColor: AppColors.lightDivider,
-      focusColor: AppColors.brandPrimary.withOpacity(0.12),
-      hoverColor: AppColors.brandPrimary.withOpacity(0.04),
-      highlightColor: AppColors.brandPrimary.withOpacity(0.08),
-      splashColor: AppColors.brandPrimary.withOpacity(0.12),
+      focusColor: AppColors.brandPrimary.withValues(alpha: 0.12),
+      hoverColor: AppColors.brandPrimary.withValues(alpha: 0.04),
+      highlightColor: AppColors.brandPrimary.withValues(alpha: 0.08),
+      splashColor: AppColors.brandPrimary.withValues(alpha: 0.12),
       disabledColor: AppColors.lightTextDisabled,
 
       // 2. App Bar
@@ -124,7 +124,7 @@ class AppTheme {
       // 3. Card Theme
       cardTheme: _baseCardTheme(
         color: AppColors.lightSurface,
-        borderColor: AppColors.lightBorder.withOpacity(0.5),
+        borderColor: AppColors.lightBorder.withValues(alpha: 0.5),
       ),
 
       // 4. Button Themes
@@ -258,11 +258,9 @@ class AppTheme {
         onError: Colors.white,
         errorContainer: AppColors.errorLight,
         onErrorContainer: AppColors.errorDark,
-        background: AppColors.lightBackground,
-        onBackground: AppColors.lightTextPrimary,
         surface: AppColors.lightSurface,
         onSurface: AppColors.lightTextPrimary,
-        surfaceVariant: AppColors.lightSurfaceSecondary,
+        surfaceContainerHighest: AppColors.lightSurfaceSecondary,
         onSurfaceVariant: AppColors.lightTextSecondary,
         outline: AppColors.lightBorder,
         outlineVariant: AppColors.lightDivider,
@@ -270,7 +268,7 @@ class AppTheme {
         scrim: AppColors.shadowHeavy,
         inverseSurface: AppColors.darkSurface,
         onInverseSurface: AppColors.darkTextPrimary,
-        inversePrimary: AppColors.brandPrimary.withOpacity(0.8),
+        inversePrimary: AppColors.brandPrimary.withValues(alpha: 0.8),
         surfaceTint: AppColors.brandPrimary,
       ),
     );
@@ -287,10 +285,10 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.darkBackground,
       cardColor: AppColors.darkSurface,
       dividerColor: AppColors.darkDivider,
-      focusColor: AppColors.brandPrimary.withOpacity(0.24),
-      hoverColor: AppColors.brandPrimary.withOpacity(0.08),
-      highlightColor: AppColors.brandPrimary.withOpacity(0.12),
-      splashColor: AppColors.brandPrimary.withOpacity(0.24),
+      focusColor: AppColors.brandPrimary.withValues(alpha: 0.24),
+      hoverColor: AppColors.brandPrimary.withValues(alpha: 0.08),
+      highlightColor: AppColors.brandPrimary.withValues(alpha: 0.12),
+      splashColor: AppColors.brandPrimary.withValues(alpha: 0.24),
       disabledColor: AppColors.darkTextDisabled,
 
       // 2. App Bar
@@ -307,7 +305,7 @@ class AppTheme {
       // 3. Card Theme
       cardTheme: _baseCardTheme(
         color: AppColors.darkSurface,
-        borderColor: AppColors.darkBorder.withOpacity(0.5),
+        borderColor: AppColors.darkBorder.withValues(alpha: 0.5),
       ),
 
       // 4. Button Themes
@@ -441,11 +439,9 @@ class AppTheme {
         onError: Colors.white,
         errorContainer: AppColors.errorDark,
         onErrorContainer: AppColors.errorLight,
-        background: AppColors.darkBackground,
-        onBackground: AppColors.darkTextPrimary,
         surface: AppColors.darkSurface,
         onSurface: AppColors.darkTextPrimary,
-        surfaceVariant: AppColors.darkSurfaceSecondary,
+        surfaceContainerHighest: AppColors.darkSurfaceSecondary,
         onSurfaceVariant: AppColors.darkTextSecondary,
         outline: AppColors.darkBorder,
         outlineVariant: AppColors.darkDivider,
@@ -453,7 +449,7 @@ class AppTheme {
         scrim: AppColors.shadowDarkHeavy,
         inverseSurface: AppColors.lightSurface,
         onInverseSurface: AppColors.lightTextPrimary,
-        inversePrimary: AppColors.brandPrimary.withOpacity(0.8),
+        inversePrimary: AppColors.brandPrimary.withValues(alpha: 0.8),
         surfaceTint: AppColors.brandPrimary,
       ),
     );

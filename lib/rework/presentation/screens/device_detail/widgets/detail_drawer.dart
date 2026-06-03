@@ -41,13 +41,13 @@ class DetailDrawer extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
               decoration: BoxDecoration(
-                color: colors.primary.withOpacity(0.08),
+                color: colors.primary.withValues(alpha: 0.08),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 26,
-                    backgroundColor: colors.primary.withOpacity(0.15),
+                    backgroundColor: colors.primary.withValues(alpha: 0.15),
                     child: Icon(
                       Icons.person_rounded,
                       color: colors.primary,
@@ -123,7 +123,7 @@ class DetailDrawer extends StatelessWidget {
                   trailing: Switch(
                     value: isDark,
                     onChanged: (_) => context.read<ThemeCubit>().toggle(),
-                    activeColor: colors.primary,
+                    activeThumbColor: colors.primary,
                   ),
                 );
               },

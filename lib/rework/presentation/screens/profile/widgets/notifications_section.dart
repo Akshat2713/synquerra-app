@@ -146,7 +146,7 @@ class _NotifToggle extends StatelessWidget {
             child: Switch(
               value: item.value,
               onChanged: item.onChanged,
-              activeColor: colors.primary,
+              activeThumbColor: colors.primary,
             ),
           ),
         ],

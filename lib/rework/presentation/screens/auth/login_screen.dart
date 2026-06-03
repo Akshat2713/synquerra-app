@@ -109,8 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Email is required.';
+                        }
                         if (!v.contains('@')) return 'Enter a valid email.';
                         return null;
                       },
@@ -126,8 +127,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _submit(),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Password is required.';
+                        }
                         if (v.length < 6) return 'Password is too short.';
                         return null;
                       },

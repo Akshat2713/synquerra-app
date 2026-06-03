@@ -58,7 +58,7 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
               'IMEI: ${widget.device.imei}',
               style: TextStyle(
                 fontSize: 11,
-                color: colors.onSurface.withOpacity(0.6),
+                color: colors.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.normal,
               ),
             ),

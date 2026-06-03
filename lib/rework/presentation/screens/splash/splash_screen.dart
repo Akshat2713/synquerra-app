@@ -145,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   'Track. Monitor. Protect.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 0.3,

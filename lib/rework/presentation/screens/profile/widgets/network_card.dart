@@ -75,11 +75,11 @@ class _SimTile extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isActive
-              ? colors.primaryContainer.withOpacity(0.4)
+              ? colors.primaryContainer.withValues(alpha: 0.4)
               : colors.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: isActive
-              ? Border.all(color: colors.primary.withOpacity(0.6), width: 1.5)
+              ? Border.all(color: colors.primary.withValues(alpha: 0.6), width: 1.5)
               : null,
         ),
         child: Column(

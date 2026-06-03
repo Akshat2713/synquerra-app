@@ -14,14 +14,14 @@ class EmptyView extends StatelessWidget {
           Icon(
             Icons.inbox_rounded,
             size: 56,
-            color: colors.onSurfaceVariant.withOpacity(0.3),
+            color: colors.onSurfaceVariant.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 12),
           Text(
             label,
             style: TextStyle(
               fontSize: 15,
-              color: colors.onSurfaceVariant.withOpacity(0.5),
+              color: colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ),
         ],

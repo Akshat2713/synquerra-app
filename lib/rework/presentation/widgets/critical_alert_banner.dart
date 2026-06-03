@@ -34,7 +34,7 @@ class CriticalAlertBanner extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.alertCritical.withOpacity(0.15),
+                color: AppColors.alertCritical.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -60,7 +60,7 @@ class CriticalAlertBanner extends StatelessWidget {
                   Text(
                     '$criticalCount critical alert${criticalCount > 1 ? 's' : ''} unacknowledged',
                     style: TextStyle(
-                      color: AppColors.alertCriticalText.withOpacity(0.75),
+                      color: AppColors.alertCriticalText.withValues(alpha: 0.75),
                       fontSize: 12,
                     ),
                   ),

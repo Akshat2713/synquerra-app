@@ -27,10 +27,10 @@ class TelemetryCard extends StatelessWidget {
         : colors.primary;
 
     final cardColor = _isAlert
-        ? colors.errorContainer.withOpacity(0.35)
-        : colors.surfaceContainerHighest.withOpacity(0.5);
+        ? colors.errorContainer.withValues(alpha: 0.35)
+        : colors.surfaceContainerHighest.withValues(alpha: 0.5);
     final borderColor = _isAlert
-        ? colors.error.withOpacity(0.4)
+        ? colors.error.withValues(alpha: 0.4)
         : colors.outlineVariant;
 
     return Container(
@@ -63,7 +63,7 @@ class TelemetryCard extends StatelessWidget {
                   '#${index + 1}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: colors.onSurfaceVariant.withOpacity(0.6),
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -80,7 +80,7 @@ class TelemetryCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: alertColor.withOpacity(0.12),
+                  color: alertColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -102,7 +102,7 @@ class TelemetryCard extends StatelessWidget {
                         '(${point.alert})', // raw code e.g. (A1002)
                         style: TextStyle(
                           fontSize: 10,
-                          color: alertColor.withOpacity(0.7),
+                          color: alertColor.withValues(alpha: 0.7),
                         ),
                       ),
                     ],

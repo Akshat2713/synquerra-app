@@ -34,7 +34,7 @@ class DeviceInfoPanel extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.12),
+                color: Colors.black.withValues(alpha: 0.12),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
@@ -52,7 +52,7 @@ class DeviceInfoPanel extends StatelessWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: colors.onSurfaceVariant.withOpacity(0.3),
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -72,7 +72,7 @@ class DeviceInfoPanel extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: colors.primary.withOpacity(0.12),
+                          color: colors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -124,7 +124,7 @@ class DeviceInfoPanel extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor(device).withOpacity(0.12),
+                          color: _statusColor(device).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -146,7 +146,7 @@ class DeviceInfoPanel extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
                   child: Divider(
-                    color: colors.outlineVariant.withOpacity(0.5),
+                    color: colors.outlineVariant.withValues(alpha: 0.5),
                     height: 1,
                   ),
                 ),
@@ -268,10 +268,10 @@ class DeviceInfoPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.surfaceVariant.withOpacity(0.45),
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colors.outlineVariant.withOpacity(0.3),
+          color: colors.outlineVariant.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -281,7 +281,7 @@ class DeviceInfoPanel extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: colors.primary.withOpacity(0.1),
+              color: colors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(f.icon, size: 18, color: colors.primary),

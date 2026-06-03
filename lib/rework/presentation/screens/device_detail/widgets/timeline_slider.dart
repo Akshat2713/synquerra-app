@@ -29,7 +29,7 @@ class TimelineSlider extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -43,7 +43,7 @@ class TimelineSlider extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: colors.onSurfaceVariant.withOpacity(0.3),
+              color: colors.onSurfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

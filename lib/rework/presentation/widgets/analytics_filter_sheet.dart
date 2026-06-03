@@ -97,7 +97,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: colors.onSurfaceVariant.withOpacity(0.3),
+                color: colors.onSurfaceVariant.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

@@ -42,7 +42,7 @@ class DeviceCard extends StatelessWidget {
     return AppColors.alertSuccess;
   }
 
-  Color _borderColorLight() => _borderColor().withOpacity(0.15);
+  Color _borderColorLight() => _borderColor().withValues(alpha: 0.15);
 
   Widget _statChip({
     required IconData icon,
@@ -84,7 +84,7 @@ class DeviceCard extends StatelessWidget {
           border: Border.all(color: border, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: border.withOpacity(0.08),
+              color: border.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

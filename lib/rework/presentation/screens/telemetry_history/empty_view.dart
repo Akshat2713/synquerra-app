@@ -16,7 +16,7 @@ class EmptyView extends StatelessWidget {
           Icon(
             Icons.inbox_rounded,
             size: 60,
-            color: colors.onSurfaceVariant.withOpacity(0.3),
+            color: colors.onSurfaceVariant.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -30,7 +30,7 @@ class EmptyView extends StatelessWidget {
             'Try a different time range using the filter icon above.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colors.onSurfaceVariant.withOpacity(0.7),
+              color: colors.onSurfaceVariant.withValues(alpha: 0.7),
             ),
           ),
         ],
