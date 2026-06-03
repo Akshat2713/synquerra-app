@@ -36,7 +36,15 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
       },
       (modes) {
         debugPrint('[ModeBloc] Loaded ${modes.length} modes');
-        emit(ModeLoaded(modes: modes));
+        final preselected = modes
+            .where(
+              (m) =>
+                  m.name.toLowerCase() == event.currentModeName.toLowerCase(),
+            )
+            .map((m) => m.id)
+            .firstOrNull;
+
+        emit(ModeLoaded(modes: modes, selectedModeId: preselected));
       },
     );
   }

@@ -8,7 +8,10 @@ abstract class ModeEvent extends Equatable {
 }
 
 class ModeLoad extends ModeEvent {
-  const ModeLoad();
+  final String currentModeName;
+  const ModeLoad(this.currentModeName);
+  @override
+  List<Object?> get props => [currentModeName];
 }
 
 class ModeSelect extends ModeEvent {

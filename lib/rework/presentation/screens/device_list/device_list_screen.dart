@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/home/home_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
@@ -52,6 +53,11 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
       },
       child: PopScope(
         canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (!didPop) {
+            await SystemNavigator.pop();
+          }
+        },
         child: Scaffold(
           backgroundColor: colors.surface,
           appBar: AppBar(
@@ -226,23 +232,24 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                                   device: device,
                                   isActive: state.isDeviceActive(device),
                                   deviceAlerts: deviceAlerts,
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
+                                  onTap: () => _navigateAndRefresh(
                                     AppRoutes.deviceDetail,
                                     arguments: device,
                                   ),
-                                  onToggleActive: () => context
-                                      .read<HomeBloc>()
-                                      .add(HomeDeviceToggled(device.imei)),
-                                  onViewDetailsTap: () => Navigator.pushNamed(
-                                    context,
+                                  onViewDetailsTap: () => _navigateAndRefresh(
                                     AppRoutes.telemetryHistory,
                                     arguments: device,
                                   ),
-                                  onViewAlertsTap: () => Navigator.pushNamed(
-                                    context,
+                                  onViewAlertsTap: () => _navigateAndRefresh(
                                     AppRoutes.alertsErrors,
                                     arguments: device.imei,
+                                  ),
+                                  onViewModesTap: () => _navigateAndRefresh(
+                                    AppRoutes.modes,
+                                    arguments: {
+                                      'imei': device.imei,
+                                      'currentModeName': device.currentMode,
+                                    },
                                   ),
                                   onSettingsTap: () => {},
                                 )
@@ -263,5 +270,13 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
         ),
       ),
     );
+  }
+
+  void _navigateAndRefresh(String route, {Object? arguments}) {
+    Navigator.pushNamed(context, route, arguments: arguments).then((_) {
+      if (mounted) {
+        context.read<HomeBloc>().add(const HomeRefreshRequested());
+      }
+    });
   }
 }

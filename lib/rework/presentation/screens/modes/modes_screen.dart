@@ -9,7 +9,12 @@ import 'widgets/mode_skeleton.dart';
 
 class ModesScreen extends StatefulWidget {
   final String imei;
-  const ModesScreen({super.key, required this.imei});
+  final String currentModeName;
+  const ModesScreen({
+    super.key,
+    required this.imei,
+    required this.currentModeName,
+  });
 
   @override
   State<ModesScreen> createState() => _ModesScreenState();
@@ -19,7 +24,7 @@ class _ModesScreenState extends State<ModesScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ModeBloc>().add(const ModeLoad());
+    context.read<ModeBloc>().add(ModeLoad(widget.currentModeName));
   }
 
   String? _getSelectedId(ModeState state) => switch (state) {
@@ -81,8 +86,9 @@ class _ModesScreenState extends State<ModesScreen> {
                   Text(state.message, textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   FilledButton(
-                    onPressed: () =>
-                        context.read<ModeBloc>().add(const ModeLoad()),
+                    onPressed: () => context.read<ModeBloc>().add(
+                      ModeLoad(widget.currentModeName),
+                    ),
                     child: const Text('Retry'),
                   ),
                 ],

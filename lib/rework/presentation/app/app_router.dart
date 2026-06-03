@@ -160,12 +160,14 @@ class AppRouter {
         );
 
       case AppRoutes.modes:
-        final imei = settings.arguments as String;
+        final args = settings.arguments as Map<String, dynamic>;
+        final imei = args['imei'] as String;
+        final currentModeName = args['currentModeName'] as String;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<ModeBloc>(),
-            child: ModesScreen(imei: imei),
+            child: ModesScreen(imei: imei, currentModeName: currentModeName),
           ),
         );
 

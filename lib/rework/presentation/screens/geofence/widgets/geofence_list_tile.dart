@@ -39,16 +39,6 @@ class GeofenceListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── Color dot ─────────────────────────
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                color: zoneColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 12),
             // ── Name + status ──────────────────────
             Expanded(
               child: Column(

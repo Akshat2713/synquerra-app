@@ -29,6 +29,7 @@ class DeviceDetailScreen extends StatefulWidget {
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late final MapController _mapController;
   bool _showTimeline = false;
+  // bool _mapReady = false;
 
   @override
   void initState() {
@@ -83,6 +84,8 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   void _fitMapToPoints(List<AnalyticsEntity> points) {
     final mappable = points.where((p) => p.hasLocation).toList();
     if (mappable.isEmpty) return;
+
+    // Single point or latest — just move, never fitCamera
     if (mappable.length == 1) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
@@ -90,6 +93,16 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       );
       return;
     }
+
+    // Multiple points but not showing timeline = default load, skip fit
+    if (!_showTimeline) {
+      _mapController.move(
+        LatLng(mappable.first.latitude!, mappable.first.longitude!),
+        MapTileConfig.defaultZoom,
+      );
+      return;
+    }
+
     final bounds = LatLngBounds.fromPoints(
       mappable.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
     );
@@ -145,6 +158,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   options: MapOptions(
                     initialCenter: _defaultCenter,
                     initialZoom: MapTileConfig.defaultZoom,
+                    // remove onMapReady entirely
                   ),
                   children: [
                     TileLayer(

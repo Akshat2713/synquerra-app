@@ -16,10 +16,12 @@ import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/repositories_impl/alerts_errors_repository_impl.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
 import '../../data/repositories_impl/geofence_repository_impl.dart';
+import '../../data/repositories_impl/location_repository_impl.dart';
 import '../../data/repositories_impl/mode_repository_impl.dart';
 import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/geofence_repository.dart';
+import '../../domain/repositories/location_repository.dart';
 import '../../domain/repositories/mode_repository.dart';
 import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
@@ -29,6 +31,7 @@ import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../domain/usecases/geofence/get_geofences_usecase.dart';
+import '../../domain/usecases/location/get_user_location_usecase.dart';
 import '../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
@@ -58,6 +61,7 @@ import '../../presentation/blocs/home/home_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/modes/mode_bloc.dart';
 import '../../presentation/blocs/profile/profile_bloc.dart';
+import '../../presentation/blocs/user_location/user_location_bloc.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -201,6 +205,10 @@ Future<void> initDependencies() async {
   sl.registerFactory<ModeBloc>(
     () => ModeBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
   );
+  // ── User Location ──────────────────────────────────────────
+  sl.registerLazySingleton<LocationRepository>(() => LocationRepositoryImpl());
+  sl.registerLazySingleton(() => GetUserLocationUseCase(sl()));
+  sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
 }
 
 /// Called after successful login to store user globally
