@@ -5,7 +5,6 @@ import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/profile/profile_entity.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../screens/profile/profile_skeleton.dart';
@@ -99,7 +98,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(
           current.copyWith(
             isSwitchingMode: false,
-            modeSwitchError: mapFailureToMessage(failure),
+            modeSwitchError: failure.userMessage,
           ),
         );
       },

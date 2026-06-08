@@ -28,7 +28,7 @@ class LocationRepositoryImpl implements LocationRepository {
       if (permissionGranted == PermissionStatus.denied) {
         permissionGranted = await _location.requestPermission();
         if (permissionGranted != PermissionStatus.granted) {
-          throw const AppException(
+          throw const PermissionException(
             message: 'Location permissions were denied.',
           );
         }
@@ -36,7 +36,7 @@ class LocationRepositoryImpl implements LocationRepository {
 
       final locationData = await _location.getLocation();
       if (locationData.latitude == null || locationData.longitude == null) {
-        throw const AppException(
+        throw const ServerException(
           message: 'Could not determine device coordinates.',
         );
       }

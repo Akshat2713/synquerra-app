@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/alerts/alert_error_entity.dart';
-import '../../../domain/failures/failure.dart';
 import '../../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
 
 part 'alerts_errors_event.dart';

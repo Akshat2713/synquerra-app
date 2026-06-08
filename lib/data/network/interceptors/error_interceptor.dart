@@ -29,33 +29,68 @@ class ErrorInterceptor extends Interceptor {
         }
         break;
 
+      // In error_interceptor.dart — expand the badResponse case:
+
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode;
         final data = err.response?.data;
-        final serverMessage =
-            (data is Map ? data['message'] as String? : null) ??
-            'Server error.';
+        final serverMessage = (data is Map ? data['message'] as String? : null);
 
-        if (statusCode == 401) {
-          exception = AuthException(
-            message: serverMessage,
-            statusCode: statusCode,
-          );
-        } else if (statusCode == 404) {
-          exception = ServerException(
-            message: 'Resource not found.',
-            statusCode: statusCode,
-          );
-        } else if (statusCode == 500) {
-          exception = ServerException(
-            message: 'Internal server error.',
-            statusCode: statusCode,
-          );
-        } else {
-          exception = ServerException(
-            message: serverMessage,
-            statusCode: statusCode,
-          );
+        switch (statusCode) {
+          case 400:
+            exception = ServerException(
+              message: serverMessage ?? 'Bad request. Please check your input.',
+              statusCode: statusCode,
+            );
+          case 401:
+            exception = AuthException(
+              message: serverMessage ?? 'Session expired. Please log in again.',
+              statusCode: statusCode,
+            );
+          case 403:
+            exception = AuthException(
+              message:
+                  serverMessage ?? 'You don\'t have permission to do that.',
+              statusCode: statusCode,
+            );
+          case 404:
+            exception = NotFoundException(
+              // NEW exception type
+              message: serverMessage ?? 'Resource not found.',
+              statusCode: statusCode,
+            );
+          case 408:
+            exception = NetworkException(
+              message: 'Request timed out. Please try again.',
+            );
+          case 422:
+            exception = ServerException(
+              message: serverMessage ?? 'Invalid data submitted.',
+              statusCode: statusCode,
+            );
+          case 429:
+            exception = ServerException(
+              message: 'Too many requests. Please slow down.',
+              statusCode: statusCode,
+            );
+          case 500:
+            exception = ServerException(
+              message: 'Internal server error. Please try again later.',
+              statusCode: statusCode,
+            );
+          case 502:
+          case 503:
+          case 504:
+            exception = ServerException(
+              message:
+                  'Service temporarily unavailable. Please try again later.',
+              statusCode: statusCode,
+            );
+          default:
+            exception = ServerException(
+              message: serverMessage ?? 'Unexpected error (HTTP $statusCode).',
+              statusCode: statusCode,
+            );
         }
         break;
 

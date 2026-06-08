@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
 
@@ -32,7 +31,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
     result.fold(
       (failure) {
         debugPrint('[ModeBloc] Load failed: ${failure.message}');
-        emit(ModeError(mapFailureToMessage(failure)));
+        emit(ModeError(failure.userMessage));
       },
       (modes) {
         debugPrint('[ModeBloc] Loaded ${modes.length} modes');
@@ -78,7 +77,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
           ModeSwitchFailure(
             modes: current.modes,
             selectedModeId: event.modeId,
-            message: mapFailureToMessage(failure),
+            message: failure.userMessage,
           ),
         );
       },

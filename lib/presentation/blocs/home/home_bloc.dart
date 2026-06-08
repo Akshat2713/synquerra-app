@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories_impl/device_repository_impl.dart';
 import '../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
-// import '../../../domain/failures/failure.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/repositories/device_repository.dart';
 import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
@@ -59,14 +57,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     if (alertsResult.isLeft()) {
       final failure = alertsResult.fold((f) => f, (_) => null)!;
       debugPrint('[HomeBloc] Alerts fetch failed: ${failure.message}');
-      emit(HomeError(mapFailureToMessage(failure)));
+      emit(HomeError(failure.userMessage));
       return;
     }
 
     if (devicesResult.isLeft()) {
       final failure = devicesResult.fold((f) => f, (_) => null)!;
       debugPrint('[HomeBloc] Devices fetch failed: ${failure.message}');
-      emit(HomeError(mapFailureToMessage(failure)));
+      emit(HomeError(failure.userMessage));
       return;
     }
 

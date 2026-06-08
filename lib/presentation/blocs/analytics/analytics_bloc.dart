@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
 
@@ -130,7 +129,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     result.fold(
       (failure) {
         debugPrint('[AnalyticsBloc] Fetch failed: ${failure.message}');
-        emit(AnalyticsError(mapFailureToMessage(failure)));
+        emit(AnalyticsError(failure.userMessage));
       },
       (points) {
         debugPrint('[AnalyticsBloc] Fetched ${points.length} points');

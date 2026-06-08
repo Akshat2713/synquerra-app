@@ -1,20 +1,21 @@
 // presentation/screens/device_detail/widgets/device_info_panel.dart
 
 import 'package:flutter/material.dart';
+import 'package:synquerra/domain/entities/analytics/analytics_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
-import '../../../blocs/analytics/analytics_bloc.dart';
 import '../../../utils/colour_util.dart';
 import '../../../utils/date_time_formatter.dart';
 import '../../../themes/colors.dart'; // Added AppColors import
 
 class DeviceInfoPanel extends StatelessWidget {
   final DeviceEntity device;
-  final AnalyticsLoaded? loaded;
+  // final AnalyticsLoaded? loaded;
+  final AnalyticsEntity? latest;
 
   const DeviceInfoPanel({
     super.key,
     required this.device,
-    required this.loaded,
+    required this.latest,
   });
 
   @override
@@ -106,7 +107,7 @@ class DeviceInfoPanel extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Last seen ${DateTimeFormatter.toFullDateTime(device.timestamp)}',
+                                  'Last seen ${latest != null ? DateTimeFormatter.toFullDateTime(latest!.deviceTimestamp) : 'N/A'}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: colors.onSurfaceVariant,
@@ -124,7 +125,7 @@ class DeviceInfoPanel extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _statusColor(device).withValues(alpha: 0.12),
+                          color: _statusColor().withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -132,7 +133,7 @@ class DeviceInfoPanel extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: _statusColor(device),
+                            color: _statusColor(),
                           ),
                         ),
                       ),
@@ -163,17 +164,17 @@ class DeviceInfoPanel extends StatelessWidget {
                       _fieldData(
                         icon: Icons.battery_charging_full_rounded,
                         label: 'Battery',
-                        value: device.battery != null
-                            ? '${device.battery}%'
+                        value: latest?.battery != null
+                            ? '${latest!.battery}%'
                             : 'N/A',
-                        valueColor: batteryColor(device.battery),
+                        valueColor: batteryColor(latest?.battery),
                         colors: colors,
                       ),
                       _fieldData(
                         icon: Icons.signal_cellular_alt_rounded,
                         label: 'Signal',
-                        value: device.signal != null
-                            ? '${device.signal}%'
+                        value: latest?.signal != null
+                            ? '${latest!.signal}%'
                             : 'N/A',
                         colors: colors,
                       ),
@@ -183,13 +184,13 @@ class DeviceInfoPanel extends StatelessWidget {
                       _fieldData(
                         icon: Icons.gps_fixed_rounded,
                         label: 'GPS',
-                        value: device.gpsStrength ?? 'N/A',
+                        value: latest?.signal.toString() ?? 'N/A',
                         colors: colors,
                       ),
                       _fieldData(
                         icon: Icons.thermostat_rounded,
                         label: 'Temperature',
-                        value: device.temperature ?? 'N/A',
+                        value: latest?.temperature ?? 'N/A',
                         colors: colors,
                       ),
                     ]),
@@ -199,13 +200,15 @@ class DeviceInfoPanel extends StatelessWidget {
                         icon: Icons.speed_rounded,
                         label: 'Speed',
                         // Updated for double interpolation
-                        value: device.speed != null ? '${device.speed}' : 'N/A',
+                        value: latest?.speed != null
+                            ? '${latest!.speed}'
+                            : 'N/A',
                         colors: colors,
                       ),
                       _fieldData(
                         icon: Icons.location_on_rounded,
                         label: 'Zone',
-                        value: 'Zone ${device.geoid}',
+                        value: 'Zone ${latest?.geoid}',
                         colors: colors,
                       ),
                     ]),
@@ -216,7 +219,7 @@ class DeviceInfoPanel extends StatelessWidget {
                     _wideField(
                       icon: Icons.sim_card_rounded,
                       label: 'IMEI',
-                      value: device.imei,
+                      value: latest?.imei ?? 'N/A',
                       colors: colors,
                       monospace: true,
                     ),
@@ -357,13 +360,13 @@ class DeviceInfoPanel extends StatelessWidget {
     );
   }
 
-  Color _statusColor(DeviceEntity device) {
-    if (device.battery == null) return Colors.grey;
+  Color _statusColor() {
+    if (latest?.battery == null) return Colors.grey;
     return AppColors.alertSuccess; // Updated from hardcoded hex
   }
 
   String _statusLabel(DeviceEntity device) {
-    if (device.battery == null) return 'Offline';
+    if (latest?.battery == null) return 'Offline';
     return 'Online';
   }
 }

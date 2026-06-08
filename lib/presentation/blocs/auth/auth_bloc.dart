@@ -2,8 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/entities/auth/user_entity.dart';
-import '../../../domain/failures/failure.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../../domain/usecases/base_usecase.dart';
@@ -55,7 +53,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       LoginParams(email: event.email, password: event.password),
     );
     result.fold(
-      (failure) => emit(AuthError(_mapAuthFailure(failure))),
+      (failure) => emit(AuthError(failure.userMessage)),
       (user) => emit(AuthAuthenticated(user)),
     );
   }
@@ -66,17 +64,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     final result = await _logoutUseCase(NoParams()); // ← now used
     result.fold(
-      (failure) => emit(AuthError(_mapAuthFailure(failure))),
+      (failure) => emit(AuthError(failure.userMessage)),
       (_) => emit(AuthUnauthenticated()),
     );
-  }
-
-  String _mapAuthFailure(Failure failure) {
-    if (failure is AuthFailure) {
-      return failure.message.isNotEmpty
-          ? failure.message
-          : 'Invalid email or password.';
-    }
-    return mapFailureToMessage(failure);
   }
 }

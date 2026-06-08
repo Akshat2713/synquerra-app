@@ -398,7 +398,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                               )
                             : DeviceInfoPanel(
                                 device: widget.device,
-                                loaded: loaded,
+                                latest:
+                                    (loaded != null && loaded.points.isNotEmpty)
+                                    ? loaded.points.first
+                                    : null,
                               ),
                       );
                     },

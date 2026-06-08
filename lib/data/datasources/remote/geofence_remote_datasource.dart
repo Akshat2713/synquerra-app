@@ -21,6 +21,14 @@ class GeofenceRemoteDataSource {
 
     final body = response.data as Map<String, dynamic>;
 
+    // Check status first, so the server's own message is preserved
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to fetch geofences.',
+        statusCode: response.statusCode,
+      );
+    }
+
     final rawData = body['data'];
     if (rawData == null || rawData is! List) {
       throw ServerException(
@@ -29,11 +37,8 @@ class GeofenceRemoteDataSource {
       );
     }
 
-    final rawList = body['data'] as List<dynamic>;
-
-    // Parse list off the main thread
     final geofences = await Isolate.run(
-      () => rawList
+      () => (rawData)
           .map((e) => GeofenceModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -52,6 +57,7 @@ class GeofenceRemoteDataSource {
     required List<Coordinate> coordinates,
   }) async {
     debugPrint('[GeofenceRemoteDataSource] createGeofence() called');
+
     final response = await _dioClient.dio.post(
       ApiConstants.createGeofence,
       data: {
@@ -63,7 +69,17 @@ class GeofenceRemoteDataSource {
             .toList(),
       },
     );
+
     final body = response.data as Map<String, dynamic>;
+
+    // Check status first
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to create geofence.',
+        statusCode: response.statusCode,
+      );
+    }
+
     final rawData = body['data'];
     if (rawData == null || rawData is! Map<String, dynamic>) {
       throw ServerException(
@@ -71,6 +87,7 @@ class GeofenceRemoteDataSource {
         statusCode: response.statusCode,
       );
     }
+
     return GeofenceModel.fromJson(rawData);
   }
 
@@ -79,11 +96,14 @@ class GeofenceRemoteDataSource {
     required String geofenceId,
   }) async {
     debugPrint('[GeofenceRemoteDataSource] deleteGeofence() called');
+
     final response = await _dioClient.dio.post(
       ApiConstants.deleteGeofence,
       data: {'imei': imei, 'geofence_id': geofenceId},
     );
+
     final body = response.data as Map<String, dynamic>;
+
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to delete geofence.',

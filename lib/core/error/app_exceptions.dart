@@ -23,3 +23,11 @@ class AuthException extends AppException {
 class CacheException extends AppException {
   const CacheException({required super.message});
 }
+
+class NotFoundException extends AppException {
+  const NotFoundException({required super.message, super.statusCode});
+}
+
+class PermissionException extends AppException {
+  const PermissionException({required super.message});
+}

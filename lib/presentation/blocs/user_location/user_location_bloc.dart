@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/usecases/location/get_user_location_usecase.dart';
-import '../../../domain/failures/failure_extentions.dart';
 
 part 'user_location_event.dart';
 part 'user_location_state.dart';
@@ -17,7 +16,7 @@ class UserLocationBloc extends Bloc<UserLocationEvent, UserLocationState> {
       emit(UserLocationLoading());
       final result = await _getUserLocationUseCase();
       result.fold(
-        (failure) => emit(UserLocationError(mapFailureToMessage(failure))),
+        (failure) => emit(UserLocationError(failure.userMessage)),
         (position) => emit(UserLocationLoaded(position)),
       );
     });

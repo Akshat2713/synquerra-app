@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
-import '../../../domain/failures/failure_extentions.dart';
 import '../../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/get_geofences_usecase.dart';
@@ -37,7 +36,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     result.fold(
       (failure) {
         debugPrint('[GeofenceBloc] Load failed: ${failure.message}');
-        emit(GeofenceError(mapFailureToMessage(failure)));
+        emit(GeofenceError(failure.userMessage));
       },
       (geofences) {
         debugPrint('[GeofenceBloc] Loaded ${geofences.length} geofences');
@@ -59,7 +58,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       coordinates: event.coordinates,
     );
     result.fold(
-      (failure) => emit(GeofenceOperationError(mapFailureToMessage(failure))),
+      (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (geofence) {
         debugPrint('[GeofenceBloc] Created: ${geofence.geofenceName}');
         emit(GeofenceCreated(geofence));
@@ -80,7 +79,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       geofenceId: event.geofenceId,
     );
     result.fold(
-      (failure) => emit(GeofenceOperationError(mapFailureToMessage(failure))),
+      (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (_) {
         debugPrint('[GeofenceBloc] Deleted: ${event.geofenceId}');
         emit(const GeofenceDeleted());
