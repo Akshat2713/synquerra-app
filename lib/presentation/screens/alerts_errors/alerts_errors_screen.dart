@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/alerts_errors/alerts_errors_bloc.dart';
-import 'widgets/alerts_tab.dart';
-import 'widgets/errors_tab.dart';
+import 'widgets/alerts_errors_tab.dart';
 
 class AlertsErrorsScreen extends StatefulWidget {
   final String imei;
@@ -49,7 +48,10 @@ class _AlertsErrorsScreenState extends State<AlertsErrorsScreen>
 
       body: TabBarView(
         controller: _tabController,
-        children: const [AlertsTab(), ErrorsTab()],
+        children: const [
+          AlertsErrorsTab(type: AlertsErrorsTabType.alerts),
+          AlertsErrorsTab(type: AlertsErrorsTabType.errors),
+        ],
       ),
     );
   }

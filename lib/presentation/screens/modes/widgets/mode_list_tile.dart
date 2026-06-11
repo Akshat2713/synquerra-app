@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../utils/date_time_formatter.dart';
 
 class ModeListTile extends StatelessWidget {
   final ModeEntity mode;
@@ -14,13 +15,6 @@ class ModeListTile extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
   });
-
-  // Humanize seconds → "30 min", "1 hr", etc.
-  String _formatInterval(int seconds) {
-    if (seconds < 60) return '${seconds}s';
-    if (seconds < 3600) return '${seconds ~/ 60}m';
-    return '${seconds ~/ 3600}h';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,19 +115,25 @@ class ModeListTile extends StatelessWidget {
                 _StatChip(
                   icon: Icons.send_rounded,
                   label: 'Send',
-                  value: _formatInterval(mode.normalSendingInterval),
+                  value: DateTimeFormatter.formatInterval(
+                    mode.normalSendingInterval,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 _StatChip(
                   icon: Icons.radar_rounded,
                   label: 'Scan',
-                  value: _formatInterval(mode.normalScanningInterval),
+                  value: DateTimeFormatter.formatInterval(
+                    mode.normalScanningInterval,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 _StatChip(
                   icon: Icons.sos_rounded,
                   label: 'SOS',
-                  value: _formatInterval(mode.sosSendingInterval),
+                  value: DateTimeFormatter.formatInterval(
+                    mode.sosSendingInterval,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 _StatChip(

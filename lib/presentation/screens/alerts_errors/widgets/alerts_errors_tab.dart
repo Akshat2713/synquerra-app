@@ -1,4 +1,4 @@
-// presentation/pages/alerts_errors/widgets/errors_tab.dart
+// presentation/screens/alerts_errors/widgets/alerts_errors_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -8,8 +8,12 @@ import 'alert_error_skeleton.dart';
 import 'empty_view.dart';
 import 'failure_view.dart';
 
-class ErrorsTab extends StatelessWidget {
-  const ErrorsTab({super.key});
+enum AlertsErrorsTabType { alerts, errors }
+
+class AlertsErrorsTab extends StatelessWidget {
+  final AlertsErrorsTabType type;
+
+  const AlertsErrorsTab({super.key, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +22,23 @@ class ErrorsTab extends StatelessWidget {
         if (state is AlertsErrorsFailure) {
           return FailureView(message: state.message);
         }
-        if (state is AlertsErrorsLoaded && state.errors.isEmpty) {
-          return const EmptyView(label: 'No errors found');
+
+        final isAlerts = type == AlertsErrorsTabType.alerts;
+
+        if (state is AlertsErrorsLoaded) {
+          final items = isAlerts ? state.alerts : state.errors;
+          if (items.isEmpty) {
+            return EmptyView(
+              label: isAlerts ? 'No alerts found' : 'No errors found',
+            );
+          }
         }
+
         final isLoading = state is AlertsErrorsLoading;
         final items = state is AlertsErrorsLoaded
-            ? state.errors
+            ? (isAlerts ? state.alerts : state.errors)
             : fakeAlertErrorSkeletonItems;
+
         return Skeletonizer(
           enabled: isLoading,
           child: ListView.builder(

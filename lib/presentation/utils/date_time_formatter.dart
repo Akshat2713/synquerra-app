@@ -40,6 +40,14 @@ class DateTimeFormatter {
     }
   }
 
+  /// Converts a duration in seconds to a short human-readable label.
+  /// e.g. 30 → '30s', 90 → '1m', 7200 → '2h'
+  static String formatInterval(int seconds) {
+    if (seconds < 60) return '${seconds}s';
+    if (seconds < 3600) return '${seconds ~/ 60}m';
+    return '${seconds ~/ 3600}h';
+  }
+
   /// Parse ISO string to DateTime safely
   static DateTime? parseIsoString(String? isoString) {
     if (isoString == null) return null;
