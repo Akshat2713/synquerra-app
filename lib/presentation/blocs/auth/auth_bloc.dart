@@ -50,7 +50,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     final result = await _loginUseCase(
-      LoginParams(email: event.email, password: event.password),
+      LoginParams(
+        email: event.email,
+        phoneNumber: event.phoneNumber,
+        password: event.password,
+      ),
     );
     result.fold(
       (failure) => emit(AuthError(failure.userMessage)),

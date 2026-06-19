@@ -99,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
         if (state is AuthAuthenticated) {
           debugPrint('[SplashScreen] Auth check done → authenticated');
           _authCheckDone = true;
-          _navigateTo = AppRoutes.home;
+          _navigateTo = AppRoutes.homeDetail;
           _tryNavigate();
         } else if (state is AuthUnauthenticated) {
           debugPrint('[SplashScreen] Auth check done → unauthenticated');

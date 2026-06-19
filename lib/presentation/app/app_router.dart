@@ -11,11 +11,13 @@ import '../blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/home/home_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
+import '../blocs/home_detail/home_detail_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
+import '../screens/home_detail/home_detail_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
@@ -42,6 +44,7 @@ class AppRoutes {
   static const String geofence = '/geofence';
   static const String addGeofence = '/addFeofence';
   static const String modes = '/modes';
+  static const String homeDetail = '/home-detail';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -171,6 +174,15 @@ class AppRouter {
           ),
         );
 
+      case AppRoutes.homeDetail:
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) =>
+                sl<HomeDetailBloc>()..add(const HomeDetailLoadRequested()),
+            child: const HomeDetailScreen(),
+          ),
+        );
       default:
         return _fade(
           settings,

@@ -16,11 +16,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneNumberController.dispose();
     super.dispose();
   }
 
@@ -29,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     context.read<AuthBloc>().add(
       AuthLoginRequested(
         email: _emailController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim(),
         password: _passwordController.text,
       ),
     );
@@ -41,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        debugPrint('[LoginScreen] state changed → $state');
         if (state is AuthAuthenticated) {
           // Replace with your named route
           Navigator.pushNamedAndRemoveUntil(
@@ -113,6 +117,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           return 'Email is required.';
                         }
                         if (!v.contains('@')) return 'Enter a valid email.';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    AppTextField(
+                      controller: _phoneNumberController,
+                      label: 'Phone Number',
+                      hint: '9955774466',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Phone number is required.';
+                        }
                         return null;
                       },
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:synquerra/presentation/blocs/home_detail/home_detail_bloc.dart';
 import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
 
 // Network
@@ -209,6 +210,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<LocationRepository>(() => LocationRepositoryImpl());
   sl.registerLazySingleton(() => GetUserLocationUseCase(sl()));
   sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
+
+  sl.registerFactory(() => HomeDetailBloc());
 }
 
 /// Called after successful login to store user globally
@@ -217,5 +220,5 @@ void registerUser(UserEntity user) {
     sl.unregister<UserHolder>();
   }
   sl.registerLazySingleton<UserHolder>(() => UserHolder(user));
-  debugPrint('[DI] User registered → ${user.fullName}');
+  // debugPrint('[DI] User registered → ${user.fullName}');
 }
