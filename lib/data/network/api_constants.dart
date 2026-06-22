@@ -7,8 +7,12 @@ class ApiConstants {
 
   // ── Auth ──────────────────────────────────────────
   static const String signIn = 'api/v1/auth/sign-in';
-  static const String signUp = 'api/v1/core/auth/signup';
+  // static const String signUp = 'api/v1/core/auth/signup';
 
+  // ── SignUp ─────────────────────────────────────────
+  static const String createPerson = '/api/v1/person/add';
+  static const String signUp = '/api/v1/auth/sign-up';
+  static const String linkDevice = '/api/v1/device-owners';
   // ── Device ────────────────────────────────────────
   static const String deviceList = 'api/v1/core/device/list';
 

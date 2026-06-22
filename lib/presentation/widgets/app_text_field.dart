@@ -10,6 +10,7 @@ class AppTextField extends StatefulWidget {
   final TextInputAction textInputAction;
   final String? Function(String?)? validator;
   final bool enabled;
+  final bool readOnly;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
 
@@ -26,6 +27,7 @@ class AppTextField extends StatefulWidget {
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
+    this.readOnly = false,
   });
 
   @override
@@ -44,6 +46,7 @@ class _AppTextFieldState extends State<AppTextField> {
       obscureText: widget.isPassword && _obscure,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      readOnly: widget.readOnly,
       enabled: widget.enabled,
       validator: widget.validator,
       onChanged: widget.onChanged,

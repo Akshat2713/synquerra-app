@@ -14,7 +14,11 @@ import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/home_detail/home_detail_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
+import '../blocs/signup/signup_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
+import '../screens/auth/signup_link_device_screen.dart';
+import '../screens/auth/signup_password_setup_screen.dart';
+import '../screens/auth/signup_profile_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/home_detail/home_detail_screen.dart';
@@ -45,12 +49,16 @@ class AppRoutes {
   static const String addGeofence = '/addFeofence';
   static const String modes = '/modes';
   static const String homeDetail = '/home-detail';
+  static const String signupProfile = '/signup-profile';
+  static const String signupCredentials = '/signup-credentials';
+  static const String signupDevice = '/signup-device';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
 class AppRouter {
   AppRouter._();
+  static SignupBloc? _activeSignupBloc;
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -58,6 +66,7 @@ class AppRouter {
         return _fade(settings, const SplashScreen());
 
       case AppRoutes.login:
+        _activeSignupBloc = null;
         return _fade(settings, const LoginScreen());
 
       case AppRoutes.home:
@@ -181,6 +190,38 @@ class AppRouter {
             create: (_) =>
                 sl<HomeDetailBloc>()..add(const HomeDetailLoadRequested()),
             child: const HomeDetailScreen(),
+          ),
+        );
+
+      case AppRoutes.signupProfile:
+        _activeSignupBloc = sl<SignupBloc>()
+          ..add(const SignupProgressRestored());
+        return _fade(
+          settings,
+          BlocProvider.value(
+            value: _activeSignupBloc!,
+            child: const SignupProfileScreen(),
+          ),
+        );
+
+      // ── ADD this helper to AppRouter class ──
+      //  SignupBloc? _signupBloc;
+
+      case AppRoutes.signupCredentials:
+        return _fade(
+          settings,
+          BlocProvider.value(
+            value: _activeSignupBloc!, // reuse same instance from sl
+            child: const SignupPasswordSetupScreen(),
+          ),
+        );
+
+      case AppRoutes.signupDevice:
+        return _fade(
+          settings,
+          BlocProvider.value(
+            value: _activeSignupBloc!, // reuse same instance from sl
+            child: const SignupLinkDeviceScreen(),
           ),
         );
       default:

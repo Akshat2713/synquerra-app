@@ -204,7 +204,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/signup'),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.signupProfile,
+                          ),
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
