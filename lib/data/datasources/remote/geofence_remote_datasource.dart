@@ -22,7 +22,9 @@ class GeofenceRemoteDataSource {
     final body = response.data as Map<String, dynamic>;
 
     // Check status first, so the server's own message is preserved
-    if (body['status'] != 'success') {
+    // Only check status if it exists
+    final status = body['status'];
+    if (status != null && status != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to fetch geofences.',
         statusCode: response.statusCode,

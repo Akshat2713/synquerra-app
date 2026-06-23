@@ -9,15 +9,15 @@ import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
 import '../../../domain/usecases/base_usecase.dart';
 
-part 'home_event.dart';
-part 'home_state.dart';
+part 'device_list_event.dart';
+part 'device_list_state.dart';
 
-class HomeBloc extends Bloc<HomeEvent, HomeState> {
+class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
   final GetAlertsUseCase _getAlertsUseCase;
   final GetDeviceListUseCase _getDeviceListUseCase;
   final DeviceRepository _deviceRepository;
 
-  HomeBloc({
+  DeviceListBloc({
     required GetAlertsUseCase getAlertsUseCase,
     required GetDeviceListUseCase getDeviceListUseCase,
     required DeviceRepository deviceRepository,
@@ -25,27 +25,30 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
        _getDeviceListUseCase = getDeviceListUseCase,
        _deviceRepository = deviceRepository,
 
-       super(const HomeInitial()) {
-    on<HomeLoadRequested>(_onLoad);
-    on<HomeRefreshRequested>(_onRefresh);
-    on<HomeDeviceToggled>(_onDeviceToggled);
+       super(const DeviceListInitial()) {
+    on<DeviceListLoadRequested>(_onLoad);
+    on<DeviceListRefreshRequested>(_onRefresh);
+    on<DeviceListDeviceToggled>(_onDeviceToggled);
   }
 
-  Future<void> _onLoad(HomeLoadRequested event, Emitter<HomeState> emit) async {
-    emit(const HomeLoading());
+  Future<void> _onLoad(
+    DeviceListLoadRequested event,
+    Emitter<DeviceListState> emit,
+  ) async {
+    emit(const DeviceListLoading());
     await _fetchData(emit);
   }
 
   Future<void> _onRefresh(
-    HomeRefreshRequested event,
-    Emitter<HomeState> emit,
+    DeviceListRefreshRequested event,
+    Emitter<DeviceListState> emit,
   ) async {
     (_deviceRepository as DeviceRepositoryImpl).invalidateCache(); // bust cache
     await _fetchData(emit);
   }
 
-  Future<void> _fetchData(Emitter<HomeState> emit) async {
-    debugPrint('[HomeBloc] Fetching alerts and devices');
+  Future<void> _fetchData(Emitter<DeviceListState> emit) async {
+    debugPrint('[DeviceListBloc] Fetching alerts and devices');
 
     final alertsFuture = _getAlertsUseCase(NoParams());
     final devicesFuture = _getDeviceListUseCase(NoParams());
@@ -56,15 +59,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     // if either fails, emit error
     if (alertsResult.isLeft()) {
       final failure = alertsResult.fold((f) => f, (_) => null)!;
-      debugPrint('[HomeBloc] Alerts fetch failed: ${failure.message}');
-      emit(HomeError(failure.userMessage));
+      debugPrint('[DeviceListBloc] Alerts fetch failed: ${failure.message}');
+      emit(DeviceListError(failure.userMessage));
       return;
     }
 
     if (devicesResult.isLeft()) {
       final failure = devicesResult.fold((f) => f, (_) => null)!;
-      debugPrint('[HomeBloc] Devices fetch failed: ${failure.message}');
-      emit(HomeError(failure.userMessage));
+      debugPrint('[DeviceListBloc] Devices fetch failed: ${failure.message}');
+      emit(DeviceListError(failure.userMessage));
       return;
     }
 
@@ -74,15 +77,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final devices = devicesResult.fold((_) => <DeviceEntity>[], (d) => d);
 
     debugPrint(
-      '[HomeBloc] Loaded ${alerts.length} alerts, ${devices.length} devices',
+      '[DeviceListBloc] Loaded ${alerts.length} alerts, ${devices.length} devices',
     );
 
-    emit(HomeLoaded(alerts: alerts, devices: devices));
+    emit(DeviceListLoaded(alerts: alerts, devices: devices));
   }
 
-  void _onDeviceToggled(HomeDeviceToggled event, Emitter<HomeState> emit) {
-    if (state is! HomeLoaded) return;
-    final current = state as HomeLoaded;
+  void _onDeviceToggled(
+    DeviceListDeviceToggled event,
+    Emitter<DeviceListState> emit,
+  ) {
+    if (state is! DeviceListLoaded) return;
+    final current = state as DeviceListLoaded;
 
     final toggled = Set<String>.from(current.toggledImeis);
     if (toggled.contains(event.imei)) {
@@ -92,7 +98,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
 
     debugPrint(
-      '[HomeBloc] Device ${event.imei} toggled → active: ${current.isDeviceActive(current.devices.firstWhere((d) => d.imei == event.imei))}',
+      '[DeviceListBloc] Device ${event.imei} toggled → active: ${current.isDeviceActive(current.devices.firstWhere((d) => d.imei == event.imei))}',
     );
 
     emit(current.copyWith(toggledImeis: toggled));

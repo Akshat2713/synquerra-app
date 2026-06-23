@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:synquerra/presentation/blocs/landing/landing_bloc.dart';
 import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
 
 // Network
@@ -37,6 +37,18 @@ import '../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 
+// Signup
+import '../../data/datasources/remote/signup_remote_datasource.dart';
+import '../../data/datasources/local/signup_local_datasource.dart';
+import '../../data/repositories_impl/signup_repository_impl.dart';
+import '../../domain/repositories/signup_repository.dart';
+import '../../domain/usecases/signup/create_person_usecase.dart';
+import '../../domain/usecases/signup/create_credentials_usecase.dart';
+import '../../domain/usecases/signup/link_device_usecase.dart';
+import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
+import '../../domain/usecases/signup/clear_saved_signup_progress_usecase.dart';
+import '../../presentation/blocs/signup/signup_bloc.dart';
+
 // Alerts
 import '../../data/datasources/remote/alerts_remote_datasource.dart';
 import '../../data/repositories_impl/alerts_repository_impl.dart';
@@ -57,7 +69,7 @@ import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 
 // Blocs
 import '../../presentation/blocs/geofence/geofence_bloc.dart';
-import '../../presentation/blocs/home/home_bloc.dart';
+import '../../presentation/blocs/device_list/device_list_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/modes/mode_bloc.dart';
 import '../../presentation/blocs/profile/profile_bloc.dart';
@@ -74,9 +86,7 @@ final sl = GetIt.instance;
 Future<void> initDependencies() async {
   // ── Core ──────────────────────────────────────────
   sl.registerLazySingleton<FlutterSecureStorage>(
-    () => const FlutterSecureStorage(
-      aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    ),
+    () => const FlutterSecureStorage(),
   );
 
   // ── Theme ───────────────────────────────────────
@@ -110,6 +120,31 @@ Future<void> initDependencies() async {
       loginUseCase: sl(),
       checkAuthStatusUseCase: sl(),
       logoutUseCase: sl(),
+    ),
+  );
+
+  // ── Signup ────────────────────────────────────────
+  sl.registerLazySingleton<SignupRemoteDataSource>(
+    () => SignupRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<SignupLocalDataSource>(
+    () => SignupLocalDataSource(sl()),
+  );
+  sl.registerLazySingleton<SignupRepository>(
+    () => SignupRepositoryImpl(remote: sl(), local: sl()),
+  );
+  sl.registerLazySingleton(() => CreatePersonUseCase(sl()));
+  sl.registerLazySingleton(() => CreateCredentialsUseCase(sl()));
+  sl.registerLazySingleton(() => LinkDeviceUseCase(sl()));
+  sl.registerLazySingleton(() => GetSavedSignupProgressUseCase(sl()));
+  sl.registerLazySingleton(() => ClearSavedSignupProgressUseCase(sl()));
+  sl.registerFactory<SignupBloc>(
+    () => SignupBloc(
+      createPersonUseCase: sl(),
+      createCredentialsUseCase: sl(),
+      linkDeviceUseCase: sl(),
+      getSavedProgressUseCase: sl(),
+      clearSavedProgressUseCase: sl(),
     ),
   );
 
@@ -151,9 +186,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetAnalyticsUseCase(sl()));
 
-  // ── Home ──────────────────────────────────────────
-  sl.registerFactory<HomeBloc>(
-    () => HomeBloc(
+  // ── DeviceList ──────────────────────────────────────────
+  sl.registerFactory<DeviceListBloc>(
+    () => DeviceListBloc(
       getAlertsUseCase: sl(),
       getDeviceListUseCase: sl(),
       deviceRepository: sl(),
@@ -209,6 +244,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<LocationRepository>(() => LocationRepositoryImpl());
   sl.registerLazySingleton(() => GetUserLocationUseCase(sl()));
   sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
+
+  sl.registerFactory(() => LandingBloc());
 }
 
 /// Called after successful login to store user globally
@@ -217,5 +254,5 @@ void registerUser(UserEntity user) {
     sl.unregister<UserHolder>();
   }
   sl.registerLazySingleton<UserHolder>(() => UserHolder(user));
-  debugPrint('[DI] User registered → ${user.fullName}');
+  // debugPrint('[DI] User registered → ${user.fullName}');
 }

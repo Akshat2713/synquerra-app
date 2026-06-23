@@ -6,27 +6,31 @@ class ApiConstants {
       'https://synquerraapi.devnik.in/'; // ⚠️ DEV ONLY
 
   // ── Auth ──────────────────────────────────────────
-  static const String signIn = 'auth/signin';
-  static const String signUp = 'auth/signup';
+  static const String signIn = 'api/v1/auth/sign-in';
+  // static const String signUp = 'api/v1/core/auth/signup';
 
+  // ── SignUp ─────────────────────────────────────────
+  static const String createPerson = '/api/v1/person/add';
+  static const String signUp = '/api/v1/auth/sign-up';
+  static const String linkDevice = '/api/v1/device-owner/claim/serial';
   // ── Device ────────────────────────────────────────
-  static const String deviceList = 'device/list';
+  static const String deviceList = 'api/v1/core/device/list';
 
   // ── Alerts ────────────────────────────────────────
-  static const String alerts = 'alerts-errors/alerts';
-  static const String alertErrors = 'alerts-errors/device';
+  static const String alerts = 'api/v1/core/alerts-errors/alerts';
+  static const String alertErrors = 'api/v1/core/alerts-errors/device';
 
   // ── Analytics ─────────────────────────────────────
-  static const String analytics = 'analytics/analytics-query';
+  static const String analytics = 'api/v1/core/analytics/analytics-query';
 
   // ── Geofences ─────────────────────────────────────
-  static const String getGeofences = 'geofence/list';
-  static const String createGeofence = 'geofence/create';
-  static const String deleteGeofence = 'geofence/delete';
+  static const String getGeofences = 'api/v1/core/geofence/list';
+  static const String createGeofence = 'api/v1/core/geofence/create';
+  static const String deleteGeofence = 'api/v1/core/geofence/delete';
 
   // ── Modes ─────────────────────────────────────────
-  static const String getModes = '/mode/list';
-  static const String switchMode = '/device/switch-mode';
+  static const String getModes = 'api/v1/core/mode/list';
+  static const String switchMode = 'api/v1/core/device/switch-mode';
 
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;

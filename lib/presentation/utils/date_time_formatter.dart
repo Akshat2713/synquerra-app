@@ -80,4 +80,8 @@ class DateTimeFormatter {
       return 'N/A';
     }
   }
+
+  static String toIsoString(DateTime dateTime) {
+    return dateTime.toUtc().toIso8601String();
+  }
 }

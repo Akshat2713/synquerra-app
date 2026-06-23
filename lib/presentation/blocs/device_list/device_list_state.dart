@@ -1,26 +1,26 @@
-part of 'home_bloc.dart';
+part of 'device_list_bloc.dart';
 
-abstract class HomeState extends Equatable {
-  const HomeState();
+abstract class DeviceListState extends Equatable {
+  const DeviceListState();
 
   @override
   List<Object?> get props => [];
 }
 
-class HomeInitial extends HomeState {
-  const HomeInitial();
+class DeviceListInitial extends DeviceListState {
+  const DeviceListInitial();
 }
 
-class HomeLoading extends HomeState {
-  const HomeLoading();
+class DeviceListLoading extends DeviceListState {
+  const DeviceListLoading();
 }
 
-class HomeLoaded extends HomeState {
+class DeviceListLoaded extends DeviceListState {
   final List<AlertErrorEntity> alerts;
   final List<DeviceEntity> devices;
   final Set<String> toggledImeis; // tracks visual active/inactive toggles
 
-  const HomeLoaded({
+  const DeviceListLoaded({
     required this.alerts,
     required this.devices,
     this.toggledImeis = const {},
@@ -40,12 +40,12 @@ class HomeLoaded extends HomeState {
     return isToggled ? !device.isActive : device.isActive;
   }
 
-  HomeLoaded copyWith({
+  DeviceListLoaded copyWith({
     List<AlertErrorEntity>? alerts,
     List<DeviceEntity>? devices,
     Set<String>? toggledImeis,
   }) {
-    return HomeLoaded(
+    return DeviceListLoaded(
       alerts: alerts ?? this.alerts,
       devices: devices ?? this.devices,
       toggledImeis: toggledImeis ?? this.toggledImeis,
@@ -56,10 +56,10 @@ class HomeLoaded extends HomeState {
   List<Object?> get props => [alerts, devices, toggledImeis];
 }
 
-class HomeError extends HomeState {
+class DeviceListError extends DeviceListState {
   final String message;
 
-  const HomeError(this.message);
+  const DeviceListError(this.message);
 
   @override
   List<Object?> get props => [message];

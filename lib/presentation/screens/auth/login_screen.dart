@@ -41,11 +41,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        debugPrint('[LoginScreen] state changed → $state');
         if (state is AuthAuthenticated) {
           // Replace with your named route
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRoutes.home,
+            AppRoutes.deviceList,
             (route) => false,
           );
         } else if (state is AuthError) {
@@ -184,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/signup'),
+                          onTap: () => AppRouter.navigateToSignup(context),
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
