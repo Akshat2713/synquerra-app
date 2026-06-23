@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class HomeDetailSkeleton extends StatefulWidget {
-  const HomeDetailSkeleton({super.key});
+class LandingSkeleton extends StatefulWidget {
+  const LandingSkeleton({super.key});
 
   @override
-  State<HomeDetailSkeleton> createState() => _HomeDetailSkeletonState();
+  State<LandingSkeleton> createState() => _LandingSkeletonState();
 }
 
-class _HomeDetailSkeletonState extends State<HomeDetailSkeleton>
+class _LandingSkeletonState extends State<LandingSkeleton>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;

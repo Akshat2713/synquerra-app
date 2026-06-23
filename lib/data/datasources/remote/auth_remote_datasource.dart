@@ -12,19 +12,13 @@ class AuthRemoteDataSource {
 
   Future<UserModel> login({
     required String email,
-    required String phoneNumber,
     required String password,
   }) async {
     debugPrint('[AuthRemoteDataSource] login() called for $email');
 
     final response = await _dioClient.dio.post(
       ApiConstants.signIn,
-      data: {
-        'email': email,
-        'mobile': phoneNumber,
-        'password': password,
-        'remember_me': true,
-      },
+      data: {'email': email, 'password': password},
     );
 
     final body = response.data as Map<String, dynamic>;

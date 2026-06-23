@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/home_detail/home_detail_bloc.dart'; // Holds your ScheduleEntry model
+import '../../../blocs/landing/landing_bloc.dart'; // Holds your ScheduleEntry model
 
 class TodayScheduleCard extends StatelessWidget {
   final List<ScheduleEntry> schedule;

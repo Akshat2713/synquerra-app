@@ -105,7 +105,7 @@ class _SignupLinkDeviceScreenState extends State<SignupLinkDeviceScreen> {
                   const SizedBox(height: 28),
 
                   // ── Progress Tracker ─────────────────────────
-                  const SignupProgressTracker(currentStep: SignupStep.security),
+                  const SignupProgressTracker(currentStep: SignupStep.device),
                   const SizedBox(height: 48),
 
                   // ── Device Icon ───────────────────────────────

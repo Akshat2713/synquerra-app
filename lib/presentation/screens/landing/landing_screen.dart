@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/app/app_router.dart';
-import '../../blocs/home_detail/home_detail_bloc.dart';
-import 'home_detail_skeleton.dart';
+import '../../blocs/landing/landing_bloc.dart';
+import 'landing_skeleton.dart';
 
 // Import the segmented component files
 import 'widgets/attention_banner.dart';
@@ -12,24 +12,24 @@ import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
 import 'widgets/insight_card.dart';
 
-class HomeDetailScreen extends StatefulWidget {
-  const HomeDetailScreen({super.key});
+class LandingScreen extends StatefulWidget {
+  const LandingScreen({super.key});
 
   @override
-  State<HomeDetailScreen> createState() => _HomeDetailScreenState();
+  State<LandingScreen> createState() => _LandingScreenState();
 }
 
-class _HomeDetailScreenState extends State<HomeDetailScreen> {
+class _LandingScreenState extends State<LandingScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeDetailBloc>().add(const HomeDetailLoadRequested());
+    context.read<LandingBloc>().add(const LandingLoadRequested());
   }
 
   Future<void> _onRefresh() async {
-    final bloc = context.read<HomeDetailBloc>();
-    bloc.add(const HomeDetailRefreshRequested());
-    await bloc.stream.firstWhere((s) => s is! HomeDetailLoading);
+    final bloc = context.read<LandingBloc>();
+    bloc.add(const LandingRefreshRequested());
+    await bloc.stream.firstWhere((s) => s is! LandingLoading);
   }
 
   @override
@@ -50,22 +50,21 @@ class _HomeDetailScreenState extends State<HomeDetailScreen> {
           ),
         ],
       ),
-      body: BlocBuilder<HomeDetailBloc, HomeDetailState>(
+      body: BlocBuilder<LandingBloc, LandingState>(
         builder: (context, state) {
-          if (state is HomeDetailInitial || state is HomeDetailLoading) {
-            return const HomeDetailSkeleton();
+          if (state is LandingInitial || state is LandingLoading) {
+            return const LandingSkeleton();
           }
 
-          if (state is HomeDetailError) {
+          if (state is LandingError) {
             return _ErrorBody(
               message: state.message,
-              onRetry: () => context.read<HomeDetailBloc>().add(
-                const HomeDetailLoadRequested(),
-              ),
+              onRetry: () =>
+                  context.read<LandingBloc>().add(const LandingLoadRequested()),
             );
           }
 
-          if (state is HomeDetailLoaded) {
+          if (state is LandingLoaded) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               color: colors.primary,
@@ -81,7 +80,7 @@ class _HomeDetailScreenState extends State<HomeDetailScreen> {
 }
 
 class _LoadedBody extends StatelessWidget {
-  final HomeDetailLoaded state;
+  final LandingLoaded state;
   const _LoadedBody({required this.state});
 
   @override
@@ -105,14 +104,14 @@ class _LoadedBody extends StatelessWidget {
           attentionCount: state.attentionCount,
           totalMembers: state.members.length,
           members: state.members,
-          onTap: () => Navigator.pushNamed(context, AppRoutes.home),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.deviceList),
         ),
         const SizedBox(height: 24),
         // MemberRow(
         //   members: state.members,
         //   selectedId: d.summary.id,
         //   onSelect: (id) =>
-        //       context.read<HomeDetailBloc>().add(HomeDetailMemberSelected(id)),
+        //       context.read<LandingBloc>().add(LandingMemberSelected(id)),
         // ),
         const SizedBox(height: 20),
         HeroSection(detail: d),

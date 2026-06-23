@@ -12,7 +12,7 @@ class ApiConstants {
   // ── SignUp ─────────────────────────────────────────
   static const String createPerson = '/api/v1/person/add';
   static const String signUp = '/api/v1/auth/sign-up';
-  static const String linkDevice = '/api/v1/device-owners';
+  static const String linkDevice = '/api/v1/device-owner/claim/serial';
   // ── Device ────────────────────────────────────────
   static const String deviceList = 'api/v1/core/device/list';
 

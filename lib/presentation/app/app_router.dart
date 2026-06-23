@@ -5,13 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
+import '../../data/datasources/local/signup_local_datasource.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
-import '../blocs/home/home_bloc.dart';
+import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
-import '../blocs/home_detail/home_detail_bloc.dart';
+import '../blocs/landing/landing_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
@@ -21,7 +22,7 @@ import '../screens/auth/signup_password_setup_screen.dart';
 import '../screens/auth/signup_profile_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
-import '../screens/home_detail/home_detail_screen.dart';
+import '../screens/landing/landing_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
@@ -38,7 +39,7 @@ class AppRoutes {
   static const String splash = '/splash';
   static const String login = '/login';
   static const String signup = '/signup';
-  static const String home = '/home';
+  static const String deviceList = '/device-list';
   static const String deviceDetail = '/device-detail';
   static const String telemetryHistory = '/telemetry-history';
   static const String alertCodes = '/alert-codes';
@@ -69,11 +70,11 @@ class AppRouter {
         _activeSignupBloc = null;
         return _fade(settings, const LoginScreen());
 
-      case AppRoutes.home:
+      case AppRoutes.deviceList:
         return _slide(
           settings,
           BlocProvider(
-            create: (_) => sl<HomeBloc>(),
+            create: (_) => sl<DeviceListBloc>(),
             child: const DeviceListScreen(),
           ),
         );
@@ -187,15 +188,13 @@ class AppRouter {
         return _slide(
           settings,
           BlocProvider(
-            create: (_) =>
-                sl<HomeDetailBloc>()..add(const HomeDetailLoadRequested()),
-            child: const HomeDetailScreen(),
+            create: (_) => sl<LandingBloc>()..add(const LandingLoadRequested()),
+            child: const LandingScreen(),
           ),
         );
 
       case AppRoutes.signupProfile:
-        _activeSignupBloc = sl<SignupBloc>()
-          ..add(const SignupProgressRestored());
+        _activeSignupBloc = sl<SignupBloc>();
         return _fade(
           settings,
           BlocProvider.value(
@@ -251,5 +250,37 @@ class AppRouter {
           FadeTransition(opacity: animation, child: c),
       transitionDuration: const Duration(milliseconds: 300),
     );
+  }
+
+  static Future<void> navigateToSignup(BuildContext context) async {
+    // Always create a fresh bloc instance
+    _activeSignupBloc = sl<SignupBloc>();
+
+    // Check local storage directly — no need to go through bloc
+    final local = sl<SignupLocalDataSource>();
+
+    try {
+      final progress = await local.getProgress();
+
+      if (!context.mounted) return;
+
+      if (progress == null || progress.step == 1) {
+        // No saved progress → start from beginning
+        Navigator.pushNamed(context, AppRoutes.signupProfile);
+      } else if (progress.step == 2) {
+        // Profile done → restore state then go to credentials
+        _activeSignupBloc!.add(SignupProgressRestored());
+        Navigator.pushNamed(context, AppRoutes.signupCredentials);
+      } else if (progress.step == 3) {
+        // Credentials done → restore state then go to device
+        _activeSignupBloc!.add(SignupProgressRestored());
+        Navigator.pushNamed(context, AppRoutes.signupDevice);
+      }
+    } catch (_) {
+      // On any error just start fresh
+      if (context.mounted) {
+        Navigator.pushNamed(context, AppRoutes.signupProfile);
+      }
+    }
   }
 }

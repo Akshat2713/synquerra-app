@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:synquerra/presentation/blocs/home_detail/home_detail_bloc.dart';
+import 'package:synquerra/presentation/blocs/landing/landing_bloc.dart';
 import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
 
 // Network
@@ -69,7 +69,7 @@ import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 
 // Blocs
 import '../../presentation/blocs/geofence/geofence_bloc.dart';
-import '../../presentation/blocs/home/home_bloc.dart';
+import '../../presentation/blocs/device_list/device_list_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/modes/mode_bloc.dart';
 import '../../presentation/blocs/profile/profile_bloc.dart';
@@ -186,9 +186,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetAnalyticsUseCase(sl()));
 
-  // ── Home ──────────────────────────────────────────
-  sl.registerFactory<HomeBloc>(
-    () => HomeBloc(
+  // ── DeviceList ──────────────────────────────────────────
+  sl.registerFactory<DeviceListBloc>(
+    () => DeviceListBloc(
       getAlertsUseCase: sl(),
       getDeviceListUseCase: sl(),
       deviceRepository: sl(),
@@ -245,7 +245,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetUserLocationUseCase(sl()));
   sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
 
-  sl.registerFactory(() => HomeDetailBloc());
+  sl.registerFactory(() => LandingBloc());
 }
 
 /// Called after successful login to store user globally

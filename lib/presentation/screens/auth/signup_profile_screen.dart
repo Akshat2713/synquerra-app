@@ -32,6 +32,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
   DateTime? _selectedBirthDate; // raw DateTime for API
 
   @override
+  @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/home/home_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/critical_alert_banner.dart';
 import '../../widgets/device_card.dart';
@@ -19,18 +19,18 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeBloc>().add(const HomeLoadRequested());
+    context.read<DeviceListBloc>().add(const DeviceListLoadRequested());
   }
 
   Future<void> _onRefresh() async {
-    final homebloc = context.read<HomeBloc>();
-    homebloc.add(const HomeRefreshRequested());
+    final homebloc = context.read<DeviceListBloc>();
+    homebloc.add(const DeviceListRefreshRequested());
     // wait until state changes from loading
     // await Future.doWhile(() async {
     //   await Future.delayed(const Duration(milliseconds: 100));
-    //   return homebloc.state is HomeLoading;
+    //   return homebloc.state is DeviceListLoading;
     // });
-    await homebloc.stream.firstWhere((s) => s is! HomeLoading);
+    await homebloc.stream.firstWhere((s) => s is! DeviceListLoading);
   }
 
   @override
@@ -136,13 +136,13 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
               ),
             ],
           ),
-          body: BlocBuilder<HomeBloc, HomeState>(
+          body: BlocBuilder<DeviceListBloc, DeviceListState>(
             builder: (context, state) {
-              if (state is HomeLoading || state is HomeInitial) {
+              if (state is DeviceListLoading || state is DeviceListInitial) {
                 return const DeviceListSkeleton();
               }
 
-              if (state is HomeError) {
+              if (state is DeviceListError) {
                 return Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -160,8 +160,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () =>
-                            context.read<HomeBloc>().add(HomeLoadRequested()),
+                        onPressed: () => context.read<DeviceListBloc>().add(
+                          DeviceListLoadRequested(),
+                        ),
                         child: const Text('Retry'),
                       ),
                     ],
@@ -169,7 +170,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 );
               }
 
-              if (state is HomeLoaded) {
+              if (state is DeviceListLoaded) {
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
                   color: colors.primary,
@@ -275,7 +276,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   void _navigateAndRefresh(String route, {Object? arguments}) {
     Navigator.pushNamed(context, route, arguments: arguments).then((_) {
       if (mounted) {
-        context.read<HomeBloc>().add(const HomeRefreshRequested());
+        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
       }
     });
   }

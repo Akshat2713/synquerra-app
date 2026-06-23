@@ -1,4 +1,4 @@
-part of 'home_detail_bloc.dart';
+part of 'landing_bloc.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models  — replace with your real domain models
@@ -82,27 +82,27 @@ class MemberDetail {
 // States
 // ─────────────────────────────────────────────────────────────────────────────
 
-abstract class HomeDetailState extends Equatable {
-  const HomeDetailState();
+abstract class LandingState extends Equatable {
+  const LandingState();
 
   @override
   List<Object?> get props => [];
 }
 
-class HomeDetailInitial extends HomeDetailState {
-  const HomeDetailInitial();
+class LandingInitial extends LandingState {
+  const LandingInitial();
 }
 
-class HomeDetailLoading extends HomeDetailState {
-  const HomeDetailLoading();
+class LandingLoading extends LandingState {
+  const LandingLoading();
 }
 
-class HomeDetailLoaded extends HomeDetailState {
+class LandingLoaded extends LandingState {
   final List<MemberSummary> members;
   final MemberDetail selectedMember;
   final int attentionCount;
 
-  const HomeDetailLoaded({
+  const LandingLoaded({
     required this.members,
     required this.selectedMember,
     required this.attentionCount,
@@ -112,9 +112,9 @@ class HomeDetailLoaded extends HomeDetailState {
   List<Object?> get props => [members, selectedMember, attentionCount];
 }
 
-class HomeDetailError extends HomeDetailState {
+class LandingError extends LandingState {
   final String message;
-  const HomeDetailError(this.message);
+  const LandingError(this.message);
 
   @override
   List<Object?> get props => [message];

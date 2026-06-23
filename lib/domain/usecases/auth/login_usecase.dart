@@ -6,14 +6,9 @@ import '../base_usecase.dart';
 
 class LoginParams {
   final String email;
-  final String phoneNumber;
   final String password;
 
-  const LoginParams({
-    required this.email,
-    required this.phoneNumber,
-    required this.password,
-  });
+  const LoginParams({required this.email, required this.password});
 }
 
 class LoginUseCase implements UseCase<UserEntity, LoginParams> {
@@ -23,10 +18,6 @@ class LoginUseCase implements UseCase<UserEntity, LoginParams> {
 
   @override
   Future<Either<Failure, UserEntity>> call(LoginParams params) {
-    return _repository.login(
-      email: params.email,
-      phoneNumber: params.phoneNumber,
-      password: params.password,
-    );
+    return _repository.login(email: params.email, password: params.password);
   }
 }

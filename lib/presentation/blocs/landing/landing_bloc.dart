@@ -1,15 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-part 'home_detail_event.dart';
-part 'home_detail_state.dart';
+part 'landing_event.dart';
+part 'landing_state.dart';
 
 /// Placeholder BLoC — wire up your real repository / use-cases here.
-class HomeDetailBloc extends Bloc<HomeDetailEvent, HomeDetailState> {
-  HomeDetailBloc() : super(const HomeDetailInitial()) {
-    on<HomeDetailLoadRequested>(_onLoad);
-    on<HomeDetailRefreshRequested>(_onRefresh);
-    on<HomeDetailMemberSelected>(_onMemberSelected);
+class LandingBloc extends Bloc<LandingEvent, LandingState> {
+  LandingBloc() : super(const LandingInitial()) {
+    on<LandingLoadRequested>(_onLoad);
+    on<LandingRefreshRequested>(_onRefresh);
+    on<LandingMemberSelected>(_onMemberSelected);
   }
 
   // ── Placeholder members ──────────────────────────────────────────────
@@ -47,33 +47,33 @@ class HomeDetailBloc extends Bloc<HomeDetailEvent, HomeDetailState> {
   ];
 
   Future<void> _onLoad(
-    HomeDetailLoadRequested _,
-    Emitter<HomeDetailState> emit,
+    LandingLoadRequested _,
+    Emitter<LandingState> emit,
   ) async {
-    emit(const HomeDetailLoading());
+    emit(const LandingLoading());
     await _fetchAndEmit(emit, selectedId: _placeholderMembers.first.id);
   }
 
   Future<void> _onRefresh(
-    HomeDetailRefreshRequested _,
-    Emitter<HomeDetailState> emit,
+    LandingRefreshRequested _,
+    Emitter<LandingState> emit,
   ) async {
     final current = state;
-    final selectedId = current is HomeDetailLoaded
+    final selectedId = current is LandingLoaded
         ? current.selectedMember.summary.id
         : _placeholderMembers.first.id;
     await _fetchAndEmit(emit, selectedId: selectedId);
   }
 
   Future<void> _onMemberSelected(
-    HomeDetailMemberSelected event,
-    Emitter<HomeDetailState> emit,
+    LandingMemberSelected event,
+    Emitter<LandingState> emit,
   ) async {
     await _fetchAndEmit(emit, selectedId: event.memberId);
   }
 
   Future<void> _fetchAndEmit(
-    Emitter<HomeDetailState> emit, {
+    Emitter<LandingState> emit, {
     required String selectedId,
   }) async {
     try {
@@ -88,14 +88,14 @@ class HomeDetailBloc extends Bloc<HomeDetailEvent, HomeDetailState> {
       final attentionCount = members.where((m) => m.needsAttention).length;
 
       emit(
-        HomeDetailLoaded(
+        LandingLoaded(
           members: members,
           selectedMember: MemberDetail.placeholder(selected),
           attentionCount: attentionCount,
         ),
       );
     } catch (e) {
-      emit(HomeDetailError(e.toString()));
+      emit(LandingError(e.toString()));
     }
   }
 }

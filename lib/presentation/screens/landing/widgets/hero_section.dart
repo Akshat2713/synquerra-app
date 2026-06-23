@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/home_detail/home_detail_bloc.dart';
+import '../../../blocs/landing/landing_bloc.dart';
 
 class HeroSection extends StatelessWidget {
   final MemberDetail detail;

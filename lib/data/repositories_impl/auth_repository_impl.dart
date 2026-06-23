@@ -22,15 +22,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntity>> login({
     required String email,
-    required String phoneNumber,
     required String password,
   }) async {
     try {
-      final model = await _remote.login(
-        email: email,
-        phoneNumber: phoneNumber,
-        password: password,
-      );
+      final model = await _remote.login(email: email, password: password);
       await _local.saveUser(model);
       final entity = model.toEntity();
       registerUser(entity);

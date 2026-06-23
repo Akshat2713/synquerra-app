@@ -119,7 +119,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                   const SizedBox(height: 28),
 
                   // ── Progress Tracker ─────────────────────────
-                  const SignupProgressTracker(currentStep: SignupStep.device),
+                  const SignupProgressTracker(currentStep: SignupStep.security),
                   const SizedBox(height: 36),
 
                   // ── Checkbox ─────────────────────────────────

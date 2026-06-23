@@ -5,7 +5,6 @@ import '../failures/failure.dart';
 abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> login({
     required String email,
-    required String phoneNumber,
     required String password,
   });
 

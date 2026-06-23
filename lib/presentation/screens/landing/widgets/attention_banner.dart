@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/home_detail/home_detail_bloc.dart'; // Adjust path based on your exact domain structure
+import '../../../blocs/landing/landing_bloc.dart'; // Adjust path based on your exact domain structure
 
 class AttentionBanner extends StatelessWidget {
   final int attentionCount;
