@@ -52,7 +52,7 @@ class SignupRepositoryImpl implements SignupRepository {
       await _local.saveProgress(
         step: 2,
         personId: entity.personId,
-        email: entity.email,
+        email: entity.email!,
       );
 
       return Right(entity);
@@ -95,11 +95,13 @@ class SignupRepositoryImpl implements SignupRepository {
   @override
   Future<Either<Failure, void>> linkDevice({
     required String ownerId,
+    required String ownerType,
     required String deviceSerialNo,
   }) async {
     try {
       await _remote.linkDevice(
         ownerId: ownerId,
+        ownerType: ownerType,
         deviceSerialNo: deviceSerialNo,
       );
 

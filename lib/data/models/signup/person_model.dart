@@ -4,53 +4,58 @@ class PersonModel {
   final String personId;
   final String firstName;
   final String lastName;
-  final String email;
-  final String phone;
+  final String? email;
+  final String? phone;
+  final String? birthDate;
+  final String? gender;
+  final String? address;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? pincode;
+  final String? profilePhoto;
   final bool isActive;
+  final String? createdAt;
+  final String? updatedAt;
 
   const PersonModel({
     required this.personId,
     required this.firstName,
     required this.lastName,
-    required this.email,
-    required this.phone,
+    this.email,
+    this.phone,
+    this.birthDate,
+    this.gender,
+    this.address,
+    this.city,
+    this.state,
+    this.country,
+    this.pincode,
+    this.profilePhoto,
     required this.isActive,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory PersonModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>;
-    return PersonModel(
-      personId: data['id'] as String,
-      firstName: data['first_name'] as String,
-      lastName: data['last_name'] as String,
-      email: data['email'] as String,
-      phone: data['phone'] as String,
-      isActive: data['is_active'] as bool,
-    );
-  }
-
-  Map<String, dynamic> toRequestJson({
-    required String birthDate,
-    required String gender,
-    required String address,
-    required String city,
-    required String state,
-    required String country,
-    required String pincode,
-  }) => {
-    'first_name': firstName,
-    'last_name': lastName,
-    'email': email,
-    'phone': phone,
-    'birth_date': birthDate,
-    'gender': gender,
-    'address': address,
-    'city': city,
-    'state': state,
-    'country': country,
-    'pincode': pincode,
-    'is_active': true,
-  };
+  factory PersonModel.fromJson(Map<String, dynamic> json) => PersonModel(
+    personId: json['id'] as String,
+    // API sometimes sends trailing whitespace (e.g. "Sanjay "), trim it
+    firstName: (json['first_name'] as String? ?? '').trim(),
+    lastName: (json['last_name'] as String? ?? '').trim(),
+    email: json['email'] as String?,
+    phone: json['phone'] as String?,
+    birthDate: json['birth_date'] as String?,
+    gender: json['gender'] as String?,
+    address: json['address'] as String?,
+    city: json['city'] as String?,
+    state: json['state'] as String?,
+    country: json['country'] as String?,
+    pincode: json['pincode'] as String?,
+    profilePhoto: json['profile_photo'] as String?,
+    isActive: json['is_active'] as bool? ?? true,
+    createdAt: json['created_at'] as String?,
+    updatedAt: json['updated_at'] as String?,
+  );
 
   PersonEntity toEntity() => PersonEntity(
     personId: personId,
@@ -58,6 +63,16 @@ class PersonModel {
     lastName: lastName,
     email: email,
     phone: phone,
+    birthDate: birthDate != null ? DateTime.tryParse(birthDate!) : null,
+    gender: gender,
+    address: address,
+    city: city,
+    state: state,
+    country: country,
+    pincode: pincode,
+    profilePhoto: profilePhoto,
     isActive: isActive,
+    createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
+    updatedAt: updatedAt != null ? DateTime.tryParse(updatedAt!) : null,
   );
 }

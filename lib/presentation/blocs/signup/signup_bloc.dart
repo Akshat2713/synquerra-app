@@ -104,7 +104,6 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       (_) => emit(
         state.copyWith(
           status: SignupStatus.stepSuccess,
-          step: 3,
           credentialsEmail: event.email, // store which email was used
         ),
       ),
@@ -120,7 +119,8 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
 
     final result = await _linkDeviceUseCase(
       LinkDeviceParams(
-        ownerId: state.personId!, // guaranteed set after step 1
+        ownerId: state.personId!,
+        ownerType: event.ownerType,
         deviceSerialNo: event.deviceSerialNo,
       ),
     );

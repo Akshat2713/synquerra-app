@@ -7,6 +7,7 @@ import '../../widgets/critical_alert_banner.dart';
 import '../../widgets/device_card.dart';
 import '../../app/app_router.dart';
 import 'device_list_skeleton.dart';
+import 'widgets/add_device_fab.dart';
 
 class DeviceListScreen extends StatefulWidget {
   const DeviceListScreen({super.key});
@@ -135,6 +136,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 },
               ),
             ],
+          ),
+
+          floatingActionButton: AddDeviceFab(
+            onTap: () => _navigateAndRefresh(
+              AppRoutes.linkDevice, // Make sure this route exists in AppRoutes
+            ),
           ),
           body: BlocBuilder<DeviceListBloc, DeviceListState>(
             builder: (context, state) {

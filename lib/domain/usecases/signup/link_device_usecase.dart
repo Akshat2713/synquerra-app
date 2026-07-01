@@ -5,9 +5,14 @@ import '../base_usecase.dart';
 
 class LinkDeviceParams {
   final String ownerId;
+  final String ownerType;
   final String deviceSerialNo;
 
-  const LinkDeviceParams({required this.ownerId, required this.deviceSerialNo});
+  const LinkDeviceParams({
+    required this.ownerId,
+    required this.ownerType,
+    required this.deviceSerialNo,
+  });
 }
 
 class LinkDeviceUseCase implements UseCase<void, LinkDeviceParams> {
@@ -19,6 +24,7 @@ class LinkDeviceUseCase implements UseCase<void, LinkDeviceParams> {
   Future<Either<Failure, void>> call(LinkDeviceParams params) {
     return _repository.linkDevice(
       ownerId: params.ownerId,
+      ownerType: params.ownerType,
       deviceSerialNo: params.deviceSerialNo,
     );
   }

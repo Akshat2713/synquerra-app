@@ -17,7 +17,7 @@ import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
 import '../screens/alerts_errors/alerts_errors_screen.dart';
-import '../screens/auth/signup_link_device_screen.dart';
+import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
 import '../screens/auth/signup_profile_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
@@ -52,7 +52,7 @@ class AppRoutes {
   static const String homeDetail = '/home-detail';
   static const String signupProfile = '/signup-profile';
   static const String signupCredentials = '/signup-credentials';
-  static const String signupDevice = '/signup-device';
+  static const String linkDevice = '/link-device';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -215,14 +215,8 @@ class AppRouter {
           ),
         );
 
-      case AppRoutes.signupDevice:
-        return _fade(
-          settings,
-          BlocProvider.value(
-            value: _activeSignupBloc!, // reuse same instance from sl
-            child: const SignupLinkDeviceScreen(),
-          ),
-        );
+      case AppRoutes.linkDevice:
+        return _fade(settings, const LinkDeviceScreen());
       default:
         return _fade(
           settings,
@@ -271,13 +265,12 @@ class AppRouter {
         // Profile done → restore state then go to credentials
         _activeSignupBloc!.add(SignupProgressRestored());
         Navigator.pushNamed(context, AppRoutes.signupCredentials);
-      } else if (progress.step == 3) {
-        // Credentials done → restore state then go to device
-        _activeSignupBloc!.add(SignupProgressRestored());
-        Navigator.pushNamed(context, AppRoutes.signupDevice);
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
       // On any error just start fresh
+      debugPrint('SIGNUP ROUTING ERROR: $e');
+      debugPrint(stackTrace.toString());
+      // Force fallback step
       if (context.mounted) {
         Navigator.pushNamed(context, AppRoutes.signupProfile);
       }

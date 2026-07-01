@@ -6,14 +6,16 @@ import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/signup_progress_tracker.dart';
 
-class SignupLinkDeviceScreen extends StatefulWidget {
-  const SignupLinkDeviceScreen({super.key});
+class LinkDeviceScreen extends StatefulWidget {
+  const LinkDeviceScreen({super.key});
 
   @override
-  State<SignupLinkDeviceScreen> createState() => _SignupLinkDeviceScreenState();
+  State<LinkDeviceScreen> createState() => _LinkDeviceScreenState();
 }
 
-class _SignupLinkDeviceScreenState extends State<SignupLinkDeviceScreen> {
+String _ownerType = 'person';
+
+class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
   final _formKey = GlobalKey<FormState>();
   final _serialNumberController = TextEditingController();
 
@@ -23,12 +25,15 @@ class _SignupLinkDeviceScreenState extends State<SignupLinkDeviceScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    context.read<SignupBloc>().add(
-      SignupDeviceLinked(deviceSerialNo: _serialNumberController.text.trim()),
-    );
-  }
+  // void _submit() {
+  //   if (!_formKey.currentState!.validate()) return;
+  //   context.read<SignupBloc>().add(
+  //     SignupDeviceLinked(
+  //       ownerType: _ownerType,
+  //       deviceSerialNo: _serialNumberController.text.trim(),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +128,36 @@ class _SignupLinkDeviceScreenState extends State<SignupLinkDeviceScreen> {
                   ),
                   const SizedBox(height: 32),
 
+                  // ── Owner Type Dropdown ───────────────────────
+                  DropdownButtonFormField<String>(
+                    value: _ownerType,
+                    decoration: const InputDecoration(
+                      labelText: 'Owner *',
+                      prefixIcon: Icon(Icons.person_rounded),
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'person', child: Text('Person')),
+                      DropdownMenuItem(
+                        value: 'organization',
+                        child: Text('Organization'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => _ownerType = val);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
                   // ── Serial Number Field ───────────────────────
                   AppTextField(
                     controller: _serialNumberController,
                     label: 'Device Serial Number *',
-                    hint: 'SN-SQ-2026-XXXX',
+                    hint: 'sqP4YT8TR',
                     prefixIcon: Icons.fingerprint_rounded,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _submit(),
+                    onSubmitted: (_) {},
+                    // _submit(),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return 'Serial number is required to finish setup.';
@@ -170,17 +197,39 @@ class _SignupLinkDeviceScreenState extends State<SignupLinkDeviceScreen> {
                           style: TextStyle(color: colors.onSurfaceVariant),
                         ),
                       ),
-                      BlocBuilder<SignupBloc, SignupState>(
-                        builder: (context, state) {
-                          return SizedBox(
-                            width: 200,
-                            child: AppButton(
-                              label: 'Complete Setup',
-                              onPressed: _submit,
-                              isLoading: state.status == SignupStatus.loading,
+                      // ── Right side: Skip + Complete ──────────
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              // TODO: navigate to landing screen
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                AppRoutes.login,
+                                (route) => false,
+                              );
+                            },
+                            child: Text(
+                              'Skip',
+                              style: TextStyle(color: colors.onSurfaceVariant),
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(width: 8),
+                          BlocBuilder<SignupBloc, SignupState>(
+                            builder: (context, state) {
+                              return SizedBox(
+                                width: 160,
+                                child: AppButton(
+                                  label: 'Complete Setup',
+                                  onPressed: null,
+                                  // _submit,
+                                  isLoading:
+                                      state.status == SignupStatus.loading,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),

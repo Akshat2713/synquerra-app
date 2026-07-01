@@ -54,9 +54,13 @@ class SignupCredentialsSubmitted extends SignupEvent {
 }
 
 class SignupDeviceLinked extends SignupEvent {
+  final String ownerType;
   final String deviceSerialNo;
 
-  const SignupDeviceLinked({required this.deviceSerialNo});
+  const SignupDeviceLinked({
+    required this.ownerType,
+    required this.deviceSerialNo,
+  });
 
   @override
   List<Object?> get props => [deviceSerialNo];

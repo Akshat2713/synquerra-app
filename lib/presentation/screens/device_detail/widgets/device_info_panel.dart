@@ -88,7 +88,7 @@ class DeviceInfoPanel extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              device.studentName,
+                              device.serialNo,
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,

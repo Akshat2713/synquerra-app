@@ -7,21 +7,24 @@ import 'repository_helper.dart';
 
 class DeviceRepositoryImpl implements DeviceRepository {
   final DeviceRemoteDataSource _remote;
-  List<DeviceEntity>? _cache;
+  final Map<String, List<DeviceEntity>> _cache = {};
 
   DeviceRepositoryImpl({required DeviceRemoteDataSource remote})
     : _remote = remote;
 
   @override
-  Future<Either<Failure, List<DeviceEntity>>> getDeviceList() async {
-    if (_cache != null) return Right(_cache!);
+  Future<Either<Failure, List<DeviceEntity>>> getDeviceList(
+    String personId,
+  ) async {
+    if (_cache.containsKey(personId)) return Right(_cache[personId]!);
     final result = await safeListCall(
-      call: _remote.getDeviceList,
+      call: () => _remote.getDeviceList(personId),
       toEntity: (m) => m.toEntity(),
     );
-    result.fold((_) {}, (devices) => _cache = devices);
+    result.fold((_) {}, (devices) => _cache[personId] = devices);
     return result;
   }
 
-  void invalidateCache() => _cache = null;
+  @override
+  void invalidateCache() => _cache.clear();
 }

@@ -1,36 +1,38 @@
-// domain/entities/device/device_entity.dart
-
 import 'package:equatable/equatable.dart';
 
+import 'device_owner_entity.dart';
+
 class DeviceEntity extends Equatable {
+  final String id;
   final String topic;
   final String imei;
-  final int interval;
-  final String geoid;
-  final String? packet;
-  final double? latitude; // Changed to double?
-  final double? longitude; // Changed to double?
-  final double? speed; // Changed to double?
+  final String serialNo;
+  final String? geoid;
+  final double? latitude;
+  final double? longitude;
+  final double? speed;
   final String? temperature;
   final String currentMode;
   final String ledStatus;
   final String? timestamp;
-  final int? battery; // Changed to int?
-  final int? signal; // Changed to int?
+  final int? battery;
+  final int? signal;
   final String? gpsStrength;
-  final String studentName;
-  final String studentId;
   final bool isActive;
   final bool isSubscribed;
+  final String? inventoryStatus;
+  final String? associationType;
   final String createdAt;
   final String updatedAt;
+  final String relationship;
+  final DeviceOwnerEntity? deviceOwner;
 
   const DeviceEntity({
+    required this.id,
     required this.topic,
     required this.imei,
-    required this.interval,
-    required this.geoid,
-    this.packet,
+    required this.serialNo,
+    this.geoid,
     this.latitude,
     this.longitude,
     this.speed,
@@ -41,24 +43,27 @@ class DeviceEntity extends Equatable {
     this.battery,
     this.signal,
     this.gpsStrength,
-    required this.studentName,
-    required this.studentId,
     required this.isActive,
     required this.isSubscribed,
+    this.inventoryStatus,
+    this.associationType,
     required this.createdAt,
     required this.updatedAt,
+    required this.relationship,
+    this.deviceOwner,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
   bool get hasData => battery != null && signal != null;
+  bool get isOwned => relationship == 'owned';
 
   @override
   List<Object?> get props => [
+    id,
     topic,
     imei,
-    interval,
+    serialNo,
     geoid,
-    packet,
     latitude,
     longitude,
     speed,
@@ -69,11 +74,13 @@ class DeviceEntity extends Equatable {
     battery,
     signal,
     gpsStrength,
-    studentName,
-    studentId,
     isActive,
     isSubscribed,
+    inventoryStatus,
+    associationType,
     createdAt,
     updatedAt,
+    relationship,
+    deviceOwner,
   ];
 }

@@ -10,10 +10,11 @@ class DeviceRemoteDataSource {
 
   DeviceRemoteDataSource(this._dioClient);
 
-  Future<List<DeviceModel>> getDeviceList() async {
-    debugPrint('[DeviceRemoteDataSource] getDeviceList() called');
-
-    final response = await _dioClient.dio.get(ApiConstants.deviceList);
+  Future<List<DeviceModel>> getDeviceList(String personId) async {
+    debugPrint('[DeviceRemoteDataSource] getDeviceList() called for $personId');
+    final response = await _dioClient.dio.get(
+      ApiConstants.deviceList(personId),
+    );
 
     final body = response.data as Map<String, dynamic>;
 
