@@ -1,57 +1,42 @@
 part of 'analytics_bloc.dart';
 
-// 1. Extend Equatable on the base class
 abstract class AnalyticsEvent extends Equatable {
   const AnalyticsEvent();
-
   @override
   List<Object?> get props => [];
 }
 
 class AnalyticsLoadDefault extends AnalyticsEvent {
-  final String imei;
-  const AnalyticsLoadDefault(this.imei); // Added const
-
-  // 2. Override props
+  final String deviceId; // ~ renamed from imei
+  const AnalyticsLoadDefault(this.deviceId);
   @override
-  List<Object?> get props => [imei];
+  List<Object?> get props => [deviceId];
 }
 
 class AnalyticsFilterChanged extends AnalyticsEvent {
-  final String imei;
+  final String deviceId; // ~ renamed from imei
   final AnalyticsFilter filter;
-  const AnalyticsFilterChanged({
-    required this.imei,
-    required this.filter,
-  }); // Added const
-
-  // 2. Override props
+  const AnalyticsFilterChanged({required this.deviceId, required this.filter});
   @override
-  List<Object?> get props => [imei, filter];
+  List<Object?> get props => [deviceId, filter];
 }
 
 class AnalyticsCustomRangeSelected extends AnalyticsEvent {
-  final String imei;
+  final String deviceId; // ~ renamed from imei
   final DateTime startDate;
   final DateTime endDate;
-
   const AnalyticsCustomRangeSelected({
-    // Added const
-    required this.imei,
+    required this.deviceId,
     required this.startDate,
     required this.endDate,
   });
-
-  // 2. Override props
   @override
-  List<Object?> get props => [imei, startDate, endDate];
+  List<Object?> get props => [deviceId, startDate, endDate];
 }
 
 class AnalyticsSliderChanged extends AnalyticsEvent {
   final int index;
-  const AnalyticsSliderChanged(this.index); // Added const
-
-  // 2. Override props
+  const AnalyticsSliderChanged(this.index);
   @override
   List<Object?> get props => [index];
 }

@@ -22,7 +22,7 @@ class ApiConstants {
   static const String alertErrors = 'api/v1/device/alerts-errors/device';
 
   // ── Analytics ─────────────────────────────────────
-  static const String analytics = 'api/v1/device/analytics/analytics-query';
+  static const String analytics = 'api/v1/analytics/device-analytics-query';
 
   // ── Geofences ─────────────────────────────────────
   static const String getGeofences = 'api/v1/device/geofence/list';
@@ -31,7 +31,7 @@ class ApiConstants {
 
   // ── Modes ─────────────────────────────────────────
   static const String getModes = 'api/v1/device/mode/list';
-  static const String switchMode = 'api/v1/core/device/switch-mode';
+  static const String switchMode = 'api/v1/device/switch-mode';
 
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;

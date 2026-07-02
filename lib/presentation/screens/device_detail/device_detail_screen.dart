@@ -35,7 +35,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   void initState() {
     super.initState();
     _mapController = MapController();
-    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.imei));
+    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
     debugPrint('[DeviceDetailScreen] initState → imei: ${widget.device.imei}');
   }
@@ -65,14 +65,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       onFilterSelected: (filter) {
         setState(() => _showTimeline = true);
         context.read<AnalyticsBloc>().add(
-          AnalyticsFilterChanged(imei: widget.device.imei, filter: filter),
+          AnalyticsFilterChanged(deviceId: widget.device.id, filter: filter),
         );
       },
       onCustomSelected: (start, end) {
         setState(() => _showTimeline = true);
         context.read<AnalyticsBloc>().add(
           AnalyticsCustomRangeSelected(
-            imei: widget.device.imei,
+            deviceId: widget.device.id,
             startDate: start,
             endDate: end,
           ),
@@ -121,7 +121,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
           setState(() => _showTimeline = false);
           context.read<AnalyticsBloc>().add(
             AnalyticsFilterChanged(
-              imei: widget.device.imei,
+              deviceId: widget.device.id,
               filter: AnalyticsFilter.latest,
             ),
           );

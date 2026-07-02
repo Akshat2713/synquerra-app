@@ -14,7 +14,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Either<Failure, List<AnalyticsEntity>>> getAnalytics({
-    required String imei,
+    required String deviceId,
     int? skip,
     int? limit,
     int? dataInterval,
@@ -23,7 +23,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }) {
     return safeListCall(
       call: () => _remote.getAnalytics(
-        imei: imei,
+        deviceId: deviceId,
         skip: skip,
         limit: limit,
         dataInterval: dataInterval,

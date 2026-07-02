@@ -4,7 +4,7 @@ import '../failures/failure.dart';
 
 abstract class AnalyticsRepository {
   Future<Either<Failure, List<AnalyticsEntity>>> getAnalytics({
-    required String imei,
+    required String deviceId,
     int? skip,
     int? limit,
     int? dataInterval,

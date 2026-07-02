@@ -5,7 +5,7 @@ import '../../repositories/analytics_repository.dart';
 import '../base_usecase.dart';
 
 class AnalyticsParams {
-  final String imei;
+  final String deviceId;
   final int? skip;
   final int? limit;
   final int? dataInterval;
@@ -13,7 +13,7 @@ class AnalyticsParams {
   final String? endDate;
 
   const AnalyticsParams({
-    required this.imei,
+    required this.deviceId,
     this.skip,
     this.limit,
     this.dataInterval,
@@ -31,7 +31,7 @@ class GetAnalyticsUseCase
   @override
   Future<Either<Failure, List<AnalyticsEntity>>> call(AnalyticsParams params) {
     return _repository.getAnalytics(
-      imei: params.imei,
+      deviceId: params.deviceId,
       skip: params.skip,
       limit: params.limit,
       dataInterval: params.dataInterval,

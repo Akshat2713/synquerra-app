@@ -26,14 +26,14 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
 
   void _onFilterSelected(AnalyticsFilter filter) {
     context.read<AnalyticsBloc>().add(
-      AnalyticsFilterChanged(imei: widget.device.imei, filter: filter),
+      AnalyticsFilterChanged(deviceId: widget.device.id, filter: filter),
     );
   }
 
   void _onCustomSelected(DateTime start, DateTime end) {
     context.read<AnalyticsBloc>().add(
       AnalyticsCustomRangeSelected(
-        imei: widget.device.imei,
+        deviceId: widget.device.id,
         startDate: start,
         endDate: end,
       ),
