@@ -18,11 +18,11 @@ class ApiConstants {
       '/api/v1/device-assignments/person/$personId/all-devices';
 
   // ── Alerts ────────────────────────────────────────
-  static const String alerts = 'api/v1/core/alerts-errors/alerts';
-  static const String alertErrors = 'api/v1/core/alerts-errors/device';
+  static const String alerts = 'api/v1/device/alerts-errors/alerts';
+  static const String alertErrors = 'api/v1/device/alerts-errors/device';
 
   // ── Analytics ─────────────────────────────────────
-  static const String analytics = 'api/v1/core/analytics/analytics-query';
+  static const String analytics = 'api/v1/device/analytics/analytics-query';
 
   // ── Geofences ─────────────────────────────────────
   static const String getGeofences = 'api/v1/device/geofence/list';
@@ -30,7 +30,7 @@ class ApiConstants {
   static const String deleteGeofence = 'api/v1/device/geofence/delete';
 
   // ── Modes ─────────────────────────────────────────
-  static const String getModes = 'api/v1/core/mode/list';
+  static const String getModes = 'api/v1/device/mode/list';
   static const String switchMode = 'api/v1/core/device/switch-mode';
 
   // ── Timeouts ──────────────────────────────────────

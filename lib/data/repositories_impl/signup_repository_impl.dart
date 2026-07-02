@@ -91,31 +91,6 @@ class SignupRepositoryImpl implements SignupRepository {
     }
   }
 
-  // ── Step 3 ────────────────────────────────────────────────
-  @override
-  Future<Either<Failure, void>> linkDevice({
-    required String ownerId,
-    required String ownerType,
-    required String deviceSerialNo,
-  }) async {
-    try {
-      await _remote.linkDevice(
-        ownerId: ownerId,
-        ownerType: ownerType,
-        deviceSerialNo: deviceSerialNo,
-      );
-
-      await _local.clearProgress();
-
-      return const Right(null);
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
-  }
-
   // ── Get Saved Progress ────────────────────────────────────
   @override
   Future<Either<Failure, SignupProgress?>> getSavedProgress() async {

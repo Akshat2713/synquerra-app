@@ -5,7 +5,6 @@ import '../../../domain/usecases/signup/clear_saved_signup_progress_usecase.dart
 import '../../../domain/usecases/signup/create_person_usecase.dart';
 import '../../../domain/usecases/signup/create_credentials_usecase.dart';
 import '../../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
-import '../../../domain/usecases/signup/link_device_usecase.dart';
 
 part 'signup_event.dart';
 part 'signup_state.dart';
@@ -13,25 +12,21 @@ part 'signup_state.dart';
 class SignupBloc extends Bloc<SignupEvent, SignupState> {
   final CreatePersonUseCase _createPersonUseCase;
   final CreateCredentialsUseCase _createCredentialsUseCase;
-  final LinkDeviceUseCase _linkDeviceUseCase;
   final GetSavedSignupProgressUseCase _getSavedProgressUseCase;
   final ClearSavedSignupProgressUseCase _clearSavedProgressUseCase;
 
   SignupBloc({
     required CreatePersonUseCase createPersonUseCase,
     required CreateCredentialsUseCase createCredentialsUseCase,
-    required LinkDeviceUseCase linkDeviceUseCase,
     required GetSavedSignupProgressUseCase getSavedProgressUseCase,
     required ClearSavedSignupProgressUseCase clearSavedProgressUseCase,
   }) : _createPersonUseCase = createPersonUseCase,
        _createCredentialsUseCase = createCredentialsUseCase,
-       _linkDeviceUseCase = linkDeviceUseCase,
        _getSavedProgressUseCase = getSavedProgressUseCase,
        _clearSavedProgressUseCase = clearSavedProgressUseCase,
        super(const SignupState()) {
     on<SignupProfileSubmitted>(_onProfileSubmitted);
     on<SignupCredentialsSubmitted>(_onCredentialsSubmitted);
-    on<SignupDeviceLinked>(_onDeviceLinked);
     on<SignupStepBack>(_onStepBack);
     on<SignupReset>(_onReset);
     on<SignupProgressRestored>(_onProgressRestored);
@@ -43,7 +38,6 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     Emitter<SignupState> emit,
   ) async {
     emit(state.copyWith(status: SignupStatus.loading, errorMessage: null));
-
     final result = await _createPersonUseCase(
       CreatePersonParams(
         firstName: event.firstName,
@@ -59,7 +53,6 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         pincode: event.pincode,
       ),
     );
-
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -72,28 +65,26 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
           status: SignupStatus.stepSuccess,
           step: 2,
           personId: person.personId,
-          email: person.email, // carry email forward for step 2 toggle
+          email: person.email,
         ),
       ),
     );
   }
 
-  // ── Step 2 ────────────────────────────────────────────────
+  // ── Step 2 (now final step) ─────────────────────────────────
   Future<void> _onCredentialsSubmitted(
     SignupCredentialsSubmitted event,
     Emitter<SignupState> emit,
   ) async {
     emit(state.copyWith(status: SignupStatus.loading, errorMessage: null));
-
     final result = await _createCredentialsUseCase(
       CreateCredentialsParams(
-        personId: state.personId!, // guaranteed set after step 1
+        personId: state.personId!,
         email: event.email,
         password: event.password,
         passwordConfirmation: event.passwordConfirmation,
       ),
     );
-
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -103,38 +94,8 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       ),
       (_) => emit(
         state.copyWith(
-          status: SignupStatus.stepSuccess,
-          credentialsEmail: event.email, // store which email was used
-        ),
-      ),
-    );
-  }
-
-  // ── Step 3 ────────────────────────────────────────────────
-  Future<void> _onDeviceLinked(
-    SignupDeviceLinked event,
-    Emitter<SignupState> emit,
-  ) async {
-    emit(state.copyWith(status: SignupStatus.loading, errorMessage: null));
-
-    final result = await _linkDeviceUseCase(
-      LinkDeviceParams(
-        ownerId: state.personId!,
-        ownerType: event.ownerType,
-        deviceSerialNo: event.deviceSerialNo,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: SignupStatus.error,
-          errorMessage: failure.userMessage,
-        ),
-      ),
-      (_) => emit(
-        state.copyWith(
-          status: SignupStatus.done, // triggers navigation to login
+          status: SignupStatus.done, // ← was stepSuccess; see question #1 below
+          credentialsEmail: event.email,
         ),
       ),
     );
@@ -145,30 +106,23 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     Emitter<SignupState> emit,
   ) async {
     emit(state.copyWith(status: SignupStatus.loading));
-
     final result = await _getSavedProgressUseCase(NoParams());
-
-    result.fold(
-      (_) => emit(
-        state.copyWith(status: SignupStatus.idle),
-      ), // fail silently → step 1
-      (progress) {
-        if (progress == null) {
-          emit(
-            state.copyWith(status: SignupStatus.idle),
-          ); // no saved data → step 1
-        } else {
-          emit(
-            state.copyWith(
-              status: SignupStatus.idle,
-              step: progress.step,
-              personId: progress.personId,
-              email: progress.email,
-            ),
-          );
-        }
-      },
-    );
+    result.fold((_) => emit(state.copyWith(status: SignupStatus.idle)), (
+      progress,
+    ) {
+      if (progress == null) {
+        emit(state.copyWith(status: SignupStatus.idle));
+      } else {
+        emit(
+          state.copyWith(
+            status: SignupStatus.idle,
+            step: progress.step,
+            personId: progress.personId,
+            email: progress.email,
+          ),
+        );
+      }
+    });
   }
 
   // ── Back ──────────────────────────────────────────────────
@@ -186,7 +140,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
 
   // ── Reset ─────────────────────────────────────────────────
   Future<void> _onReset(SignupReset event, Emitter<SignupState> emit) async {
-    await _clearSavedProgressUseCase(NoParams()); // ← ADD
+    await _clearSavedProgressUseCase(NoParams());
     emit(const SignupState());
   }
 }

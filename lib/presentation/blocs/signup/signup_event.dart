@@ -53,19 +53,6 @@ class SignupCredentialsSubmitted extends SignupEvent {
   List<Object?> get props => [password, passwordConfirmation];
 }
 
-class SignupDeviceLinked extends SignupEvent {
-  final String ownerType;
-  final String deviceSerialNo;
-
-  const SignupDeviceLinked({
-    required this.ownerType,
-    required this.deviceSerialNo,
-  });
-
-  @override
-  List<Object?> get props => [deviceSerialNo];
-}
-
 class SignupStepBack extends SignupEvent {
   const SignupStepBack();
 }

@@ -106,34 +106,4 @@ class SignupRemoteDataSource {
       );
     }
   }
-
-  // ── Step 3: Link Device ───────────────────────────────────
-  Future<void> linkDevice({
-    required String ownerId,
-    required String ownerType,
-    required String deviceSerialNo,
-  }) async {
-    debugPrint(
-      '[SignupRemoteDataSource] linkDevice() called for owner $ownerId',
-    );
-
-    final response = await _dioClient.dio.post(
-      ApiConstants.linkDevice,
-      data: {
-        'owner_id': ownerId,
-        'owner_type': ownerType,
-        'device_serial_no': deviceSerialNo,
-      },
-    );
-
-    final body = response.data as Map<String, dynamic>;
-    debugPrint('[SignupRemoteDataSource] linkDevice status: ${body['status']}');
-
-    if (body['status'] != 'success') {
-      throw ServerException(
-        message: body['message'] ?? 'Failed to link device.',
-        statusCode: body['code'] as int?,
-      );
-    }
-  }
 }

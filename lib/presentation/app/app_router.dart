@@ -13,6 +13,7 @@ import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/landing/landing_bloc.dart';
+import '../blocs/link_device/link_device_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
@@ -216,7 +217,13 @@ class AppRouter {
         );
 
       case AppRoutes.linkDevice:
-        return _fade(settings, const LinkDeviceScreen());
+        return _fade(
+          settings,
+          BlocProvider(
+            create: (_) => sl<LinkDeviceBloc>(),
+            child: const LinkDeviceScreen(),
+          ),
+        );
       default:
         return _fade(
           settings,

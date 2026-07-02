@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:synquerra/domain/repositories/link_device_repository.dart';
 import '../../failures/failure.dart';
-import '../../repositories/signup_repository.dart';
 import '../base_usecase.dart';
 
 class LinkDeviceParams {
@@ -16,7 +16,7 @@ class LinkDeviceParams {
 }
 
 class LinkDeviceUseCase implements UseCase<void, LinkDeviceParams> {
-  final SignupRepository _repository;
+  final LinkDeviceRepository _repository;
 
   LinkDeviceUseCase(this._repository);
 

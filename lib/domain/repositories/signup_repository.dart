@@ -25,12 +25,6 @@ abstract class SignupRepository {
     required String passwordConfirmation,
   });
 
-  Future<Either<Failure, void>> linkDevice({
-    required String ownerId,
-    required String ownerType,
-    required String deviceSerialNo,
-  });
-
   Future<Either<Failure, SignupProgress?>> getSavedProgress();
   Future<Either<Failure, void>> clearSavedProgress();
 }

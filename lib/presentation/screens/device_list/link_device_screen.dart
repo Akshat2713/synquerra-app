@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../app/app_router.dart';
-import '../../blocs/signup/signup_bloc.dart';
+import '../../blocs/link_device/link_device_bloc.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
-import '../../widgets/signup_progress_tracker.dart';
 
 class LinkDeviceScreen extends StatefulWidget {
   const LinkDeviceScreen({super.key});
@@ -13,11 +11,10 @@ class LinkDeviceScreen extends StatefulWidget {
   State<LinkDeviceScreen> createState() => _LinkDeviceScreenState();
 }
 
-String _ownerType = 'person';
-
 class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
   final _formKey = GlobalKey<FormState>();
   final _serialNumberController = TextEditingController();
+  String _ownerType = 'person';
 
   @override
   void dispose() {
@@ -25,32 +22,29 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
     super.dispose();
   }
 
-  // void _submit() {
-  //   if (!_formKey.currentState!.validate()) return;
-  //   context.read<SignupBloc>().add(
-  //     SignupDeviceLinked(
-  //       ownerType: _ownerType,
-  //       deviceSerialNo: _serialNumberController.text.trim(),
-  //     ),
-  //   );
-  // }
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    context.read<LinkDeviceBloc>().add(
+      LinkDeviceSubmitted(
+        ownerType: _ownerType,
+        deviceSerialNo: _serialNumberController.text.trim(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return BlocListener<SignupBloc, SignupState>(
+    return BlocListener<LinkDeviceBloc, LinkDeviceState>(
       listener: (context, state) {
-        // Signup fully complete → navigate to login, clear entire stack
-        if (state.status == SignupStatus.done) {
+        if (state.status == LinkDeviceStatus.success) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               SnackBar(
-                content: const Text(
-                  'Account created successfully! Please sign in.',
-                ),
+                content: const Text('Device linked successfully!'),
                 backgroundColor: colors.primary,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -58,15 +52,12 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                 ),
               ),
             );
-          Navigator.pushNamedAndRemoveUntil(
+          Navigator.pop(
             context,
-            AppRoutes.login,
-            (route) => false,
-          );
+          ); // DeviceListScreen's _navigateAndRefresh handles the reload
         }
-
-        // Show error snackbar
-        if (state.status == SignupStatus.error && state.errorMessage != null) {
+        if (state.status == LinkDeviceStatus.error &&
+            state.errorMessage != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -83,6 +74,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
       },
       child: Scaffold(
         backgroundColor: colors.surface,
+        appBar: AppBar(title: const Text('Link Device')),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -91,7 +83,6 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ── Page Header ──────────────────────────────
                   Text(
                     'Link Your Device',
                     style: textTheme.headlineMedium?.copyWith(
@@ -107,13 +98,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                       color: colors.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 28),
-
-                  // ── Progress Tracker ─────────────────────────
-                  const SignupProgressTracker(currentStep: SignupStep.device),
-                  const SizedBox(height: 48),
-
-                  // ── Device Icon ───────────────────────────────
+                  const SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -127,10 +112,8 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-
-                  // ── Owner Type Dropdown ───────────────────────
                   DropdownButtonFormField<String>(
-                    value: _ownerType,
+                    initialValue: _ownerType,
                     decoration: const InputDecoration(
                       labelText: 'Owner *',
                       prefixIcon: Icon(Icons.person_rounded),
@@ -148,19 +131,16 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
-
-                  // ── Serial Number Field ───────────────────────
                   AppTextField(
                     controller: _serialNumberController,
                     label: 'Device Serial Number *',
                     hint: 'sqP4YT8TR',
                     prefixIcon: Icons.fingerprint_rounded,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) {},
-                    // _submit(),
+                    onSubmitted: (_) => _submit(),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Serial number is required to finish setup.';
+                        return 'Serial number is required to link the device.';
                       }
                       return null;
                     },
@@ -180,58 +160,17 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                     ),
                   ),
                   const SizedBox(height: 48),
-
-                  // ── Footer ────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          context.read<SignupBloc>().add(
-                            const SignupStepBack(),
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Back',
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                  BlocBuilder<LinkDeviceBloc, LinkDeviceState>(
+                    builder: (context, state) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: AppButton(
+                          label: 'Link Device',
+                          onPressed: _submit,
+                          isLoading: state.status == LinkDeviceStatus.loading,
                         ),
-                      ),
-                      // ── Right side: Skip + Complete ──────────
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              // TODO: navigate to landing screen
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                AppRoutes.login,
-                                (route) => false,
-                              );
-                            },
-                            child: Text(
-                              'Skip',
-                              style: TextStyle(color: colors.onSurfaceVariant),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          BlocBuilder<SignupBloc, SignupState>(
-                            builder: (context, state) {
-                              return SizedBox(
-                                width: 160,
-                                child: AppButton(
-                                  label: 'Complete Setup',
-                                  onPressed: null,
-                                  // _submit,
-                                  isLoading:
-                                      state.status == SignupStatus.loading,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ],
               ),
