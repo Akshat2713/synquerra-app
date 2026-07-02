@@ -37,20 +37,6 @@ class SignupProgressTracker extends StatelessWidget {
             isDone: currentStep.index > SignupStep.security.index,
           ),
         ),
-        _buildDivider(
-          colors,
-          isCompleted: currentStep.index > SignupStep.security.index,
-        ),
-        Expanded(
-          child: _buildStepNode(
-            context,
-            icon: Icons.phone_android_rounded,
-            title: 'Device',
-            sub: 'Link Device',
-            isActive: currentStep == SignupStep.device,
-            isDone: currentStep.index > SignupStep.device.index,
-          ),
-        ),
       ],
     );
   }

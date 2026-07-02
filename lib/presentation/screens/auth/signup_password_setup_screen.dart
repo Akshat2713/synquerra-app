@@ -70,8 +70,8 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
     return BlocListener<SignupBloc, SignupState>(
       listener: (context, state) {
         // Navigate to screen 3 when step 2 succeeds
-        if (state.status == SignupStatus.stepSuccess && state.step == 3) {
-          Navigator.pushNamed(context, AppRoutes.signupDevice);
+        if (state.status == SignupStatus.stepSuccess) {
+          Navigator.pushNamed(context, AppRoutes.login);
         }
 
         // Show error snackbar
@@ -215,7 +215,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                           return SizedBox(
                             width: 200,
                             child: AppButton(
-                              label: 'Next: Link Device',
+                              label: 'Submit',
                               onPressed: _submit,
                               isLoading: state.status == SignupStatus.loading,
                             ),

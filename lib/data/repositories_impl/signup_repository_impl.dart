@@ -52,7 +52,7 @@ class SignupRepositoryImpl implements SignupRepository {
       await _local.saveProgress(
         step: 2,
         personId: entity.personId,
-        email: entity.email,
+        email: entity.email!,
       );
 
       return Right(entity);
@@ -81,29 +81,6 @@ class SignupRepositoryImpl implements SignupRepository {
       );
 
       await _local.saveProgress(step: 3, personId: personId, email: email);
-
-      return const Right(null);
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
-  }
-
-  // ── Step 3 ────────────────────────────────────────────────
-  @override
-  Future<Either<Failure, void>> linkDevice({
-    required String ownerId,
-    required String deviceSerialNo,
-  }) async {
-    try {
-      await _remote.linkDevice(
-        ownerId: ownerId,
-        deviceSerialNo: deviceSerialNo,
-      );
-
-      await _local.clearProgress();
 
       return const Right(null);
     } catch (e) {

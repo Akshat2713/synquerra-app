@@ -130,7 +130,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       },
       child: Scaffold(
         drawer: DetailDrawer(
-          userName: widget.device.studentName,
+          userName: widget.device.serialNo,
           imei: widget.device.imei,
           device: widget.device,
           onProfileTap: _navigateToProfile,

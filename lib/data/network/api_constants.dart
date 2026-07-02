@@ -10,26 +10,27 @@ class ApiConstants {
   // static const String signUp = 'api/v1/core/auth/signup';
 
   // ── SignUp ─────────────────────────────────────────
-  static const String createPerson = '/api/v1/person/add';
+  static const String createPerson = '/api/v1/persons';
   static const String signUp = '/api/v1/auth/sign-up';
-  static const String linkDevice = '/api/v1/device-owner/claim/serial';
+  static const String linkDevice = '/api/v1/device-owners';
   // ── Device ────────────────────────────────────────
-  static const String deviceList = 'api/v1/core/device/list';
+  static String deviceList(String personId) =>
+      '/api/v1/device-assignments/person/$personId/all-devices';
 
   // ── Alerts ────────────────────────────────────────
-  static const String alerts = 'api/v1/core/alerts-errors/alerts';
-  static const String alertErrors = 'api/v1/core/alerts-errors/device';
+  static const String alerts = 'api/v1/device/alerts-errors/alerts';
+  static const String alertErrors = 'api/v1/device/alerts-errors/device';
 
   // ── Analytics ─────────────────────────────────────
-  static const String analytics = 'api/v1/core/analytics/analytics-query';
+  static const String analytics = 'api/v1/device/analytics/analytics-query';
 
   // ── Geofences ─────────────────────────────────────
-  static const String getGeofences = 'api/v1/core/geofence/list';
-  static const String createGeofence = 'api/v1/core/geofence/create';
-  static const String deleteGeofence = 'api/v1/core/geofence/delete';
+  static const String getGeofences = 'api/v1/device/geofence/list';
+  static const String createGeofence = 'api/v1/device/geofence/create';
+  static const String deleteGeofence = 'api/v1/device/geofence/delete';
 
   // ── Modes ─────────────────────────────────────────
-  static const String getModes = 'api/v1/core/mode/list';
+  static const String getModes = 'api/v1/device/mode/list';
   static const String switchMode = 'api/v1/core/device/switch-mode';
 
   // ── Timeouts ──────────────────────────────────────

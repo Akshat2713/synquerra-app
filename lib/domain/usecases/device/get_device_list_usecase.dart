@@ -4,11 +4,11 @@ import '../../failures/failure.dart';
 import '../../repositories/device_repository.dart';
 import '../base_usecase.dart';
 
-class GetDeviceListUseCase implements UseCase<List<DeviceEntity>, NoParams> {
+class GetDeviceListUseCase implements UseCase<List<DeviceEntity>, String> {
   final DeviceRepository _repository;
   GetDeviceListUseCase(this._repository);
 
   @override
-  Future<Either<Failure, List<DeviceEntity>>> call(NoParams params) =>
-      _repository.getDeviceList();
+  Future<Either<Failure, List<DeviceEntity>>> call(String personId) =>
+      _repository.getDeviceList(personId);
 }

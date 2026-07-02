@@ -134,7 +134,7 @@ class DeviceCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              device.studentName,
+                              device.serialNo,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,

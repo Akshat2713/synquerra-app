@@ -42,7 +42,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final modes = modesResult.fold((_) => <ModeEntity>[], (m) => m);
 
       final profile = fakeProfileEntity.copyWith(
-        fullName: event.device.studentName,
+        fullName: event.device.serialNo,
         guardians: [
           GuardianEntity(
             name: 'Meera Sharma',

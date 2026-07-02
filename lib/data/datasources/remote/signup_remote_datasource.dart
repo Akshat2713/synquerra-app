@@ -50,6 +50,7 @@ class SignupRemoteDataSource {
       '[SignupRemoteDataSource] createPerson status: ${body['status']}',
     );
 
+    // ← status check FIRST, before any parsing
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to create profile.',
@@ -57,7 +58,16 @@ class SignupRemoteDataSource {
       );
     }
 
-    final person = await Isolate.run(() => PersonModel.fromJson(body));
+    final rawData = body['data'];
+    if (rawData == null || rawData is! Map<String, dynamic>) {
+      throw ServerException(
+        message: 'Invalid response from server.',
+        statusCode: body['code'] as int?,
+      );
+    }
+
+    // ← Isolate.run AFTER status check, passing rawData not full body
+    final person = await Isolate.run(() => PersonModel.fromJson(rawData));
 
     debugPrint('[SignupRemoteDataSource] Person created: ${person.personId}');
     return person;
@@ -92,35 +102,6 @@ class SignupRemoteDataSource {
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to create credentials.',
-        statusCode: body['code'] as int?,
-      );
-    }
-  }
-
-  // ── Step 3: Link Device ───────────────────────────────────
-  Future<void> linkDevice({
-    required String ownerId,
-    required String deviceSerialNo,
-  }) async {
-    debugPrint(
-      '[SignupRemoteDataSource] linkDevice() called for owner $ownerId',
-    );
-
-    final response = await _dioClient.dio.post(
-      ApiConstants.linkDevice,
-      data: {
-        'owner_id': ownerId,
-        'owner_type': 'person', // always 'person' from signup flow
-        'device_serial_no': deviceSerialNo,
-      },
-    );
-
-    final body = response.data as Map<String, dynamic>;
-    debugPrint('[SignupRemoteDataSource] linkDevice status: ${body['status']}');
-
-    if (body['status'] != 'success') {
-      throw ServerException(
-        message: body['message'] ?? 'Failed to link device.',
         statusCode: body['code'] as int?,
       );
     }
