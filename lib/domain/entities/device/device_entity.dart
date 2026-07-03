@@ -22,6 +22,8 @@ class DeviceEntity extends Equatable {
   final bool isSubscribed;
   final String? inventoryStatus;
   final String? associationType;
+  final bool? isOnline;
+  final bool? isCharging;
   final String createdAt;
   final String updatedAt;
   final String relationship;
@@ -47,6 +49,8 @@ class DeviceEntity extends Equatable {
     required this.isSubscribed,
     this.inventoryStatus,
     this.associationType,
+    this.isOnline,
+    this.isCharging,
     required this.createdAt,
     required this.updatedAt,
     required this.relationship,
@@ -78,6 +82,8 @@ class DeviceEntity extends Equatable {
     isSubscribed,
     inventoryStatus,
     associationType,
+    isOnline,
+    isCharging,
     createdAt,
     updatedAt,
     relationship,

@@ -15,7 +15,7 @@ class AnalyticsQueries {
     String? endDate,
     bool uniqueLatLong = true,
   }) {
-    return '{ analyticsDataByImei('
+    return '{ analyticsDataByDeviceId('
         'deviceId: "$deviceId"'
         ', skip: $skip'
         '${limit != null ? ', limit: $limit' : ''}'
