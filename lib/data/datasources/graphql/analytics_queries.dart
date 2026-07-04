@@ -26,6 +26,6 @@ class AnalyticsQueries {
         ') {id topic imei geoid packet latitude longitude speed battery '
         'signal alert timestamp deviceTimestamp deviceRawTimestamp '
         'rawAlert type rawTemperature rawPhone1 rawPhone2 '
-        'rawControlPhone} }';
+        'rawControlPhone modeId} }';
   }
 }

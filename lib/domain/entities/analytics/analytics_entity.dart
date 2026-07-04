@@ -15,15 +15,16 @@ class AnalyticsEntity extends Equatable {
   final String? geoid;
   final int? interval;
   final String? alert;
-  final String? timestamp;
-  final String? deviceRawTimestamp;
+  final DateTime? timestamp;
+  final DateTime? deviceRawTimestamp;
   final String? type;
   final String? temperature;
   final String? phone1;
   final String? phone2;
   final String? controlPhone;
   final String? rawAlert;
-  final String deviceTimestamp;
+  final String? modeId;
+  final DateTime? deviceTimestamp;
 
   const AnalyticsEntity({
     required this.id,
@@ -46,7 +47,8 @@ class AnalyticsEntity extends Equatable {
     this.phone2,
     this.controlPhone,
     this.rawAlert,
-    required this.deviceTimestamp,
+    this.modeId,
+    this.deviceTimestamp,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -73,6 +75,7 @@ class AnalyticsEntity extends Equatable {
     phone2,
     controlPhone,
     rawAlert,
+    modeId,
     deviceTimestamp,
   ];
 }

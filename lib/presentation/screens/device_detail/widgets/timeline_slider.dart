@@ -56,7 +56,7 @@ class TimelineSlider extends StatelessWidget {
               children: [
                 _infoChip(
                   icon: Icons.access_time_rounded,
-                  label: DateTimeFormatter.toFullDateTime(
+                  label: DateTimeFormatter.formatFullDateTime(
                     current.deviceTimestamp,
                   ),
                   colors: colors,
@@ -162,12 +162,8 @@ class TimelineSlider extends StatelessWidget {
     );
   }
 
-  String _formatDate(String timestamp) {
-    try {
-      final dt = DateTime.parse(timestamp);
-      return '${dt.day}/${dt.month}';
-    } catch (_) {
-      return timestamp.substring(0, 5);
-    }
+  String _formatDate(DateTime? timestamp) {
+    if (timestamp == null) return '--/--';
+    return '${timestamp.day}/${timestamp.month}';
   }
 }

@@ -25,7 +25,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     AnalyticsLoadDefault event,
     Emitter<AnalyticsState> emit,
   ) async {
-    debugPrint('[AnalyticsBloc] LoadDefault → imei: ${event.deviceId}');
+    debugPrint('[AnalyticsBloc] LoadDefault → deviceId: ${event.deviceId}');
     emit(AnalyticsLoading());
     await _fetch(
       emit: emit,

@@ -107,7 +107,7 @@ class DeviceInfoPanel extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Last seen ${latest != null ? DateTimeFormatter.toFullDateTime(latest!.deviceTimestamp) : 'N/A'}',
+                                  'Last seen ${DateTimeFormatter.formatFullDateTime(latest?.deviceTimestamp)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: colors.onSurfaceVariant,

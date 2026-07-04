@@ -118,6 +118,58 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                     ),
                   ),
                   PopupMenuItem<String>(
+                    value: 'manage_users',
+                    enabled:
+                        false, // This natively disables the tap interaction in Flutter
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.people_alt_rounded,
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.38,
+                          ),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Manage Users',
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.38,
+                            ),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'manage_devices',
+                    enabled:
+                        false, // This natively disables the tap interaction in Flutter
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.developer_board_rounded,
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.38,
+                          ),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Manage Devices',
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.38,
+                            ),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
                     value: 'logout',
                     child: Row(
                       children: [

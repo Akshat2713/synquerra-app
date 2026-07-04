@@ -21,7 +21,7 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.imei));
+    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
   }
 
   void _onFilterSelected(AnalyticsFilter filter) {
@@ -55,7 +55,7 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              'IMEI: ${widget.device.imei}',
+              'Serial no: ${widget.device.serialNo}',
               style: TextStyle(
                 fontSize: 11,
                 color: colors.onSurface.withValues(alpha: 0.6),

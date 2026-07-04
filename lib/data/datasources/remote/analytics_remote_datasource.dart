@@ -49,7 +49,7 @@ class AnalyticsRemoteDataSource {
     }
 
     final data = body['data'] as Map<String, dynamic>?;
-    final rawList = data?['analyticsDataByImei'] as List<dynamic>? ?? [];
+    final rawList = data?['analyticsDataByDeviceId'] as List<dynamic>? ?? [];
     debugPrint('[AnalyticsRemoteDataSource] Raw count: ${rawList.length}');
 
     // Parse list off the main thread
