@@ -10,6 +10,6 @@ class GetAlertsErrorsUseCase
   GetAlertsErrorsUseCase(this._repository);
 
   @override
-  Future<Either<Failure, List<AlertErrorEntity>>> call(String imei) =>
-      _repository.getDeviceAlertsErrors(imei);
+  Future<Either<Failure, List<AlertErrorEntity>>> call(String deviceId) =>
+      _repository.getDeviceAlertsErrors(deviceId);
 }

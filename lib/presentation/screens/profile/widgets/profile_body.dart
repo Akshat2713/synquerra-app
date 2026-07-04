@@ -51,7 +51,7 @@ class ProfileBody extends StatelessWidget {
           activeModeId: activeModeId,
           isSwitching: isSwitchingMode,
           onChanged: (modeId) => bloc.add(
-            ProfileModeSwitchRequested(imei: device.imei, modeId: modeId),
+            ProfileModeSwitchRequested(deviceId: device.id, modeId: modeId),
           ),
         ),
 

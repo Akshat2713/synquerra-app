@@ -36,8 +36,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     super.initState();
     _mapController = MapController();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
-    context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
-    debugPrint('[DeviceDetailScreen] initState → imei: ${widget.device.imei}');
+    context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
+    debugPrint(
+      '[DeviceDetailScreen] initState → deviceId: ${widget.device.id}',
+    );
   }
 
   LatLng get _defaultCenter => widget.device.hasLocation
@@ -132,6 +134,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         drawer: DetailDrawer(
           userName: widget.device.serialNo,
           imei: widget.device.imei,
+          deviceId: widget.device.id,
           device: widget.device,
           onProfileTap: _navigateToProfile,
           onHistoryTap: _navigateToHistory,
@@ -453,7 +456,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     Navigator.pushNamed(
       context,
       AppRoutes.alertsErrors,
-      arguments: widget.device.imei,
+      arguments: widget.device.id,
     );
   }
 
@@ -462,9 +465,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     Navigator.pushNamed(
       context,
       AppRoutes.settings,
-      arguments: {'imei': widget.device.imei, 'center': _defaultCenter},
+      arguments: {'deviceId': widget.device.id, 'center': _defaultCenter},
     ).then((_) {
-      context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.imei));
+      context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
     });
   }
 }

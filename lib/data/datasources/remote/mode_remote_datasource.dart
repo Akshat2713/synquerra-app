@@ -26,12 +26,12 @@ class ModeRemoteDataSource {
   }
 
   Future<void> switchMode({
-    required String imei,
+    required String deviceId,
     required String modeId,
   }) async {
     final response = await _dioClient.dio.post(
       ApiConstants.switchMode,
-      data: {'imei': imei, 'mode_id': modeId},
+      data: {'device_id': deviceId, 'mode_id': modeId},
     );
 
     final body = response.data as Map<String, dynamic>;

@@ -296,12 +296,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
             ),
             onViewAlertsTap: () => _navigateAndRefresh(
               AppRoutes.alertsErrors,
-              arguments: device.imei,
+              arguments: device.id,
             ),
             onViewModesTap: () => _navigateAndRefresh(
               AppRoutes.modes,
               arguments: {
-                'imei': device.imei,
+                'deviceId': device.id,
                 'currentModeName': device.currentMode,
               },
             ),

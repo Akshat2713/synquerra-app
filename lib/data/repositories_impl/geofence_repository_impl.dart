@@ -12,21 +12,21 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
 
   @override
   Future<Either<Failure, List<GeofenceEntity>>> getDeviceGeofences(
-    String imei,
+    String deviceId,
   ) => safeListCall(
-    call: () => _remote.getGeofences(imei),
+    call: () => _remote.getGeofences(deviceId),
     toEntity: (m) => m.toEntity(),
   );
 
   @override
   Future<Either<Failure, GeofenceEntity>> createGeofence({
-    required String imei,
+    required String deviceId,
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
   }) => safeCall(
     call: () => _remote.createGeofence(
-      imei: imei,
+      deviceId: deviceId,
       name: name,
       isActive: isActive,
       coordinates: coordinates,
@@ -36,10 +36,11 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
 
   @override
   Future<Either<Failure, Unit>> deleteGeofence({
-    required String imei,
+    required String deviceId,
     required String geofenceId,
   }) => safeCall(
-    call: () => _remote.deleteGeofence(imei: imei, geofenceId: geofenceId),
+    call: () =>
+        _remote.deleteGeofence(deviceId: deviceId, geofenceId: geofenceId),
     toEntity: (_) => unit,
   );
 }

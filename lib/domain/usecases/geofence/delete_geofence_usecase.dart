@@ -7,7 +7,7 @@ class DeleteGeofenceUseCase {
   const DeleteGeofenceUseCase(this._repository);
 
   Future<Either<Failure, Unit>> call({
-    required String imei,
+    required String deviceId,
     required String geofenceId,
-  }) => _repository.deleteGeofence(imei: imei, geofenceId: geofenceId);
+  }) => _repository.deleteGeofence(deviceId: deviceId, geofenceId: geofenceId);
 }

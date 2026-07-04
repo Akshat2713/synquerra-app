@@ -88,7 +88,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(current.copyWith(isSwitchingMode: true, modeSwitchError: null));
 
     final result = await _switchModeUseCase(
-      imei: event.imei,
+      deviceId: event.deviceId,
       modeId: event.modeId,
     );
 

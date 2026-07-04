@@ -66,7 +66,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
     emit(ModeSwitching(modes: current.modes, selectedModeId: event.modeId));
 
     final result = await _switchModeUseCase(
-      imei: event.imei,
+      deviceId: event.deviceId,
       modeId: event.modeId,
     );
 

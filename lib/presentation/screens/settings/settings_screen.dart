@@ -4,12 +4,12 @@ import '../../app/app_router.dart';
 import 'settings_tile.dart';
 
 class SettingsScreen extends StatelessWidget {
-  final String imei;
+  final String deviceId;
   final LatLng initialCenter;
 
   const SettingsScreen({
     super.key,
-    required this.imei,
+    required this.deviceId,
     required this.initialCenter,
   });
 
@@ -38,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => Navigator.pushNamed(
               context,
               AppRoutes.geofence,
-              arguments: {'imei': imei, 'center': initialCenter},
+              arguments: {'deviceId': deviceId, 'center': initialCenter},
             ),
           ),
           const SizedBox(height: 16),

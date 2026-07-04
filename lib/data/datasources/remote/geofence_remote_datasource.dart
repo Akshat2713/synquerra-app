@@ -11,12 +11,12 @@ class GeofenceRemoteDataSource {
 
   GeofenceRemoteDataSource(this._dioClient);
 
-  Future<List<GeofenceModel>> getGeofences(String imei) async {
+  Future<List<GeofenceModel>> getGeofences(String deviceId) async {
     debugPrint('[GeofenceRemoteDataSource] getGeofences() called');
 
     final response = await _dioClient.dio.get(
       ApiConstants.getGeofences,
-      queryParameters: {'imei': imei},
+      queryParameters: {'device_id': deviceId},
     );
 
     final body = response.data as Map<String, dynamic>;
@@ -53,7 +53,7 @@ class GeofenceRemoteDataSource {
   }
 
   Future<GeofenceModel> createGeofence({
-    required String imei,
+    required String deviceId,
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
@@ -63,7 +63,7 @@ class GeofenceRemoteDataSource {
     final response = await _dioClient.dio.post(
       ApiConstants.createGeofence,
       data: {
-        'imei': imei,
+        'device_id': deviceId,
         'geofence_name': name,
         'is_active': isActive,
         'coordinates': coordinates
@@ -94,14 +94,14 @@ class GeofenceRemoteDataSource {
   }
 
   Future<void> deleteGeofence({
-    required String imei,
+    required String deviceId,
     required String geofenceId,
   }) async {
     debugPrint('[GeofenceRemoteDataSource] deleteGeofence() called');
 
     final response = await _dioClient.dio.post(
       ApiConstants.deleteGeofence,
-      data: {'imei': imei, 'geofence_id': geofenceId},
+      data: {'device_id': deviceId, 'geofence_id': geofenceId},
     );
 
     final body = response.data as Map<String, dynamic>;

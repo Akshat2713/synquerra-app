@@ -110,12 +110,12 @@ class AppRouter {
       //   Navigator.pushNamed(context, AppRoutes.alertsErrors,
       //       arguments: imei);
       case AppRoutes.alertsErrors:
-        final imei = settings.arguments as String;
+        final deviceId = settings.arguments as String;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<AlertsErrorsBloc>(),
-            child: AlertsErrorsScreen(imei: imei),
+            child: AlertsErrorsScreen(deviceId: deviceId),
           ),
         );
 
@@ -140,28 +140,28 @@ class AppRouter {
 
       case AppRoutes.settings:
         final args = settings.arguments as Map<String, dynamic>;
-        final imei = args['imei'] as String;
+        final deviceId = args['deviceId'] as String;
         final center = args['center'] as LatLng;
         return _slide(
           settings,
-          SettingsScreen(imei: imei, initialCenter: center),
+          SettingsScreen(deviceId: deviceId, initialCenter: center),
         );
 
       case AppRoutes.geofence:
         final args = settings.arguments as Map<String, dynamic>;
-        final imei = args['imei'] as String;
+        final deviceId = args['deviceId'] as String;
         final center = args['center'] as LatLng;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<GeofenceBloc>(),
-            child: GeofenceListPage(imei: imei, initialCenter: center),
+            child: GeofenceListPage(deviceId: deviceId, initialCenter: center),
           ),
         );
 
       case AppRoutes.addGeofence:
         final args = settings.arguments as Map<String, dynamic>;
-        final imei = args['imei'] as String;
+        final deviceId = args['deviceId'] as String;
         final center = args['center'] as LatLng;
         return _slide(
           settings,
@@ -169,19 +169,22 @@ class AppRouter {
           // NO — new route = new scope. Must provide again.
           BlocProvider(
             create: (_) => sl<GeofenceBloc>(),
-            child: AddGeofencePage(imei: imei, initialCenter: center),
+            child: AddGeofencePage(deviceId: deviceId, initialCenter: center),
           ),
         );
 
       case AppRoutes.modes:
         final args = settings.arguments as Map<String, dynamic>;
-        final imei = args['imei'] as String;
+        final deviceId = args['deviceId'] as String;
         final currentModeName = args['currentModeName'] as String;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<ModeBloc>(),
-            child: ModesScreen(imei: imei, currentModeName: currentModeName),
+            child: ModesScreen(
+              deviceId: deviceId,
+              currentModeName: currentModeName,
+            ),
           ),
         );
 

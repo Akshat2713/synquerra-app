@@ -18,10 +18,10 @@ class ModeRepositoryImpl implements ModeRepository {
 
   @override
   Future<Either<Failure, Unit>> switchMode({
-    required String imei,
+    required String deviceId,
     required String modeId,
   }) => safeCall(
-    call: () => _remote.switchMode(imei: imei, modeId: modeId),
+    call: () => _remote.switchMode(deviceId: deviceId, modeId: modeId),
     toEntity: (_) => unit,
   );
 }
