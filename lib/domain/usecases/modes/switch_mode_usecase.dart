@@ -1,5 +1,5 @@
 // domain/usecases/mode/switch_mode_usecase.dart
-// params: SwitchModeParams { imei, modeId }
+// params: SwitchModeParams { deviceId, modeId }
 import 'package:dartz/dartz.dart';
 
 import '../../failures/failure.dart';
@@ -10,7 +10,7 @@ class SwitchModeUseCase {
   const SwitchModeUseCase(this._repository);
 
   Future<Either<Failure, Unit>> call({
-    required String imei,
+    required String deviceId,
     required String modeId,
-  }) => _repository.switchMode(imei: imei, modeId: modeId);
+  }) => _repository.switchMode(deviceId: deviceId, modeId: modeId);
 }

@@ -51,7 +51,7 @@ class TelemetryCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    DateTimeFormatter.toFullDateTime(point.deviceTimestamp),
+                    DateTimeFormatter.formatFullDateTime(point.deviceTimestamp),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

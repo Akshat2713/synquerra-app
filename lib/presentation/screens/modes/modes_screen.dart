@@ -8,11 +8,11 @@ import 'widgets/mode_list_tile.dart';
 import 'widgets/mode_skeleton.dart';
 
 class ModesScreen extends StatefulWidget {
-  final String imei;
+  final String deviceId;
   final String currentModeName;
   const ModesScreen({
     super.key,
-    required this.imei,
+    required this.deviceId,
     required this.currentModeName,
   });
 
@@ -46,7 +46,7 @@ class _ModesScreenState extends State<ModesScreen> {
   void _onSave(BuildContext context, String? selectedId) {
     if (selectedId == null) return;
     context.read<ModeBloc>().add(
-      ModeSwitchSubmit(imei: widget.imei, modeId: selectedId),
+      ModeSwitchSubmit(deviceId: widget.deviceId, modeId: selectedId),
     );
   }
 

@@ -22,9 +22,9 @@ class ModeSelect extends ModeEvent {
 }
 
 class ModeSwitchSubmit extends ModeEvent {
-  final String imei;
+  final String deviceId;
   final String modeId;
-  const ModeSwitchSubmit({required this.imei, required this.modeId});
+  const ModeSwitchSubmit({required this.deviceId, required this.modeId});
   @override
-  List<Object?> get props => [imei, modeId];
+  List<Object?> get props => [deviceId, modeId];
 }

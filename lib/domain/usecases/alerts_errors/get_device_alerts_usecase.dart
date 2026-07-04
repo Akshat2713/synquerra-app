@@ -12,8 +12,8 @@ class GetDeviceAlertsUseCase
   GetDeviceAlertsUseCase(this._repository);
 
   @override
-  Future<Either<Failure, List<AlertErrorEntity>>> call(String imei) async {
-    final result = await _repository.getDeviceAlertsErrors(imei);
+  Future<Either<Failure, List<AlertErrorEntity>>> call(String deviceId) async {
+    final result = await _repository.getDeviceAlertsErrors(deviceId);
     return result.map(
       (list) => list.where((e) => e.type == AlertErrorType.alert).toList(),
     );

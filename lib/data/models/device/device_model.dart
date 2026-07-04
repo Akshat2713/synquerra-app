@@ -21,6 +21,8 @@ class DeviceModel {
   final bool isSubscribed;
   final String? inventoryStatus;
   final String? associationType;
+  final bool? isOnline;
+  final bool? isCharging;
   final String createdAt;
   final String updatedAt;
   final String relationship;
@@ -47,6 +49,8 @@ class DeviceModel {
     required this.isSubscribed,
     this.inventoryStatus,
     this.associationType,
+    this.isOnline,
+    this.isCharging,
     required this.createdAt,
     required this.updatedAt,
     required this.relationship,
@@ -78,6 +82,8 @@ class DeviceModel {
       isSubscribed: master['is_subscribed'] as bool,
       inventoryStatus: master['inventory_status'] as String?,
       associationType: master['association_type'] as String?,
+      isOnline: master['is_online'] as bool?,
+      isCharging: master['is_charging'] as bool?,
       createdAt: master['createdAt'] as String,
       updatedAt: master['updatedAt'] as String,
       relationship: json['relationship'] as String,
@@ -115,6 +121,8 @@ class DeviceModel {
     isSubscribed: isSubscribed,
     inventoryStatus: inventoryStatus,
     associationType: associationType,
+    isOnline: isOnline,
+    isCharging: isCharging,
     createdAt: createdAt,
     updatedAt: updatedAt,
     relationship: relationship,

@@ -5,8 +5,8 @@ import '../../blocs/alerts_errors/alerts_errors_bloc.dart';
 import 'widgets/alerts_errors_tab.dart';
 
 class AlertsErrorsScreen extends StatefulWidget {
-  final String imei;
-  const AlertsErrorsScreen({super.key, required this.imei});
+  final String deviceId;
+  const AlertsErrorsScreen({super.key, required this.deviceId});
 
   @override
   State<AlertsErrorsScreen> createState() => _AlertsErrorsScreenState();
@@ -21,7 +21,7 @@ class _AlertsErrorsScreenState extends State<AlertsErrorsScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     context.read<AlertsErrorsBloc>().add(
-      AlertsErrorsLoadRequested(widget.imei),
+      AlertsErrorsLoadRequested(widget.deviceId),
     );
   }
 

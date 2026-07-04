@@ -7,8 +7,8 @@ sealed class AlertsErrorsEvent extends Equatable {
 }
 
 class AlertsErrorsLoadRequested extends AlertsErrorsEvent {
-  final String imei;
-  const AlertsErrorsLoadRequested(this.imei);
+  final String deviceId;
+  const AlertsErrorsLoadRequested(this.deviceId);
   @override
-  List<Object?> get props => [imei];
+  List<Object?> get props => [deviceId];
 }

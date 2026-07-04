@@ -10,12 +10,12 @@ class AlertErrorsRemoteDataSource {
 
   AlertErrorsRemoteDataSource(this._dioClient);
 
-  Future<List<AlertErrorModel>> getAlertsErrors(String imei) async {
+  Future<List<AlertErrorModel>> getAlertsErrors(String deviceId) async {
     debugPrint('[AlertErrorsRemoteDataSource] getAlertsErrors() called');
 
     final response = await _dioClient.dio.get(
       ApiConstants.alertErrors,
-      queryParameters: {'imei': imei},
+      queryParameters: {'device_id': deviceId},
     );
 
     final body = response.data as Map<String, dynamic>;

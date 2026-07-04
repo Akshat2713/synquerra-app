@@ -1,5 +1,4 @@
 // presentation/widgets/device_card.dart
-
 import 'package:flutter/material.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/alerts/alert_error_entity.dart';
@@ -11,10 +10,10 @@ class DeviceCard extends StatelessWidget {
   final bool isActive;
   final List<AlertErrorEntity> deviceAlerts;
   final VoidCallback onTap;
-  final VoidCallback? onViewDetailsTap; // Added new callback
-  final VoidCallback? onViewAlertsTap; // Added callback
+  final VoidCallback? onViewDetailsTap;
+  final VoidCallback? onViewAlertsTap;
   final VoidCallback? onSettingsTap;
-  final VoidCallback? onViewModesTap; // Added callback
+  final VoidCallback? onViewModesTap;
 
   const DeviceCard({
     super.key,
@@ -22,45 +21,191 @@ class DeviceCard extends StatelessWidget {
     required this.isActive,
     required this.deviceAlerts,
     required this.onTap,
-    this.onViewDetailsTap, // Added new callback
-    this.onViewAlertsTap, // Added callback
+    this.onViewDetailsTap,
+    this.onViewAlertsTap,
     this.onSettingsTap,
-    this.onViewModesTap, // Added callback
+    this.onViewModesTap,
   });
 
-  // Border color based on alert severity for this device
-  Color _borderColor() {
+  Color _railColor() {
     final hasCritical = deviceAlerts.any(
       (a) => a.severity == AlertSeverity.critical && !a.isAcknowledged,
     );
     final hasAdvisory = deviceAlerts.any(
       (a) => a.severity == AlertSeverity.advisory && !a.isAcknowledged,
     );
-
     if (hasCritical) return AppColors.alertCritical;
     if (hasAdvisory) return AppColors.alertWarning;
     return AppColors.alertSuccess;
   }
 
-  Color _borderColorLight() => _borderColor().withValues(alpha: 0.15);
+  bool get _isOnline => device.isOnline ?? false;
+  bool get _isCharging => device.isCharging ?? false;
 
-  Widget _statChip({
-    required IconData icon,
-    required String? value,
-    required Color color,
-    String fallback = 'N/A',
+  int _signalBarsFilled(int? signal) {
+    final s = signal ?? 0;
+    if (s >= 75) return 4;
+    if (s >= 50) return 3;
+    if (s >= 25) return 2;
+    if (s > 0) return 1;
+    return 0;
+  }
+
+  Widget _batteryGauge(ColorScheme colors) {
+    final level = device.battery;
+    final color = batteryColor(level);
+    return SizedBox(
+      width: 42,
+      height: 42,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 38,
+            height: 38,
+            child: CircularProgressIndicator(
+              value: (level ?? 0) / 100,
+              strokeWidth: 3.5,
+              backgroundColor: colors.onSurfaceVariant.withValues(alpha: 0.15),
+              valueColor: AlwaysStoppedAnimation(color),
+            ),
+          ),
+          Text(
+            level != null ? '$level' : '–',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          if (_isCharging)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.bolt_rounded,
+                  size: 11,
+                  color: AppColors.alertWarning,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _signalMeter(ColorScheme colors) {
+    final filled = _signalBarsFilled(device.signal);
+    const heights = [7.0, 11.0, 15.0, 19.0];
+    return SizedBox(
+      width: 42,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(4, (i) {
+              final isFilled = i < filled;
+              return Container(
+                width: 4,
+                height: heights[i],
+                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                decoration: BoxDecoration(
+                  color: isFilled
+                      ? AppColors.info
+                      : colors.onSurfaceVariant.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(1.5),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            device.signal != null ? '${device.signal}%' : '–',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _gpsReadout(ColorScheme colors) {
+    return SizedBox(
+      width: 42,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.satellite_alt_rounded,
+            size: 16,
+            color: colors.onSurfaceVariant,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            device.gpsStrength ?? '–',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'monospace',
+              color: colors.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _panelDivider(ColorScheme colors) {
+    return Container(
+      width: 1,
+      height: 34,
+      color: colors.onSurfaceVariant.withValues(alpha: 0.15),
+    );
+  }
+
+  Widget _statusDot({
+    required bool state,
+    required String onLabel,
+    required String offLabel,
+    required Color onColor,
+    required ColorScheme colors,
   }) {
+    final color = state
+        ? onColor
+        : colors.onSurfaceVariant.withValues(alpha: 0.6);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
         Text(
-          value ?? fallback,
+          state ? onLabel : offLabel,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
             color: color,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -70,8 +215,7 @@ class DeviceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final border = _borderColor();
-    final borderLight = _borderColorLight();
+    final rail = _railColor();
     final currentMode = device.currentMode;
 
     return GestureDetector(
@@ -80,269 +224,243 @@ class DeviceCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           color: colors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border, width: 1.5),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: border.withValues(alpha: 0.08),
-              blurRadius: 12,
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          children: [
-            // ── Top colored strip ────────────────────
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                color: border,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(14),
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 12, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Header row ───────────────────────
-                  Row(
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Status rail ──────────────────────
+              Container(width: 5, color: rail),
+              // ── Content ──────────────────────────
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 12, 12),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar / icon
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: borderLight,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.person_rounded,
-                          color: border,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Name + IMEI
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              device.serialNo,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: colors.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'IMEI: ${device.imei}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colors.onSurfaceVariant,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Three dots menu
-                      PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert_rounded,
-                          color: colors.onSurfaceVariant,
-                          size: 20,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        onSelected: (value) {
-                          switch (value) {
-                            case 'details':
-                              if (onViewDetailsTap != null) {
-                                onViewDetailsTap!(); // Trigger the callback
-                              }
-                              break;
-                            case 'alerts':
-                              if (onViewAlertsTap != null) {
-                                onViewAlertsTap!(); // Trigger the callback
-                              }
-                              break;
-                            case 'modes':
-                              if (onViewModesTap != null) {
-                                onViewModesTap!(); // Trigger the callback
-                              }
-                              break;
-                            case 'settings':
-                              if (onSettingsTap != null) {
-                                onSettingsTap!(); // Trigger the callback
-                              }
-                              break;
-                          }
-                        },
-                        itemBuilder: (_) => [
-                          const PopupMenuItem(
-                            value: 'details',
-                            child: Text('View Details'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'alerts',
-                            child: Text('View Alerts'),
-                          ),
-                          PopupMenuItem(
-                            value: 'modes',
+                      // ── Header ────────────────────
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('View Modes'),
-                                SizedBox(width: 6),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        device.serialNo,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: colors.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
                                 Text(
-                                  currentMode,
+                                  device.imei,
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.info,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                    fontFamily: 'monospace',
+                                    letterSpacing: 0.6,
+                                    color: colors.onSurfaceVariant,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const PopupMenuItem(
-                            value: 'settings',
-                            child: Text('Device Settings'),
+                          PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            icon: Icon(
+                              Icons.more_vert_rounded,
+                              color: colors.onSurfaceVariant,
+                              size: 20,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'details':
+                                  onViewDetailsTap?.call();
+                                  break;
+                                case 'alerts':
+                                  onViewAlertsTap?.call();
+                                  break;
+                                case 'modes':
+                                  onViewModesTap?.call();
+                                  break;
+                                case 'settings':
+                                  onSettingsTap?.call();
+                                  break;
+                              }
+                            },
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(
+                                value: 'details',
+                                child: Text('View Details'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'alerts',
+                                child: Text('View Alerts'),
+                              ),
+                              PopupMenuItem(
+                                value: 'modes',
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text('View Modes'),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      currentMode,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.info,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'settings',
+                                child: Text('Device Settings'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // ── Telemetry panel ───────────
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.05,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _batteryGauge(colors),
+                            _panelDivider(colors),
+                            _signalMeter(colors),
+                            _panelDivider(colors),
+                            _gpsReadout(colors),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // ── Zone / temperature ────────
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_rounded,
+                            size: 13,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Zone ${device.geoid ?? 'N/A'}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          if (device.temperature != null) ...[
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.thermostat_rounded,
+                              size: 13,
+                              color: colors.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              device.temperature!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(
+                        height: 1,
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.12),
+                      ),
+                      const SizedBox(height: 8),
+                      // ── Bottom status strip ───────
+                      Row(
+                        children: [
+                          _statusDot(
+                            state: _isOnline,
+                            onLabel: 'ONLINE',
+                            offLabel: 'OFFLINE',
+                            onColor: AppColors.alertSuccess,
+                            colors: colors,
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.info.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.info.withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              currentMode,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.info,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          _statusDot(
+                            state: isActive,
+                            onLabel: 'ACTIVE',
+                            offLabel: 'INACTIVE',
+                            onColor: AppColors.alertSuccess,
+                            colors: colors,
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // ── Stats row ────────────────────────
-                  Row(
-                    children: [
-                      _statChip(
-                        icon: Icons.battery_charging_full_rounded,
-                        value: device.battery != null
-                            ? '${device.battery}%'
-                            : null,
-                        color: batteryColor(device.battery),
-                      ),
-                      const SizedBox(width: 16),
-                      _statChip(
-                        icon: Icons.signal_cellular_alt_rounded,
-                        value: device.signal != null
-                            ? '${device.signal}%'
-                            : null,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 16),
-                      _statChip(
-                        icon: Icons.gps_fixed_rounded,
-                        value: device.gpsStrength,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // ── Bottom row: temp + geoid + toggle ─
-                  Row(
-                    children: [
-                      // Temperature
-                      if (device.temperature != null) ...[
-                        Icon(
-                          Icons.thermostat_rounded,
-                          size: 14,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          device.temperature!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
-
-                      // Geo ID
-                      Icon(
-                        Icons.location_on_rounded,
-                        size: 14,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Zone ${device.geoid}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      // Active/Inactive toggle
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.alertSuccess.withValues(alpha: 0.12)
-                              : colors.onSurfaceVariant.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isActive
-                                ? AppColors.alertSuccess
-                                : colors.onSurfaceVariant.withValues(
-                                    alpha: 0.4,
-                                  ),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? AppColors.alertSuccess
-                                    : colors.onSurfaceVariant,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              isActive ? 'Active' : 'Inactive',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: isActive
-                                    ? AppColors.alertSuccess
-                                    : colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

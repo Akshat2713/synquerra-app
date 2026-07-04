@@ -13,9 +13,9 @@ class AlertsErrorsRepositoryImpl implements AlertsErrorsRepository {
 
   @override
   Future<Either<Failure, List<AlertErrorEntity>>> getDeviceAlertsErrors(
-    String imei,
+    String deviceId,
   ) => safeListCall(
-    call: () => _remote.getAlertsErrors(imei),
+    call: () => _remote.getAlertsErrors(deviceId),
     toEntity: (m) => m.toEntity(),
   );
 }

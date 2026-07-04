@@ -6,12 +6,12 @@ import '../../blocs/geofence/geofence_bloc.dart';
 import 'geofence_map_picker_page.dart';
 
 class AddGeofencePage extends StatefulWidget {
-  final String imei;
+  final String deviceId;
   final LatLng initialCenter;
 
   const AddGeofencePage({
     super.key,
-    required this.imei,
+    required this.deviceId,
     required this.initialCenter,
   });
 
@@ -69,7 +69,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     debugPrint('[AddGeofencePage] Dispatching GeofenceCreate event');
     context.read<GeofenceBloc>().add(
       GeofenceCreate(
-        imei: widget.imei,
+        deviceId: widget.deviceId,
         name: _nameController.text.trim(),
         isActive: _isActive,
         coordinates: _coordinates!,

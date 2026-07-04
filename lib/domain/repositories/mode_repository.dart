@@ -7,7 +7,7 @@ import '../failures/failure.dart';
 abstract class ModeRepository {
   Future<Either<Failure, List<ModeEntity>>> getModes();
   Future<Either<Failure, Unit>> switchMode({
-    required String imei,
+    required String deviceId,
     required String modeId,
   });
 }

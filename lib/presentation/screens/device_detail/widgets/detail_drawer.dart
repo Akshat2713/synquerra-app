@@ -11,6 +11,7 @@ import '../../../../domain/entities/device/device_entity.dart';
 class DetailDrawer extends StatelessWidget {
   final String userName;
   final String imei;
+  final String deviceId;
   final DeviceEntity device;
   final VoidCallback onProfileTap;
   final VoidCallback onHistoryTap;
@@ -21,6 +22,7 @@ class DetailDrawer extends StatelessWidget {
     super.key,
     required this.userName,
     required this.imei,
+    required this.deviceId,
     required this.device,
     required this.onProfileTap,
     required this.onHistoryTap,

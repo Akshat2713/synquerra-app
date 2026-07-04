@@ -20,7 +20,7 @@ class AlertsErrorsBloc extends Bloc<AlertsErrorsEvent, AlertsErrorsState> {
     Emitter<AlertsErrorsState> emit,
   ) async {
     emit(AlertsErrorsLoading());
-    final result = await _getAlertsErrors(event.imei);
+    final result = await _getAlertsErrors(event.deviceId);
     result.fold(
       (failure) => emit(AlertsErrorsFailure(failure.userMessage)),
       (all) => emit(

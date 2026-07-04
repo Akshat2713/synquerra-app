@@ -4,6 +4,7 @@ import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../models/analytics/analytics_model.dart';
 import '../../../core/error/app_exceptions.dart';
+import '../graphql/analytics_queries.dart';
 
 class AnalyticsRemoteDataSource {
   final DioClient _dioClient;
@@ -11,7 +12,7 @@ class AnalyticsRemoteDataSource {
   AnalyticsRemoteDataSource(this._dioClient);
 
   Future<List<AnalyticsModel>> getAnalytics({
-    required String imei,
+    required String deviceId, // ~ renamed from imei
     int? skip,
     int? limit,
     int? dataInterval,
@@ -19,25 +20,23 @@ class AnalyticsRemoteDataSource {
     String? endDate,
   }) async {
     debugPrint(
-      '[AnalyticsRemoteDataSource] getAnalytics() → imei: $imei'
+      '[AnalyticsRemoteDataSource] getAnalytics() → deviceId: $deviceId'
       '${limit != null ? ', limit: $limit' : ''}'
       '${dataInterval != null ? ', dataInterval: $dataInterval' : ''}'
       '${startDate != null ? ', from: $startDate' : ''}'
       '${endDate != null ? ', to: $endDate' : ''}',
     );
-
     final response = await _dioClient.dio.post(
       ApiConstants.analytics,
       data: {
-        'query':
-            '{ analyticsDataByImei('
-            'imei: "$imei"'
-            ', skip: ${skip ?? 0}'
-            '${limit != null ? ', limit: $limit' : ''}'
-            '${dataInterval != null ? ', dataInterval: $dataInterval' : ''}'
-            '${startDate != null ? ', startDate: "$startDate"' : ''}'
-            '${endDate != null ? ', endDate: "$endDate"' : ''}'
-            ') {id topic imei interval geoid packet latitude longitude speed battery signal alert timestamp deviceTimestamp deviceRawTimestamp rawAlert type rawTemperature rawPhone1 rawPhone2 rawControlPhone} }',
+        'query': AnalyticsQueries.analyticsByDeviceId(
+          deviceId: deviceId,
+          skip: skip ?? 0,
+          limit: limit,
+          dataInterval: dataInterval,
+          startDate: startDate,
+          endDate: endDate,
+        ),
       },
     );
 
@@ -50,8 +49,7 @@ class AnalyticsRemoteDataSource {
     }
 
     final data = body['data'] as Map<String, dynamic>?;
-    final rawList = data?['analyticsDataByImei'] as List<dynamic>? ?? [];
-
+    final rawList = data?['analyticsDataByDeviceId'] as List<dynamic>? ?? [];
     debugPrint('[AnalyticsRemoteDataSource] Raw count: ${rawList.length}');
 
     // Parse list off the main thread
@@ -60,7 +58,6 @@ class AnalyticsRemoteDataSource {
           .map((e) => AnalyticsModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
-
     debugPrint('[AnalyticsRemoteDataSource] Parsed ${analytics.length} points');
 
     return analytics;

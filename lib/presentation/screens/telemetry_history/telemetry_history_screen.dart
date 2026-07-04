@@ -21,19 +21,19 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.imei));
+    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
   }
 
   void _onFilterSelected(AnalyticsFilter filter) {
     context.read<AnalyticsBloc>().add(
-      AnalyticsFilterChanged(imei: widget.device.imei, filter: filter),
+      AnalyticsFilterChanged(deviceId: widget.device.id, filter: filter),
     );
   }
 
   void _onCustomSelected(DateTime start, DateTime end) {
     context.read<AnalyticsBloc>().add(
       AnalyticsCustomRangeSelected(
-        imei: widget.device.imei,
+        deviceId: widget.device.id,
         startDate: start,
         endDate: end,
       ),
@@ -55,7 +55,7 @@ class _TelemetryHistoryScreenState extends State<TelemetryHistoryScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              'IMEI: ${widget.device.imei}',
+              'Serial no: ${widget.device.serialNo}',
               style: TextStyle(
                 fontSize: 11,
                 color: colors.onSurface.withValues(alpha: 0.6),

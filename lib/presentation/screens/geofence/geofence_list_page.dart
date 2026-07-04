@@ -8,12 +8,12 @@ import 'geofence_preview_page.dart';
 import 'widgets/geofence_list_tile.dart';
 
 class GeofenceListPage extends StatefulWidget {
-  final String imei;
+  final String deviceId;
   final LatLng initialCenter;
 
   const GeofenceListPage({
     super.key,
-    required this.imei,
+    required this.deviceId,
     required this.initialCenter,
   });
 
@@ -29,7 +29,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   void initState() {
     super.initState();
     // Always refresh when page opens
-    context.read<GeofenceBloc>().add(GeofenceLoad(widget.imei));
+    context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId));
   }
 
   @override
@@ -68,7 +68,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
               Navigator.pop(context);
               context.read<GeofenceBloc>().add(
                 GeofenceDelete(
-                  imei: widget.imei,
+                  deviceId: widget.deviceId,
                   geofenceId: geofence.geofenceId,
                 ),
               );
@@ -88,7 +88,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         builder: (_) => BlocProvider.value(
           value: bloc, // reuse same instance
           child: AddGeofencePage(
-            imei: widget.imei,
+            deviceId: widget.deviceId,
             initialCenter: widget.initialCenter,
           ),
         ),
@@ -145,7 +145,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => context.read<GeofenceBloc>().add(
-                      GeofenceLoad(widget.imei),
+                      GeofenceLoad(widget.deviceId),
                     ),
                     child: const Text('Retry'),
                   ),

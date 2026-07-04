@@ -8,12 +8,12 @@ class CreateGeofenceUseCase {
   const CreateGeofenceUseCase(this._repository);
 
   Future<Either<Failure, GeofenceEntity>> call({
-    required String imei,
+    required String deviceId,
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
   }) => _repository.createGeofence(
-    imei: imei,
+    deviceId: deviceId,
     name: name,
     isActive: isActive,
     coordinates: coordinates,

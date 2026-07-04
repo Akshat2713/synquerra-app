@@ -4,6 +4,6 @@ import '../failures/failure.dart';
 
 abstract class AlertsErrorsRepository {
   Future<Either<Failure, List<AlertErrorEntity>>> getDeviceAlertsErrors(
-    String imei,
+    String deviceId,
   );
 }

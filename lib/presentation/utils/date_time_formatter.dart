@@ -4,6 +4,18 @@ import 'package:intl/intl.dart';
 class DateTimeFormatter {
   DateTimeFormatter._();
 
+  static DateTime? parseUtcToLocal(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return null;
+    try {
+      final normalized = isoString.endsWith('Z') || isoString.contains('+')
+          ? isoString
+          : '${isoString}Z';
+      return DateTime.parse(normalized).toUtc().toLocal();
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Format timestamp to "HH:mm:ss"
   static String formatTime(DateTime? dateTime) {
     if (dateTime == null) return '--:--:--';
@@ -59,26 +71,20 @@ class DateTimeFormatter {
   }
 
   static String toTimeAmPm(String? isoTimestamp) {
-    if (isoTimestamp == null || isoTimestamp.isEmpty) return '--:--';
-
-    try {
-      final DateTime dateTime = DateTime.parse(isoTimestamp).toLocal();
-      return DateFormat('h:mm a').format(dateTime);
-    } catch (e) {
-      return '--:--';
-    }
+    final dt = parseUtcToLocal(isoTimestamp);
+    if (dt == null) return '--:--';
+    return DateFormat('h:mm a').format(dt);
   }
 
-  /// Converts ISO timestamp to Date and Time: "May 6, 2:54 PM"
   static String toFullDateTime(String? isoTimestamp) {
-    if (isoTimestamp == null || isoTimestamp.isEmpty) return 'N/A';
+    final dt = parseUtcToLocal(isoTimestamp);
+    if (dt == null) return 'N/A';
+    return DateFormat('d MMM, h:mm a').format(dt);
+  }
 
-    try {
-      final DateTime dateTime = DateTime.parse(isoTimestamp).toLocal();
-      return DateFormat('d MMM, h:mm a').format(dateTime);
-    } catch (e) {
-      return 'N/A';
-    }
+  static String formatFullDateTime(DateTime? dateTime) {
+    if (dateTime == null) return 'N/A';
+    return DateFormat('d MMM, h:mm a').format(dateTime);
   }
 
   static String toIsoString(DateTime dateTime) {

@@ -28,10 +28,10 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
   }
 
   Future<void> _onLoad(GeofenceLoad event, Emitter<GeofenceState> emit) async {
-    debugPrint('[GeofenceBloc] Load → imei: ${event.imei}');
+    debugPrint('[GeofenceBloc] Load → deviceId: ${event.deviceId}');
     emit(GeofenceLoading());
 
-    final result = await _getGeofencesUseCase(event.imei);
+    final result = await _getGeofencesUseCase(event.deviceId);
 
     result.fold(
       (failure) {
@@ -49,10 +49,10 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     GeofenceCreate event,
     Emitter<GeofenceState> emit,
   ) async {
-    debugPrint('[GeofenceBloc] Create → imei: ${event.imei}');
+    debugPrint('[GeofenceBloc] Create → deviceId: ${event.deviceId}');
     emit(const GeofenceOperationLoading());
     final result = await _createGeofenceUseCase(
-      imei: event.imei,
+      deviceId: event.deviceId,
       name: event.name,
       isActive: event.isActive,
       coordinates: event.coordinates,
@@ -63,7 +63,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
         debugPrint('[GeofenceBloc] Created: ${geofence.geofenceName}');
         emit(GeofenceCreated(geofence));
         // Refresh the list so map updates
-        add(GeofenceLoad(event.imei));
+        add(GeofenceLoad(event.deviceId));
       },
     );
   }
@@ -75,7 +75,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     debugPrint('[GeofenceBloc] Delete → geofenceId: ${event.geofenceId}');
     emit(const GeofenceOperationLoading());
     final result = await _deleteGeofenceUseCase(
-      imei: event.imei,
+      deviceId: event.deviceId,
       geofenceId: event.geofenceId,
     );
     result.fold(
@@ -84,7 +84,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
         debugPrint('[GeofenceBloc] Deleted: ${event.geofenceId}');
         emit(const GeofenceDeleted());
         // Refresh the list so map updates
-        add(GeofenceLoad(event.imei));
+        add(GeofenceLoad(event.deviceId));
       },
     );
   }

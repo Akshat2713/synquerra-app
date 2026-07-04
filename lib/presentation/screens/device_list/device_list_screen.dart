@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synquerra/domain/entities/device/device_entity.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/critical_alert_banner.dart';
@@ -11,7 +12,6 @@ import 'widgets/add_device_fab.dart';
 
 class DeviceListScreen extends StatefulWidget {
   const DeviceListScreen({super.key});
-
   @override
   State<DeviceListScreen> createState() => _DeviceListScreenState();
 }
@@ -26,23 +26,35 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   Future<void> _onRefresh() async {
     final homebloc = context.read<DeviceListBloc>();
     homebloc.add(const DeviceListRefreshRequested());
-    // wait until state changes from loading
-    // await Future.doWhile(() async {
-    //   await Future.delayed(const Duration(milliseconds: 100));
-    //   return homebloc.state is DeviceListLoading;
-    // });
     await homebloc.stream.firstWhere((s) => s is! DeviceListLoading);
+  }
+
+  // ── Relationship section order + display labels ──────────────────
+  static const List<MapEntry<String, String>> _relationshipOrder = [
+    MapEntry('both', 'Owned & Assigned'),
+    MapEntry('owned', 'Owned by Me'),
+    MapEntry('assigned', 'Assigned to Me'),
+  ];
+
+  Map<String, List<DeviceEntity>> _groupByRelationship(
+    List<DeviceEntity> devices,
+  ) {
+    final grouped = <String, List<DeviceEntity>>{
+      for (final entry in _relationshipOrder) entry.key: [],
+    };
+    for (final device in devices) {
+      grouped.putIfAbsent(device.relationship, () => []).add(device);
+    }
+    return grouped;
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    // ── Grab user from AuthBloc state ────────────────────────────────
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
 
     return BlocListener<AuthBloc, AuthState>(
-      // ── Navigate to login when logged out ────────────────────────
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
           Navigator.pushNamedAndRemoveUntil(
@@ -79,7 +91,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 itemBuilder: (_) => [
-                  // ── User info header (not tappable) ──────────
                   PopupMenuItem<String>(
                     enabled: false,
                     child: Column(
@@ -106,8 +117,58 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                       ],
                     ),
                   ),
-
-                  // ── Logout ────────────────────────────────────
+                  PopupMenuItem<String>(
+                    value: 'manage_users',
+                    enabled:
+                        false, // This natively disables the tap interaction in Flutter
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.people_alt_rounded,
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.38,
+                          ),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Manage Users',
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.38,
+                            ),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'manage_devices',
+                    enabled:
+                        false, // This natively disables the tap interaction in Flutter
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.developer_board_rounded,
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.38,
+                          ),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Manage Devices',
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.38,
+                            ),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   PopupMenuItem<String>(
                     value: 'logout',
                     child: Row(
@@ -137,18 +198,14 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
               ),
             ],
           ),
-
           floatingActionButton: AddDeviceFab(
-            onTap: () => _navigateAndRefresh(
-              AppRoutes.linkDevice, // Make sure this route exists in AppRoutes
-            ),
+            onTap: () => _navigateAndRefresh(AppRoutes.linkDevice),
           ),
           body: BlocBuilder<DeviceListBloc, DeviceListState>(
             builder: (context, state) {
               if (state is DeviceListLoading || state is DeviceListInitial) {
                 return const DeviceListSkeleton();
               }
-
               if (state is DeviceListError) {
                 return Center(
                   child: Column(
@@ -176,8 +233,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                   ),
                 );
               }
-
               if (state is DeviceListLoaded) {
+                final grouped = _groupByRelationship(state.devices);
+
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
                   color: colors.primary,
@@ -194,90 +252,116 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           },
                         ),
                       ),
-
-                      // ── Section header ───────────────────
+                      // ── Total count header ────────────────
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                          child: Row(
-                            children: [
-                              Text(
-                                '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: colors.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ),
-
-                      // ── Device list ──────────────────────
-                      state.devices.isEmpty
-                          ? SliverFillRemaining(
-                              child: Center(
-                                child: Text(
-                                  'No devices found.',
-                                  style: TextStyle(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : SliverList(
-                              delegate: SliverChildBuilderDelegate((
-                                context,
-                                index,
-                              ) {
-                                final device = state.devices[index];
-                                final deviceAlerts = state.alerts
-                                    .where((a) => a.imei == device.imei)
-                                    .toList();
-
-                                return DeviceCard(
-                                  device: device,
-                                  isActive: state.isDeviceActive(device),
-                                  deviceAlerts: deviceAlerts,
-                                  onTap: () => _navigateAndRefresh(
-                                    AppRoutes.deviceDetail,
-                                    arguments: device,
-                                  ),
-                                  onViewDetailsTap: () => _navigateAndRefresh(
-                                    AppRoutes.telemetryHistory,
-                                    arguments: device,
-                                  ),
-                                  onViewAlertsTap: () => _navigateAndRefresh(
-                                    AppRoutes.alertsErrors,
-                                    arguments: device.imei,
-                                  ),
-                                  onViewModesTap: () => _navigateAndRefresh(
-                                    AppRoutes.modes,
-                                    arguments: {
-                                      'imei': device.imei,
-                                      'currentModeName': device.currentMode,
-                                    },
-                                  ),
-                                  onSettingsTap: () => {},
-                                )
-                                // Trigger the routing from the screen level!
-                                ;
-                              }, childCount: state.devices.length),
+                      if (state.devices.isEmpty)
+                        SliverFillRemaining(
+                          child: Center(
+                            child: Text(
+                              'No devices found.',
+                              style: TextStyle(color: colors.onSurfaceVariant),
                             ),
-
+                          ),
+                        )
+                      else
+                        // ── One section per relationship group ──
+                        for (final entry in _relationshipOrder)
+                          if (grouped[entry.key]?.isNotEmpty ?? false)
+                            ..._buildSection(
+                              context,
+                              colors,
+                              title: entry.value,
+                              devices: grouped[entry.key]!,
+                              state: state,
+                            ),
                       const SliverToBoxAdapter(child: SizedBox(height: 24)),
                     ],
                   ),
                 );
               }
-
               return const SizedBox.shrink();
             },
           ),
         ),
       ),
     );
+  }
+
+  // ── Builds a section header + its device cards as slivers ────────
+  List<Widget> _buildSection(
+    BuildContext context,
+    ColorScheme colors, {
+    required String title,
+    required List<DeviceEntity> devices,
+    required DeviceListLoaded state,
+  }) {
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: colors.primary,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '(${devices.length})',
+                style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      ),
+      SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final device = devices[index];
+          final deviceAlerts = state.alerts
+              .where((a) => a.imei == device.imei)
+              .toList();
+          return DeviceCard(
+            device: device,
+            isActive: state.isDeviceActive(device),
+            deviceAlerts: deviceAlerts,
+            onTap: () =>
+                _navigateAndRefresh(AppRoutes.deviceDetail, arguments: device),
+            onViewDetailsTap: () => _navigateAndRefresh(
+              AppRoutes.telemetryHistory,
+              arguments: device,
+            ),
+            onViewAlertsTap: () => _navigateAndRefresh(
+              AppRoutes.alertsErrors,
+              arguments: device.id,
+            ),
+            onViewModesTap: () => _navigateAndRefresh(
+              AppRoutes.modes,
+              arguments: {
+                'deviceId': device.id,
+                'currentModeName': device.currentMode,
+              },
+            ),
+            onSettingsTap: () => {},
+          );
+        }, childCount: devices.length),
+      ),
+    ];
   }
 
   void _navigateAndRefresh(String route, {Object? arguments}) {

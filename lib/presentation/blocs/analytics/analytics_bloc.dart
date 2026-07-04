@@ -25,9 +25,13 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     AnalyticsLoadDefault event,
     Emitter<AnalyticsState> emit,
   ) async {
-    debugPrint('[AnalyticsBloc] LoadDefault → imei: ${event.imei}');
+    debugPrint('[AnalyticsBloc] LoadDefault → deviceId: ${event.deviceId}');
     emit(AnalyticsLoading());
-    await _fetch(emit: emit, imei: event.imei, filter: AnalyticsFilter.latest);
+    await _fetch(
+      emit: emit,
+      deviceId: event.deviceId,
+      filter: AnalyticsFilter.latest,
+    );
   }
 
   Future<void> _onFilterChanged(
@@ -58,7 +62,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
     await _fetch(
       emit: emit,
-      imei: event.imei,
+      deviceId: event.deviceId,
       filter: event.filter,
       startDate: startDate,
       endDate: now,
@@ -76,7 +80,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     emit(AnalyticsLoading());
     await _fetch(
       emit: emit,
-      imei: event.imei,
+      deviceId: event.deviceId,
       filter: AnalyticsFilter.custom,
       startDate: event.startDate.toUtc(),
       endDate: event.endDate.toUtc(),
@@ -97,7 +101,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
   Future<void> _fetch({
     required Emitter<AnalyticsState> emit,
-    required String imei,
+    required String deviceId,
     required AnalyticsFilter filter,
     DateTime? startDate,
     DateTime? endDate,
@@ -118,7 +122,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
     final result = await _getAnalyticsUseCase(
       AnalyticsParams(
-        imei: imei,
+        deviceId: deviceId,
         startDate: startDate != null ? _toIso(startDate) : null,
         endDate: endDate != null ? _toIso(endDate) : null,
         limit: fetchParams.limit,
