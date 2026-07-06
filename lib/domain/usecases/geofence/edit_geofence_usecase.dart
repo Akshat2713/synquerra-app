@@ -3,9 +3,9 @@ import '../../entities/geofence/geofence_entity.dart';
 import '../../failures/failure.dart';
 import '../../repositories/geofence_repository.dart';
 
-class CreateGeofenceUseCase {
+class EditGeofenceUseCase {
   final GeofenceRepository _repository;
-  const CreateGeofenceUseCase(this._repository);
+  const EditGeofenceUseCase(this._repository);
 
   Future<Either<Failure, GeofenceEntity>> call({
     required String deviceId,
@@ -13,11 +13,19 @@ class CreateGeofenceUseCase {
     required bool isActive,
     required List<Coordinate> coordinates,
     required String color,
-  }) => _repository.createGeofence(
+    required String geofenceId,
+    required String geofenceNumber,
+    required int entryAlertDelay,
+    required int exitAlertDelay,
+  }) => _repository.editGeofence(
     deviceId: deviceId,
     name: name,
     isActive: isActive,
     coordinates: coordinates,
     color: color,
+    geofenceId: geofenceId,
+    geofenceNumber: geofenceNumber,
+    entryAlertDelay: entryAlertDelay,
+    exitAlertDelay: exitAlertDelay,
   );
 }

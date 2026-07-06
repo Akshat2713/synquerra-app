@@ -12,9 +12,12 @@ import '../device_detail/widgets/map_icon_button.dart';
 
 class GeofenceMapPickerPage extends StatefulWidget {
   final LatLng initialCenter;
-
-  const GeofenceMapPickerPage({super.key, required this.initialCenter});
-
+  final List<Coordinate>? initialPoints;
+  const GeofenceMapPickerPage({
+    super.key,
+    required this.initialCenter,
+    this.initialPoints,
+  });
   @override
   State<GeofenceMapPickerPage> createState() => _GeofenceMapPickerPageState();
 }
@@ -30,6 +33,11 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
     super.initState();
     _mapController = MapController();
     _userLocationBloc = sl<UserLocationBloc>();
+    if (widget.initialPoints != null && widget.initialPoints!.isNotEmpty) {
+      _points.addAll(
+        widget.initialPoints!.take(_maxPoints).map((c) => LatLng(c.lat, c.lng)),
+      );
+    }
   }
 
   @override

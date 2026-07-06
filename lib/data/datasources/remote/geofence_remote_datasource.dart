@@ -57,6 +57,7 @@ class GeofenceRemoteDataSource {
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
+    required String color,
   }) async {
     debugPrint('[GeofenceRemoteDataSource] createGeofence() called');
 
@@ -69,6 +70,7 @@ class GeofenceRemoteDataSource {
         'coordinates': coordinates
             .map((c) => {'lat': c.lat, 'lng': c.lng})
             .toList(),
+        'geofence_color': color,
       },
     );
 
@@ -90,6 +92,50 @@ class GeofenceRemoteDataSource {
       );
     }
 
+    return GeofenceModel.fromJson(rawData);
+  }
+
+  Future<GeofenceModel> editGeofence({
+    required String deviceId,
+    required String geofenceId,
+    required String name,
+    required bool isActive,
+    required List<Coordinate> coordinates,
+    required String color,
+    required String geofenceNumber,
+    required int entryAlertDelay,
+    required int exitAlertDelay,
+  }) async {
+    final response = await _dioClient.dio.post(
+      ApiConstants.editGeofence,
+      data: {
+        'device_id': deviceId,
+        'geofence_id': geofenceId,
+        'geofence_name': name,
+        'is_active': isActive,
+        'coordinates': coordinates
+            .map((c) => {'lat': c.lat, 'lng': c.lng})
+            .toList(),
+        'geofence_number': geofenceNumber,
+        'geofence_color': color,
+        'entry_alert_delay': entryAlertDelay,
+        'exit_alert_delay': exitAlertDelay,
+      },
+    );
+    final body = response.data as Map<String, dynamic>;
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to update geofence.',
+        statusCode: response.statusCode,
+      );
+    }
+    final rawData = body['data'];
+    if (rawData == null || rawData is! Map<String, dynamic>) {
+      throw ServerException(
+        message: 'Failed to update geofence.',
+        statusCode: response.statusCode,
+      );
+    }
     return GeofenceModel.fromJson(rawData);
   }
 

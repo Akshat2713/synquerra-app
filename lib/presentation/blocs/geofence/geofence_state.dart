@@ -48,6 +48,13 @@ class GeofenceCreated extends GeofenceState {
   List<Object?> get props => [geofence];
 }
 
+class GeofenceEdited extends GeofenceState {
+  final GeofenceEntity geofence;
+  const GeofenceEdited(this.geofence);
+  @override
+  List<Object?> get props => [geofence];
+}
+
 class GeofenceDeleted extends GeofenceState {
   const GeofenceDeleted();
 }
