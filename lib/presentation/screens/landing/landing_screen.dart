@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/app/app_router.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import 'landing_skeleton.dart';
 
@@ -12,8 +11,10 @@ import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
 import 'widgets/insight_card.dart';
 
+// NEW
 class LandingScreen extends StatefulWidget {
-  const LandingScreen({super.key});
+  final VoidCallback? onAttentionTap;
+  const LandingScreen({super.key, this.onAttentionTap});
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -38,18 +39,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
     return Scaffold(
       backgroundColor: colors.surface,
-      appBar: AppBar(
-        title: const Text('Home'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Navigate to notification subsystem route
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Home'), centerTitle: false),
       body: BlocBuilder<LandingBloc, LandingState>(
         builder: (context, state) {
           if (state is LandingInitial || state is LandingLoading) {
@@ -64,11 +54,15 @@ class _LandingScreenState extends State<LandingScreen> {
             );
           }
 
+          // NEW
           if (state is LandingLoaded) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
               color: colors.primary,
-              child: _LoadedBody(state: state),
+              child: _LoadedBody(
+                state: state,
+                onAttentionTap: widget.onAttentionTap,
+              ),
             );
           }
 
@@ -81,7 +75,8 @@ class _LandingScreenState extends State<LandingScreen> {
 
 class _LoadedBody extends StatelessWidget {
   final LandingLoaded state;
-  const _LoadedBody({required this.state});
+  final VoidCallback? onAttentionTap;
+  const _LoadedBody({required this.state, this.onAttentionTap});
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +99,7 @@ class _LoadedBody extends StatelessWidget {
           attentionCount: state.attentionCount,
           totalMembers: state.members.length,
           members: state.members,
-          onTap: () => Navigator.pushNamed(context, AppRoutes.deviceList),
+          onTap: onAttentionTap ?? () {},
         ),
         const SizedBox(height: 24),
         // MemberRow(
