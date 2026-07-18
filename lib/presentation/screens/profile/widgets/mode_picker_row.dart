@@ -21,7 +21,6 @@ class ModePickerRow extends StatelessWidget {
   void _showDetailSheet(BuildContext context, ModeEntity mode) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -34,14 +33,15 @@ class ModePickerRow extends StatelessWidget {
               size: 22,
             ),
             const SizedBox(width: 10),
-            Text(
-              mode.name,
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+            Expanded(
+              child: Text(
+                mode.name,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            const Spacer(),
-            if (mode.isSystemMode)
+            if (mode.isDefault)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -49,7 +49,7 @@ class ModePickerRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'System',
+                  'Default',
                   style: textTheme.labelSmall?.copyWith(
                     color: colors.onSecondaryContainer,
                   ),
@@ -57,59 +57,121 @@ class ModePickerRow extends StatelessWidget {
               ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (mode.description.isNotEmpty) ...[
-              Text(
-                mode.description,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (mode.description.isNotEmpty) ...[
+                Text(
+                  mode.description,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              _DetailRow(
+                icon: Icons.send_rounded,
+                label: 'Send Interval',
+                value: DateTimeFormatter.formatInterval(
+                  mode.normalSendingInterval,
                 ),
               ),
-              const SizedBox(height: 16),
+              _DetailRow(
+                icon: Icons.radar_rounded,
+                label: 'Scan Interval',
+                value: DateTimeFormatter.formatInterval(
+                  mode.normalScanningInterval,
+                ),
+              ),
+              _DetailRow(
+                icon: Icons.sos_rounded,
+                label: 'SOS Interval',
+                value: DateTimeFormatter.formatInterval(
+                  mode.sosSendingInterval,
+                ),
+              ),
+              _DetailRow(
+                icon: Icons.airplanemode_active_rounded,
+                label: 'Airplane Interval',
+                value: DateTimeFormatter.formatInterval(mode.airplaneInterval),
+              ),
+              _DetailRow(
+                icon: Icons.speed_rounded,
+                label: 'Speed Limit',
+                value: '${mode.speedLimit.toInt()} km/h',
+              ),
+              _DetailRow(
+                icon: Icons.thermostat_rounded,
+                label: 'Temp Limit',
+                value: '${mode.temperatureLimit.toInt()}°C',
+              ),
+              _DetailRow(
+                icon: Icons.battery_alert_rounded,
+                label: 'Low Battery',
+                value: '${mode.lowbatLimit}%',
+              ),
+              const Divider(height: 24),
+              _DetailRow(
+                icon: Icons.priority_high_rounded,
+                label: 'Priority',
+                value: '${mode.priority}',
+              ),
+              _DetailRow(
+                icon: Icons.replay_rounded,
+                label: 'Reconfirmation Time',
+                value: DateTimeFormatter.formatInterval(
+                  mode.reconfirmationTime,
+                ),
+              ),
+              _DetailRow(
+                icon: Icons.airplanemode_active_rounded,
+                label: 'Airplane Mode',
+                value: mode.airplaneMode ? 'Enabled' : 'Disabled',
+              ),
+              _DetailRow(
+                icon: Icons.hearing_rounded,
+                label: 'Ambient Listening',
+                value: mode.ambientListeningStatus,
+              ),
+              _DetailRow(
+                icon: Icons.lightbulb_outline_rounded,
+                label: 'LED Status',
+                value: mode.ledStatus ? 'On' : 'Off',
+              ),
+              _DetailRow(
+                icon: mode.isActive
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.remove_circle_outline_rounded,
+                label: 'Status',
+                value: mode.isActive ? 'Active' : 'Inactive',
+              ),
+              if (mode.categories.isNotEmpty)
+                _DetailRow(
+                  icon: Icons.category_outlined,
+                  label: 'Categories',
+                  value: mode.categories.join(', '),
+                ),
+              if (mode.note.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Note',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  mode.note,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ],
-            _DetailRow(
-              icon: Icons.send_rounded,
-              label: 'Send Interval',
-              value: DateTimeFormatter.formatInterval(
-                mode.normalSendingInterval,
-              ),
-            ),
-            _DetailRow(
-              icon: Icons.radar_rounded,
-              label: 'Scan Interval',
-              value: DateTimeFormatter.formatInterval(
-                mode.normalScanningInterval,
-              ),
-            ),
-            _DetailRow(
-              icon: Icons.sos_rounded,
-              label: 'SOS Interval',
-              value: DateTimeFormatter.formatInterval(mode.sosSendingInterval),
-            ),
-            _DetailRow(
-              icon: Icons.airplanemode_active_rounded,
-              label: 'Airplane Interval',
-              value: DateTimeFormatter.formatInterval(mode.airplaneInterval),
-            ),
-            _DetailRow(
-              icon: Icons.speed_rounded,
-              label: 'Speed Limit',
-              value: '${mode.speedLimit.toInt()} km/h',
-            ),
-            _DetailRow(
-              icon: Icons.thermostat_rounded,
-              label: 'Temp Limit',
-              value: '${mode.temperatureLimit.toInt()}°C',
-            ),
-            _DetailRow(
-              icon: Icons.battery_alert_rounded,
-              label: 'Low Battery',
-              value: '${mode.lowbatLimit}%',
-            ),
-          ],
+          ),
         ),
         actions: [
           TextButton(

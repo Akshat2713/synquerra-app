@@ -17,18 +17,41 @@ class DeviceShellScreen extends StatefulWidget {
 
 class _DeviceShellScreenState extends State<DeviceShellScreen> {
   int _currentIndex = 0;
+  late final PageController _pageController;
 
   LatLng get _defaultCenter => widget.device.hasLocation
       ? LatLng(widget.device.latitude!, widget.device.longitude!)
       : const LatLng(28.6172, 77.2094);
 
-  void _goToTab(int index) => setState(() => _currentIndex = index);
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _goToTab(int index) {
+    setState(() => _currentIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) => setState(() => _currentIndex = index);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
         children: [
           LandingScreen(onAttentionTap: () => {}),
           DeviceDetailScreen(device: widget.device),

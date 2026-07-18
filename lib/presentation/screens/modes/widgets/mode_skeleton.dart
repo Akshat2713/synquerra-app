@@ -1,5 +1,4 @@
 // presentation/pages/mode/widgets/mode_skeleton.dart
-
 import '../../../../domain/entities/modes/mode_entity.dart';
 
 final fakeModeSkeletonItems = List.generate(
@@ -15,10 +14,15 @@ final fakeModeSkeletonItems = List.generate(
     temperatureLimit: 50,
     speedLimit: 70,
     lowbatLimit: 20,
-    isSystemMode: true,
-    allowUserConditions: false,
+    categories: const [],
+    note: '',
     priority: 50,
-    watchTime: 10,
+    reconfirmationTime: 10,
+    airplaneMode: false,
+    ambientListeningStatus: 'Stop',
+    ledStatus: false,
+    isActive: false,
+    isDefault: false,
     createdAt: '',
     updatedAt: '',
   ),

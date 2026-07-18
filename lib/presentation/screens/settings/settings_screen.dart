@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../app/app_router.dart';
-import '../../blocs/theme/theme_cubit.dart';
 import 'settings_tile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/device/device_entity.dart';
@@ -71,33 +70,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Appearance',
-            style: textTheme.labelSmall?.copyWith(
-              color: colors.onSurfaceVariant,
-              letterSpacing: 1.1,
-            ),
-          ),
-          const SizedBox(height: 8),
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              final isDark = themeMode == ThemeMode.dark;
-              return SettingsTile(
-                icon: isDark
-                    ? Icons.dark_mode_rounded
-                    : Icons.light_mode_rounded,
-                title: isDark ? 'Dark Mode' : 'Light Mode',
-                subtitle: 'Toggle app theme',
-                onTap: () => context.read<ThemeCubit>().toggle(),
-                trailing: Switch(
-                  value: isDark,
-                  onChanged: (_) => context.read<ThemeCubit>().toggle(),
-                  activeThumbColor: colors.primary,
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
+
           Text(
             'Zone Management',
             style: textTheme.labelSmall?.copyWith(
