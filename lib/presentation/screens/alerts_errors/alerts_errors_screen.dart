@@ -34,23 +34,29 @@ class _AlertsErrorsScreenState extends State<AlertsErrorsScreen>
   // alerts_errors_screen.dart - remove MultiBlocProvider from build()
   @override
   Widget build(BuildContext context) {
-    // final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Alerts & Errors')),
-      bottomNavigationBar: TabBar(
-        controller: _tabController,
-
-        tabs: const [
-          Tab(text: 'Alerts', icon: Icon(Icons.notifications_rounded)),
-          Tab(text: 'Errors', icon: Icon(Icons.bug_report_rounded)),
-        ],
+      appBar: AppBar(
+        title: const Text('Alerts & Errors'),
+        automaticallyImplyLeading: false,
       ),
-
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          AlertsErrorsTab(type: AlertsErrorsTabType.alerts),
-          AlertsErrorsTab(type: AlertsErrorsTabType.errors),
+      body: Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Alerts', icon: Icon(Icons.notifications_rounded)),
+              Tab(text: 'Errors', icon: Icon(Icons.bug_report_rounded)),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: const [
+                AlertsErrorsTab(type: AlertsErrorsTabType.alerts),
+                AlertsErrorsTab(type: AlertsErrorsTabType.errors),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -80,7 +80,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 
-  void _openAddPage() {
+  void _openAddPage({GeofenceEntity? existing}) {
     final bloc = context.read<GeofenceBloc>(); // grab current instance
     Navigator.push(
       context,
@@ -90,6 +90,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
           child: AddGeofencePage(
             deviceId: widget.deviceId,
             initialCenter: widget.initialCenter,
+            existing: existing,
           ),
         ),
       ),
@@ -222,9 +223,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                           return GeofenceListTile(
                             geofence: g,
                             onTap: () => _onTileTab(g),
-                            onEdit: () {
-                              // TODO: navigate to edit page
-                            },
+                            onEdit: () => _openAddPage(existing: g),
                             onDelete: () => _confirmDelete(context, g),
                           );
                         },

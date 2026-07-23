@@ -1,4 +1,3 @@
-// domain/entities/mode/mode_entity.dart
 import 'package:equatable/equatable.dart';
 
 class ModeEntity extends Equatable {
@@ -12,10 +11,15 @@ class ModeEntity extends Equatable {
   final double temperatureLimit;
   final double speedLimit;
   final int lowbatLimit;
-  final bool isSystemMode;
-  final bool allowUserConditions;
+  final List<String> categories;
+  final String note;
   final int priority;
-  final int watchTime;
+  final int reconfirmationTime;
+  final bool airplaneMode;
+  final String ambientListeningStatus;
+  final bool ledStatus;
+  final bool isActive;
+  final bool isDefault;
   final String createdAt;
   final String updatedAt;
 
@@ -30,10 +34,15 @@ class ModeEntity extends Equatable {
     required this.temperatureLimit,
     required this.speedLimit,
     required this.lowbatLimit,
-    required this.isSystemMode,
-    required this.allowUserConditions,
+    required this.categories,
+    required this.note,
     required this.priority,
-    required this.watchTime,
+    required this.reconfirmationTime,
+    required this.airplaneMode,
+    required this.ambientListeningStatus,
+    required this.ledStatus,
+    required this.isActive,
+    required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -50,10 +59,15 @@ class ModeEntity extends Equatable {
     temperatureLimit,
     speedLimit,
     lowbatLimit,
-    isSystemMode,
-    allowUserConditions,
+    categories,
+    note,
     priority,
-    watchTime,
+    reconfirmationTime,
+    airplaneMode,
+    ambientListeningStatus,
+    ledStatus,
+    isActive,
+    isDefault,
     createdAt,
     updatedAt,
   ];

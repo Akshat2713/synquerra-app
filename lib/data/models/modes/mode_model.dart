@@ -1,5 +1,3 @@
-// data/models/mode/mode_model.dart
-
 import '../../../domain/entities/modes/mode_entity.dart';
 
 class ModeModel {
@@ -13,10 +11,15 @@ class ModeModel {
   final double temperatureLimit;
   final double speedLimit;
   final int lowbatLimit;
-  final bool isSystemMode;
-  final bool allowUserConditions;
+  final List<String> categories;
+  final String note;
   final int priority;
-  final int watchTime;
+  final int reconfirmationTime;
+  final bool airplaneMode;
+  final String ambientListeningStatus;
+  final bool ledStatus;
+  final bool isActive;
+  final bool isDefault;
   final String createdAt;
   final String updatedAt;
 
@@ -31,10 +34,15 @@ class ModeModel {
     required this.temperatureLimit,
     required this.speedLimit,
     required this.lowbatLimit,
-    required this.isSystemMode,
-    required this.allowUserConditions,
+    required this.categories,
+    required this.note,
     required this.priority,
-    required this.watchTime,
+    required this.reconfirmationTime,
+    required this.airplaneMode,
+    required this.ambientListeningStatus,
+    required this.ledStatus,
+    required this.isActive,
+    required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -43,19 +51,29 @@ class ModeModel {
     id: json['id'] as String,
     name: json['name'] as String,
     description: json['description'] as String? ?? '',
-    normalSendingInterval: json['normal_sending_interval'] as int,
-    sosSendingInterval: json['sos_sending_interval'] as int,
-    normalScanningInterval: json['normal_scanning_interval'] as int,
-    airplaneInterval: json['airplane_interval'] as int,
-    temperatureLimit: (json['temperature_limit'] as num).toDouble(),
-    speedLimit: (json['speed_limit'] as num).toDouble(),
-    lowbatLimit: json['lowbat_limit'] as int,
-    isSystemMode: json['is_system_mode'] as bool,
-    allowUserConditions: json['allow_user_conditions'] as bool,
-    priority: json['priority'] as int,
-    watchTime: json['watch_time'] as int,
-    createdAt: json['created_at'] as String,
-    updatedAt: json['updated_at'] as String,
+    normalSendingInterval: json['normal_sending_interval'] as int? ?? 0,
+    sosSendingInterval: json['sos_sending_interval'] as int? ?? 0,
+    normalScanningInterval: json['normal_scanning_interval'] as int? ?? 0,
+    airplaneInterval: json['airplane_interval'] as int? ?? 0,
+    temperatureLimit: (json['temperature_limit'] as num?)?.toDouble() ?? 0,
+    speedLimit: (json['speed_limit'] as num?)?.toDouble() ?? 0,
+    lowbatLimit: json['lowbat_limit'] as int? ?? 0,
+    categories:
+        (json['categories'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        const [],
+    note: json['note'] as String? ?? '',
+    priority: json['priority'] as int? ?? 0,
+    reconfirmationTime: json['reconfirmation_time'] as int? ?? 0,
+    airplaneMode: json['airplane_mode'] as bool? ?? false,
+    ambientListeningStatus:
+        json['ambient_listening_status'] as String? ?? 'Stop',
+    ledStatus: json['led_status'] as bool? ?? false,
+    isActive: json['is_active'] as bool? ?? false,
+    isDefault: json['is_default'] as bool? ?? false,
+    createdAt: json['created_at'] as String? ?? '',
+    updatedAt: json['updated_at'] as String? ?? '',
   );
 
   ModeEntity toEntity() => ModeEntity(
@@ -69,10 +87,15 @@ class ModeModel {
     temperatureLimit: temperatureLimit,
     speedLimit: speedLimit,
     lowbatLimit: lowbatLimit,
-    isSystemMode: isSystemMode,
-    allowUserConditions: allowUserConditions,
+    categories: categories,
+    note: note,
     priority: priority,
-    watchTime: watchTime,
+    reconfirmationTime: reconfirmationTime,
+    airplaneMode: airplaneMode,
+    ambientListeningStatus: ambientListeningStatus,
+    ledStatus: ledStatus,
+    isActive: isActive,
+    isDefault: isDefault,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

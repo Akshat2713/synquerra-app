@@ -28,6 +28,7 @@ class ApiConstants {
   static const String getGeofences = 'api/v1/device/geofence/list';
   static const String createGeofence = 'api/v1/device/geofence/create';
   static const String deleteGeofence = 'api/v1/device/geofence/delete';
+  static const String editGeofence = 'api/v1/device/geofence/edit';
 
   // ── Modes ─────────────────────────────────────────
   static const String getModes = 'api/v1/device/mode/list';

@@ -34,41 +34,45 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     emit(ProfileLoading());
     try {
-      final phone1 = event.analytics!.phone1;
-      final phone2 = event.analytics!.phone2;
-
-      // Fetch modes in parallel — failure just gives empty list, not a crash
+      final phone1 = event.analytics?.phone1;
+      final phone2 = event.analytics?.phone2;
       final modesResult = await _getModesUseCase();
-      final modes = modesResult.fold((_) => <ModeEntity>[], (m) => m);
-
+      final modes = modesResult.fold((failure) {
+        debugPrint('[ProfileBloc] getModes failed: ${failure.message}');
+        return <ModeEntity>[];
+      }, (m) => m);
       final profile = fakeProfileEntity.copyWith(
         fullName: event.device.serialNo,
         guardians: [
           GuardianEntity(
             name: 'Meera Sharma',
-            phoneNumber: phone1!,
+            phoneNumber: phone1 ?? '',
             isPrimary: true,
           ),
           GuardianEntity(
             name: 'Raj Sharma',
-            phoneNumber: phone2!,
+            phoneNumber: phone2 ?? '',
             isPrimary: false,
           ),
         ],
       );
-
+      // Seed active mode from device's current mode, falling back to first
+      String? activeModeId;
+      if (modes.isNotEmpty) {
+        activeModeId = modes
+            .firstWhere(
+              (m) =>
+                  m.name.toLowerCase() ==
+                  event.device.currentMode.toLowerCase(),
+              orElse: () => modes.first,
+            )
+            .id;
+      }
       emit(
         ProfileLoaded(
           profile: profile,
           modes: modes,
-          activeModeId: modes
-              .firstWhere(
-                (m) =>
-                    m.name.toLowerCase() ==
-                    event.device.currentMode.toLowerCase(),
-                orElse: () => modes.first,
-              )
-              .id, // seed from device
+          activeModeId: activeModeId,
         ),
       );
     } catch (e) {

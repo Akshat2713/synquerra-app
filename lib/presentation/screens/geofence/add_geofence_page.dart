@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../utils/colour_util.dart' as colour_utils;
 import 'geofence_map_picker_page.dart';
 
 class AddGeofencePage extends StatefulWidget {
   final String deviceId;
   final LatLng initialCenter;
-
+  final GeofenceEntity? existing;
   const AddGeofencePage({
     super.key,
     required this.deviceId,
     required this.initialCenter,
+    this.existing,
   });
 
   @override
@@ -21,9 +24,24 @@ class AddGeofencePage extends StatefulWidget {
 
 class _AddGeofencePageState extends State<AddGeofencePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  bool _isActive = true;
-  List<Coordinate>? _coordinates; // null = not picked yet
+  late final _nameController = TextEditingController(
+    text: widget.existing?.geofenceName ?? '',
+  );
+  late bool _isActive = widget.existing?.isActive ?? true;
+  late Color _selectedColor; // Keep it clean here
+  List<Coordinate>? _coordinates;
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _coordinates = widget.existing?.coordinates;
+
+    // Explicit runtime evaluation avoids compiler type inference bugs
+    _selectedColor = widget.existing != null
+        ? colour_utils.colorFromHex(widget.existing!.geofenceColor)
+        : const Color(0xFF2196F3);
+  }
 
   @override
   void dispose() {
@@ -35,8 +53,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     final result = await Navigator.push<List<Coordinate>>(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            GeofenceMapPickerPage(initialCenter: widget.initialCenter),
+        builder: (_) => GeofenceMapPickerPage(
+          initialCenter: widget.initialCenter,
+          initialPoints: _coordinates,
+        ),
       ),
     );
     if (result != null) {
@@ -53,6 +73,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     debugPrint('[AddGeofencePage] coordinates: $_coordinates');
     debugPrint('[AddGeofencePage] name: ${_nameController.text.trim()}');
     debugPrint('[AddGeofencePage] isActive: $_isActive');
+    debugPrint('[AddGeofencePage] color: $_selectedColor');
 
     if (!_formKey.currentState!.validate()) {
       debugPrint('[AddGeofencePage] Form validation failed');
@@ -66,16 +87,34 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
       return;
     }
 
-    debugPrint('[AddGeofencePage] Dispatching GeofenceCreate event');
-    context.read<GeofenceBloc>().add(
-      GeofenceCreate(
-        deviceId: widget.deviceId,
-        name: _nameController.text.trim(),
-        isActive: _isActive,
-        coordinates: _coordinates!,
-      ),
-    );
-    debugPrint('[AddGeofencePage] GeofenceCreate event dispatched');
+    if (_isEditing) {
+      debugPrint('[AddGeofencePage] Dispatching GeofenceEdit event');
+      context.read<GeofenceBloc>().add(
+        GeofenceEdit(
+          deviceId: widget.deviceId,
+          geofenceId: widget.existing!.geofenceId,
+          name: _nameController.text.trim(),
+          isActive: _isActive,
+          coordinates: _coordinates!,
+          color: colour_utils.hexFromColor(_selectedColor),
+          geofenceNumber: widget.existing!.geofenceNumber,
+          entryAlertDelay: widget.existing!.entryAlertDelay,
+          exitAlertDelay: widget.existing!.exitAlertDelay,
+        ),
+      );
+    } else {
+      debugPrint('[AddGeofencePage] Dispatching GeofenceCreate event');
+      context.read<GeofenceBloc>().add(
+        GeofenceCreate(
+          deviceId: widget.deviceId,
+          name: _nameController.text.trim(),
+          isActive: _isActive,
+          coordinates: _coordinates!,
+          color: colour_utils.hexFromColor(_selectedColor),
+        ),
+      );
+    }
+    debugPrint('[AddGeofencePage] event dispatched');
   }
 
   @override
@@ -84,7 +123,9 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New Geofence')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Geofence' : 'New Geofence'),
+      ),
       body: BlocListener<GeofenceBloc, GeofenceState>(
         listener: (context, state) {
           if (state is GeofenceCreated) {
@@ -92,6 +133,16 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
               SnackBar(
                 content: Text(
                   '${state.geofence.geofenceName} created successfully.',
+                ),
+                backgroundColor: colors.primary,
+              ),
+            );
+            Navigator.pop(context);
+          } else if (state is GeofenceEdited) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${state.geofence.geofenceName} updated successfully.',
                 ),
                 backgroundColor: colors.primary,
               ),
@@ -173,7 +224,42 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
+                  // ── Color ────────────────────────────
+                  Text('Color', style: textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Pick a color'),
+                        content: SingleChildScrollView(
+                          child: ColorPicker(
+                            pickerColor: _selectedColor,
+                            onColorChanged: (c) =>
+                                setState(() => _selectedColor = c),
+                            enableAlpha: false,
+                            labelTypes: const [],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Done'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: _selectedColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.outlineVariant),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   // ── Coordinates ──────────────────────
                   Text('Coordinates', style: textTheme.labelLarge),
                   const SizedBox(height: 8),
@@ -200,8 +286,8 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text(
-                            'Save Geofence',
+                        : Text(
+                            _isEditing ? 'Update Geofence' : 'Save Geofence',
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                   ),

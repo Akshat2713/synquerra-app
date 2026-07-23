@@ -12,6 +12,18 @@ abstract class GeofenceRepository {
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
+    required String color,
+  });
+  Future<Either<Failure, GeofenceEntity>> editGeofence({
+    required String deviceId,
+    required String geofenceId,
+    required String name,
+    required bool isActive,
+    required List<Coordinate> coordinates,
+    required String color,
+    required String geofenceNumber,
+    required int entryAlertDelay,
+    required int exitAlertDelay,
   });
 
   Future<Either<Failure, Unit>> deleteGeofence({

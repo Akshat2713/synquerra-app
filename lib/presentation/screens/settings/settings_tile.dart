@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+// NEW
 class SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   const SettingsTile({
     super.key,
@@ -12,8 +14,8 @@ class SettingsTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.trailing,
   });
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -59,7 +61,11 @@ class SettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+            trailing ??
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colors.onSurfaceVariant,
+                ),
           ],
         ),
       ),

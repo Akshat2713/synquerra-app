@@ -57,6 +57,7 @@ import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/device/get_device_list_usecase.dart';
 import '../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../domain/usecases/geofence/delete_geofence_usecase.dart';
+import '../../domain/usecases/geofence/edit_geofence_usecase.dart';
 import '../../domain/usecases/geofence/get_geofences_usecase.dart';
 import '../../domain/usecases/link_device/link_device_usecase.dart';
 import '../../domain/usecases/location/get_user_location_usecase.dart';
@@ -220,10 +221,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetGeofencesUseCase(sl()));
   sl.registerLazySingleton(() => CreateGeofenceUseCase(sl()));
   sl.registerLazySingleton(() => DeleteGeofenceUseCase(sl()));
+  sl.registerFactory(() => EditGeofenceUseCase(sl()));
   sl.registerFactory<GeofenceBloc>(
     () => GeofenceBloc(
       getGeofencesUseCase: sl(),
       createGeofenceUseCase: sl(),
+      editGeofenceUseCase: sl(),
       deleteGeofenceUseCase: sl(),
     ),
   );

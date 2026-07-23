@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../app/app_router.dart';
 import 'settings_tile.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/entities/device/device_entity.dart';
+import '../../blocs/analytics/analytics_bloc.dart';
 
 class SettingsScreen extends StatelessWidget {
-  final String deviceId;
+  final DeviceEntity device;
   final LatLng initialCenter;
-
   const SettingsScreen({
     super.key,
-    required this.deviceId,
+    required this.device,
     required this.initialCenter,
   });
 
@@ -23,6 +25,52 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text(
+            'Account',
+            style: textTheme.labelSmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Builder(
+            builder: (ctx) => SettingsTile(
+              icon: Icons.person_outline_rounded,
+              title: 'Profile',
+              subtitle: 'View device owner & mode details',
+              onTap: () {
+                final analyticsBloc = ctx.read<AnalyticsBloc>();
+                final analyticsState = analyticsBloc.state;
+                final latest =
+                    analyticsState is AnalyticsLoaded &&
+                        analyticsState.points.isNotEmpty
+                    ? analyticsState.points.first
+                    : null;
+                Navigator.pushNamed(
+                  ctx,
+                  AppRoutes.profile,
+                  arguments: {
+                    'device': device,
+                    'analytics': latest,
+                    'analyticsBloc': analyticsBloc,
+                  },
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          SettingsTile(
+            icon: Icons.analytics_outlined,
+            title: 'Telemetry History',
+            subtitle: 'View full location & sensor history',
+            onTap: () => Navigator.pushNamed(
+              context,
+              AppRoutes.telemetryHistory,
+              arguments: device,
+            ),
+          ),
+          const SizedBox(height: 16),
+
           Text(
             'Zone Management',
             style: textTheme.labelSmall?.copyWith(
@@ -38,27 +86,11 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => Navigator.pushNamed(
               context,
               AppRoutes.geofence,
-              arguments: {'deviceId': deviceId, 'center': initialCenter},
+              // NEW
+              arguments: {'deviceId': device.id, 'center': initialCenter},
             ),
           ),
           const SizedBox(height: 16),
-          // Text(
-          //   'Modes Configuration',
-          //   style: textTheme.labelSmall?.copyWith(
-          //     color: colors.onSurfaceVariant,
-          //     letterSpacing: 1.1,
-          //   ),
-          // ),
-          // const SizedBox(height: 8),
-          // SettingsTile(
-          //   icon: Icons.tune_rounded,
-          //   title: 'Modes',
-          //   subtitle: 'Configure device tracking and power modes',
-          //   onTap: () =>
-          //       Navigator.pushNamed(context, AppRoutes.modes, arguments: imei),
-          // ),
-          // const SizedBox(height: 16),
-          // Future settings panels go here
           Text(
             'Coming Soon',
             style: textTheme.labelSmall?.copyWith(

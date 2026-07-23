@@ -21,15 +21,14 @@ import '../screens/alerts_errors/alerts_errors_screen.dart';
 import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
 import '../screens/auth/signup_profile_screen.dart';
+import '../screens/device_shell/device_shell_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/landing/landing_screen.dart';
 import '../screens/profile/profile_screen.dart';
-import '../screens/settings/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
-import '../screens/device_detail/device_detail_screen.dart';
 import '../screens/telemetry_history/telemetry_history_screen.dart';
 
 // ── Route names ───────────────────────────────────────────────────────────────
@@ -80,6 +79,7 @@ class AppRouter {
           ),
         );
 
+      // NEW
       case AppRoutes.deviceDetail:
         final device = settings.arguments as DeviceEntity;
         return _slide(
@@ -88,8 +88,10 @@ class AppRouter {
             providers: [
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
+              BlocProvider(create: (_) => sl<AlertsErrorsBloc>()),
+              BlocProvider(create: (_) => sl<LandingBloc>()),
             ],
-            child: DeviceDetailScreen(device: device),
+            child: DeviceShellScreen(device: device),
           ),
         );
 
@@ -136,15 +138,6 @@ class AppRouter {
             ],
             child: ProfileScreen(device: device, analytics: analytics),
           ),
-        );
-
-      case AppRoutes.settings:
-        final args = settings.arguments as Map<String, dynamic>;
-        final deviceId = args['deviceId'] as String;
-        final center = args['center'] as LatLng;
-        return _slide(
-          settings,
-          SettingsScreen(deviceId: deviceId, initialCenter: center),
         );
 
       case AppRoutes.geofence:

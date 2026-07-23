@@ -24,12 +24,40 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
+    required String color,
   }) => safeCall(
     call: () => _remote.createGeofence(
       deviceId: deviceId,
       name: name,
       isActive: isActive,
       coordinates: coordinates,
+      color: color,
+    ),
+    toEntity: (m) => m.toEntity(),
+  );
+
+  @override
+  Future<Either<Failure, GeofenceEntity>> editGeofence({
+    required String deviceId,
+    required String name,
+    required bool isActive,
+    required List<Coordinate> coordinates,
+    required String color,
+    required String geofenceNumber,
+    required int entryAlertDelay,
+    required int exitAlertDelay,
+    required String geofenceId,
+  }) => safeCall(
+    call: () => _remote.editGeofence(
+      deviceId: deviceId,
+      name: name,
+      isActive: isActive,
+      coordinates: coordinates,
+      color: color,
+      geofenceNumber: geofenceNumber,
+      entryAlertDelay: entryAlertDelay,
+      exitAlertDelay: exitAlertDelay,
+      geofenceId: geofenceId,
     ),
     toEntity: (m) => m.toEntity(),
   );

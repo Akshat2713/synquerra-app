@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/entities/device/device_entity.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/theme/theme_cubit.dart';
 import '../../widgets/critical_alert_banner.dart';
 import '../../widgets/device_card.dart';
 import '../../app/app_router.dart';
@@ -93,28 +94,36 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 itemBuilder: (_) => [
                   PopupMenuItem<String>(
                     enabled: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.fullName ?? '—',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            color: colors.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          user?.email ?? '—',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Divider(height: 1, color: colors.outlineVariant),
-                      ],
+                    child: Builder(
+                      builder: (menuCtx) {
+                        final liveColors = Theme.of(menuCtx).colorScheme;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? '—',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: liveColors.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              user?.email ?? '—',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: liveColors.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Divider(
+                              height: 1,
+                              color: liveColors.outlineVariant,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   PopupMenuItem<String>(
@@ -167,6 +176,42 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'toggle_theme',
+                    child: Builder(
+                      builder: (menuCtx) {
+                        final isDark =
+                            menuCtx.watch<ThemeCubit>().state == ThemeMode.dark;
+                        return Row(
+                          children: [
+                            Icon(
+                              isDark
+                                  ? Icons.dark_mode_rounded
+                                  : Icons.light_mode_rounded,
+                              color: colors.onSurfaceVariant,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              isDark ? 'Dark Mode' : 'Light Mode',
+                              style: TextStyle(
+                                color: colors.onSurface,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            Switch(
+                              value: isDark,
+                              onChanged: (_) {
+                                context.read<ThemeCubit>().toggle();
+                              },
+                              activeThumbColor: colors.primary,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   PopupMenuItem<String>(

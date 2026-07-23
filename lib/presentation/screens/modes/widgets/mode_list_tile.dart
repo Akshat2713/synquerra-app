@@ -51,23 +51,7 @@ class ModeListTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (mode.isSystemMode)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.secondaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'System',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colors.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
+
                 const SizedBox(width: 8),
                 // Selection indicator
                 AnimatedContainer(
