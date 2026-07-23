@@ -1,16 +1,14 @@
-// presentation/pages/profile/widgets/mode_picker_row.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../utils/mode_icon_resolver.dart';
 
-class ModePickerRow extends StatelessWidget {
+class TrackingModeCard extends StatefulWidget {
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitching;
   final ValueChanged<String> onChanged;
 
-  const ModePickerRow({
+  const TrackingModeCard({
     super.key,
     required this.modes,
     required this.activeModeId,
@@ -18,317 +16,238 @@ class ModePickerRow extends StatelessWidget {
     required this.onChanged,
   });
 
-  void _showDetailSheet(BuildContext context, ModeEntity mode) {
+  @override
+  State<TrackingModeCard> createState() => _TrackingModeCardState();
+}
+
+class _TrackingModeCardState extends State<TrackingModeCard> {
+  // Defaults to Auto mode selected
+  bool _isAutoMode = true;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(
-              ModeIconResolver.resolve(mode),
-              color: colors.primary,
-              size: 22,
+
+    // Safe lookup: handles empty list during loading/skeleton states without throwing exception
+    ModeEntity? activeMode;
+    if (widget.modes.isNotEmpty) {
+      activeMode = widget.modes.firstWhere(
+        (m) => m.id == widget.activeModeId,
+        orElse: () => widget.modes.first,
+      );
+    }
+
+    final modeTitle = activeMode?.name ?? 'Live Tracking';
+    final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
+        ? activeMode.description
+        : 'Fast updates (~10 sec)';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TRACKING MODE',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: colors.onSurfaceVariant.withValues(alpha: 0.6),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                mode.name,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            if (mode.isDefault)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: colors.secondaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Default',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: colors.onSecondaryContainer,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (mode.description.isNotEmpty) ...[
-                Text(
-                  mode.description,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              _DetailRow(
-                icon: Icons.send_rounded,
-                label: 'Send Interval',
-                value: DateTimeFormatter.formatInterval(
-                  mode.normalSendingInterval,
-                ),
-              ),
-              _DetailRow(
-                icon: Icons.radar_rounded,
-                label: 'Scan Interval',
-                value: DateTimeFormatter.formatInterval(
-                  mode.normalScanningInterval,
-                ),
-              ),
-              _DetailRow(
-                icon: Icons.sos_rounded,
-                label: 'SOS Interval',
-                value: DateTimeFormatter.formatInterval(
-                  mode.sosSendingInterval,
-                ),
-              ),
-              _DetailRow(
-                icon: Icons.airplanemode_active_rounded,
-                label: 'Airplane Interval',
-                value: DateTimeFormatter.formatInterval(mode.airplaneInterval),
-              ),
-              _DetailRow(
-                icon: Icons.speed_rounded,
-                label: 'Speed Limit',
-                value: '${mode.speedLimit.toInt()} km/h',
-              ),
-              _DetailRow(
-                icon: Icons.thermostat_rounded,
-                label: 'Temp Limit',
-                value: '${mode.temperatureLimit.toInt()}°C',
-              ),
-              _DetailRow(
-                icon: Icons.battery_alert_rounded,
-                label: 'Low Battery',
-                value: '${mode.lowbatLimit}%',
-              ),
-              const Divider(height: 24),
-              _DetailRow(
-                icon: Icons.priority_high_rounded,
-                label: 'Priority',
-                value: '${mode.priority}',
-              ),
-              _DetailRow(
-                icon: Icons.replay_rounded,
-                label: 'Reconfirmation Time',
-                value: DateTimeFormatter.formatInterval(
-                  mode.reconfirmationTime,
-                ),
-              ),
-              _DetailRow(
-                icon: Icons.airplanemode_active_rounded,
-                label: 'Airplane Mode',
-                value: mode.airplaneMode ? 'Enabled' : 'Disabled',
-              ),
-              _DetailRow(
-                icon: Icons.hearing_rounded,
-                label: 'Ambient Listening',
-                value: mode.ambientListeningStatus,
-              ),
-              _DetailRow(
-                icon: Icons.lightbulb_outline_rounded,
-                label: 'LED Status',
-                value: mode.ledStatus ? 'On' : 'Off',
-              ),
-              _DetailRow(
-                icon: mode.isActive
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.remove_circle_outline_rounded,
-                label: 'Status',
-                value: mode.isActive ? 'Active' : 'Inactive',
-              ),
-              if (mode.categories.isNotEmpty)
-                _DetailRow(
-                  icon: Icons.category_outlined,
-                  label: 'Categories',
-                  value: mode.categories.join(', '),
-                ),
-              if (mode.note.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Note',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  mode.note,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+          const SizedBox(height: 4),
+          Text(
+            modeTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 14),
+
+          // ── Auto / Manual Segment Toggle ───────────────────
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _SegmentTab(
+                    label: 'Auto',
+                    isSelected: _isAutoMode,
+                    onTap: () => setState(() => _isAutoMode = true),
+                  ),
+                ),
+                Expanded(
+                  child: _SegmentTab(
+                    label: 'Manual',
+                    isSelected: !_isAutoMode,
+                    onTap: () => setState(() => _isAutoMode = false),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          Text(
+            _isAutoMode
+                ? 'System manages tracking mode based on conditions'
+                : 'You choose and lock the tracking mode',
+            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+          ),
+          const SizedBox(height: 14),
+
+          // ── Horizontal Scrollable Modes List ───────
+          SizedBox(
+            height: 72,
+            child: widget.modes.isEmpty
+                ? Center(
+                    child: Text(
+                      'No modes available',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                : IgnorePointer(
+                    ignoring: _isAutoMode || widget.isSwitching,
+                    child: Opacity(
+                      opacity: _isAutoMode ? 0.4 : 1.0,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: widget.modes.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final mode = widget.modes[index];
+                          final isSelected = mode.id == widget.activeModeId;
+
+                          return GestureDetector(
+                            onTap: () => widget.onChanged(mode.id),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 72,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? colors.primaryContainer.withValues(
+                                        alpha: 0.3,
+                                      )
+                                    : colors.surfaceContainerHighest.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? colors.primary
+                                      : Colors.transparent,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (widget.isSwitching && isSelected)
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colors.primary,
+                                      ),
+                                    )
+                                  else
+                                    Icon(
+                                      ModeIconResolver.resolve(mode),
+                                      size: 22,
+                                      color: isSelected
+                                          ? colors.primary
+                                          : colors.onSurfaceVariant,
+                                    ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    mode.name,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: isSelected
+                                          ? colors.primary
+                                          : colors.onSurfaceVariant,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            modeDesc,
+            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    if (modes.isEmpty) {
-      return Text(
-        'No modes available',
-        style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
-      );
-    }
-
-    // Find active mode for subtitle — fallback to first
-    final activeMode = modes.firstWhere(
-      (m) => m.id == activeModeId,
-      orElse: () => modes.first,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── Mode chips row ─────────────────────────
-        Row(
-          children: modes.map((mode) {
-            final isSelected = mode.id == activeModeId;
-            return Expanded(
-              child: GestureDetector(
-                onTap: (isSwitching || isSelected)
-                    ? null
-                    : () => onChanged(mode.id),
-                onLongPress: () => _showDetailSheet(context, mode),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.only(right: 6),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colors.primary
-                        : colors.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: isSelected
-                        ? Border.all(color: colors.primary, width: 2)
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Show spinner on the active chip while switching
-                      if (isSwitching && isSelected)
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.onPrimary,
-                          ),
-                        )
-                      else
-                        Icon(
-                          ModeIconResolver.resolve(mode),
-                          size: 20,
-                          color: isSelected
-                              ? colors.onPrimary
-                              : colors.onSurfaceVariant,
-                        ),
-                      const SizedBox(height: 4),
-                      Text(
-                        mode.name,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? colors.onPrimary
-                              : colors.onSurfaceVariant,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-
-        const SizedBox(height: 8),
-
-        // ── Active mode subtitle ───────────────────
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                isSwitching
-                    ? 'Applying mode…'
-                    : '${activeMode.name} · Send every ${DateTimeFormatter.formatInterval(activeMode.normalSendingInterval)}',
-                style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
-              ),
-            ),
-            Text(
-              'Hold for details',
-              style: TextStyle(
-                fontSize: 10,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 }
 
-// ── Detail row ─────────────────────────────────────────────────────────────
-class _DetailRow extends StatelessWidget {
-  final IconData icon;
+class _SegmentTab extends StatelessWidget {
   final String label;
-  final String value;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  const _DetailRow({
-    required this.icon,
+  const _SegmentTab({
     required this.label,
-    required this.value,
+    required this.isSelected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          Icon(icon, size: 15, color: colors.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.surface : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? colors.onSurface : colors.onSurfaceVariant,
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-        ],
+        ),
       ),
     );
   }
