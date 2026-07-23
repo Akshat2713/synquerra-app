@@ -45,6 +45,7 @@ class MemberDetail {
   final List<ScheduleEntry> todaySchedule;
   final String insightText;
   final RiskLevel riskLevel;
+  final int batteryLevel;
 
   const MemberDetail({
     required this.summary,
@@ -58,6 +59,7 @@ class MemberDetail {
     required this.todaySchedule,
     required this.insightText,
     required this.riskLevel,
+    required this.batteryLevel,
   });
 
   // ── Placeholder factory ──────────────────────────────────────────────
@@ -75,6 +77,7 @@ class MemberDetail {
     ],
     insightText: 'Likely on time',
     riskLevel: RiskLevel.low,
+    batteryLevel: 80,
   );
 }
 

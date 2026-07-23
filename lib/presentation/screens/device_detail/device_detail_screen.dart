@@ -348,11 +348,13 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                     return prev.runtimeType != curr.runtimeType;
                   },
                   builder: (context, state) {
+                    if (!_showTimeline) return const SizedBox.shrink();
+
                     final isLoading = state is AnalyticsLoading;
                     final loaded = state is AnalyticsLoaded ? state : null;
                     return Skeletonizer(
                       enabled: isLoading,
-                      child: _showTimeline && loaded != null
+                      child: loaded != null
                           ? TimelineSlider(
                               points: loaded.mappablePoints,
                               currentIndex: loaded.sliderIndex,
@@ -360,13 +362,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                                   .read<AnalyticsBloc>()
                                   .add(AnalyticsSliderChanged(i)),
                             )
-                          : DeviceInfoPanel(
-                              device: widget.device,
-                              latest:
-                                  (loaded != null && loaded.points.isNotEmpty)
-                                  ? loaded.points.first
-                                  : null,
-                            ),
+                          : const SizedBox.shrink(),
                     );
                   },
                 ),

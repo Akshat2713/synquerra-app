@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import 'landing_skeleton.dart';
 
-// Import the segmented component files
+// Import updated widgets
+import 'widgets/activity_feed_card.dart';
 import 'widgets/attention_banner.dart';
+import 'widgets/bottom_status_bar.dart';
 import 'widgets/hero_section.dart';
 import 'widgets/info_card.dart';
 import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
-import 'widgets/insight_card.dart';
 
-// NEW
 class LandingScreen extends StatefulWidget {
   final VoidCallback? onAttentionTap;
   const LandingScreen({super.key, this.onAttentionTap});
@@ -54,7 +54,6 @@ class _LandingScreenState extends State<LandingScreen> {
             );
           }
 
-          // NEW
           if (state is LandingLoaded) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
@@ -76,12 +75,14 @@ class _LandingScreenState extends State<LandingScreen> {
 class _LoadedBody extends StatelessWidget {
   final LandingLoaded state;
   final VoidCallback? onAttentionTap;
+
   const _LoadedBody({required this.state, this.onAttentionTap});
 
   @override
   Widget build(BuildContext context) {
     final d = state.selectedMember;
     const kBlue = Color(0xFF5B8DEF);
+
     final statusLogs = [
       const StatusLogEntry(label: 'Left home', value: '7:58 AM'),
       const StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
@@ -92,46 +93,73 @@ class _LoadedBody extends StatelessWidget {
       ),
     ];
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+    const defaultActivities = [
+      ActivityFeedEntry(
+        title: 'SOS Cancelled',
+        time: '5:12 PM',
+        color: Color(0xFF3DDC84),
+      ),
+      ActivityFeedEntry(
+        title: 'SOS Button Pressed',
+        time: '5:08 PM',
+        color: Colors.redAccent,
+      ),
+      ActivityFeedEntry(
+        title: 'GPS Restored',
+        time: '3:55 PM',
+        color: Color(0xFF3DDC84),
+      ),
+    ];
+
+    return Column(
       children: [
-        AttentionBanner(
-          attentionCount: state.attentionCount,
-          totalMembers: state.members.length,
-          members: state.members,
-          onTap: onAttentionTap ?? () {},
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            children: [
+              // ── 1. Attention Banner ───────────────────────────────
+              AttentionBanner(
+                attentionCount: state.attentionCount,
+                totalMembers: state.members.length,
+                members: state.members,
+                onTap: onAttentionTap ?? () {},
+              ),
+              const SizedBox(height: 16),
+
+              // ── 2. Hero Section ────────────────────────────────────
+              HeroSection(detail: d),
+              const SizedBox(height: 16),
+
+              // ── 3. Info Card (Location) ────────────────────────────
+              InfoCard(
+                icon: Icons.location_on_rounded,
+                iconBg: kBlue.withValues(alpha: 0.15),
+                iconColor: kBlue,
+                title: d.locationLabel,
+                subtitle: d.locationSubtitle,
+              ),
+              const SizedBox(height: 16),
+
+              // ── 4. Today Status Card ───────────────────────────────
+              TodayStatusCard(
+                looksNormal: d.todayLooksNormal,
+                logs: statusLogs,
+              ),
+              const SizedBox(height: 16),
+
+              // ── 5. Schedule Card ───────────────────────────────────
+              TodayScheduleCard(schedule: d.todaySchedule),
+              const SizedBox(height: 16),
+
+              // ── 6. Activity Feed Card ─────────────────────────────
+              const ActivityFeedCard(activities: defaultActivities),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
-        const SizedBox(height: 24),
-        // MemberRow(
-        //   members: state.members,
-        //   selectedId: d.summary.id,
-        //   onSelect: (id) =>
-        //       context.read<LandingBloc>().add(LandingMemberSelected(id)),
-        // ),
-        const SizedBox(height: 20),
-        HeroSection(detail: d),
-        const SizedBox(height: 20),
-        InfoCard(
-          icon: Icons.location_on_rounded,
-          iconBg: kBlue.withOpacity(0.15),
-          iconColor: kBlue,
-          title: d.locationLabel,
-          subtitle: d.locationSubtitle,
-        ),
-        const SizedBox(height: 12),
-        // InfoCard(
-        //   icon: Icons.shield_outlined,
-        //   iconBg: kBlue.withOpacity(0.15),
-        //   iconColor: kBlue,
-        //   title: 'Safe streak: ${d.safeStreakDays} days',
-        //   subtitle: 'Keep it up!',
-        // ),
-        const SizedBox(height: 12),
-        TodayStatusCard(looksNormal: d.todayLooksNormal, logs: statusLogs),
-        const SizedBox(height: 12),
-        TodayScheduleCard(schedule: d.todaySchedule),
-        const SizedBox(height: 12), const SizedBox(height: 12),
-        InsightCard(insightText: d.insightText, riskLevel: d.riskLevel),
+
+        // ── Bottom Metrics Footer ───────────────────────────────────
+        BottomMetricsBar(battery: d.batteryLevel),
       ],
     );
   }

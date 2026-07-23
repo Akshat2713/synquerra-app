@@ -15,106 +15,146 @@ class HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: successColor, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: successColor.withOpacity(0.35),
-                    blurRadius: 16,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-            ),
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: colors.surfaceContainerHighest,
-              backgroundImage: detail.summary.avatarUrl != null
-                  ? NetworkImage(detail.summary.avatarUrl!)
-                  : null,
-              child: detail.summary.avatarUrl == null
-                  ? Text(
-                      detail.gender == 'female' ? '👧' : '👦',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    )
-                  : null,
-            ),
-            Positioned(
-              bottom: 6,
-              right: 6,
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: successColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.surface, width: 2),
-                ),
-                child: const Icon(Icons.check, size: 11, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(
-          detail.summary.name,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              detail.statusLabel,
-              style: TextStyle(fontSize: 14, color: colors.onSurfaceVariant),
-            ),
-            const SizedBox(width: 6),
-            const Text('🔵', style: TextStyle(fontSize: 13)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Avatar with Emoji Fallback Logic ──────────────────────
+          Stack(
+            alignment: Alignment.center,
             children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: successColor,
-                  shape: BoxShape.circle,
-                ),
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: colors.primaryContainer,
+                backgroundImage: detail.summary.avatarUrl != null
+                    ? NetworkImage(detail.summary.avatarUrl!)
+                    : null,
+                child: detail.summary.avatarUrl == null
+                    ? Text(
+                        detail.gender == 'female' ? '👧' : '👦',
+                        style: const TextStyle(fontSize: 32),
+                      )
+                    : null,
               ),
-              const SizedBox(width: 6),
-              Text(
-                'Verified ${detail.verifiedAgo}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colors.onSurfaceVariant,
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: successColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(width: 14),
+
+          // ── Name, Mode & Subtitle Status ─────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  detail.summary.name,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Live Tracking',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: colors.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.circle, size: 8, color: Colors.amber),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        detail.statusLabel.isNotEmpty
+                            ? detail.statusLabel
+                            : 'Running a little behind',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Online Status, Speed & Update Time ───────────────────
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.circle, size: 8, color: successColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: successColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.speed_rounded, size: 16, color: colors.primary),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '18 km/h',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+              Text(
+                'Travelling',
+                style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Updated 8 min ago',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
