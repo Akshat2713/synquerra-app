@@ -10,11 +10,12 @@ import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
-import '../../widgets/analytics_filter_sheet.dart';
 import '../../widgets/geofence_polygon_layer.dart';
 import 'widgets/map_icon_button.dart';
 import 'widgets/timeline_slider.dart';
-import 'widgets/device_info_panel.dart';
+// imports — remove analytics_filter_sheet import, add:
+import 'widgets/view_tabs.dart';
+import 'widgets/history_filter_chips.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -50,34 +51,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     super.dispose();
   }
 
-  void _openFilterSheet() {
-    debugPrint('[DeviceDetailScreen] open filter sheet');
-
-    // Retrieve the active filter from the bloc state, defaulting to latest
-    final currentState = context.read<AnalyticsBloc>().state;
-    final activeFilter = currentState is AnalyticsLoaded
-        ? currentState.activeFilter
-        : AnalyticsFilter.latest;
-
-    showAnalyticsFilterSheet(
-      context: context,
-      activeFilter: activeFilter,
-      onFilterSelected: (filter) {
-        setState(() => _showTimeline = true);
-        context.read<AnalyticsBloc>().add(
-          AnalyticsFilterChanged(deviceId: widget.device.id, filter: filter),
-        );
-      },
-      onCustomSelected: (start, end) {
-        setState(() => _showTimeline = true);
-        context.read<AnalyticsBloc>().add(
-          AnalyticsCustomRangeSelected(
-            deviceId: widget.device.id,
-            startDate: start,
-            endDate: end,
-          ),
-        );
-      },
+  // delete _openFilterSheet() entirely, replace with:
+  void _onViewChanged(bool history) {
+    setState(() => _showTimeline = history);
+    context.read<AnalyticsBloc>().add(
+      AnalyticsFilterChanged(
+        deviceId: widget.device.id,
+        filter: history ? AnalyticsFilter.lastHour : AnalyticsFilter.latest,
+      ),
     );
   }
 
@@ -288,6 +269,15 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 );
               },
             ),
+            // add a new Positioned for the tabs, top-left (near where the old filter button used to signal state):
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 12,
+              child: ViewTabs(
+                isHistory: _showTimeline,
+                onChanged: _onViewChanged,
+              ),
+            ),
 
             // ── Top right: filter + zoom ─────────────────
             Positioned(
@@ -296,12 +286,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  MapIconButton(
-                    icon: Icons.filter_list_rounded,
-                    onTap: _openFilterSheet,
-                    colors: Theme.of(context).colorScheme,
-                    highlighted: _showTimeline,
-                  ),
                   const SizedBox(height: 8),
                   MapIconButton(
                     icon: Icons.add_rounded,
@@ -323,11 +307,19 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 ],
               ),
             ),
-
+            Positioned(
+              right: 12,
+              bottom: _showTimeline ? 235 : 255,
+              child: MapIconButton(
+                icon: Icons.location_searching,
+                onTap: null,
+                colors: Theme.of(context).colorScheme,
+              ),
+            ),
             // ── Bottom right: my location ────────────────
             Positioned(
               right: 12,
-              bottom: _showTimeline ? 160 : 180,
+              bottom: _showTimeline ? 180 : 200,
               child: MapIconButton(
                 icon: Icons.my_location_rounded,
                 onTap: () => _mapController.move(_defaultCenter, 14),
@@ -352,17 +344,43 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
                     final isLoading = state is AnalyticsLoading;
                     final loaded = state is AnalyticsLoaded ? state : null;
-                    return Skeletonizer(
-                      enabled: isLoading,
-                      child: loaded != null
-                          ? TimelineSlider(
-                              points: loaded.mappablePoints,
-                              currentIndex: loaded.sliderIndex,
-                              onChanged: (i) => context
-                                  .read<AnalyticsBloc>()
-                                  .add(AnalyticsSliderChanged(i)),
-                            )
-                          : const SizedBox.shrink(),
+                    // fall back so chips still know what's "active" during loading/error
+                    final activeFilter =
+                        loaded?.activeFilter ?? AnalyticsFilter.lastHour;
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Skeletonizer(
+                          enabled: isLoading,
+                          child: TimelineSlider(
+                            points: loaded?.mappablePoints ?? const [],
+                            currentIndex: loaded?.sliderIndex ?? 0,
+                            onChanged: (i) => context.read<AnalyticsBloc>().add(
+                              AnalyticsSliderChanged(i),
+                            ),
+                          ),
+                        ),
+                        HistoryFilterChips(
+                          activeFilter: activeFilter,
+                          isLoading: isLoading,
+                          onFilterSelected: (f) =>
+                              context.read<AnalyticsBloc>().add(
+                                AnalyticsFilterChanged(
+                                  deviceId: widget.device.id,
+                                  filter: f,
+                                ),
+                              ),
+                          onCustomSelected: (start, end) =>
+                              context.read<AnalyticsBloc>().add(
+                                AnalyticsCustomRangeSelected(
+                                  deviceId: widget.device.id,
+                                  startDate: start,
+                                  endDate: end,
+                                ),
+                              ),
+                        ),
+                      ],
                     );
                   },
                 ),

@@ -1,18 +1,6 @@
 import 'package:flutter/material.dart';
 import '../blocs/analytics/analytics_bloc.dart';
 
-/// A fully reusable filter bottom sheet for analytics pages.
-/// Supports 1 hour, 24 hours, 1 week, and custom date range.
-///
-/// Usage:
-/// ```dart
-/// showAnalyticsFilterSheet(
-///   context: context,
-///   activeFilter: _currentFilter,
-///   onFilterSelected: (filter) { ... },
-///   onCustomSelected: (start, end) { ... },
-/// );
-/// ```
 void showAnalyticsFilterSheet({
   required BuildContext context,
   required AnalyticsFilter activeFilter,
@@ -31,15 +19,35 @@ void showAnalyticsFilterSheet({
   );
 }
 
+void showCustomRangePicker({
+  required BuildContext context,
+  required void Function(DateTime start, DateTime end) onCustomSelected,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _AnalyticsFilterSheet(
+      activeFilter: AnalyticsFilter.custom,
+      onFilterSelected: (_) {},
+      onCustomSelected: onCustomSelected,
+      startAtCustomPicker: true, // new param
+    ),
+  );
+}
+
 class _AnalyticsFilterSheet extends StatefulWidget {
   final AnalyticsFilter activeFilter;
   final void Function(AnalyticsFilter filter) onFilterSelected;
   final void Function(DateTime start, DateTime end) onCustomSelected;
 
+  // _AnalyticsFilterSheet constructor — add:
+  final bool startAtCustomPicker;
   const _AnalyticsFilterSheet({
     required this.activeFilter,
     required this.onFilterSelected,
     required this.onCustomSelected,
+    this.startAtCustomPicker = false,
   });
 
   @override
@@ -50,6 +58,12 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
   bool _showCustomPicker = false;
   DateTime? _startDate;
   DateTime? _endDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _showCustomPicker = widget.startAtCustomPicker;
+  }
 
   Future<void> _pickDate({required bool isStart}) async {
     final now = DateTime.now();
@@ -161,11 +175,16 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             // ── Custom date picker ───────────────────────────────
             Row(
               children: [
-                GestureDetector(
-                  onTap: () => setState(() => _showCustomPicker = false),
-                  child: Icon(Icons.arrow_back_rounded, color: colors.primary),
-                ),
-                const SizedBox(width: 12),
+                if (!widget.startAtCustomPicker) ...[
+                  GestureDetector(
+                    onTap: () => setState(() => _showCustomPicker = false),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      color: colors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 Text(
                   'Custom Range',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -194,7 +213,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _showCustomPicker = false),
+                    onPressed: () => widget.startAtCustomPicker
+                        ? Navigator.pop(context)
+                        : setState(() => _showCustomPicker = false),
                     child: const Text('Back'),
                   ),
                 ),
