@@ -31,7 +31,7 @@ class ApiConstants {
   static const String editGeofence = 'api/v1/device/geofence/edit';
 
   // ── Modes ─────────────────────────────────────────
-  static const String getModes = 'api/v1/device/mode/list';
+  static const String getModes = 'api/v1/device/mode/manual';
   static const String switchMode = 'api/v1/device/switch-mode';
 
   // ── Timeouts ──────────────────────────────────────
