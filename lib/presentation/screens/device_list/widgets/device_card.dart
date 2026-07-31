@@ -1,17 +1,15 @@
-// presentation/widgets/device_card.dart
 import 'package:flutter/material.dart';
-import '../../domain/entities/device/device_entity.dart';
-import '../../domain/entities/alerts/alert_error_entity.dart';
-import '../themes/colors.dart';
-import '../utils/colour_util.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/entities/alerts/alert_entity.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/colour_util.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
   final bool isActive;
-  final List<AlertErrorEntity> deviceAlerts;
+  final String currentUserFullName;
+  final List<AlertEntity> deviceAlerts;
   final VoidCallback onTap;
-  final VoidCallback? onViewDetailsTap;
-  final VoidCallback? onViewAlertsTap;
   final VoidCallback? onSettingsTap;
   final VoidCallback? onViewModesTap;
 
@@ -19,13 +17,19 @@ class DeviceCard extends StatelessWidget {
     super.key,
     required this.device,
     required this.isActive,
+    required this.currentUserFullName,
     required this.deviceAlerts,
     required this.onTap,
-    this.onViewDetailsTap,
-    this.onViewAlertsTap,
     this.onSettingsTap,
     this.onViewModesTap,
   });
+
+  String get _ownerDisplayName {
+    final carrier = device.carrier;
+    if (carrier == null) return currentUserFullName;
+    final name = '${carrier.firstName} ${carrier.lastName}'.trim();
+    return name.isEmpty ? currentUserFullName : name;
+  }
 
   Color _railColor() {
     final hasCritical = deviceAlerts.any(
@@ -71,7 +75,7 @@ class DeviceCard extends StatelessWidget {
             ),
           ),
           Text(
-            level != null ? '$level' : '–',
+            '${level ?? '–'}',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -172,13 +176,11 @@ class DeviceCard extends StatelessWidget {
     );
   }
 
-  Widget _panelDivider(ColorScheme colors) {
-    return Container(
-      width: 1,
-      height: 34,
-      color: colors.onSurfaceVariant.withValues(alpha: 0.15),
-    );
-  }
+  Widget _panelDivider(ColorScheme colors) => Container(
+    width: 1,
+    height: 34,
+    color: colors.onSurfaceVariant.withValues(alpha: 0.15),
+  );
 
   Widget _statusDot({
     required bool state,
@@ -238,49 +240,25 @@ class DeviceCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Status rail ──────────────────────
               Container(width: 5, color: rail),
-              // ── Content ──────────────────────────
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 14, 12, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Header ────────────────────
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        device.serialNo,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.onSurface,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  device.imei,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontFamily: 'monospace',
-                                    letterSpacing: 0.6,
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              _ownerDisplayName,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: colors.onSurface,
+                              ),
                             ),
                           ),
                           PopupMenuButton<String>(
@@ -295,12 +273,6 @@ class DeviceCard extends StatelessWidget {
                             ),
                             onSelected: (value) {
                               switch (value) {
-                                case 'details':
-                                  onViewDetailsTap?.call();
-                                  break;
-                                case 'alerts':
-                                  onViewAlertsTap?.call();
-                                  break;
                                 case 'modes':
                                   onViewModesTap?.call();
                                   break;
@@ -310,14 +282,6 @@ class DeviceCard extends StatelessWidget {
                               }
                             },
                             itemBuilder: (_) => [
-                              const PopupMenuItem(
-                                value: 'details',
-                                child: Text('View Details'),
-                              ),
-                              const PopupMenuItem(
-                                value: 'alerts',
-                                child: Text('View Alerts'),
-                              ),
                               PopupMenuItem(
                                 value: 'modes',
                                 child: Row(
@@ -345,7 +309,6 @@ class DeviceCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      // ── Telemetry panel ───────────
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
@@ -367,7 +330,6 @@ class DeviceCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // ── Zone / temperature ────────
                       Row(
                         children: [
                           Icon(
@@ -412,7 +374,6 @@ class DeviceCard extends StatelessWidget {
                         color: colors.onSurfaceVariant.withValues(alpha: 0.12),
                       ),
                       const SizedBox(height: 8),
-                      // ── Bottom status strip ───────
                       Row(
                         children: [
                           _statusDot(

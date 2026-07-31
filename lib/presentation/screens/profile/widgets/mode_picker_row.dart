@@ -52,59 +52,75 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'TRACKING MODE',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            modeTitle,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 14),
+          // ── Top Header Row with Auto/Manual on the Right ──────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left column: Section Title & Active Mode Name
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TRACKING MODE:',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      modeTitle,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-          // ── Auto / Manual Segment Toggle ───────────────────
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _SegmentTab(
-                    label: 'Auto',
-                    isSelected: _isAutoMode,
-                    onTap: () => setState(() => _isAutoMode = true),
+              const SizedBox(width: 12),
+
+              // Right: Compact Auto / Manual Segment Toggle
+              SizedBox(
+                width: 150,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHighest.withValues(
+                      alpha: 0.5,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _SegmentTab(
+                          label: 'Auto',
+                          isSelected: _isAutoMode,
+                          onTap: () => setState(() => _isAutoMode = true),
+                        ),
+                      ),
+                      Expanded(
+                        child: _SegmentTab(
+                          label: 'Manual',
+                          isSelected: !_isAutoMode,
+                          onTap: () => setState(() => _isAutoMode = false),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: _SegmentTab(
-                    label: 'Manual',
-                    isSelected: !_isAutoMode,
-                    onTap: () => setState(() => _isAutoMode = false),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
 
-          Text(
-            _isAutoMode
-                ? 'System manages tracking mode based on conditions'
-                : 'You choose and lock the tracking mode',
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
-          ),
           const SizedBox(height: 14),
 
-          // ── Horizontal Scrollable Modes List ───────
+          // ── Horizontal Scrollable Modes List ──────────────────────
           SizedBox(
             height: 72,
             child: widget.modes.isEmpty
@@ -224,7 +240,7 @@ class _SegmentTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? colors.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
@@ -242,7 +258,7 @@ class _SegmentTab extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected ? colors.onSurface : colors.onSurfaceVariant,
             ),

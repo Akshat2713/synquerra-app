@@ -1,4 +1,5 @@
 import '../../../domain/entities/device/device_entity.dart';
+import '../signup/person_model.dart';
 import 'device_owner_model.dart';
 
 class DeviceModel {
@@ -28,6 +29,7 @@ class DeviceModel {
   final String relationship;
   final DeviceOwnerModel? deviceOwner;
   final List<dynamic> deviceAssociation;
+  final PersonModel? carrier;
 
   const DeviceModel({
     required this.id,
@@ -56,10 +58,12 @@ class DeviceModel {
     required this.relationship,
     this.deviceOwner,
     this.deviceAssociation = const [],
+    this.carrier,
   });
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
     final master = json['device_master'] as Map<String, dynamic>;
+    final carrierJson = master['carrier'] as Map<String, dynamic>?;
     final ownerJson = json['device_owner'] as Map<String, dynamic>?;
 
     return DeviceModel(
@@ -90,6 +94,7 @@ class DeviceModel {
       deviceOwner: ownerJson != null
           ? DeviceOwnerModel.fromJson(ownerJson)
           : null,
+      carrier: carrierJson != null ? PersonModel.fromJson(carrierJson) : null,
       deviceAssociation: json['device_association'] as List<dynamic>? ?? [],
     );
   }

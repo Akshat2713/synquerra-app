@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../alerts_errors/alerts_errors_screen.dart';
 import '../landing/landing_screen.dart';
 import '../settings/settings_screen.dart';
 import '../device_detail/device_detail_screen.dart'; // now exports DeviceMapTab
@@ -55,7 +54,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         children: [
           LandingScreen(onAttentionTap: () => {}),
           DeviceDetailScreen(device: widget.device),
-          AlertsErrorsScreen(deviceId: widget.device.id),
+          // AlertsErrorsScreen(deviceId: widget.device.id),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),
@@ -73,11 +72,11 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             selectedIcon: Icon(Icons.map_rounded),
             label: 'Map',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_outlined),
-            selectedIcon: Icon(Icons.notifications_rounded),
-            label: 'Notifications',
-          ),
+          // NavigationDestination(
+          //   icon: Icon(Icons.notifications_outlined),
+          //   selectedIcon: Icon(Icons.notifications_rounded),
+          //   label: 'Notifications',
+          // ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings_rounded),

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
 import '../../data/datasources/local/signup_local_datasource.dart';
@@ -73,12 +74,14 @@ class AppRouter {
       case AppRoutes.deviceList:
         return _slide(
           settings,
-          BlocProvider(
-            create: (_) => sl<DeviceListBloc>(),
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<DeviceListBloc>()),
+              BlocProvider(create: (_) => sl<AlertsBloc>()),
+            ],
             child: const DeviceListScreen(),
           ),
         );
-
       // NEW
       case AppRoutes.deviceDetail:
         final device = settings.arguments as DeviceEntity;

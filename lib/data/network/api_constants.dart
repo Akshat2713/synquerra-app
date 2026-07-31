@@ -7,7 +7,6 @@ class ApiConstants {
 
   // ── Auth ──────────────────────────────────────────
   static const String signIn = 'api/v1/auth/sign-in';
-  // static const String signUp = 'api/v1/core/auth/signup';
 
   // ── SignUp ─────────────────────────────────────────
   static const String createPerson = '/api/v1/persons';
@@ -20,6 +19,8 @@ class ApiConstants {
   // ── Alerts ────────────────────────────────────────
   static const String alerts = 'api/v1/device/alerts-errors/alerts';
   static const String alertErrors = 'api/v1/device/alerts-errors/device';
+  static String alertsByPerson(String personId) =>
+      '/api/v1/device/alerts-errors/person/$personId';
 
   // ── Analytics ─────────────────────────────────────
   static const String analytics = 'api/v1/analytics/device-analytics-query';

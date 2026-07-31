@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../signup/signup_entity.dart';
 import 'device_owner_entity.dart';
 
 class DeviceEntity extends Equatable {
@@ -28,6 +29,7 @@ class DeviceEntity extends Equatable {
   final String updatedAt;
   final String relationship;
   final DeviceOwnerEntity? deviceOwner;
+  final PersonEntity? carrier;
 
   const DeviceEntity({
     required this.id,
@@ -55,6 +57,7 @@ class DeviceEntity extends Equatable {
     required this.updatedAt,
     required this.relationship,
     this.deviceOwner,
+    this.carrier,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -88,5 +91,6 @@ class DeviceEntity extends Equatable {
     updatedAt,
     relationship,
     deviceOwner,
+    carrier,
   ];
 }
