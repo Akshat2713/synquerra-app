@@ -1,39 +1,39 @@
 // presentation/screens/device_detail/device_detail_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import '../../../core/di/injection_container.dart';
 import '../../../data/network/map_tile_config.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../blocs/user_location/user_location_bloc.dart';
 import '../../widgets/geofence_polygon_layer.dart';
-import 'widgets/map_icon_button.dart';
+import 'widgets/map_controls_column.dart';
 import 'widgets/timeline_slider.dart';
-// imports — remove analytics_filter_sheet import, add:
 import 'widgets/view_tabs.dart';
 import 'widgets/history_filter_chips.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final DeviceEntity device;
   const DeviceDetailScreen({super.key, required this.device});
-
   @override
   State<DeviceDetailScreen> createState() => _DeviceDetailScreenState();
 }
 
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late final MapController _mapController;
+  late final UserLocationBloc _userLocationBloc;
   bool _showTimeline = false;
-  // bool _mapReady = false;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
+    _userLocationBloc = sl<UserLocationBloc>();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
     debugPrint(
@@ -48,10 +48,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   @override
   void dispose() {
     _mapController.dispose();
+    _userLocationBloc.close();
     super.dispose();
   }
 
-  // delete _openFilterSheet() entirely, replace with:
   void _onViewChanged(bool history) {
     setState(() => _showTimeline = history);
     context.read<AnalyticsBloc>().add(
@@ -65,8 +65,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   void _fitMapToPoints(List<AnalyticsEntity> points) {
     final mappable = points.where((p) => p.hasLocation).toList();
     if (mappable.isEmpty) return;
-
-    // Single point or latest — just move, never fitCamera
     if (mappable.length == 1) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
@@ -74,8 +72,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       );
       return;
     }
-
-    // Multiple points but not showing timeline = default load, skip fit
     if (!_showTimeline) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
@@ -83,7 +79,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       );
       return;
     }
-
     final bounds = LatLngBounds.fromPoints(
       mappable.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
     );
@@ -109,36 +104,49 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         }
         if (didPop) return;
       },
-      child: BlocListener<AnalyticsBloc, AnalyticsState>(
-        listenWhen: (prev, curr) =>
-            prev is! AnalyticsLoaded ||
-            (curr is AnalyticsLoaded && prev.points != curr.points),
-        listener: (context, state) {
-          if (state is AnalyticsLoaded && state.mappablePoints.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback(
-              (_) => _fitMapToPoints(state.points),
-            );
-          }
-        },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<AnalyticsBloc, AnalyticsState>(
+            listenWhen: (prev, curr) =>
+                prev is! AnalyticsLoaded ||
+                (curr is AnalyticsLoaded && prev.points != curr.points),
+            listener: (context, state) {
+              if (state is AnalyticsLoaded && state.mappablePoints.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _fitMapToPoints(state.points),
+                );
+              }
+            },
+          ),
+          BlocListener<UserLocationBloc, UserLocationState>(
+            bloc: _userLocationBloc,
+            listener: (context, state) {
+              if (state is UserLocationLoaded) {
+                _mapController.move(state.position, 16.0);
+              }
+              if (state is UserLocationError) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+          ),
+        ],
         child: Stack(
           children: [
-            // ── Map — never rebuilds ─────────────────────
             RepaintBoundary(
               child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: _defaultCenter,
                   initialZoom: MapTileConfig.defaultZoom,
-                  // remove onMapReady entirely
                 ),
                 children: [
                   TileLayer(
                     urlTemplate: MapTileConfig.tileUrlTemplate,
                     userAgentPackageName: MapTileConfig.userAgentPackageName,
                   ),
-                  // Geofence — only rebuilds on GeofenceBloc changes
                   GeofencePolygonLayer(onGeofenceTap: (_) {}),
-                  // Route polyline — only rebuilds when points list changes
                   BlocBuilder<AnalyticsBloc, AnalyticsState>(
                     buildWhen: (prev, curr) {
                       if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
@@ -164,7 +172,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       );
                     },
                   ),
-                  // Markers — rebuilds on slider OR points change
                   BlocBuilder<AnalyticsBloc, AnalyticsState>(
                     buildWhen: (prev, curr) {
                       if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
@@ -209,11 +216,52 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                       );
                     },
                   ),
+                  // Live user-location marker (mirrors GeofenceMapPickerPage)
+                  BlocBuilder<UserLocationBloc, UserLocationState>(
+                    bloc: _userLocationBloc,
+                    builder: (context, state) {
+                      if (state is! UserLocationLoaded) {
+                        return const SizedBox.shrink();
+                      }
+                      final colors = Theme.of(context).colorScheme;
+                      return MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: state.position,
+                            width: 32,
+                            height: 32,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: colors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 3,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colors.primary.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                    blurRadius: 8,
+                                    spreadRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.person_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-
-            // ── No data banner ───────────────────────────
             BlocBuilder<AnalyticsBloc, AnalyticsState>(
               buildWhen: (prev, curr) =>
                   (prev is AnalyticsLoaded) != (curr is AnalyticsLoaded),
@@ -269,7 +317,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 );
               },
             ),
-            // add a new Positioned for the tabs, top-left (near where the old filter button used to signal state):
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 12,
@@ -278,56 +325,16 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 onChanged: _onViewChanged,
               ),
             ),
-
-            // ── Top right: filter + zoom ─────────────────
+            // ── Right side controls: Zoom → Compass → My location ────
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               right: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const SizedBox(height: 8),
-                  MapIconButton(
-                    icon: Icons.add_rounded,
-                    onTap: () => _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom + 1,
-                    ),
-                    colors: Theme.of(context).colorScheme,
-                  ),
-                  const SizedBox(height: 8),
-                  MapIconButton(
-                    icon: Icons.remove_rounded,
-                    onTap: () => _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom - 1,
-                    ),
-                    colors: Theme.of(context).colorScheme,
-                  ),
-                ],
+              child: MapControlsColumn(
+                mapController: _mapController,
+                userLocationBloc: _userLocationBloc,
+                deviceCenter: _defaultCenter,
               ),
             ),
-            Positioned(
-              right: 12,
-              bottom: _showTimeline ? 235 : 255,
-              child: MapIconButton(
-                icon: Icons.location_searching,
-                onTap: null,
-                colors: Theme.of(context).colorScheme,
-              ),
-            ),
-            // ── Bottom right: my location ────────────────
-            Positioned(
-              right: 12,
-              bottom: _showTimeline ? 180 : 200,
-              child: MapIconButton(
-                icon: Icons.my_location_rounded,
-                onTap: () => _mapController.move(_defaultCenter, 14),
-                colors: Theme.of(context).colorScheme,
-              ),
-            ),
-
-            // ── Bottom panel ─────────────────────────────
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -341,13 +348,10 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   },
                   builder: (context, state) {
                     if (!_showTimeline) return const SizedBox.shrink();
-
                     final isLoading = state is AnalyticsLoading;
                     final loaded = state is AnalyticsLoaded ? state : null;
-                    // fall back so chips still know what's "active" during loading/error
                     final activeFilter =
                         loaded?.activeFilter ?? AnalyticsFilter.lastHour;
-
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

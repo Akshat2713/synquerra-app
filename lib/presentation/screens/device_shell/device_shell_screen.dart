@@ -1,15 +1,17 @@
 // presentation/screens/device_shell/device_shell_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../blocs/analytics/analytics_bloc.dart';
 import '../landing/landing_screen.dart';
 import '../settings/settings_screen.dart';
-import '../device_detail/device_detail_screen.dart'; // now exports DeviceMapTab
+import '../profile/profile_screen.dart';
+import '../device_detail/device_detail_screen.dart';
 
 class DeviceShellScreen extends StatefulWidget {
   final DeviceEntity device;
   const DeviceShellScreen({super.key, required this.device});
-
   @override
   State<DeviceShellScreen> createState() => _DeviceShellScreenState();
 }
@@ -47,6 +49,13 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final analyticsBloc = context.read<AnalyticsBloc>();
+    final analyticsState = analyticsBloc.state;
+    final latest =
+        analyticsState is AnalyticsLoaded && analyticsState.points.isNotEmpty
+        ? analyticsState.points.first
+        : null;
+
     return Scaffold(
       body: PageView(
         controller: _pageController,
@@ -54,7 +63,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         children: [
           LandingScreen(onAttentionTap: () => {}),
           DeviceDetailScreen(device: widget.device),
-          // AlertsErrorsScreen(deviceId: widget.device.id),
+          // ProfileScreen(device: widget.device, analytics: latest),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),
@@ -73,9 +82,9 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             label: 'Map',
           ),
           // NavigationDestination(
-          //   icon: Icon(Icons.notifications_outlined),
-          //   selectedIcon: Icon(Icons.notifications_rounded),
-          //   label: 'Notifications',
+          //   icon: Icon(Icons.person_outline),
+          //   selectedIcon: Icon(Icons.person_rounded),
+          //   label: 'Manage',
           // ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

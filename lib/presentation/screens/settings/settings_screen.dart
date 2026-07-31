@@ -58,17 +58,17 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 8),
-          SettingsTile(
-            icon: Icons.analytics_outlined,
-            title: 'Telemetry History',
-            subtitle: 'View full location & sensor history',
-            onTap: () => Navigator.pushNamed(
-              context,
-              AppRoutes.telemetryHistory,
-              arguments: device,
-            ),
-          ),
+          // const SizedBox(height: 8),
+          // SettingsTile(
+          //   icon: Icons.analytics_outlined,
+          //   title: 'Telemetry History',
+          //   subtitle: 'View full location & sensor history',
+          //   onTap: () => Navigator.pushNamed(
+          //     context,
+          //     AppRoutes.telemetryHistory,
+          //     arguments: device,
+          //   ),
+          // ),
           const SizedBox(height: 16),
 
           Text(
