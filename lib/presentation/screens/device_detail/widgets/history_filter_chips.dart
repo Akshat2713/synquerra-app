@@ -19,8 +19,10 @@ class HistoryFilterChips extends StatelessWidget {
 
   static const _options = {
     AnalyticsFilter.lastHour: '1H',
+    AnalyticsFilter.last2Hours: '2H',
+    AnalyticsFilter.last6Hours: '6H',
+    AnalyticsFilter.last12Hours: '12H',
     AnalyticsFilter.last24Hours: '24H',
-    AnalyticsFilter.lastWeek: '1W',
   };
 
   @override

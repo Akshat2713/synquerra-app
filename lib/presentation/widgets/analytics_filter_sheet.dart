@@ -154,16 +154,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               },
               colors: colors,
             ),
-            _filterOption(
-              label: 'Last Week',
-              icon: Icons.date_range_rounded,
-              isActive: widget.activeFilter == AnalyticsFilter.lastWeek,
-              onTap: () {
-                Navigator.pop(context);
-                widget.onFilterSelected(AnalyticsFilter.lastWeek);
-              },
-              colors: colors,
-            ),
+
             _filterOption(
               label: 'Custom Range',
               icon: Icons.tune_rounded,
