@@ -28,7 +28,7 @@ class TodayStatusCard extends StatefulWidget {
 }
 
 class _TodayStatusCardState extends State<TodayStatusCard> {
-  bool _expanded = true; // Kept open by default matching image_4a1587.png
+  bool _expanded = false; // Kept open by default matching image_4a1587.png
 
   @override
   Widget build(BuildContext context) {

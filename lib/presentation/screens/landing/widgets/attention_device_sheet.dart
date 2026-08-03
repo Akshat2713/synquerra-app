@@ -1,0 +1,118 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/device_list/device_list_bloc.dart';
+import '../../../blocs/alerts/alerts_bloc.dart';
+import '../../../app/app_router.dart';
+import '../../../utils/colour_util.dart';
+import '../../../utils/device_display_util.dart';
+
+class AttentionDeviceSheet extends StatelessWidget {
+  const AttentionDeviceSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final deviceState = context.watch<DeviceListBloc>().state;
+    final alertsState = context.watch<AlertsBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserFullName = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : '—';
+    final devices = deviceState is DeviceListLoaded
+        ? deviceState.devices
+        : <DeviceEntity>[];
+    final alerts = alertsState is AlertsLoaded ? alertsState.alerts : const [];
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        clipBehavior:
+            Clip.antiAlias, // keeps ink splashes clipped to rounded corners
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Devices needing attention',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: devices.length,
+                  itemBuilder: (context, i) {
+                    final d = devices[i];
+                    final deviceAlerts = alerts
+                        .where((a) => a.imei == d.imei && !a.isAcknowledged)
+                        .toList();
+                    final ringColor = deviceSeverityColor(deviceAlerts.cast());
+                    final name = ownerDisplayName(d, currentUserFullName);
+                    return ListTile(
+                      leading: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: ringColor, width: 2),
+                        ),
+                        padding: const EdgeInsets.all(2),
+                        child: CircleAvatar(
+                          backgroundImage: d.carrier?.profilePhoto != null
+                              ? NetworkImage(d.carrier!.profilePhoto!)
+                              : null,
+                          child: d.carrier?.profilePhoto == null
+                              ? const Icon(Icons.person)
+                              : null,
+                        ),
+                      ),
+                      title: Text(name),
+                      subtitle: Text(
+                        deviceAlerts.isEmpty
+                            ? 'No active alerts'
+                            : '${deviceAlerts.length} unacknowledged alert${deviceAlerts.length > 1 ? 's' : ''}',
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.deviceDetail,
+                          arguments: DeviceDetailArgs(
+                            device: d,
+                            deviceListBloc: context.read<DeviceListBloc>(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

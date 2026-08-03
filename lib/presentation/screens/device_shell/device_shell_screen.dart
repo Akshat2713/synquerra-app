@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../../blocs/analytics/analytics_bloc.dart';
+import '../../blocs/alerts/alerts_bloc.dart';
+// import '../../blocs/analytics/analytics_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
+import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
+import '../landing/widgets/attention_device_sheet.dart';
 import '../settings/settings_screen.dart';
 import '../profile/profile_screen.dart';
 import '../device_detail/device_detail_screen.dart';
@@ -47,23 +51,37 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
 
   void _onPageChanged(int index) => setState(() => _currentIndex = index);
 
+  void _openAttentionSheet(BuildContext context) {
+    final deviceListBloc = context.read<DeviceListBloc>();
+    final landingBloc = context.read<LandingBloc>();
+    final alertsBloc = context.read<AlertsBloc>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: deviceListBloc),
+          BlocProvider.value(value: landingBloc),
+          BlocProvider.value(value: alertsBloc),
+        ],
+        child: const AttentionDeviceSheet(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final analyticsBloc = context.read<AnalyticsBloc>();
-    final analyticsState = analyticsBloc.state;
-    final latest =
-        analyticsState is AnalyticsLoaded && analyticsState.points.isNotEmpty
-        ? analyticsState.points.first
-        : null;
-
     return Scaffold(
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: [
-          LandingScreen(onAttentionTap: () => {}),
+          LandingScreen(
+            device: widget.device,
+            onAttentionTap: () => _openAttentionSheet(context),
+          ),
           DeviceDetailScreen(device: widget.device),
-          // ProfileScreen(device: widget.device, analytics: latest),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),

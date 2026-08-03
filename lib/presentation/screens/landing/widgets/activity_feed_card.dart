@@ -22,7 +22,7 @@ class ActivityFeedCard extends StatefulWidget {
 }
 
 class _ActivityFeedCardState extends State<ActivityFeedCard> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +30,9 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 1)),
       ),
       child: Column(
         children: [
@@ -63,13 +63,6 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          'SOS Cancelled · 5:12 PM · +7',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),

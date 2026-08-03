@@ -32,6 +32,12 @@ import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
 import '../screens/telemetry_history/telemetry_history_screen.dart';
 
+class DeviceDetailArgs {
+  final DeviceEntity device;
+  final DeviceListBloc deviceListBloc;
+  const DeviceDetailArgs({required this.device, required this.deviceListBloc});
+}
+
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -83,31 +89,23 @@ class AppRouter {
           ),
         );
       // NEW
+      // REPLACE (delete the DeviceDetailArgs class I added — not needed)
+
+      // deviceDetail case:
       case AppRoutes.deviceDetail:
-        final device = settings.arguments as DeviceEntity;
+        final args = settings.arguments as DeviceDetailArgs;
         return _slide(
           settings,
           MultiBlocProvider(
             providers: [
+              BlocProvider.value(value: args.deviceListBloc),
+              BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<AlertsErrorsBloc>()),
-              BlocProvider(create: (_) => sl<LandingBloc>()),
+              BlocProvider(create: (_) => sl<AlertsBloc>()),
             ],
-            child: DeviceShellScreen(device: device),
-          ),
-        );
-
-      // Push with:
-      //   Navigator.pushNamed(context, AppRoutes.telemetryHistory,
-      //       arguments: device);
-      case AppRoutes.telemetryHistory:
-        final device = settings.arguments as DeviceEntity;
-        return _slide(
-          settings,
-          BlocProvider(
-            create: (_) => sl<AnalyticsBloc>(),
-            child: TelemetryHistoryScreen(device: device),
+            child: DeviceShellScreen(device: args.device),
           ),
         );
 
@@ -184,14 +182,14 @@ class AppRouter {
           ),
         );
 
-      case AppRoutes.homeDetail:
-        return _slide(
-          settings,
-          BlocProvider(
-            create: (_) => sl<LandingBloc>()..add(const LandingLoadRequested()),
-            child: const LandingScreen(),
-          ),
-        );
+      // case AppRoutes.homeDetail:
+      //   return _slide(
+      //     settings,
+      //     BlocProvider(
+      //       create: (_) => sl<LandingBloc>()..add(const LandingLoadRequested()),
+      //       child: const LandingScreen(),
+      //     ),
+      //   );
 
       case AppRoutes.signupProfile:
         _activeSignupBloc = sl<SignupBloc>();

@@ -251,7 +251,9 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
 
   // ── UI Navigation / Shell Blocs ─────────────────────────
-  sl.registerFactory(() => LandingBloc());
+  sl.registerFactory<LandingBloc>(
+    () => LandingBloc(getAnalyticsUseCase: sl(), getAlertsUseCase: sl()),
+  );
 }
 
 /// Called after successful login to store user globally

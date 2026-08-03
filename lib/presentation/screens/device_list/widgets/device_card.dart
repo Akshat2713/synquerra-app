@@ -3,6 +3,7 @@ import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
+import '../../../utils/device_display_util.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -24,24 +25,7 @@ class DeviceCard extends StatelessWidget {
     this.onViewModesTap,
   });
 
-  String get _ownerDisplayName {
-    final carrier = device.carrier;
-    if (carrier == null) return currentUserFullName;
-    final name = '${carrier.firstName} ${carrier.lastName}'.trim();
-    return name.isEmpty ? currentUserFullName : name;
-  }
-
-  Color _railColor() {
-    final hasCritical = deviceAlerts.any(
-      (a) => a.severity == AlertSeverity.critical && !a.isAcknowledged,
-    );
-    final hasAdvisory = deviceAlerts.any(
-      (a) => a.severity == AlertSeverity.advisory && !a.isAcknowledged,
-    );
-    if (hasCritical) return AppColors.alertCritical;
-    if (hasAdvisory) return AppColors.alertWarning;
-    return AppColors.alertSuccess;
-  }
+  Color _railColor() => deviceSeverityColor(deviceAlerts);
 
   bool get _isOnline => device.isOnline ?? false;
   bool get _isCharging => device.isCharging ?? false;
@@ -252,7 +236,7 @@ class DeviceCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              _ownerDisplayName,
+                              ownerDisplayName(device, currentUserFullName),
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 15,

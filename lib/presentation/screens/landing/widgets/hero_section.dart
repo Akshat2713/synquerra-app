@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/landing/landing_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../utils/date_time_formatter.dart';
+import '../../../utils/device_display_util.dart';
 
 class HeroSection extends StatelessWidget {
-  final MemberDetail detail;
+  final DeviceEntity device;
+  final AnalyticsEntity? latest;
   final Color successColor;
-
   const HeroSection({
     super.key,
-    required this.detail,
+    required this.device,
+    this.latest,
     this.successColor = const Color(0xFF3DDC84),
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+
+    // ── Resolve display name: carrier if assigned, else logged-in user ──
+    final authState = context.watch<AuthBloc>().state;
+    final loggedInName = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : '—';
+    final displayName = ownerDisplayName(device, loggedInName);
+    final isOnline = device.isOnline ?? false;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -27,12 +41,12 @@ class HeroSection extends StatelessWidget {
               CircleAvatar(
                 radius: 36,
                 backgroundColor: colors.primaryContainer,
-                backgroundImage: detail.summary.avatarUrl != null
-                    ? NetworkImage(detail.summary.avatarUrl!)
+                backgroundImage: device.carrier?.profilePhoto != null
+                    ? NetworkImage(device.carrier!.profilePhoto!)
                     : null,
-                child: detail.summary.avatarUrl == null
+                child: device.carrier?.profilePhoto == null
                     ? Text(
-                        detail.gender == 'female' ? '👧' : '👦',
+                        device.carrier?.gender == 'female' ? '👧' : '👦',
                         style: const TextStyle(fontSize: 32),
                       )
                     : null,
@@ -52,7 +66,7 @@ class HeroSection extends StatelessWidget {
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: successColor,
+                        color: isOnline ? successColor : Colors.grey,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -62,14 +76,13 @@ class HeroSection extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 14),
-
           // ── Name, Mode & Subtitle Status ─────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  detail.summary.name,
+                  displayName,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
@@ -77,7 +90,7 @@ class HeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Live Tracking',
+                  isOnline ? 'Live Tracking' : 'Offline',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -91,9 +104,9 @@ class HeroSection extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        detail.statusLabel.isNotEmpty
-                            ? detail.statusLabel
-                            : 'Running a little behind',
+                        (latest?.alert != null && latest!.alert!.isNotEmpty)
+                            ? latest!.alert!
+                            : 'No recent alerts',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -107,7 +120,6 @@ class HeroSection extends StatelessWidget {
               ],
             ),
           ),
-
           // ── Online Status, Speed & Update Time ───────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -115,14 +127,18 @@ class HeroSection extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.circle, size: 8, color: successColor),
+                  Icon(
+                    Icons.circle,
+                    size: 8,
+                    color: isOnline ? successColor : colors.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 4),
                   Text(
-                    'Online',
+                    isOnline ? 'Online' : 'Offline',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: successColor,
+                      color: isOnline ? successColor : colors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -133,19 +149,26 @@ class HeroSection extends StatelessWidget {
                 children: [
                   Icon(Icons.speed_rounded, size: 16, color: colors.primary),
                   const SizedBox(width: 4),
-                  const Text(
-                    '18 km/h',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  Text(
+                    latest?.speed != null
+                        ? '${latest!.speed!.toStringAsFixed(0)} km/h'
+                        : '—',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ],
               ),
               Text(
-                'Travelling',
+                (latest?.speed ?? 0) > 0 ? 'Travelling' : 'Stationary',
                 style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: 8),
               Text(
-                'Updated 8 min ago',
+                latest?.deviceTimestamp != null
+                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
+                    : 'No updates yet',
                 style: TextStyle(
                   fontSize: 11,
                   color: colors.onSurfaceVariant.withValues(alpha: 0.7),

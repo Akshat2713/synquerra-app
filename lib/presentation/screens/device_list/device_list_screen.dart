@@ -427,6 +427,7 @@ import 'package:synquerra/domain/entities/device/device_entity.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../utils/device_alert_matcher.dart';
 import '../../widgets/critical_alert_banner.dart';
 import '../../app/app_router.dart';
 import 'device_list_skeleton.dart';
@@ -645,16 +646,20 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
       SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
           final device = devices[index];
-          final deviceAlerts = allAlerts
-              .where((a) => a.imei == device.imei)
-              .toList();
+          final deviceAlerts = alertsForDevice(device, allAlerts.cast());
           return DeviceCard(
             device: device,
             isActive: device.isActive,
             currentUserFullName: user?.fullName ?? '—',
             deviceAlerts: deviceAlerts.cast(),
-            onTap: () =>
-                _navigateAndRefresh(AppRoutes.deviceDetail, arguments: device),
+            // WITH (back to original)
+            onTap: () => _navigateAndRefresh(
+              AppRoutes.deviceDetail,
+              arguments: DeviceDetailArgs(
+                device: device,
+                deviceListBloc: context.read<DeviceListBloc>(),
+              ),
+            ),
             onViewModesTap: () => _navigateAndRefresh(
               AppRoutes.modes,
               arguments: {

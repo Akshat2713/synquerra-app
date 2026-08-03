@@ -36,7 +36,7 @@ class SettingsScreen extends StatelessWidget {
           Builder(
             builder: (ctx) => SettingsTile(
               icon: Icons.person_outline_rounded,
-              title: 'Profile',
+              title: 'Manage',
               subtitle: 'View device owner & mode details',
               onTap: () {
                 final analyticsBloc = ctx.read<AnalyticsBloc>();

@@ -11,7 +11,7 @@ class TodayScheduleCard extends StatefulWidget {
 }
 
 class _TodayScheduleCardState extends State<TodayScheduleCard> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +19,9 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,13 +53,6 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          'Next · 08:00 School day · +1',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -153,3 +146,46 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
     );
   }
 }
+
+class ScheduleEntry {
+  final String id;
+  final String time;
+  final String label;
+  final String subtitle;
+  final bool isSkipped;
+
+  const ScheduleEntry({
+    required this.id,
+    required this.time,
+    required this.label,
+    this.subtitle = 'Safe environment',
+    this.isSkipped = false,
+  });
+}
+
+final List<ScheduleEntry> mockSchedule = [
+  const ScheduleEntry(
+    id: '1',
+    time: '08:00',
+    label: 'School day',
+    subtitle: 'Safe environment',
+  ),
+  const ScheduleEntry(
+    id: '2',
+    time: '12:30',
+    label: 'Lunch Break',
+    subtitle: 'Cafeteria',
+  ),
+  const ScheduleEntry(
+    id: '3',
+    time: '15:00',
+    label: 'After-school Activity',
+    subtitle: 'Sports Complex',
+  ),
+  const ScheduleEntry(
+    id: '4',
+    time: '18:00',
+    label: 'Evening Study',
+    subtitle: 'Home / Library',
+  ),
+];
