@@ -36,7 +36,7 @@ class SettingsScreen extends StatelessWidget {
           Builder(
             builder: (ctx) => SettingsTile(
               icon: Icons.person_outline_rounded,
-              title: 'Profile',
+              title: 'Manage',
               subtitle: 'View device owner & mode details',
               onTap: () {
                 final analyticsBloc = ctx.read<AnalyticsBloc>();
@@ -58,17 +58,17 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 8),
-          SettingsTile(
-            icon: Icons.analytics_outlined,
-            title: 'Telemetry History',
-            subtitle: 'View full location & sensor history',
-            onTap: () => Navigator.pushNamed(
-              context,
-              AppRoutes.telemetryHistory,
-              arguments: device,
-            ),
-          ),
+          // const SizedBox(height: 8),
+          // SettingsTile(
+          //   icon: Icons.analytics_outlined,
+          //   title: 'Telemetry History',
+          //   subtitle: 'View full location & sensor history',
+          //   onTap: () => Navigator.pushNamed(
+          //     context,
+          //     AppRoutes.telemetryHistory,
+          //     arguments: device,
+          //   ),
+          // ),
           const SizedBox(height: 16),
 
           Text(

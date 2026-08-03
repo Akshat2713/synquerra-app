@@ -1,16 +1,21 @@
 // presentation/screens/device_shell/device_shell_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../alerts_errors/alerts_errors_screen.dart';
+import '../../blocs/alerts/alerts_bloc.dart';
+// import '../../blocs/analytics/analytics_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
+import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
+import '../landing/widgets/attention_device_sheet.dart';
 import '../settings/settings_screen.dart';
-import '../device_detail/device_detail_screen.dart'; // now exports DeviceMapTab
+import '../profile/profile_screen.dart';
+import '../device_detail/device_detail_screen.dart';
 
 class DeviceShellScreen extends StatefulWidget {
   final DeviceEntity device;
   const DeviceShellScreen({super.key, required this.device});
-
   @override
   State<DeviceShellScreen> createState() => _DeviceShellScreenState();
 }
@@ -46,6 +51,25 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
 
   void _onPageChanged(int index) => setState(() => _currentIndex = index);
 
+  void _openAttentionSheet(BuildContext context) {
+    final deviceListBloc = context.read<DeviceListBloc>();
+    final landingBloc = context.read<LandingBloc>();
+    final alertsBloc = context.read<AlertsBloc>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: deviceListBloc),
+          BlocProvider.value(value: landingBloc),
+          BlocProvider.value(value: alertsBloc),
+        ],
+        child: const AttentionDeviceSheet(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,9 +77,11 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: [
-          LandingScreen(onAttentionTap: () => {}),
+          LandingScreen(
+            device: widget.device,
+            onAttentionTap: () => _openAttentionSheet(context),
+          ),
           DeviceDetailScreen(device: widget.device),
-          AlertsErrorsScreen(deviceId: widget.device.id),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),
@@ -73,11 +99,11 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             selectedIcon: Icon(Icons.map_rounded),
             label: 'Map',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_outlined),
-            selectedIcon: Icon(Icons.notifications_rounded),
-            label: 'Notifications',
-          ),
+          // NavigationDestination(
+          //   icon: Icon(Icons.person_outline),
+          //   selectedIcon: Icon(Icons.person_rounded),
+          //   label: 'Manage',
+          // ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings_rounded),

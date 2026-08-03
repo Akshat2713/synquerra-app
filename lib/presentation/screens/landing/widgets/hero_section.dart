@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/landing/landing_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../utils/date_time_formatter.dart';
+import '../../../utils/device_display_util.dart';
 
 class HeroSection extends StatelessWidget {
-  final MemberDetail detail;
+  final DeviceEntity device;
+  final AnalyticsEntity? latest;
   final Color successColor;
-
   const HeroSection({
     super.key,
-    required this.detail,
+    required this.device,
+    this.latest,
     this.successColor = const Color(0xFF3DDC84),
   });
 
@@ -15,106 +21,163 @@ class HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: successColor, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: successColor.withOpacity(0.35),
-                    blurRadius: 16,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-            ),
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: colors.surfaceContainerHighest,
-              backgroundImage: detail.summary.avatarUrl != null
-                  ? NetworkImage(detail.summary.avatarUrl!)
-                  : null,
-              child: detail.summary.avatarUrl == null
-                  ? Text(
-                      detail.gender == 'female' ? '👧' : '👦',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    )
-                  : null,
-            ),
-            Positioned(
-              bottom: 6,
-              right: 6,
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: successColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.surface, width: 2),
-                ),
-                child: const Icon(Icons.check, size: 11, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(
-          detail.summary.name,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              detail.statusLabel,
-              style: TextStyle(fontSize: 14, color: colors.onSurfaceVariant),
-            ),
-            const SizedBox(width: 6),
-            const Text('🔵', style: TextStyle(fontSize: 13)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+    // ── Resolve display name: carrier if assigned, else logged-in user ──
+    final authState = context.watch<AuthBloc>().state;
+    final loggedInName = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : '—';
+    final displayName = ownerDisplayName(device, loggedInName);
+    final isOnline = device.isOnline ?? false;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Avatar with Emoji Fallback Logic ──────────────────────
+          Stack(
+            alignment: Alignment.center,
             children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: successColor,
-                  shape: BoxShape.circle,
-                ),
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: colors.primaryContainer,
+                backgroundImage: device.carrier?.profilePhoto != null
+                    ? NetworkImage(device.carrier!.profilePhoto!)
+                    : null,
+                child: device.carrier?.profilePhoto == null
+                    ? Text(
+                        device.carrier?.gender == 'female' ? '👧' : '👦',
+                        style: const TextStyle(fontSize: 32),
+                      )
+                    : null,
               ),
-              const SizedBox(width: 6),
-              Text(
-                'Verified ${detail.verifiedAgo}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colors.onSurfaceVariant,
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: isOnline ? successColor : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(width: 14),
+          // ── Name, Mode & Subtitle Status ─────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isOnline ? 'Live Tracking' : 'Offline',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: colors.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.circle, size: 8, color: Colors.amber),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        (latest?.alert != null && latest!.alert!.isNotEmpty)
+                            ? latest!.alert!
+                            : 'No recent alerts',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // ── Online Status, Speed & Update Time ───────────────────
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.circle,
+                    size: 8,
+                    color: isOnline ? successColor : colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    isOnline ? 'Online' : 'Offline',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isOnline ? successColor : colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.speed_rounded, size: 16, color: colors.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    latest?.speed != null
+                        ? '${latest!.speed!.toStringAsFixed(0)} km/h'
+                        : '—',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                (latest?.speed ?? 0) > 0 ? 'Travelling' : 'Stationary',
+                style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                latest?.deviceTimestamp != null
+                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
+                    : 'No updates yet',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

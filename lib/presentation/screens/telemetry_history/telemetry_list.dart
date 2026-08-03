@@ -24,10 +24,15 @@ class TelemetryList extends StatelessWidget {
         return 'Latest record';
       case AnalyticsFilter.lastHour:
         return 'Last 1 hour';
+      case AnalyticsFilter.last2Hours:
+        return 'Last 2 hours';
+      case AnalyticsFilter.last6Hours:
+        return 'Last 6 hours';
+      case AnalyticsFilter.last12Hours:
+        return 'Last 12 hours';
       case AnalyticsFilter.last24Hours:
         return 'Last 24 hours';
-      case AnalyticsFilter.lastWeek:
-        return 'Last 7 days';
+
       case AnalyticsFilter.custom:
         if (startDate != null && endDate != null) {
           return '${startDate!.day}/${startDate!.month}/${startDate!.year}'

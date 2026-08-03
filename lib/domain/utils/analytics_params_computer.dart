@@ -33,19 +33,26 @@ AnalyticsFetchParams computeAnalyticsParams({
       return const AnalyticsFetchParams(limit: 1);
 
     case AnalyticsFilter.lastHour:
-      // Hour is short — fetch all, no interval needed
       return const AnalyticsFetchParams(limit: 0);
-
+    case AnalyticsFilter.last2Hours:
+      return AnalyticsFetchParams(
+        limit: 0,
+        dataInterval: computeInterval(2 * 60 * 60),
+      );
+    case AnalyticsFilter.last6Hours:
+      return AnalyticsFetchParams(
+        limit: 0,
+        dataInterval: computeInterval(6 * 60 * 60),
+      );
+    case AnalyticsFilter.last12Hours:
+      return AnalyticsFetchParams(
+        limit: 0,
+        dataInterval: computeInterval(12 * 60 * 60),
+      );
     case AnalyticsFilter.last24Hours:
       return AnalyticsFetchParams(
         limit: 0,
         dataInterval: computeInterval(24 * 60 * 60),
-      );
-
-    case AnalyticsFilter.lastWeek:
-      return AnalyticsFetchParams(
-        limit: 0,
-        dataInterval: computeInterval(7 * 24 * 60 * 60),
       );
 
     case AnalyticsFilter.custom:

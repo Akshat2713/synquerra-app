@@ -1,6 +1,7 @@
 // presentation/utils/color_utils.dart
 
 import 'package:flutter/material.dart';
+import '../../domain/entities/alerts/alert_entity.dart';
 import '../themes/colors.dart';
 
 Color batteryColor(int? battery) {
@@ -18,4 +19,30 @@ Color colorFromHex(String hex) {
   final cleaned = hex.replaceFirst('#', '');
   final value = int.tryParse(cleaned, radix: 16);
   return value == null ? Colors.blue : Color(0xFF000000 | value);
+}
+
+Color deviceSeverityColor(List<AlertEntity> deviceAlerts) {
+  final hasCritical = deviceAlerts.any(
+    (a) => a.severity == AlertSeverity.critical && !a.isAcknowledged,
+  );
+  final hasWarning = deviceAlerts.any(
+    (a) =>
+        (a.severity == AlertSeverity.advisory ||
+            a.severity == AlertSeverity.warning) &&
+        !a.isAcknowledged,
+  );
+  if (hasCritical) return AppColors.alertCritical;
+  if (hasWarning) return AppColors.alertWarning;
+  return AppColors.alertSuccess;
+}
+
+Color alertColor(AlertEntity alert) {
+  switch (alert.severity) {
+    case AlertSeverity.critical:
+      return AppColors.alertCritical;
+    case AlertSeverity.warning:
+      return AppColors.alertWarning;
+    case AlertSeverity.advisory:
+      return AppColors.alertSuccess;
+  }
 }

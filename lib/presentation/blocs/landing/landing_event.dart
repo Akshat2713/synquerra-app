@@ -2,23 +2,20 @@ part of 'landing_bloc.dart';
 
 abstract class LandingEvent extends Equatable {
   const LandingEvent();
-
   @override
   List<Object?> get props => [];
 }
 
 class LandingLoadRequested extends LandingEvent {
-  const LandingLoadRequested();
+  final DeviceEntity device;
+  const LandingLoadRequested(this.device);
+  @override
+  List<Object?> get props => [device];
 }
 
 class LandingRefreshRequested extends LandingEvent {
-  const LandingRefreshRequested();
-}
-
-class LandingMemberSelected extends LandingEvent {
-  final String memberId;
-  const LandingMemberSelected(this.memberId);
-
+  final DeviceEntity device;
+  const LandingRefreshRequested(this.device);
   @override
-  List<Object?> get props => [memberId];
+  List<Object?> get props => [device];
 }

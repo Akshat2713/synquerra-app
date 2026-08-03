@@ -69,6 +69,7 @@ import '../../domain/usecases/signup/create_person_usecase.dart';
 import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 
 // Blocs & Cubits
+import '../../presentation/blocs/alerts/alerts_bloc.dart';
 import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -159,11 +160,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetDeviceListUseCase(sl()));
   sl.registerFactory<DeviceListBloc>(
-    () => DeviceListBloc(
-      getAlertsUseCase: sl(),
-      getDeviceListUseCase: sl(),
-      deviceRepository: sl(),
-    ),
+    () => DeviceListBloc(getDeviceListUseCase: sl(), deviceRepository: sl()),
   );
 
   // ── Link Device Feature ─────────────────────────────────
@@ -186,6 +183,7 @@ Future<void> initDependencies() async {
     () => AlertsRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetAlertsUseCase(sl()));
+  sl.registerFactory<AlertsBloc>(() => AlertsBloc(getAlertsUseCase: sl()));
 
   // ── Alerts & Errors Feature ─────────────────────────────
   sl.registerLazySingleton<AlertErrorsRemoteDataSource>(
@@ -253,7 +251,9 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => UserLocationBloc(getUserLocationUseCase: sl()));
 
   // ── UI Navigation / Shell Blocs ─────────────────────────
-  sl.registerFactory(() => LandingBloc());
+  sl.registerFactory<LandingBloc>(
+    () => LandingBloc(getAnalyticsUseCase: sl(), getAlertsUseCase: sl()),
+  );
 }
 
 /// Called after successful login to store user globally

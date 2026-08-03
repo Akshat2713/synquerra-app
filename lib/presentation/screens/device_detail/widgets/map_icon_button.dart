@@ -1,5 +1,4 @@
 // presentation/widgets/map_icon_button.dart
-
 import 'package:flutter/material.dart';
 
 class MapIconButton extends StatelessWidget {
@@ -7,6 +6,7 @@ class MapIconButton extends StatelessWidget {
   final VoidCallback? onTap; // ← nullable
   final ColorScheme colors;
   final bool highlighted;
+  final Widget? child;
 
   const MapIconButton({
     super.key,
@@ -14,11 +14,18 @@ class MapIconButton extends StatelessWidget {
     required this.onTap,
     required this.colors,
     this.highlighted = false,
+    this.child,
   });
 
   @override
   Widget build(BuildContext context) {
     final disabled = onTap == null;
+    final iconColor = highlighted
+        ? colors.onPrimary
+        : disabled
+        ? colors.onSurfaceVariant.withValues(alpha: 0.4)
+        : colors.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -40,15 +47,7 @@ class MapIconButton extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Icon(
-          icon,
-          size: 20,
-          color: highlighted
-              ? colors.onPrimary
-              : disabled
-              ? colors.onSurfaceVariant.withValues(alpha: 0.4)
-              : colors.onSurface,
-        ),
+        child: Center(child: child ?? Icon(icon, size: 20, color: iconColor)),
       ),
     );
   }

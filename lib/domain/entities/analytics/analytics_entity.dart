@@ -1,54 +1,42 @@
-// domain/entities/analytics/analytics_entity.dart
-
 import 'package:equatable/equatable.dart';
 
 class AnalyticsEntity extends Equatable {
   final String id;
-  final String topic;
   final String imei;
+  final String? geoid;
   final String? packet;
   final double? latitude;
   final double? longitude;
-  final double? speed; // Changed to double?
-  final int? battery; // Changed to int?
-  final int? signal; // Changed to int?
-  final String? geoid;
-  final int? interval;
-  final String? alert;
-  final DateTime? timestamp;
-  final DateTime? deviceRawTimestamp;
-  final String? type;
+  final double? speed;
+  final int? battery;
+  final int? signal;
   final String? temperature;
   final String? phone1;
   final String? phone2;
-  final String? controlPhone;
-  final String? rawAlert;
-  final String? modeId;
+  final String? alert;
   final DateTime? deviceTimestamp;
+  final String? type;
+  final String? geofenceName;
+  final String? formattedAddress;
 
   const AnalyticsEntity({
     required this.id,
-    required this.topic,
     required this.imei,
+    this.geoid,
     this.packet,
     this.latitude,
     this.longitude,
     this.speed,
     this.battery,
     this.signal,
-    this.geoid,
-    this.interval,
-    this.alert,
-    this.timestamp,
-    this.deviceRawTimestamp,
-    this.type,
     this.temperature,
     this.phone1,
     this.phone2,
-    this.controlPhone,
-    this.rawAlert,
-    this.modeId,
+    this.alert,
     this.deviceTimestamp,
+    this.type,
+    this.geofenceName,
+    this.formattedAddress,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -56,26 +44,21 @@ class AnalyticsEntity extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    topic,
     imei,
+    geoid,
     packet,
     latitude,
     longitude,
     speed,
     battery,
     signal,
-    geoid,
-    interval,
-    alert,
-    timestamp,
-    deviceRawTimestamp,
-    type,
     temperature,
     phone1,
     phone2,
-    controlPhone,
-    rawAlert,
-    modeId,
+    alert,
     deviceTimestamp,
+    type,
+    geofenceName,
+    formattedAddress,
   ];
 }

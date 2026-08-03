@@ -30,7 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile'), centerTitle: false),
+      appBar: AppBar(title: const Text('Manage'), centerTitle: false),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         // Only listen when loaded — avoids firing on initial/loading states
         listenWhen: (previous, current) {

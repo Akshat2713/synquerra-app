@@ -1,79 +1,191 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/landing/landing_bloc.dart'; // Holds your ScheduleEntry model
+import '../../../blocs/landing/landing_bloc.dart';
 
-class TodayScheduleCard extends StatelessWidget {
+class TodayScheduleCard extends StatefulWidget {
   final List<ScheduleEntry> schedule;
 
   const TodayScheduleCard({super.key, required this.schedule});
 
   @override
+  State<TodayScheduleCard> createState() => _TodayScheduleCardState();
+}
+
+class _TodayScheduleCardState extends State<TodayScheduleCard> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    const kBlue = Color(0xFF5B8DEF);
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors.outlineVariant, width: 1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Title Header
-          Text(
-            "TODAY'S SCHEDULE",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.6,
-              color: colors.onSurfaceVariant.withOpacity(0.7),
+          // ── Dropdown Header ──────────────────────────────────────
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Today's Schedule",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
 
-          // Schedule Timeline Items
-          if (schedule.isNotEmpty)
-            ...schedule.map(
-              (item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 56,
-                      child: Text(
-                        item.time,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              kBlue, // Distinct time accent color from layout image
+          // ── Expandable List ──────────────────────────────────────
+          if (_isExpanded) ...[
+            Divider(
+              height: 1,
+              color: colors.outlineVariant.withValues(alpha: 0.3),
+            ),
+            if (widget.schedule.isNotEmpty)
+              ...widget.schedule.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          item.time,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: colors.primary,
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: colors.onSurfaceVariant,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.label,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              'Safe environment',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      OutlinedButton(
+                        onPressed: () {},
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          side: BorderSide(
+                            color: colors.outlineVariant.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: const Text(
+                          'Skip',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'No scheduled events today.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ),
-            )
-          else
-            Text(
-              'No scheduled events today.',
-              style: TextStyle(fontSize: 14, color: colors.onSurfaceVariant),
-            ),
+          ],
         ],
       ),
     );
   }
 }
+
+class ScheduleEntry {
+  final String id;
+  final String time;
+  final String label;
+  final String subtitle;
+  final bool isSkipped;
+
+  const ScheduleEntry({
+    required this.id,
+    required this.time,
+    required this.label,
+    this.subtitle = 'Safe environment',
+    this.isSkipped = false,
+  });
+}
+
+final List<ScheduleEntry> mockSchedule = [
+  const ScheduleEntry(
+    id: '1',
+    time: '08:00',
+    label: 'School day',
+    subtitle: 'Safe environment',
+  ),
+  const ScheduleEntry(
+    id: '2',
+    time: '12:30',
+    label: 'Lunch Break',
+    subtitle: 'Cafeteria',
+  ),
+  const ScheduleEntry(
+    id: '3',
+    time: '15:00',
+    label: 'After-school Activity',
+    subtitle: 'Sports Complex',
+  ),
+  const ScheduleEntry(
+    id: '4',
+    time: '18:00',
+    label: 'Evening Study',
+    subtitle: 'Home / Library',
+  ),
+];

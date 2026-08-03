@@ -3,27 +3,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../data/repositories_impl/device_repository_impl.dart';
-import '../../../domain/entities/alerts/alert_error_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/repositories/device_repository.dart';
-import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
-import '../../../domain/usecases/base_usecase.dart';
 
 part 'device_list_event.dart';
 part 'device_list_state.dart';
 
 class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
-  final GetAlertsUseCase _getAlertsUseCase;
   final GetDeviceListUseCase _getDeviceListUseCase;
   final DeviceRepository _deviceRepository;
 
   DeviceListBloc({
-    required GetAlertsUseCase getAlertsUseCase,
     required GetDeviceListUseCase getDeviceListUseCase,
     required DeviceRepository deviceRepository,
-  }) : _getAlertsUseCase = getAlertsUseCase,
-       _getDeviceListUseCase = getDeviceListUseCase,
+  }) : _getDeviceListUseCase = getDeviceListUseCase,
        _deviceRepository = deviceRepository,
 
        super(const DeviceListInitial()) {
@@ -55,33 +49,17 @@ class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
       emit(const DeviceListError('User not found. Please log in again.'));
       return;
     }
-
-    debugPrint('[DeviceListBloc] Fetching alerts and devices');
-    // final alertsFuture = _getAlertsUseCase(NoParams());
-    final devicesFuture = _getDeviceListUseCase(personId);
-    // final alertsResult = await alertsFuture;
-    final devicesResult = await devicesFuture;
-    // if either fails, emit error
-    // if (alertsResult.isLeft()) {
-    //   final failure = alertsResult.fold((f) => f, (_) => null)!;
-    //   debugPrint('[DeviceListBloc] Alerts fetch failed: ${failure.message}');
-    //   emit(DeviceListError(failure.userMessage));
-    //   return;
-    // }
+    debugPrint('[DeviceListBloc] Fetching devices');
+    final devicesResult = await _getDeviceListUseCase(personId);
     if (devicesResult.isLeft()) {
       final failure = devicesResult.fold((f) => f, (_) => null)!;
       debugPrint('[DeviceListBloc] Devices fetch failed: ${failure.message}');
       emit(DeviceListError(failure.userMessage));
       return;
     }
-    // Now fold with perfect type safety! No casting required.
-    // final alerts = alertsResult.fold((_) => <AlertErrorEntity>[], (a) => a);
-    final alerts = <AlertErrorEntity>[];
     final devices = devicesResult.fold((_) => <DeviceEntity>[], (d) => d);
-    debugPrint(
-      '[DeviceListBloc] Loaded ${alerts.length} alerts, ${devices.length} devices',
-    );
-    emit(DeviceListLoaded(alerts: alerts, devices: devices));
+    debugPrint('[DeviceListBloc] Loaded ${devices.length} devices');
+    emit(DeviceListLoaded(devices: devices));
   }
 
   void _onDeviceToggled(

@@ -50,11 +50,17 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       case AnalyticsFilter.lastHour:
         startDate = now.subtract(const Duration(hours: 1));
         break;
+      case AnalyticsFilter.last2Hours:
+        startDate = now.subtract(const Duration(hours: 2));
+        break;
+      case AnalyticsFilter.last6Hours:
+        startDate = now.subtract(const Duration(hours: 6));
+        break;
+      case AnalyticsFilter.last12Hours:
+        startDate = now.subtract(const Duration(hours: 12));
+        break;
       case AnalyticsFilter.last24Hours:
         startDate = now.subtract(const Duration(hours: 24));
-        break;
-      case AnalyticsFilter.lastWeek:
-        startDate = now.subtract(const Duration(days: 7));
         break;
       case AnalyticsFilter.custom:
         return;

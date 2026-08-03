@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/landing/landing_bloc.dart'; // Adjust path based on your exact domain structure
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../domain/entities/alerts/alert_entity.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../utils/colour_util.dart';
+import '../../../utils/device_alert_matcher.dart';
+import '../../../utils/device_display_util.dart';
 
 class AttentionBanner extends StatelessWidget {
-  final int attentionCount;
-  final int totalMembers;
-  final List<MemberSummary> members;
+  final List<DeviceEntity> devices;
+  final List<AlertEntity> alerts;
   final VoidCallback onTap;
-
   const AttentionBanner({
     super.key,
-    required this.attentionCount,
-    required this.totalMembers,
-    required this.members,
+    required this.devices,
+    required this.alerts,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    const dotColors = [
-      Color(0xFFFF5252),
-      Color(0xFFFFB300),
-      Color(0xFF3DDC84),
-      Color(0xFF5B8DEF),
-      Color(0xFFAB47BC),
-    ];
+    final attentionCount = devices.where((d) {
+      final deviceAlerts = alertsForDevice(d, alerts);
+      return deviceAlerts.any((a) => a.isCritical && !a.isAcknowledged);
+    }).length;
 
     return Material(
       color: colors.surfaceContainerLow,
@@ -39,23 +39,6 @@ class AttentionBanner extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              Row(
-                children: List.generate(
-                  members.length.clamp(0, 5),
-                  (i) => Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.only(right: 4),
-                    decoration: BoxDecoration(
-                      color: members[i].needsAttention
-                          ? colors.error
-                          : dotColors[i % dotColors.length],
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +51,7 @@ class AttentionBanner extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$totalMembers members',
+                      '${devices.length} devices',
                       style: TextStyle(
                         fontSize: 12,
                         color: colors.onSurfaceVariant,
@@ -77,7 +60,7 @@ class AttentionBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              _AvatarStack(members: members),
+              _AvatarStack(devices: devices, alerts: alerts),
               const SizedBox(width: 6),
               Icon(
                 Icons.chevron_right_rounded,
@@ -93,16 +76,22 @@ class AttentionBanner extends StatelessWidget {
 }
 
 class _AvatarStack extends StatelessWidget {
-  final List<MemberSummary> members;
-  const _AvatarStack({required this.members});
+  final List<DeviceEntity> devices;
+  final List<AlertEntity> alerts;
+  const _AvatarStack({required this.devices, required this.alerts});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserFullName = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : '—';
+
     const size = 28.0;
     const overlap = 10.0;
-    final shown = members.take(3).toList();
-    final extra = members.length - shown.length;
+    final shown = devices.take(3).toList();
+    final extra = devices.length - shown.length;
 
     return SizedBox(
       width:
@@ -111,7 +100,21 @@ class _AvatarStack extends StatelessWidget {
       child: Stack(
         children: [
           ...shown.asMap().entries.map((e) {
-            final m = e.value;
+            final d = e.value;
+            final deviceAlerts = alertsForDevice(
+              d,
+              alerts,
+            ).where((a) => !a.isAcknowledged).toList();
+            final ringColor = deviceSeverityColor(deviceAlerts);
+            final name = ownerDisplayName(d, currentUserFullName).trim();
+            final parts = name
+                .split(RegExp(r'\s+'))
+                .where((p) => p.isNotEmpty)
+                .toList();
+            final initials = parts.length >= 2
+                ? '${parts[0][0]}${parts[1][0]}'
+                : (parts.isNotEmpty ? parts[0][0] : '?');
+
             return Positioned(
               left: e.key * (size - overlap),
               child: Container(
@@ -119,19 +122,24 @@ class _AvatarStack extends StatelessWidget {
                 height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: colors.surface, width: 1.5),
-                  color: colors.primaryContainer,
+                  border: Border.all(color: ringColor, width: 2),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  m.initials.length >= 2
-                      ? m.initials.substring(0, 2)
-                      : m.initials,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: colors.onPrimaryContainer,
-                  ),
+                padding: const EdgeInsets.all(1.5),
+                child: CircleAvatar(
+                  backgroundColor: colors.primaryContainer,
+                  backgroundImage: d.carrier?.profilePhoto != null
+                      ? NetworkImage(d.carrier!.profilePhoto!)
+                      : null,
+                  child: d.carrier?.profilePhoto == null
+                      ? Text(
+                          initials,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: colors.onPrimaryContainer,
+                          ),
+                        )
+                      : null,
                 ),
               ),
             );
