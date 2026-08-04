@@ -9,7 +9,6 @@ import '../../core/di/injection_container.dart';
 import '../../data/datasources/local/signup_local_datasource.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
-import '../blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -18,7 +17,6 @@ import '../blocs/link_device/link_device_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
-import '../screens/alerts_errors/alerts_errors_screen.dart';
 import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
 import '../screens/auth/signup_profile_screen.dart';
@@ -46,15 +44,12 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String deviceList = '/device-list';
   static const String deviceDetail = '/device-detail';
-  static const String telemetryHistory = '/telemetry-history';
-  static const String alertCodes = '/alert-codes';
-  static const String alertsErrors = '/alerts-errors';
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String geofence = '/geofence';
   static const String addGeofence = '/addFeofence';
   static const String modes = '/modes';
-  static const String homeDetail = '/home-detail';
+  static const String landing = 'landing';
   static const String signupProfile = '/signup-profile';
   static const String signupCredentials = '/signup-credentials';
   static const String linkDevice = '/link-device';
@@ -100,7 +95,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
-              BlocProvider(create: (_) => sl<AlertsErrorsBloc>()),
+              // BlocProvider(create: (_) => sl<AlertsErrorsBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
             ],
             child: DeviceShellScreen(device: args.device),
@@ -110,15 +105,15 @@ class AppRouter {
       // Push with:
       //   Navigator.pushNamed(context, AppRoutes.alertsErrors,
       //       arguments: imei);
-      case AppRoutes.alertsErrors:
-        final deviceId = settings.arguments as String;
-        return _slide(
-          settings,
-          BlocProvider(
-            create: (_) => sl<AlertsErrorsBloc>(),
-            child: AlertsErrorsScreen(deviceId: deviceId),
-          ),
-        );
+      // case AppRoutes.alertsErrors:
+      //   final deviceId = settings.arguments as String;
+      //   return _slide(
+      //     settings,
+      //     BlocProvider(
+      //       create: (_) => sl<AlertsErrorsBloc>(),
+      //       child: AlertsErrorsScreen(deviceId: deviceId),
+      //     ),
+      //   );
 
       // Push with:
       //   Navigator.pushNamed(context, AppRoutes.profile,

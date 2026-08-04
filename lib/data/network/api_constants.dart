@@ -18,7 +18,6 @@ class ApiConstants {
 
   // ── Alerts ────────────────────────────────────────
   static const String alerts = 'api/v1/device/alerts-errors/alerts';
-  static const String alertErrors = 'api/v1/device/alerts-errors/device';
   static String alertsByPerson(String personId) =>
       '/api/v1/device/alerts-errors/person/$personId';
 

@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection_container.dart';
-import '../../../data/repositories_impl/device_repository_impl.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/repositories/device_repository.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
@@ -38,7 +37,7 @@ class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
     DeviceListRefreshRequested event,
     Emitter<DeviceListState> emit,
   ) async {
-    (_deviceRepository as DeviceRepositoryImpl).invalidateCache(); // bust cache
+    _deviceRepository.invalidateCache(); // Clean call via domain interface
     await _fetchData(emit);
   }
 

@@ -13,7 +13,6 @@ import '../../data/datasources/local/signup_local_datasource.dart';
 import '../../data/datasources/local/theme_local_datasource.dart';
 
 // Data Sources (Remote)
-import '../../data/datasources/remote/alerts_errors_remote_datasource.dart';
 import '../../data/datasources/remote/alerts_remote_datasource.dart';
 import '../../data/datasources/remote/analytics_remote_datasource.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
@@ -24,7 +23,6 @@ import '../../data/datasources/remote/mode_remote_datasource.dart';
 import '../../data/datasources/remote/signup_remote_datasource.dart';
 
 // Repositories (Interfaces)
-import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/alerts_repository.dart';
 import '../../domain/repositories/analytics_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -36,7 +34,6 @@ import '../../domain/repositories/mode_repository.dart';
 import '../../domain/repositories/signup_repository.dart';
 
 // Repository Implementations
-import '../../data/repositories_impl/alerts_errors_repository_impl.dart';
 import '../../data/repositories_impl/alerts_repository_impl.dart';
 import '../../data/repositories_impl/analytics_repository_impl.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
@@ -49,7 +46,6 @@ import '../../data/repositories_impl/signup_repository_impl.dart';
 
 // Use Cases
 import '../../domain/usecases/alerts/get_alerts_usecase.dart';
-import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
 import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
@@ -70,7 +66,6 @@ import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 
 // Blocs & Cubits
 import '../../presentation/blocs/alerts/alerts_bloc.dart';
-import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/device_list/device_list_bloc.dart';
@@ -184,18 +179,6 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetAlertsUseCase(sl()));
   sl.registerFactory<AlertsBloc>(() => AlertsBloc(getAlertsUseCase: sl()));
-
-  // ── Alerts & Errors Feature ─────────────────────────────
-  sl.registerLazySingleton<AlertErrorsRemoteDataSource>(
-    () => AlertErrorsRemoteDataSource(sl()),
-  );
-  sl.registerLazySingleton<AlertsErrorsRepository>(
-    () => AlertsErrorsRepositoryImpl(remote: sl()),
-  );
-  sl.registerLazySingleton(() => GetAlertsErrorsUseCase(sl()));
-  sl.registerFactory<AlertsErrorsBloc>(
-    () => AlertsErrorsBloc(getAlertsErrors: sl()),
-  );
 
   // ── Analytics Feature ───────────────────────────────────
   sl.registerLazySingleton<AnalyticsRemoteDataSource>(
