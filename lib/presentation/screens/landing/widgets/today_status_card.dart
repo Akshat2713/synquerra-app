@@ -84,7 +84,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: colors.outlineVariant.withOpacity(0.2),
+                      color: colors.outlineVariant.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),

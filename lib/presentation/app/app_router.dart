@@ -25,12 +25,10 @@ import '../screens/auth/signup_profile_screen.dart';
 import '../screens/device_shell/device_shell_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
-import '../screens/landing/landing_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
-import '../screens/telemetry_history/telemetry_history_screen.dart';
 
 class DeviceDetailArgs {
   final DeviceEntity device;

@@ -122,7 +122,7 @@ class _MetricCell extends StatelessWidget {
           title,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 8,
+            fontSize: 10,
             fontWeight: FontWeight.w700,
             color: Theme.of(
               context,

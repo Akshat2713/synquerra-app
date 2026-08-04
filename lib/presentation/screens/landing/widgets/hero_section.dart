@@ -28,9 +28,10 @@ class HeroSection extends StatelessWidget {
         : '—';
     final displayName = ownerDisplayName(device, loggedInName);
     final isOnline = device.isOnline ?? false;
+    final mode = device.currentMode;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -90,7 +91,7 @@ class HeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isOnline ? 'Live Tracking' : 'Offline',
+                  mode,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -121,60 +122,68 @@ class HeroSection extends StatelessWidget {
             ),
           ),
           // ── Online Status, Speed & Update Time ───────────────────
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.circle,
-                    size: 8,
-                    color: isOnline ? successColor : colors.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    isOnline ? 'Online' : 'Offline',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+          Transform.translate(
+            offset: const Offset(0, -22), // shifts the whole column up
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 8,
                       color: isOnline ? successColor : colors.onSurfaceVariant,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.speed_rounded, size: 16, color: colors.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    latest?.speed != null
-                        ? '${latest!.speed!.toStringAsFixed(0)} km/h'
-                        : '—',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(width: 4),
+                    Text(
+                      isOnline ? 'Online' : 'Offline',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isOnline
+                            ? successColor
+                            : colors.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Text(
-                (latest?.speed ?? 0) > 0 ? 'Travelling' : 'Stationary',
-                style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                latest?.deviceTimestamp != null
-                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
-                    : 'No updates yet',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.speed_rounded, size: 16, color: colors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      latest?.speed != null
+                          ? '${latest!.speed!.toStringAsFixed(0)} km/h'
+                          : '—',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  (latest?.speed ?? 0) > 0 ? 'Travelling' : 'Stationary',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  latest?.deviceTimestamp != null
+                      ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
+                      : 'No updates yet',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

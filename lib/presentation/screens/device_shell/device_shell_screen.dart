@@ -10,7 +10,6 @@ import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
 import '../landing/widgets/attention_device_sheet.dart';
 import '../settings/settings_screen.dart';
-import '../profile/profile_screen.dart';
 import '../device_detail/device_detail_screen.dart';
 
 class DeviceShellScreen extends StatefulWidget {

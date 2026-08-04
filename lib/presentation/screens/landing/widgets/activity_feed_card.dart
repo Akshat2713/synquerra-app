@@ -97,6 +97,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 3),
                     Text(
                       item.time,
                       style: TextStyle(

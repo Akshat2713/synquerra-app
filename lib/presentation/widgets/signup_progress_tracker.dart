@@ -62,7 +62,7 @@ class SignupProgressTracker extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final accentColor = isActive || isDone
         ? colors.primary
-        : colors.onSurfaceVariant.withOpacity(0.4);
+        : colors.onSurfaceVariant.withValues(alpha: 0.4);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -70,7 +70,7 @@ class SignupProgressTracker extends StatelessWidget {
         CircleAvatar(
           radius: 18,
           backgroundColor: isActive || isDone
-              ? colors.primary.withOpacity(0.1)
+              ? colors.primary.withValues(alpha: 0.1)
               : colors.surfaceContainerHighest,
           child: Icon(
             isDone ? Icons.check_rounded : icon,

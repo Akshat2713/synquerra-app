@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../blocs/landing/landing_bloc.dart';
 
 class TodayScheduleCard extends StatefulWidget {
   final List<ScheduleEntry> schedule;

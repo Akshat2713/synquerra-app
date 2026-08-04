@@ -428,7 +428,6 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../utils/device_alert_matcher.dart';
-import '../../widgets/critical_alert_banner.dart';
 import '../../app/app_router.dart';
 import 'device_list_skeleton.dart';
 import 'widgets/add_device_fab.dart';
@@ -556,16 +555,16 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                   color: colors.primary,
                   child: CustomScrollView(
                     slivers: [
-                      SliverToBoxAdapter(
-                        child: CriticalAlertBanner(
-                          criticalCount: criticalCount,
-                          devicesNeedingAttention:
-                              state.devicesNeedingAttention,
-                          onTap: () {
-                            // TODO: navigate to alerts screen
-                          },
-                        ),
-                      ),
+                      // SliverToBoxAdapter(
+                      //   child: CriticalAlertBanner(
+                      //     criticalCount: criticalCount,
+                      //     devicesNeedingAttention:
+                      //         state.devicesNeedingAttention,
+                      //     onTap: () {
+                      //       // TODO: navigate to alerts screen
+                      //     },
+                      //   ),
+                      // ),
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),

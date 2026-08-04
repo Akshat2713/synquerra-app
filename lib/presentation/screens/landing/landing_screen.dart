@@ -43,7 +43,10 @@ class _LandingScreenState extends State<LandingScreen> {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colors.surface,
-      appBar: AppBar(title: const Text('Home'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('AADYA', style: TextStyle(fontSize: 25)),
+        centerTitle: true,
+      ),
       body: BlocBuilder<LandingBloc, LandingState>(
         builder: (context, state) {
           if (state is LandingInitial || state is LandingLoading) {
@@ -121,11 +124,11 @@ class _LoadedBody extends StatelessWidget {
     final statusLogs = [
       const StatusLogEntry(label: 'Left home', value: '7:58 AM'),
       const StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
-      const StatusLogEntry(
-        label: 'Pattern check',
-        value: 'Normal',
-        isHighlightValue: true,
-      ),
+      // const StatusLogEntry(
+      //   label: 'Pattern check',
+      //   value: 'Normal',
+      //   isHighlightValue: true,
+      // ),
     ];
     const defaultSchedule = <ScheduleEntry>[
       ScheduleEntry(time: '18:00', label: 'Evening routine', id: 'uiyghcvjhb'),
