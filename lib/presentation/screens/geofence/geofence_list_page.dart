@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
-import 'add_geofence_page.dart';
-import 'geofence_preview_page.dart';
 import 'widgets/geofence_list_tile.dart';
 
 class GeofenceListPage extends StatefulWidget {
@@ -81,18 +80,14 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   }
 
   void _openAddPage({GeofenceEntity? existing}) {
-    final bloc = context.read<GeofenceBloc>(); // grab current instance
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: bloc, // reuse same instance
-          child: AddGeofencePage(
-            deviceId: widget.deviceId,
-            initialCenter: widget.initialCenter,
-            existing: existing,
-          ),
-        ),
+      AppRoutes.addGeofence,
+      arguments: AddGeofenceArgs(
+        bloc: context.read<GeofenceBloc>(),
+        deviceId: widget.deviceId,
+        initialCenter: widget.initialCenter,
+        existing: existing,
       ),
     );
   }
@@ -239,11 +234,10 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   /// Navigates back to the map and moves camera to geofence center.
   void _onTileTab(GeofenceEntity geofence) {
     if (geofence.coordinates.isEmpty) return;
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (_) => GeofencePreviewPage(geofence: geofence),
-      ),
+      AppRoutes.geofencePreview,
+      arguments: GeofencePreviewArgs(geofence: geofence),
     );
   }
 }

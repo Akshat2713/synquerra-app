@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import '../../../core/config/map_tile_config.dart';
+import '../../../core/config/map_config.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
 import '../../themes/colors.dart';
-import '../device_detail/widgets/map_icon_button.dart';
+import '../location/widgets/map_icon_button.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
 
@@ -29,6 +29,8 @@ class GeofenceMapPickerPage extends StatefulWidget {
 class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
   late final MapController _mapController;
   late final UserLocationBloc _userLocationBloc;
+  late final TileProvider _tileProvider;
+
   final List<LatLng> _points = [];
   static const int _maxPoints = 5;
 
@@ -37,6 +39,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
     super.initState();
     _mapController = MapController();
     _userLocationBloc = sl<UserLocationBloc>();
+    _tileProvider = sl<TileProvider>();
     if (widget.initialPoints != null && widget.initialPoints!.isNotEmpty) {
       _points.addAll(
         widget.initialPoints!.take(_maxPoints).map((c) => LatLng(c.lat, c.lng)),
@@ -107,6 +110,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                 TileLayer(
                   urlTemplate: MapConfig.tileUrlTemplate,
                   userAgentPackageName: MapConfig.userAgentPackageName,
+                  tileProvider: _tileProvider,
                 ),
                 if (_points.length >= 3)
                   PolygonLayer(

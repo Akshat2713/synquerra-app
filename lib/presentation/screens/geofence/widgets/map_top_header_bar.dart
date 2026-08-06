@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../device_detail/widgets/map_icon_button.dart';
+import '../../location/widgets/map_icon_button.dart';
 
 class MapTopHeaderBar extends StatelessWidget {
   final String title;

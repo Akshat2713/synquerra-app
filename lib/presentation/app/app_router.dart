@@ -7,8 +7,8 @@ import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
 import '../../core/utils/app_logger.dart';
-import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
+import '../../domain/entities/geofence/geofence_entity.dart';
 import '../../domain/usecases/base_usecase.dart';
 import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 import '../blocs/geofence/geofence_bloc.dart';
@@ -17,7 +17,7 @@ import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/landing/landing_bloc.dart';
 import '../blocs/link_device/link_device_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
-import '../blocs/profile/profile_bloc.dart';
+import '../blocs/manage/manage_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
 import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
@@ -25,7 +25,8 @@ import '../screens/auth/signup_profile_screen.dart';
 import '../screens/device_shell/device_shell_screen.dart';
 import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
-import '../screens/profile/profile_screen.dart';
+import '../screens/geofence/geofence_map_picker_page.dart';
+import '../screens/geofence/geofence_preview_page.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -36,6 +37,32 @@ class DeviceDetailArgs {
   const DeviceDetailArgs({required this.device, required this.deviceListBloc});
 }
 
+class AddGeofenceArgs {
+  final GeofenceBloc bloc;
+  final String deviceId;
+  final LatLng initialCenter;
+  final GeofenceEntity? existing;
+  const AddGeofenceArgs({
+    required this.bloc,
+    required this.deviceId,
+    required this.initialCenter,
+    this.existing,
+  });
+}
+
+class GeofencePreviewArgs {
+  final GeofenceEntity geofence;
+  const GeofencePreviewArgs({required this.geofence});
+}
+
+class GeofenceMapPickerArgs {
+  final LatLng initialCenter;
+  final List<Coordinate>? initialPoints;
+  const GeofenceMapPickerArgs({
+    required this.initialCenter,
+    this.initialPoints,
+  });
+}
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -46,15 +73,17 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String deviceList = '/device-list';
   static const String deviceDetail = '/device-detail';
-  static const String profile = '/profile';
+  static const String manage = '/manage';
   static const String settings = '/settings';
   static const String geofence = '/geofence';
-  static const String addGeofence = '/addFeofence';
+  static const String addGeofence = '/addGeofence';
   static const String modes = '/modes';
   static const String landing = 'landing';
   static const String signupProfile = '/signup-profile';
   static const String signupCredentials = '/signup-credentials';
   static const String linkDevice = '/link-device';
+  static const String geofencePreview = '/geofence-preview';
+  static const String geofenceMapPicker = '/geofence-map-picker';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -97,44 +126,28 @@ class AppRouter {
               BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
-              // BlocProvider(create: (_) => sl<AlertsErrorsBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
+              BlocProvider(create: (_) => sl<ProfileBloc>()),
             ],
             child: DeviceShellScreen(device: args.device),
           ),
         );
 
-      // Push with:
-      //   Navigator.pushNamed(context, AppRoutes.alertsErrors,
-      //       arguments: imei);
-      // case AppRoutes.alertsErrors:
-      //   final deviceId = settings.arguments as String;
+      // case AppRoutes.manage:
+      //   final args = settings.arguments as Map<String, dynamic>;
+      //   final device = args['device'] as DeviceEntity;
+      //   final analytics = args['analytics'] as AnalyticsEntity?;
+      //   final analyticsBloc = args['analyticsBloc'] as AnalyticsBloc;
       //   return _slide(
       //     settings,
-      //     BlocProvider(
-      //       create: (_) => sl<AlertsErrorsBloc>(),
-      //       child: AlertsErrorsScreen(deviceId: deviceId),
+      //     MultiBlocProvider(
+      //       providers: [
+      //         BlocProvider(create: (_) => sl<ProfileBloc>()),
+      //         BlocProvider.value(value: analyticsBloc),
+      //       ],
+      //       child: ProfileScreen(device: device, analytics: analytics),
       //     ),
       //   );
-
-      // Push with:
-      //   Navigator.pushNamed(context, AppRoutes.profile,
-      //       arguments: imei);
-      case AppRoutes.profile:
-        final args = settings.arguments as Map<String, dynamic>;
-        final device = args['device'] as DeviceEntity;
-        final analytics = args['analytics'] as AnalyticsEntity?;
-        final analyticsBloc = args['analyticsBloc'] as AnalyticsBloc;
-        return _slide(
-          settings,
-          MultiBlocProvider(
-            providers: [
-              BlocProvider(create: (_) => sl<ProfileBloc>()),
-              BlocProvider.value(value: analyticsBloc),
-            ],
-            child: ProfileScreen(device: device, analytics: analytics),
-          ),
-        );
 
       case AppRoutes.geofence:
         final args = settings.arguments as Map<String, dynamic>;
@@ -149,16 +162,29 @@ class AppRouter {
         );
 
       case AppRoutes.addGeofence:
-        final args = settings.arguments as Map<String, dynamic>;
-        final deviceId = args['deviceId'] as String;
-        final center = args['center'] as LatLng;
+        final args = settings.arguments as AddGeofenceArgs;
         return _slide(
           settings,
-          // No BlocProvider here — inherits from GeofenceListPage's route?
-          // NO — new route = new scope. Must provide again.
-          BlocProvider(
-            create: (_) => sl<GeofenceBloc>(),
-            child: AddGeofencePage(deviceId: deviceId, initialCenter: center),
+          BlocProvider.value(
+            value: args.bloc,
+            child: AddGeofencePage(
+              deviceId: args.deviceId,
+              initialCenter: args.initialCenter,
+              existing: args.existing,
+            ),
+          ),
+        );
+      case AppRoutes.geofencePreview:
+        final args = settings.arguments as GeofencePreviewArgs;
+        return _slide(settings, GeofencePreviewPage(geofence: args.geofence));
+
+      case AppRoutes.geofenceMapPicker:
+        final args = settings.arguments as GeofenceMapPickerArgs;
+        return _slide(
+          settings,
+          GeofenceMapPickerPage(
+            initialCenter: args.initialCenter,
+            initialPoints: args.initialPoints,
           ),
         );
 
@@ -177,15 +203,6 @@ class AppRouter {
           ),
         );
 
-      // case AppRoutes.homeDetail:
-      //   return _slide(
-      //     settings,
-      //     BlocProvider(
-      //       create: (_) => sl<LandingBloc>()..add(const LandingLoadRequested()),
-      //       child: const LandingScreen(),
-      //     ),
-      //   );
-
       case AppRoutes.signupProfile:
         _activeSignupBloc = sl<SignupBloc>();
         return _fade(
@@ -200,10 +217,11 @@ class AppRouter {
       //  SignupBloc? _signupBloc;
 
       case AppRoutes.signupCredentials:
+        final bloc = _activeSignupBloc ??= sl<SignupBloc>();
         return _fade(
           settings,
           BlocProvider.value(
-            value: _activeSignupBloc!, // reuse same instance from sl
+            value: bloc,
             child: const SignupPasswordSetupScreen(),
           ),
         );

@@ -1,11 +1,13 @@
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // Core & Network
+import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
 
 // Entities
-import '../../data/repositories_impl/theme_repository_impl.dart';
 import '../../domain/entities/auth/user_entity.dart';
 
 // Data Sources (Local)
@@ -44,6 +46,7 @@ import '../../data/repositories_impl/link_device_repository_impl.dart';
 import '../../data/repositories_impl/location_repository_impl.dart';
 import '../../data/repositories_impl/mode_repository_impl.dart';
 import '../../data/repositories_impl/signup_repository_impl.dart';
+import '../../data/repositories_impl/theme_repository_impl.dart';
 
 // Use Cases
 import '../../domain/repositories/theme_repository.dart';
@@ -53,6 +56,7 @@ import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/device/get_device_list_usecase.dart';
+import '../../domain/usecases/device/invalidate_device_cache_usecase.dart';
 import '../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../domain/usecases/geofence/edit_geofence_usecase.dart';
@@ -75,7 +79,7 @@ import '../../presentation/blocs/geofence/geofence_bloc.dart';
 import '../../presentation/blocs/landing/landing_bloc.dart';
 import '../../presentation/blocs/link_device/link_device_bloc.dart';
 import '../../presentation/blocs/modes/mode_bloc.dart';
-import '../../presentation/blocs/profile/profile_bloc.dart';
+import '../../presentation/blocs/manage/manage_bloc.dart';
 import '../../presentation/blocs/signup/signup_bloc.dart';
 import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
@@ -89,6 +93,9 @@ class UserHolder {
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  await Hive.initFlutter();
+  await MapConfig.init();
+
   // ── Core & External ─────────────────────────────────────
   sl.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
@@ -108,6 +115,10 @@ Future<void> initDependencies() async {
   );
 
   sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl<ThemeRepository>()));
+
+  // ── Map Tile ────────────────────────────────────────
+
+  sl.registerLazySingleton<TileProvider>(() => MapConfig.tileProvider);
 
   // ── Auth Feature ────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -161,8 +172,13 @@ Future<void> initDependencies() async {
     () => DeviceRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetDeviceListUseCase(sl()));
+  sl.registerLazySingleton(() => InvalidateDeviceCacheUseCase(sl()));
   sl.registerFactory<DeviceListBloc>(
-    () => DeviceListBloc(getDeviceListUseCase: sl(), deviceRepository: sl()),
+    () => DeviceListBloc(
+      getDeviceListUseCase: sl(),
+      invalidateDeviceCacheUseCase: sl(),
+      userHolder: sl(),
+    ),
   );
 
   // ── Link Device Feature ─────────────────────────────────
@@ -242,7 +258,11 @@ Future<void> initDependencies() async {
 
   // ── UI Navigation / Shell Blocs ─────────────────────────
   sl.registerFactory<LandingBloc>(
-    () => LandingBloc(getAnalyticsUseCase: sl(), getAlertsUseCase: sl()),
+    () => LandingBloc(
+      getAnalyticsUseCase: sl(),
+      getAlertsUseCase: sl(),
+      userHolder: sl(),
+    ),
   );
 }
 

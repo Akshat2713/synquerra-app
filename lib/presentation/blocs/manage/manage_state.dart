@@ -1,6 +1,6 @@
 // lib/presentation/blocs/profile/profile_state.dart
 
-part of 'profile_bloc.dart';
+part of 'manage_bloc.dart';
 
 sealed class ProfileState extends Equatable {
   const ProfileState();

@@ -9,8 +9,9 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
 import '../landing/widgets/attention_device_sheet.dart';
+import '../manage/manage_screen.dart';
 import '../settings/settings_screen.dart';
-import '../device_detail/device_detail_screen.dart';
+import '../location/location_screen.dart';
 
 class DeviceShellScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -81,6 +82,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             onAttentionTap: () => _openAttentionSheet(context),
           ),
           DeviceDetailScreen(device: widget.device),
+          ProfileScreen(device: widget.device),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),
@@ -98,11 +100,11 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             selectedIcon: Icon(Icons.map_rounded),
             label: 'Map',
           ),
-          // NavigationDestination(
-          //   icon: Icon(Icons.person_outline),
-          //   selectedIcon: Icon(Icons.person_rounded),
-          //   label: 'Manage',
-          // ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Manage',
+          ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings_rounded),

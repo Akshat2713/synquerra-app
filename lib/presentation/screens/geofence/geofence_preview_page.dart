@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../core/config/map_tile_config.dart';
+import '../../../core/config/map_config.dart';
+import '../../../core/di/injection_container.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../utils/colour_util.dart';
-import '../device_detail/widgets/map_icon_button.dart';
+import '../location/widgets/map_icon_button.dart';
 import 'widgets/geofence_status_chip.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
@@ -21,11 +22,13 @@ class GeofencePreviewPage extends StatefulWidget {
 
 class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
   late final MapController _mapController;
+  late final TileProvider _tileProvider;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
+    _tileProvider = sl<TileProvider>();
   }
 
   @override
@@ -81,6 +84,7 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
               TileLayer(
                 urlTemplate: MapConfig.tileUrlTemplate,
                 userAgentPackageName: MapConfig.userAgentPackageName,
+                tileProvider: _tileProvider,
               ),
               PolygonLayer(
                 polygons: [

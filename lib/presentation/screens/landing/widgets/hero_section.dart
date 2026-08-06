@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/device/device_entity.dart';
@@ -42,7 +43,7 @@ class HeroSection extends StatelessWidget {
                 radius: 36,
                 backgroundColor: colors.primaryContainer,
                 backgroundImage: device.carrier?.profilePhoto != null
-                    ? NetworkImage(device.carrier!.profilePhoto!)
+                    ? CachedNetworkImageProvider(device.carrier!.profilePhoto!)
                     : null,
                 child: device.carrier?.profilePhoto == null
                     ? Text(

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
-import '../../blocs/profile/profile_bloc.dart';
-import 'profile_skeleton.dart';
+import '../../blocs/manage/manage_bloc.dart';
+import 'manage_skeleton.dart';
 import 'widgets/profile_body.dart';
 
 class ProfileScreen extends StatefulWidget {
   final DeviceEntity device;
-  final AnalyticsEntity? analytics;
-  const ProfileScreen({super.key, required this.device, this.analytics});
+  const ProfileScreen({super.key, required this.device});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -20,8 +18,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    final analyticsState = context.read<AnalyticsBloc>().state;
+    final latest =
+        analyticsState is AnalyticsLoaded && analyticsState.points.isNotEmpty
+        ? analyticsState.points.first
+        : null;
     context.read<ProfileBloc>().add(
-      ProfileLoadRequested(widget.device, widget.analytics),
+      ProfileLoadRequested(widget.device, latest),
     );
   }
 
@@ -69,9 +72,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is ProfileError) {
             return _ErrorView(
               message: state.message,
-              onRetry: () => context.read<ProfileBloc>().add(
-                ProfileLoadRequested(widget.device, widget.analytics),
-              ),
+              onRetry: () {
+                final analyticsState = context.read<AnalyticsBloc>().state;
+                final latest =
+                    analyticsState is AnalyticsLoaded &&
+                        analyticsState.points.isNotEmpty
+                    ? analyticsState.points.first
+                    : null;
+                context.read<ProfileBloc>().add(
+                  ProfileLoadRequested(widget.device, latest),
+                );
+              },
             );
           }
           if (state is ProfileLoaded) {

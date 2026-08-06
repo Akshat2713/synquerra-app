@@ -6,11 +6,11 @@ import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/profile/profile_entity.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
-import '../../screens/profile/profile_skeleton.dart';
+import '../../screens/manage/manage_skeleton.dart';
 import '../../../core/utils/app_logger.dart';
 
-part 'profile_event.dart';
-part 'profile_state.dart';
+part 'manage_event.dart';
+part 'manage_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetModesUseCase _getModesUseCase;

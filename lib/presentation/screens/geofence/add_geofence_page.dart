@@ -4,9 +4,9 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../utils/colour_util.dart' as colour_utils;
-import 'geofence_map_picker_page.dart';
 import 'widgets/coordinates_list.dart';
 import 'widgets/empty_coordinates_placeholder.dart';
 import 'widgets/geofence_active_toggle.dart';
@@ -55,13 +55,12 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   }
 
   Future<void> _openMapPicker() async {
-    final result = await Navigator.push<List<Coordinate>>(
+    final result = await Navigator.pushNamed<List<Coordinate>>(
       context,
-      MaterialPageRoute(
-        builder: (_) => GeofenceMapPickerPage(
-          initialCenter: widget.initialCenter,
-          initialPoints: _coordinates,
-        ),
+      AppRoutes.geofenceMapPicker,
+      arguments: GeofenceMapPickerArgs(
+        initialCenter: widget.initialCenter,
+        initialPoints: _coordinates,
       ),
     );
     if (result != null) {

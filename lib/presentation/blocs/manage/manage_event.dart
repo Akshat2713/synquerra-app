@@ -1,6 +1,6 @@
 // lib/presentation/blocs/profile/profile_event.dart
 
-part of 'profile_bloc.dart';
+part of 'manage_bloc.dart';
 
 enum NotificationType { emergency, daily, movement, battery }
 

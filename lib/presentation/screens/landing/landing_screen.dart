@@ -34,7 +34,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Future<void> _onRefresh() async {
     final bloc = context.read<LandingBloc>();
-    bloc.add(LandingRefreshRequested(widget.device));
+    bloc.add(LandingLoadRequested(widget.device));
     await bloc.stream.firstWhere((s) => s is! LandingLoading);
   }
 

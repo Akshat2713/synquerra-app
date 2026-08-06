@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../blocs/user_location/user_location_bloc.dart';
-import '../widgets/map_icon_button.dart';
+import 'map_icon_button.dart';
 
 class MapControlsColumn extends StatelessWidget {
   final MapController mapController;

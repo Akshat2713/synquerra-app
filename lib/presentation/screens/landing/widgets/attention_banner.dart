@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
@@ -127,7 +128,7 @@ class _AvatarStack extends StatelessWidget {
                 child: CircleAvatar(
                   backgroundColor: colors.primaryContainer,
                   backgroundImage: d.carrier?.profilePhoto != null
-                      ? NetworkImage(d.carrier!.profilePhoto!)
+                      ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
                       : null,
                   child: d.carrier?.profilePhoto == null
                       ? Text(

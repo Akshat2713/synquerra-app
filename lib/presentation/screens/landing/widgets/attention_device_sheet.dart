@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/device/device_entity.dart';
@@ -80,7 +81,9 @@ class AttentionDeviceSheet extends StatelessWidget {
                         padding: const EdgeInsets.all(2),
                         child: CircleAvatar(
                           backgroundImage: d.carrier?.profilePhoto != null
-                              ? NetworkImage(d.carrier!.profilePhoto!)
+                              ? CachedNetworkImageProvider(
+                                  d.carrier!.profilePhoto!,
+                                )
                               : null,
                           child: d.carrier?.profilePhoto == null
                               ? const Icon(Icons.person)

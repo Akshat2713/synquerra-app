@@ -4,7 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../core/config/map_tile_config.dart';
+import '../../../core/config/map_config.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
@@ -34,6 +34,8 @@ class DeviceDetailScreen extends StatefulWidget {
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late final MapController _mapController;
   late final UserLocationBloc _userLocationBloc;
+  late final TileProvider _tileProvider;
+
   bool _showTimeline = false;
 
   @override
@@ -41,6 +43,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     super.initState();
     _mapController = MapController();
     _userLocationBloc = sl<UserLocationBloc>();
+    _tileProvider = sl<TileProvider>();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
     AppLogger.d(
@@ -153,6 +156,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                   TileLayer(
                     urlTemplate: MapConfig.tileUrlTemplate,
                     userAgentPackageName: MapConfig.userAgentPackageName,
+                    tileProvider: _tileProvider,
                   ),
                   GeofencePolygonLayer(onGeofenceTap: (_) {}),
                   const MapHistoryPolylineLayer(),

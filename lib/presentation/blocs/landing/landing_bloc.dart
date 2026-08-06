@@ -16,25 +16,28 @@ part 'landing_state.dart';
 class LandingBloc extends Bloc<LandingEvent, LandingState> {
   final GetAnalyticsUseCase _getAnalyticsUseCase;
   final GetAlertsUseCase _getAlertsUseCase;
+  final UserHolder _userHolder;
 
   LandingBloc({
     required GetAnalyticsUseCase getAnalyticsUseCase,
     required GetAlertsUseCase getAlertsUseCase,
+    required UserHolder userHolder,
   }) : _getAnalyticsUseCase = getAnalyticsUseCase,
        _getAlertsUseCase = getAlertsUseCase,
+       _userHolder = userHolder,
        super(const LandingInitial()) {
     on<LandingLoadRequested>(_onLoad);
-    on<LandingRefreshRequested>(_onLoad);
   }
 
-  Future<void> _onLoad(LandingEvent event, Emitter<LandingState> emit) async {
-    final device = event is LandingLoadRequested
-        ? event.device
-        : (event as LandingRefreshRequested).device;
+  Future<void> _onLoad(
+    LandingLoadRequested event,
+    Emitter<LandingState> emit,
+  ) async {
+    final device = event.device;
 
     emit(const LandingLoading());
 
-    final personId = sl<UserHolder>().user?.personId;
+    final personId = _userHolder.user?.personId;
     if (personId == null) {
       AppLogger.d('LandingBloc', 'No logged-in user found');
       emit(const LandingError('User not found. Please log in again.'));

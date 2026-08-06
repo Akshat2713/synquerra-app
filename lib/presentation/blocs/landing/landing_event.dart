@@ -12,10 +12,3 @@ class LandingLoadRequested extends LandingEvent {
   @override
   List<Object?> get props => [device];
 }
-
-class LandingRefreshRequested extends LandingEvent {
-  final DeviceEntity device;
-  const LandingRefreshRequested(this.device);
-  @override
-  List<Object?> get props => [device];
-}

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../../domain/entities/profile/profile_entity.dart';
-import '../../../blocs/profile/profile_bloc.dart';
+import '../../../blocs/manage/manage_bloc.dart';
 import 'guardians_section.dart';
 import 'mode_picker_row.dart';
 
