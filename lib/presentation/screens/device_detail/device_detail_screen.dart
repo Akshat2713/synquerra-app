@@ -1,25 +1,32 @@
-// presentation/screens/device_detail/device_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../core/config/map_tile_config.dart';
 import '../../../core/di/injection_container.dart';
-import '../../../data/network/map_tile_config.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
 import '../../widgets/geofence_polygon_layer.dart';
+import 'widgets/empty_data_banner.dart';
+import 'widgets/history_filter_chips.dart';
 import 'widgets/map_controls_column.dart';
+import 'widgets/map_history_markers_layer.dart';
+import 'widgets/map_history_polyline_layer.dart';
+import 'widgets/map_user_location_layer.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/view_tabs.dart';
-import 'widgets/history_filter_chips.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final DeviceEntity device;
   const DeviceDetailScreen({super.key, required this.device});
+
   @override
   State<DeviceDetailScreen> createState() => _DeviceDetailScreenState();
 }
@@ -36,8 +43,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     _userLocationBloc = sl<UserLocationBloc>();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
-    debugPrint(
-      '[DeviceDetailScreen] initState → deviceId: ${widget.device.id}',
+    AppLogger.d(
+      'DeviceDetailScreen',
+      'initState → deviceId: ${widget.device.id}',
     );
   }
 
@@ -68,14 +76,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     if (mappable.length == 1) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
-        MapTileConfig.defaultZoom,
+        MapConfig.defaultZoom,
       );
       return;
     }
     if (!_showTimeline) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
-        MapTileConfig.defaultZoom,
+        MapConfig.defaultZoom,
       );
       return;
     }
@@ -85,7 +93,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     _mapController.fitCamera(
       CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48)),
     );
-    debugPrint('[DeviceDetailScreen] fit map to ${mappable.length} points');
+    AppLogger.d('DeviceDetailScreen', 'fit map to ${mappable.length} points');
   }
 
   @override
@@ -139,184 +147,21 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: _defaultCenter,
-                  initialZoom: MapTileConfig.defaultZoom,
+                  initialZoom: MapConfig.defaultZoom,
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: MapTileConfig.tileUrlTemplate,
-                    userAgentPackageName: MapTileConfig.userAgentPackageName,
+                    urlTemplate: MapConfig.tileUrlTemplate,
+                    userAgentPackageName: MapConfig.userAgentPackageName,
                   ),
                   GeofencePolygonLayer(onGeofenceTap: (_) {}),
-                  BlocBuilder<AnalyticsBloc, AnalyticsState>(
-                    buildWhen: (prev, curr) {
-                      if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
-                        return prev.points.isEmpty != curr.points.isEmpty;
-                      }
-                      return prev.runtimeType != curr.runtimeType;
-                    },
-                    builder: (context, state) {
-                      final loaded = state is AnalyticsLoaded ? state : null;
-                      if (loaded == null || loaded.mappablePoints.length < 2) {
-                        return const SizedBox.shrink();
-                      }
-                      return PolylineLayer(
-                        polylines: [
-                          Polyline(
-                            points: loaded.mappablePoints
-                                .map((p) => LatLng(p.latitude!, p.longitude!))
-                                .toList(),
-                            color: Theme.of(context).colorScheme.primary,
-                            strokeWidth: 3,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  BlocBuilder<AnalyticsBloc, AnalyticsState>(
-                    buildWhen: (prev, curr) {
-                      if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
-                        return prev.sliderIndex != curr.sliderIndex ||
-                            prev.points != curr.points;
-                      }
-                      return prev.runtimeType != curr.runtimeType;
-                    },
-                    builder: (context, state) {
-                      final loaded = state is AnalyticsLoaded ? state : null;
-                      if (loaded == null) return const SizedBox.shrink();
-                      final colors = Theme.of(context).colorScheme;
-                      return MarkerLayer(
-                        markers: loaded.mappablePoints
-                            .asMap()
-                            .entries
-                            .map(
-                              (e) => Marker(
-                                point: LatLng(
-                                  e.value.latitude!,
-                                  e.value.longitude!,
-                                ),
-                                width: e.key == loaded.sliderIndex ? 18 : 12,
-                                height: e.key == loaded.sliderIndex ? 18 : 12,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: e.key == loaded.sliderIndex
-                                        ? colors.primary
-                                        : colors.primary.withValues(alpha: 0.4),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: e.key == loaded.sliderIndex
-                                          ? 2
-                                          : 1,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      );
-                    },
-                  ),
-                  // Live user-location marker (mirrors GeofenceMapPickerPage)
-                  BlocBuilder<UserLocationBloc, UserLocationState>(
-                    bloc: _userLocationBloc,
-                    builder: (context, state) {
-                      if (state is! UserLocationLoaded) {
-                        return const SizedBox.shrink();
-                      }
-                      final colors = Theme.of(context).colorScheme;
-                      return MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: state.position,
-                            width: 32,
-                            height: 32,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: colors.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 3,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colors.primary.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                    blurRadius: 8,
-                                    spreadRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.person_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                  const MapHistoryPolylineLayer(),
+                  const MapHistoryMarkersLayer(),
+                  MapUserLocationLayer(userLocationBloc: _userLocationBloc),
                 ],
               ),
             ),
-            BlocBuilder<AnalyticsBloc, AnalyticsState>(
-              buildWhen: (prev, curr) =>
-                  (prev is AnalyticsLoaded) != (curr is AnalyticsLoaded),
-              builder: (context, state) {
-                final loaded = state is AnalyticsLoaded ? state : null;
-                if (loaded == null || loaded.points.isNotEmpty) {
-                  return const SizedBox.shrink();
-                }
-                final colors = Theme.of(context).colorScheme;
-                return Positioned(
-                  top: MediaQuery.of(context).padding.top + 12,
-                  left: 64,
-                  right: 64,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.errorContainer.withValues(alpha: 0.95),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: colors.onErrorContainer,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'No data found for this timeframe.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: colors.onErrorContainer,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+            const EmptyDataBanner(),
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 12,
@@ -325,7 +170,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 onChanged: _onViewChanged,
               ),
             ),
-            // ── Right side controls: Zoom → Compass → My location ────
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               right: 12,

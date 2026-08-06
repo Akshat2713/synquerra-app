@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
@@ -8,6 +7,7 @@ import '../../../domain/entities/profile/profile_entity.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../screens/profile/profile_skeleton.dart';
+import '../../../core/utils/app_logger.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -38,7 +38,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final phone2 = event.analytics?.phone2;
       final modesResult = await _getModesUseCase();
       final modes = modesResult.fold((failure) {
-        debugPrint('[ProfileBloc] getModes failed: ${failure.message}');
+        AppLogger.d('ProfileBloc', 'getModes failed: ${failure.message}');
         return <ModeEntity>[];
       }, (m) => m);
       final profile = fakeProfileEntity.copyWith(
@@ -76,7 +76,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),
       );
     } catch (e) {
-      debugPrint('[ProfileBloc] Load error: $e');
+      AppLogger.d('ProfileBloc', 'Load error: $e');
       emit(ProfileError(e.toString()));
     }
   }
@@ -88,7 +88,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     if (state is! ProfileLoaded) return;
     final current = state as ProfileLoaded;
 
-    debugPrint('[ProfileBloc] SwitchMode → ${event.modeId}');
+    AppLogger.d('ProfileBloc', 'SwitchMode → ${event.modeId}');
     emit(current.copyWith(isSwitchingMode: true, modeSwitchError: null));
 
     final result = await _switchModeUseCase(
@@ -98,7 +98,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     result.fold(
       (failure) {
-        debugPrint('[ProfileBloc] SwitchMode failed: ${failure.message}');
+        AppLogger.d('ProfileBloc', 'SwitchMode failed: ${failure.message}');
         emit(
           current.copyWith(
             isSwitchingMode: false,
@@ -107,7 +107,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         );
       },
       (_) {
-        debugPrint('[ProfileBloc] SwitchMode success');
+        AppLogger.d('ProfileBloc', 'SwitchMode success');
         emit(
           current.copyWith(
             isSwitchingMode: false,

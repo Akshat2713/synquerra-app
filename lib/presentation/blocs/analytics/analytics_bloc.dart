@@ -2,8 +2,10 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
+import '../../../core/utils/app_logger.dart';
 
 part 'analytics_event.dart';
 part 'analytics_state.dart';
@@ -25,7 +27,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     AnalyticsLoadDefault event,
     Emitter<AnalyticsState> emit,
   ) async {
-    debugPrint('[AnalyticsBloc] LoadDefault → deviceId: ${event.deviceId}');
+    AppLogger.d('AnalyticsBloc', 'LoadDefault → deviceId: ${event.deviceId}');
     emit(AnalyticsLoading());
     await _fetch(
       emit: emit,
@@ -38,7 +40,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     AnalyticsFilterChanged event,
     Emitter<AnalyticsState> emit,
   ) async {
-    debugPrint('[AnalyticsBloc] FilterChanged → ${event.filter}');
+    AppLogger.d('AnalyticsBloc', 'FilterChanged → ${event.filter}');
     emit(AnalyticsLoading());
 
     final now = DateTime.now().toUtc();
@@ -101,7 +103,7 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   ) {
     if (state is! AnalyticsLoaded) return;
     final current = state as AnalyticsLoaded;
-    debugPrint('[AnalyticsBloc] Slider → index: ${event.index}');
+    AppLogger.d('AnalyticsBloc', 'Slider → index: ${event.index}');
     emit(current.copyWith(sliderIndex: event.index));
   }
 
@@ -138,11 +140,11 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
     result.fold(
       (failure) {
-        debugPrint('[AnalyticsBloc] Fetch failed: ${failure.message}');
+        AppLogger.d('AnalyticsBloc', 'Fetch failed: ${failure.message}');
         emit(AnalyticsError(failure.userMessage));
       },
       (points) {
-        debugPrint('[AnalyticsBloc] Fetched ${points.length} points');
+        AppLogger.d('AnalyticsBloc', 'Fetched ${points.length} points');
         emit(
           AnalyticsLoaded(
             points: points,

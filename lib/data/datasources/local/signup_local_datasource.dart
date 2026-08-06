@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/error/app_exceptions.dart';
+import '../../models/signup/signup_progress_model.dart';
 
 class SignupLocalDataSource {
   final FlutterSecureStorage _storage;
@@ -28,7 +29,7 @@ class SignupLocalDataSource {
   }
 
   // ── Read ──────────────────────────────────────────────────
-  Future<SignupProgress?> getProgress() async {
+  Future<SignupProgressModel?> getSavedProgress() async {
     try {
       final stepRaw = await _storage.read(key: _keyStep);
       if (stepRaw == null) return null;
@@ -42,7 +43,7 @@ class SignupLocalDataSource {
         return null;
       }
 
-      return SignupProgress(
+      return SignupProgressModel(
         step: int.parse(stepRaw),
         personId: personId,
         email: email,
@@ -67,14 +68,3 @@ class SignupLocalDataSource {
 }
 
 // Small data holder — no need for a full model class
-class SignupProgress {
-  final int step;
-  final String personId;
-  final String email;
-
-  const SignupProgress({
-    required this.step,
-    required this.personId,
-    required this.email,
-  });
-}

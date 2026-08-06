@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../blocs/alerts/alerts_bloc.dart';
+import '../../../utils/colour_util.dart';
 
 class NotificationBell extends StatefulWidget {
   const NotificationBell({super.key});
@@ -22,12 +24,12 @@ class _NotificationBellState extends State<NotificationBell>
   bool get _isOpen => _panelEntry != null;
 
   void _toggle() {
-    debugPrint('[NotificationBell] bell tapped, isOpen=$_isOpen');
+    AppLogger.d('NotificationBell', 'bell tapped, isOpen=$_isOpen');
     _isOpen ? _close() : _open();
   }
 
   void _open() {
-    debugPrint('[NotificationBell] _open() called');
+    AppLogger.d('NotificationBell', '_open() called');
     final overlay = Overlay.of(context);
     final alertsBloc = context.read<AlertsBloc>();
 
@@ -35,7 +37,7 @@ class _NotificationBellState extends State<NotificationBell>
       builder: (_) => GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
-          debugPrint('[NotificationBell] barrier tapped → closing');
+          AppLogger.d('NotificationBell', 'barrier tapped → closing');
           _close();
         },
         child: const SizedBox.expand(),
@@ -45,7 +47,7 @@ class _NotificationBellState extends State<NotificationBell>
       builder: (context) {
         final screenWidth = MediaQuery.of(context).size.width;
         final panelWidth = screenWidth * 0.75;
-        debugPrint('[NotificationBell] building panel, width=$panelWidth');
+        AppLogger.d('NotificationBell', 'building panel, width=$panelWidth');
         return Positioned(
           width: panelWidth,
           child: CompositedTransformFollower(
@@ -79,18 +81,18 @@ class _NotificationBellState extends State<NotificationBell>
     overlay.insert(_barrierEntry!);
     overlay.insert(_panelEntry!);
     _controller.forward();
-    debugPrint('[NotificationBell] overlay entries inserted, animating in');
+    AppLogger.d('NotificationBell', 'overlay entries inserted, animating in');
     setState(() {});
   }
 
   Future<void> _close() async {
-    debugPrint('[NotificationBell] _close() called');
+    AppLogger.d('NotificationBell', '_close() called');
     await _controller.reverse();
     _barrierEntry?.remove();
     _panelEntry?.remove();
     _barrierEntry = null;
     _panelEntry = null;
-    debugPrint('[NotificationBell] overlay entries removed');
+    AppLogger.d('NotificationBell', 'overlay entries removed');
     if (mounted) setState(() {});
   }
 
@@ -229,9 +231,7 @@ class _AlertsPanel extends StatelessWidget {
                     alert.severity == AlertSeverity.critical
                         ? Icons.error_rounded
                         : Icons.warning_amber_rounded,
-                    color: alert.severity == AlertSeverity.critical
-                        ? Colors.red
-                        : Colors.orange,
+                    color: alertColor(alert),
                     size: 20,
                   ),
                   title: Text(

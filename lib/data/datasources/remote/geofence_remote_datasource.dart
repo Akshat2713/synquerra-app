@@ -5,6 +5,7 @@ import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../models/geofence/geofence_model.dart';
 import '../../../core/error/app_exceptions.dart';
+import '../../../core/utils/app_logger.dart';
 
 class GeofenceRemoteDataSource {
   final DioClient _dioClient;
@@ -12,7 +13,7 @@ class GeofenceRemoteDataSource {
   GeofenceRemoteDataSource(this._dioClient);
 
   Future<List<GeofenceModel>> getGeofences(String deviceId) async {
-    debugPrint('[GeofenceRemoteDataSource] getGeofences() called');
+    AppLogger.d('GeofenceRemoteDataSource', 'getGeofences() called');
 
     final response = await _dioClient.dio.get(
       ApiConstants.getGeofences,
@@ -59,7 +60,7 @@ class GeofenceRemoteDataSource {
     required List<Coordinate> coordinates,
     required String color,
   }) async {
-    debugPrint('[GeofenceRemoteDataSource] createGeofence() called');
+    AppLogger.d('GeofenceRemoteDataSource', 'createGeofence() called');
 
     final response = await _dioClient.dio.post(
       ApiConstants.createGeofence,
@@ -143,7 +144,7 @@ class GeofenceRemoteDataSource {
     required String deviceId,
     required String geofenceId,
   }) async {
-    debugPrint('[GeofenceRemoteDataSource] deleteGeofence() called');
+    AppLogger.d('GeofenceRemoteDataSource', 'deleteGeofence() called');
 
     final response = await _dioClient.dio.post(
       ApiConstants.deleteGeofence,

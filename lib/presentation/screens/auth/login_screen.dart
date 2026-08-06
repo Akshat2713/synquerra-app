@@ -4,6 +4,7 @@ import '../../app/app_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
+import '../../../core/utils/app_logger.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        debugPrint('[LoginScreen] state changed → $state');
+        AppLogger.d('LoginScreen', 'state changed → $state');
         if (state is AuthAuthenticated) {
           // Replace with your named route
           Navigator.pushNamedAndRemoveUntil(

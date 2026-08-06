@@ -6,7 +6,6 @@ import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../blocs/alerts/alerts_bloc.dart';
 import '../../../app/app_router.dart';
 import '../../../utils/colour_util.dart';
-import '../../../utils/device_display_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
   const AttentionDeviceSheet({super.key});
@@ -71,7 +70,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                         .where((a) => a.imei == d.imei && !a.isAcknowledged)
                         .toList();
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
-                    final name = ownerDisplayName(d, currentUserFullName);
+                    final name = d.displayOwnerName(currentUserFullName);
                     return ListTile(
                       leading: Container(
                         decoration: BoxDecoration(

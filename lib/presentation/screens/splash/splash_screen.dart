@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../app/app_router.dart';
+import '../../../core/utils/app_logger.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -97,12 +98,12 @@ class _SplashScreenState extends State<SplashScreen>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          debugPrint('[SplashScreen] Auth check done → authenticated');
+          AppLogger.d('SplashScreen', 'Auth check done → authenticated');
           _authCheckDone = true;
           _navigateTo = AppRoutes.deviceList;
           _tryNavigate();
         } else if (state is AuthUnauthenticated) {
-          debugPrint('[SplashScreen] Auth check done → unauthenticated');
+          AppLogger.d('SplashScreen', 'Auth check done → unauthenticated');
           _authCheckDone = true;
           _navigateTo = AppRoutes.login;
           _tryNavigate();

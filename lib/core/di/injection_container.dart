@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import '../../data/network/dio_client.dart';
 
 // Entities
+import '../../data/repositories_impl/theme_repository_impl.dart';
 import '../../domain/entities/auth/user_entity.dart';
 
 // Data Sources (Local)
@@ -45,6 +46,7 @@ import '../../data/repositories_impl/mode_repository_impl.dart';
 import '../../data/repositories_impl/signup_repository_impl.dart';
 
 // Use Cases
+import '../../domain/repositories/theme_repository.dart';
 import '../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
@@ -99,8 +101,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<UserHolder>(() => const UserHolder(null));
 
   // ── Theme Feature ───────────────────────────────────────
+
   sl.registerLazySingleton(() => ThemeLocalDataSource(sl()));
-  sl.registerLazySingleton(() => ThemeCubit(sl()));
+  sl.registerLazySingleton<ThemeRepository>(
+    () => ThemeRepositoryImpl(sl<ThemeLocalDataSource>()),
+  );
+
+  sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl<ThemeRepository>()));
 
   // ── Auth Feature ────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(

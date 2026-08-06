@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/edit_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/get_geofences_usecase.dart';
+import '../../../core/utils/app_logger.dart';
+
 part 'geofence_event.dart';
 part 'geofence_state.dart';
 
@@ -32,16 +33,16 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
   }
 
   Future<void> _onLoad(GeofenceLoad event, Emitter<GeofenceState> emit) async {
-    debugPrint('[GeofenceBloc] Load → deviceId: ${event.deviceId}');
+    AppLogger.d('GeofenceBloc', 'Load → deviceId: ${event.deviceId}');
     emit(GeofenceLoading());
     final result = await _getGeofencesUseCase(event.deviceId);
     result.fold(
       (failure) {
-        debugPrint('[GeofenceBloc] Load failed: ${failure.message}');
+        AppLogger.d('GeofenceBloc', 'Load failed: ${failure.message}');
         emit(GeofenceError(failure.userMessage));
       },
       (geofences) {
-        debugPrint('[GeofenceBloc] Loaded ${geofences.length} geofences');
+        AppLogger.d('GeofenceBloc', 'Loaded ${geofences.length} geofences');
         emit(GeofenceLoaded(geofences));
       },
     );
@@ -51,7 +52,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     GeofenceCreate event,
     Emitter<GeofenceState> emit,
   ) async {
-    debugPrint('[GeofenceBloc] Create → deviceId: ${event.deviceId}');
+    AppLogger.d('GeofenceBloc', 'Create → deviceId: ${event.deviceId}');
     emit(const GeofenceOperationLoading());
     final result = await _createGeofenceUseCase(
       deviceId: event.deviceId,
@@ -63,7 +64,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (geofence) {
-        debugPrint('[GeofenceBloc] Created: ${geofence.geofenceName}');
+        AppLogger.d('GeofenceBloc', 'Created: ${geofence.geofenceName}');
         emit(GeofenceCreated(geofence));
         add(GeofenceLoad(event.deviceId));
       },
@@ -71,7 +72,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
   }
 
   Future<void> _onEdit(GeofenceEdit event, Emitter<GeofenceState> emit) async {
-    debugPrint('[GeofenceBloc] Edit → geofenceId: ${event.geofenceId}');
+    AppLogger.d('GeofenceBloc', 'Edit → geofenceId: ${event.geofenceId}');
     emit(const GeofenceOperationLoading());
     final result = await _editGeofenceUseCase(
       deviceId: event.deviceId,
@@ -87,7 +88,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (geofence) {
-        debugPrint('[GeofenceBloc] Edited: ${geofence.geofenceName}');
+        AppLogger.d('GeofenceBloc', 'Edited: ${geofence.geofenceName}');
         emit(GeofenceEdited(geofence));
         add(GeofenceLoad(event.deviceId));
       },
@@ -98,7 +99,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     GeofenceDelete event,
     Emitter<GeofenceState> emit,
   ) async {
-    debugPrint('[GeofenceBloc] Delete → geofenceId: ${event.geofenceId}');
+    AppLogger.d('GeofenceBloc', 'Delete → geofenceId: ${event.geofenceId}');
     emit(const GeofenceOperationLoading());
     final result = await _deleteGeofenceUseCase(
       deviceId: event.deviceId,
@@ -107,7 +108,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (_) {
-        debugPrint('[GeofenceBloc] Deleted: ${event.geofenceId}');
+        AppLogger.d('GeofenceBloc', 'Deleted: ${event.geofenceId}');
         emit(const GeofenceDeleted());
         add(GeofenceLoad(event.deviceId));
       },

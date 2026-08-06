@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/error/app_exceptions.dart';
 import '../../network/api_constants.dart';
 import '../../network/dio_client.dart';
+import '../../../core/utils/app_logger.dart';
 
 class LinkDeviceRemoteDataSource {
   final DioClient _dioClient;
@@ -25,7 +26,10 @@ class LinkDeviceRemoteDataSource {
     );
 
     final body = response.data as Map<String, dynamic>;
-    debugPrint('[SignupRemoteDataSource] linkDevice status: ${body['status']}');
+    AppLogger.d(
+      'SignupRemoteDataSource',
+      'linkDevice status: ${body['status']}',
+    );
 
     if (body['status'] != 'success') {
       throw ServerException(

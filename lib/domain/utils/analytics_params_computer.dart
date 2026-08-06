@@ -1,6 +1,6 @@
 // domain/utils/analytics_params_computer.dart
 
-import '../../presentation/blocs/analytics/analytics_bloc.dart';
+import '../entities/analytics/analytics_filter.dart';
 
 /// Represents the optimal fetch parameters for a given time range.
 class AnalyticsFetchParams {

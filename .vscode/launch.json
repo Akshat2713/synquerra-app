@@ -2,22 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C/C++ Runner: Debug Session",
-      "type": "cppdbg",
+      "name": "Synquerra App",
       "request": "launch",
-      "args": [],
-      "stopAtEntry": false,
-      "externalConsole": true,
-      "cwd": "d:/Internship/synquerra/safe_track/linux/runner",
-      "program": "d:/Internship/synquerra/safe_track/linux/runner/build/Debug/outDebug",
-      "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
+      "type": "dart",
+      "args": [
+        "--dart-define-from-file",
+        "config.json"
       ]
     }
   ]

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../blocs/analytics/analytics_bloc.dart';
+import '../../domain/entities/analytics/analytics_filter.dart';
 
 void showAnalyticsFilterSheet({
   required BuildContext context,

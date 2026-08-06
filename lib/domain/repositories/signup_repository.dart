@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../data/datasources/local/signup_local_datasource.dart';
-import '../failures/failure.dart';
+
 import '../entities/signup/signup_entity.dart';
+import '../entities/signup/signup_progress_entity.dart';
+import '../failures/failure.dart';
 
 abstract class SignupRepository {
   Future<Either<Failure, PersonEntity>> createPerson({
@@ -25,6 +26,8 @@ abstract class SignupRepository {
     required String passwordConfirmation,
   });
 
-  Future<Either<Failure, SignupProgress?>> getSavedProgress();
+  /// Returns [SignupProgressEntity] instead of the data layer model
+  Future<Either<Failure, SignupProgressEntity?>> getSavedProgress();
+
   Future<Either<Failure, void>> clearSavedProgress();
 }

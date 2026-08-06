@@ -5,6 +5,7 @@ import '../../../core/di/injection_container.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/repositories/device_repository.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
+import '../../../core/utils/app_logger.dart';
 
 part 'device_list_event.dart';
 part 'device_list_state.dart';
@@ -44,20 +45,20 @@ class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
   Future<void> _fetchData(Emitter<DeviceListState> emit) async {
     final personId = sl<UserHolder>().user?.personId;
     if (personId == null) {
-      debugPrint('[DeviceListBloc] No logged-in user found');
+      AppLogger.d('DeviceListBloc', 'No logged-in user found');
       emit(const DeviceListError('User not found. Please log in again.'));
       return;
     }
-    debugPrint('[DeviceListBloc] Fetching devices');
+    AppLogger.d('DeviceListBloc', 'Fetching devices');
     final devicesResult = await _getDeviceListUseCase(personId);
     if (devicesResult.isLeft()) {
       final failure = devicesResult.fold((f) => f, (_) => null)!;
-      debugPrint('[DeviceListBloc] Devices fetch failed: ${failure.message}');
+      AppLogger.d('DeviceListBloc', 'Devices fetch failed: ${failure.message}');
       emit(DeviceListError(failure.userMessage));
       return;
     }
     final devices = devicesResult.fold((_) => <DeviceEntity>[], (d) => d);
-    debugPrint('[DeviceListBloc] Loaded ${devices.length} devices');
+    AppLogger.d('DeviceListBloc', 'Loaded ${devices.length} devices');
     emit(DeviceListLoaded(devices: devices));
   }
 

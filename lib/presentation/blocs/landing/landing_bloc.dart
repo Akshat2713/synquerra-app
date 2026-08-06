@@ -1,14 +1,14 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../domain/entities/alerts/alert_entity.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/usecases/alerts/get_alerts_usecase.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
+import '../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
-import '../analytics/analytics_bloc.dart' show AnalyticsFilter;
+import '../../../core/utils/app_logger.dart';
 
 part 'landing_event.dart';
 part 'landing_state.dart';
@@ -36,12 +36,12 @@ class LandingBloc extends Bloc<LandingEvent, LandingState> {
 
     final personId = sl<UserHolder>().user?.personId;
     if (personId == null) {
-      debugPrint('[LandingBloc] No logged-in user found');
+      AppLogger.d('LandingBloc', 'No logged-in user found');
       emit(const LandingError('User not found. Please log in again.'));
       return;
     }
 
-    debugPrint('[LandingBloc] Loading for device ${device.id}');
+    AppLogger.d('LandingBloc', 'Loading for device ${device.id}');
 
     final fetchParams = computeAnalyticsParams(filter: AnalyticsFilter.latest);
 
@@ -61,12 +61,12 @@ class LandingBloc extends Bloc<LandingEvent, LandingState> {
     final alertsResult = await alertsFuture;
 
     final latest = analyticsResult.fold((failure) {
-      debugPrint('[LandingBloc] Analytics fetch failed: ${failure.message}');
+      AppLogger.d('LandingBloc', 'Analytics fetch failed: ${failure.message}');
       return null;
     }, (points) => points.isNotEmpty ? points.first : null);
 
     final alerts = alertsResult.fold((failure) {
-      debugPrint('[LandingBloc] Alerts fetch failed: ${failure.message}');
+      AppLogger.d('LandingBloc', 'Alerts fetch failed: ${failure.message}');
       return <AlertEntity>[];
     }, (a) => a);
 

@@ -64,6 +64,14 @@ class DeviceEntity extends Equatable {
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
 
+  /// Shows the carrier's name if the device is assigned to someone;
+  /// otherwise falls back to the current logged-in user (device owner).
+  String displayOwnerName(String currentUserFullName) {
+    if (carrier == null) return currentUserFullName;
+    final name = '${carrier!.firstName} ${carrier!.lastName}'.trim();
+    return name.isEmpty ? currentUserFullName : name;
+  }
+
   @override
   List<Object?> get props => [
     id,

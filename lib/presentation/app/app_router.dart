@@ -6,9 +6,11 @@ import 'package:latlong2/latlong.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
-import '../../data/datasources/local/signup_local_datasource.dart';
+import '../../core/utils/app_logger.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/entities/device/device_entity.dart';
+import '../../domain/usecases/base_usecase.dart';
+import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -244,30 +246,32 @@ class AppRouter {
   }
 
   static Future<void> navigateToSignup(BuildContext context) async {
-    // Always create a fresh bloc instance
     _activeSignupBloc = sl<SignupBloc>();
 
-    // Check local storage directly — no need to go through bloc
-    final local = sl<SignupLocalDataSource>();
+    // Fetch progress via the UseCase / Domain layer
+    final getSavedProgressUseCase = sl<GetSavedSignupProgressUseCase>();
 
     try {
-      final progress = await local.getProgress();
+      final result = await getSavedProgressUseCase(NoParams());
 
       if (!context.mounted) return;
 
-      if (progress == null || progress.step == 1) {
-        // No saved progress → start from beginning
-        Navigator.pushNamed(context, AppRoutes.signupProfile);
-      } else if (progress.step == 2) {
-        // Profile done → restore state then go to credentials
-        _activeSignupBloc!.add(SignupProgressRestored());
-        Navigator.pushNamed(context, AppRoutes.signupCredentials);
-      }
+      result.fold(
+        (failure) {
+          // Fallback on failure
+          Navigator.pushNamed(context, AppRoutes.signupProfile);
+        },
+        (progress) {
+          if (progress == null || progress.step == 1) {
+            Navigator.pushNamed(context, AppRoutes.signupProfile);
+          } else if (progress.step == 2) {
+            _activeSignupBloc!.add(SignupProgressRestored());
+            Navigator.pushNamed(context, AppRoutes.signupCredentials);
+          }
+        },
+      );
     } catch (e, stackTrace) {
-      // On any error just start fresh
-      debugPrint('SIGNUP ROUTING ERROR: $e');
-      debugPrint(stackTrace.toString());
-      // Force fallback step
+      AppLogger.e('AppRouter', 'SIGNUP ROUTING ERROR', e, stackTrace);
       if (context.mounted) {
         Navigator.pushNamed(context, AppRoutes.signupProfile);
       }

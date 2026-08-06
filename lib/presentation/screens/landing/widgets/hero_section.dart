@@ -4,7 +4,6 @@ import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../utils/date_time_formatter.dart';
-import '../../../utils/device_display_util.dart';
 
 class HeroSection extends StatelessWidget {
   final DeviceEntity device;
@@ -26,7 +25,7 @@ class HeroSection extends StatelessWidget {
     final loggedInName = authState is AuthAuthenticated
         ? authState.user.fullName
         : '—';
-    final displayName = ownerDisplayName(device, loggedInName);
+    final displayName = device.displayOwnerName(loggedInName);
     final isOnline = device.isOnline ?? false;
     final mode = device.currentMode;
 

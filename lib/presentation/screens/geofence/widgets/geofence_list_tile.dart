@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import 'geofence_status_chip.dart';
 
 class GeofenceListTile extends StatelessWidget {
   final GeofenceEntity geofence;
@@ -19,7 +20,6 @@ class GeofenceListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    // final zoneColor = _hexToColor(geofence.geofenceColor);
 
     return InkWell(
       onTap: onTap,
@@ -32,7 +32,6 @@ class GeofenceListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── Name + status ──────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,27 +45,7 @@ class GeofenceListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: geofence.isActive
-                              ? colors.primaryContainer
-                              : colors.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          geofence.isActive ? 'Active' : 'Inactive',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: geofence.isActive
-                                ? colors.onPrimaryContainer
-                                : colors.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                      GeofenceStatusChip(isActive: geofence.isActive),
                       if (geofence.isSyncToDevice) ...[
                         const SizedBox(width: 6),
                         Icon(
@@ -80,7 +59,6 @@ class GeofenceListTile extends StatelessWidget {
                 ],
               ),
             ),
-            // ── Edit + Delete icons ────────────────
             IconButton(
               onPressed: onEdit,
               icon: Icon(Icons.edit_outlined, size: 20, color: colors.primary),

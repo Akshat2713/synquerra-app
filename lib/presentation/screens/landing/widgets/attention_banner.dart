@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../utils/colour_util.dart';
-import '../../../utils/device_alert_matcher.dart';
-import '../../../utils/device_display_util.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -106,7 +105,7 @@ class _AvatarStack extends StatelessWidget {
               alerts,
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
-            final name = ownerDisplayName(d, currentUserFullName).trim();
+            final name = d.displayOwnerName(currentUserFullName);
             final parts = name
                 .split(RegExp(r'\s+'))
                 .where((p) => p.isNotEmpty)

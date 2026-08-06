@@ -4,6 +4,7 @@ import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../models/auth/user_model.dart';
 import '../../../core/error/app_exceptions.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AuthRemoteDataSource {
   final DioClient _dioClient;
@@ -14,7 +15,7 @@ class AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    debugPrint('[AuthRemoteDataSource] login() called for $email');
+    AppLogger.d('AuthRemoteDataSource', 'login() called for $email');
 
     final response = await _dioClient.dio.post(
       ApiConstants.signIn,
@@ -23,7 +24,7 @@ class AuthRemoteDataSource {
 
     final body = response.data as Map<String, dynamic>;
 
-    debugPrint('[AuthRemoteDataSource] Response status: ${body['status']}');
+    AppLogger.d('AuthRemoteDataSource', 'Response status: ${body['status']}');
 
     if (body['status'] != 'success') {
       throw ServerException(
