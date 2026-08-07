@@ -1,39 +1,50 @@
-// lib/presentation/blocs/profile/profile_event.dart
-
 part of 'manage_bloc.dart';
 
-enum NotificationType { emergency, daily, movement, battery }
+abstract class ManageEvent extends Equatable {
+  const ManageEvent();
 
-abstract class ProfileEvent {
-  const ProfileEvent();
+  @override
+  List<Object?> get props => [];
 }
 
-class ProfileLoadRequested extends ProfileEvent {
+/// Initial load for the Manage screen: fetches Modes & Settings concurrently.
+class ManageLoadRequested extends ManageEvent {
   final DeviceEntity device;
-  final AnalyticsEntity? analytics; // ← new field
-  const ProfileLoadRequested(this.device, this.analytics);
+
+  const ManageLoadRequested(this.device);
+
+  @override
+  List<Object?> get props => [device];
 }
 
-class ProfileModeChanged extends ProfileEvent {
-  final OperatingMode mode;
-  const ProfileModeChanged(this.mode);
-}
-
-class ProfileModeSwitchRequested extends ProfileEvent {
+/// Request to switch active tracking mode.
+class ManageModeSwitchRequested extends ManageEvent {
   final String deviceId;
   final String modeId;
-  const ProfileModeSwitchRequested({
+
+  const ManageModeSwitchRequested({
     required this.deviceId,
     required this.modeId,
   });
+
+  @override
+  List<Object?> get props => [deviceId, modeId];
 }
 
-class ProfileNotificationToggled extends ProfileEvent {
-  final NotificationType type;
-  final bool value;
-  const ProfileNotificationToggled(this.type, this.value);
-}
+/// Request to update emergency phone numbers.
+class ManagePhoneNumbersUpdateRequested extends ManageEvent {
+  final String deviceId;
+  final String? phoneNum1;
+  final String? phoneNum2;
+  final String? controlRoomNum;
 
-class ProfileSimSwitchRequested extends ProfileEvent {
-  const ProfileSimSwitchRequested();
+  const ManagePhoneNumbersUpdateRequested({
+    required this.deviceId,
+    this.phoneNum1,
+    this.phoneNum2,
+    this.controlRoomNum,
+  });
+
+  @override
+  List<Object?> get props => [deviceId, phoneNum1, phoneNum2, controlRoomNum];
 }

@@ -1,101 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/device/device_entity.dart';
-import '../../blocs/analytics/analytics_bloc.dart';
+
+import '../../../../core/di/injection_container.dart';
+import '../../../../domain/entities/device/device_entity.dart';
 import '../../blocs/manage/manage_bloc.dart';
 import 'manage_skeleton.dart';
-import 'widgets/profile_body.dart';
+import 'widgets/manage_body.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ManageScreen extends StatefulWidget {
   final DeviceEntity device;
-  const ProfileScreen({super.key, required this.device});
+
+  const ManageScreen({super.key, required this.device});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ManageScreen> createState() => _ManageScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ManageScreenState extends State<ManageScreen> {
+  late final ManageBloc _manageBloc;
+
   @override
   void initState() {
     super.initState();
-    final analyticsState = context.read<AnalyticsBloc>().state;
-    final latest =
-        analyticsState is AnalyticsLoaded && analyticsState.points.isNotEmpty
-        ? analyticsState.points.first
-        : null;
-    context.read<ProfileBloc>().add(
-      ProfileLoadRequested(widget.device, latest),
-    );
+    _manageBloc = sl<ManageBloc>()..add(ManageLoadRequested(widget.device));
+  }
+
+  @override
+  void dispose() {
+    _manageBloc.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    return BlocProvider.value(
+      value: _manageBloc,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Manage'), centerTitle: false),
+        body: BlocConsumer<ManageBloc, ManageState>(
+          listener: (context, state) {
+            if (state is! ManageLoaded) return;
+            final colors = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Manage'), centerTitle: false),
-      body: BlocConsumer<ProfileBloc, ProfileState>(
-        // Only listen when loaded — avoids firing on initial/loading states
-        listenWhen: (previous, current) {
-          // Only react to transitions out of switching state
-          if (previous is ProfileLoaded && current is ProfileLoaded) {
-            return previous.isSwitchingMode && !current.isSwitchingMode;
-          }
-          return false;
-        },
+            // Handle Mode Switch Failures
+            if (state.modeSwitchError != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.modeSwitchError!),
+                  backgroundColor: colors.error,
+                ),
+              );
+            }
 
-        listener: (context, state) {
-          if (state is! ProfileLoaded) return;
+            // Handle Phone Number Update Failures
+            if (state.settingsUpdateError != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.settingsUpdateError!),
+                  backgroundColor: colors.error,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is ManageLoading || state is ManageInitial) {
+              return ManageSkeleton(device: widget.device);
+            }
 
-          // Show error snackbar after failed switch
-          if (state.modeSwitchError != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.modeSwitchError!),
-                backgroundColor: colors.error,
-              ),
-            );
-          }
+            if (state is ManageError) {
+              return _ErrorView(
+                message: state.message,
+                onRetry: () {
+                  context.read<ManageBloc>().add(
+                    ManageLoadRequested(widget.device),
+                  );
+                },
+              );
+            }
 
-          // Refresh analytics after successful switch
-          // Condition: was switching, now not switching, no error
-          if (!state.isSwitchingMode && state.modeSwitchError == null) {
-            context.read<AnalyticsBloc>().add(
-              AnalyticsLoadDefault(widget.device.imei),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is ProfileInitial || state is ProfileLoading) {
-            return ProfileSkeleton(device: widget.device);
-          }
-          if (state is ProfileError) {
-            return _ErrorView(
-              message: state.message,
-              onRetry: () {
-                final analyticsState = context.read<AnalyticsBloc>().state;
-                final latest =
-                    analyticsState is AnalyticsLoaded &&
-                        analyticsState.points.isNotEmpty
-                    ? analyticsState.points.first
-                    : null;
-                context.read<ProfileBloc>().add(
-                  ProfileLoadRequested(widget.device, latest),
-                );
-              },
-            );
-          }
-          if (state is ProfileLoaded) {
-            return ProfileBody(
-              profile: state.profile,
-              modes: state.modes,
-              activeModeId: state.activeModeId,
-              isSwitchingMode: state.isSwitchingMode,
-              device: widget.device,
-            );
-          }
-          return const SizedBox.shrink();
-        },
+            if (state is ManageLoaded) {
+              return ManageBody(
+                device: widget.device,
+                settings: state.settings,
+                modes: state.modes,
+                activeModeId: state.activeModeId,
+                isSwitchingMode: state.isSwitchingMode,
+                isUpdatingSettings: state.isUpdatingSettings,
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

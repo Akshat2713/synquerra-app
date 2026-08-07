@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
-import '../../../../domain/entities/profile/profile_entity.dart';
+import '../../../../domain/entities/settings/settings_entity.dart';
 import '../../../blocs/manage/manage_bloc.dart';
-import 'guardians_section.dart';
+import 'emergency_contacts_section.dart';
 import 'mode_picker_row.dart';
 
-class ProfileBody extends StatelessWidget {
-  final ProfileEntity profile;
+class ManageBody extends StatelessWidget {
   final DeviceEntity device;
+  final SettingsEntity settings;
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitchingMode;
+  final bool isUpdatingSettings;
 
-  const ProfileBody({
+  const ManageBody({
     super.key,
-    required this.profile,
     required this.device,
+    required this.settings,
     required this.modes,
     required this.activeModeId,
     required this.isSwitchingMode,
+    required this.isUpdatingSettings,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<ProfileBloc>();
+    final bloc = context.read<ManageBloc>();
 
     return Column(
-      // Strictly align header content to the top-left
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Header Title & Subtitle ─────────────────────────────
@@ -63,19 +65,29 @@ class ProfileBody extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
+              // Mode Picker Card
               TrackingModeCard(
                 modes: modes,
                 activeModeId: activeModeId,
                 isSwitching: isSwitchingMode,
+                autoModeSwitch: settings.autoModeSwitch,
                 onChanged: (modeId) => bloc.add(
-                  ProfileModeSwitchRequested(
+                  ManageModeSwitchRequested(
                     deviceId: device.id,
                     modeId: modeId,
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
-              EmergencyContactsSection(guardians: profile.guardians),
+
+              // Emergency Contacts Section driven directly by Settings
+              EmergencyContactsSection(
+                deviceId: device.id,
+                settings: settings,
+                isUpdating: isUpdatingSettings,
+              ),
+
               const SizedBox(height: 16),
             ],
           ),

@@ -127,7 +127,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
-              BlocProvider(create: (_) => sl<ProfileBloc>()),
+              BlocProvider(create: (_) => sl<ManageBloc>()),
             ],
             child: DeviceShellScreen(device: args.device),
           ),
@@ -142,7 +142,7 @@ class AppRouter {
       //     settings,
       //     MultiBlocProvider(
       //       providers: [
-      //         BlocProvider(create: (_) => sl<ProfileBloc>()),
+      //         BlocProvider(create: (_) => sl<ManageBloc>()),
       //         BlocProvider.value(value: analyticsBloc),
       //       ],
       //       child: ProfileScreen(device: device, analytics: analytics),

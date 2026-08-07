@@ -62,7 +62,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),

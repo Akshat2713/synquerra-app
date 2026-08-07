@@ -4,6 +4,12 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Core & Network
+import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../domain/repositories/settings_repository.dart';
+import '../../domain/usecases/settings/get_settings_usecase.dart';
+import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../../presentation/blocs/settings/settings_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
 
@@ -247,8 +253,14 @@ Future<void> initDependencies() async {
   sl.registerFactory<ModeBloc>(
     () => ModeBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
   );
-  sl.registerFactory<ProfileBloc>(
-    () => ProfileBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
+  // ── Manage Feature ──────────────────────────────────────
+  sl.registerFactory<ManageBloc>(
+    () => ManageBloc(
+      getModesUseCase: sl(),
+      switchModeUseCase: sl(),
+      getSettingsUseCase: sl(),
+      updatePhoneNumbersUseCase: sl(),
+    ),
   );
 
   // ── User Location Feature ───────────────────────────────
@@ -263,6 +275,20 @@ Future<void> initDependencies() async {
       getAlertsUseCase: sl(),
       userHolder: sl(),
     ),
+  );
+
+  // ── Settings Feature ───────────────────────────────────
+  sl.registerLazySingleton<SettingsRemoteDataSource>(
+    () => SettingsRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetSettingsUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePhoneNumbersUseCase(sl()));
+  sl.registerFactory<SettingsBloc>(
+    () =>
+        SettingsBloc(getSettingsUseCase: sl(), updatePhoneNumbersUseCase: sl()),
   );
 }
 

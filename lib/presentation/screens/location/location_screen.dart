@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
 import '../../../core/config/map_config.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/utils/app_logger.dart';
@@ -14,8 +13,10 @@ import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
 import '../../widgets/geofence_polygon_layer.dart';
+import 'widgets/address_card.dart';
 import 'widgets/empty_data_banner.dart';
 import 'widgets/history_filter_chips.dart';
+import 'widgets/last_updated_badge.dart';
 import 'widgets/map_controls_column.dart';
 import 'widgets/map_history_markers_layer.dart';
 import 'widgets/map_history_polyline_layer.dart';
@@ -23,21 +24,18 @@ import 'widgets/map_user_location_layer.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/view_tabs.dart';
 
-class DeviceDetailScreen extends StatefulWidget {
+class LocationScreen extends StatefulWidget {
   final DeviceEntity device;
-  const DeviceDetailScreen({super.key, required this.device});
-
+  const LocationScreen({super.key, required this.device});
   @override
-  State<DeviceDetailScreen> createState() => _DeviceDetailScreenState();
+  State<LocationScreen> createState() => _LocationScreenState();
 }
 
-class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
+class _LocationScreenState extends State<LocationScreen> {
   late final MapController _mapController;
   late final UserLocationBloc _userLocationBloc;
   late final TileProvider _tileProvider;
-
   bool _showTimeline = false;
-
   @override
   void initState() {
     super.initState();
@@ -46,10 +44,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     _tileProvider = sl<TileProvider>();
     context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
-    AppLogger.d(
-      'DeviceDetailScreen',
-      'initState → deviceId: ${widget.device.id}',
-    );
+    AppLogger.d('LocationScreen', 'initState → deviceId: ${widget.device.id}');
   }
 
   LatLng get _defaultCenter => widget.device.hasLocation
@@ -65,12 +60,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
   void _onViewChanged(bool history) {
     setState(() => _showTimeline = history);
-    context.read<AnalyticsBloc>().add(
-      AnalyticsFilterChanged(
-        deviceId: widget.device.id,
-        filter: history ? AnalyticsFilter.lastHour : AnalyticsFilter.latest,
-      ),
-    );
   }
 
   void _fitMapToPoints(List<AnalyticsEntity> points) {
@@ -96,7 +85,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     _mapController.fitCamera(
       CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48)),
     );
-    AppLogger.d('DeviceDetailScreen', 'fit map to ${mappable.length} points');
+    AppLogger.d('LocationScreen', 'fit map to ${mappable.length} points');
   }
 
   @override
@@ -177,10 +166,67 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               right: 12,
-              child: MapControlsColumn(
-                mapController: _mapController,
-                userLocationBloc: _userLocationBloc,
-                deviceCenter: _defaultCenter,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                    buildWhen: (prev, curr) {
+                      final p = prev is AnalyticsLoaded
+                          ? prev.currentPoint?.deviceTimestamp
+                          : null;
+                      final c = curr is AnalyticsLoaded
+                          ? curr.currentPoint?.deviceTimestamp
+                          : null;
+                      return p != c || prev.runtimeType != curr.runtimeType;
+                    },
+                    builder: (context, state) {
+                      final loaded = state is AnalyticsLoaded ? state : null;
+                      return LastUpdatedBadge(
+                        timestamp: loaded?.currentPoint?.deviceTimestamp,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  MapControlsColumn(
+                    mapController: _mapController,
+                    userLocationBloc: _userLocationBloc,
+                    deviceCenter: _defaultCenter,
+                  ),
+                ],
+              ),
+            ),
+            // Positioned(
+            //   top: MediaQuery.of(context).padding.top + 8,
+            //   right: 12,
+            //   child: MapControlsColumn(
+            //     mapController: _mapController,
+            //     userLocationBloc: _userLocationBloc,
+            //     deviceCenter: _defaultCenter,
+            //   ),
+            // ),
+            // Address card — sits just below the view tabs, works for both
+            // live and history modes since it reads AnalyticsLoaded.currentPoint.
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8 + 54,
+              left: 12,
+              child: BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                buildWhen: (prev, curr) {
+                  final prevPoint = prev is AnalyticsLoaded
+                      ? prev.currentPoint
+                      : null;
+                  final currPoint = curr is AnalyticsLoaded
+                      ? curr.currentPoint
+                      : null;
+                  return prevPoint != currPoint ||
+                      prev.runtimeType != curr.runtimeType;
+                },
+                builder: (context, state) {
+                  final loaded = state is AnalyticsLoaded ? state : null;
+                  return AddressCard(
+                    point: loaded?.currentPoint,
+                    isLoading: state is AnalyticsLoading,
+                  );
+                },
               ),
             ),
             Positioned.fill(

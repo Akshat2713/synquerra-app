@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
-// import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
@@ -81,8 +80,8 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
             device: widget.device,
             onAttentionTap: () => _openAttentionSheet(context),
           ),
-          DeviceDetailScreen(device: widget.device),
-          ProfileScreen(device: widget.device),
+          LocationScreen(device: widget.device),
+          ManageScreen(device: widget.device),
           SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
         ],
       ),

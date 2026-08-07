@@ -6,6 +6,7 @@ class TrackingModeCard extends StatefulWidget {
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitching;
+  final bool autoModeSwitch;
   final ValueChanged<String> onChanged;
 
   const TrackingModeCard({
@@ -13,6 +14,7 @@ class TrackingModeCard extends StatefulWidget {
     required this.modes,
     required this.activeModeId,
     required this.isSwitching,
+    required this.autoModeSwitch,
     required this.onChanged,
   });
 
@@ -22,7 +24,24 @@ class TrackingModeCard extends StatefulWidget {
 
 class _TrackingModeCardState extends State<TrackingModeCard> {
   // Defaults to Auto mode selected
-  bool _isAutoMode = true;
+  late bool _isAutoMode;
+  @override
+  void initState() {
+    super.initState();
+    // 3. Initialize from backend setting
+    _isAutoMode = widget.autoModeSwitch;
+  }
+
+  @override
+  void didUpdateWidget(covariant TrackingModeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 4. Update state if settings reload from backend
+    if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
+      setState(() {
+        _isAutoMode = widget.autoModeSwitch;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

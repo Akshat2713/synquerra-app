@@ -1,64 +1,74 @@
-// lib/presentation/blocs/profile/profile_state.dart
-
 part of 'manage_bloc.dart';
 
-sealed class ProfileState extends Equatable {
-  const ProfileState();
+abstract class ManageState extends Equatable {
+  const ManageState();
+
   @override
   List<Object?> get props => [];
 }
 
-class ProfileInitial extends ProfileState {}
+class ManageInitial extends ManageState {}
 
-class ProfileLoading extends ProfileState {}
+class ManageLoading extends ManageState {}
 
-class ProfileLoaded extends ProfileState {
-  final ProfileEntity profile;
+class ManageLoaded extends ManageState {
+  final SettingsEntity settings;
   final List<ModeEntity> modes;
   final String? activeModeId;
+
+  // Specific action flags & errors
   final bool isSwitchingMode;
   final String? modeSwitchError;
+  final bool isUpdatingSettings;
+  final String? settingsUpdateError;
 
-  const ProfileLoaded({
-    required this.profile,
-    this.modes = const [],
+  const ManageLoaded({
+    required this.settings,
+    required this.modes,
     this.activeModeId,
     this.isSwitchingMode = false,
     this.modeSwitchError,
+    this.isUpdatingSettings = false,
+    this.settingsUpdateError,
   });
 
-  // Use a private sentinel so we can explicitly pass null to clear error
-  static const _keep = Object();
-
-  ProfileLoaded copyWith({
-    ProfileEntity? profile,
+  ManageLoaded copyWith({
+    SettingsEntity? settings,
     List<ModeEntity>? modes,
     String? activeModeId,
     bool? isSwitchingMode,
-    Object? modeSwitchError = _keep,
-  }) => ProfileLoaded(
-    profile: profile ?? this.profile,
-    modes: modes ?? this.modes,
-    activeModeId: activeModeId ?? this.activeModeId,
-    isSwitchingMode: isSwitchingMode ?? this.isSwitchingMode,
-    modeSwitchError: modeSwitchError == _keep
-        ? this.modeSwitchError
-        : modeSwitchError as String?,
-  );
+    String? modeSwitchError,
+    bool? isUpdatingSettings,
+    String? settingsUpdateError,
+  }) {
+    return ManageLoaded(
+      settings: settings ?? this.settings,
+      modes: modes ?? this.modes,
+      activeModeId: activeModeId ?? this.activeModeId,
+      isSwitchingMode: isSwitchingMode ?? this.isSwitchingMode,
+      modeSwitchError: modeSwitchError,
+      isUpdatingSettings: isUpdatingSettings ?? this.isUpdatingSettings,
+      settingsUpdateError: settingsUpdateError,
+    );
+  }
 
   @override
   List<Object?> get props => [
-    profile,
+    settings,
     modes,
     activeModeId,
     isSwitchingMode,
     modeSwitchError,
+    isUpdatingSettings,
+    settingsUpdateError,
   ];
 }
 
-class ProfileError extends ProfileState {
+class ManageError extends ManageState {
   final String message;
-  const ProfileError(this.message);
+
+  const ManageError(this.message);
+
   @override
   List<Object?> get props => [message];
 }

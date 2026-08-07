@@ -2,45 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
-import '../../../domain/entities/profile/profile_entity.dart';
-import 'widgets/profile_body.dart';
+import '../../../domain/entities/settings/settings_entity.dart';
+import 'widgets/manage_body.dart';
 
-// ── Dummy Profile Entity for Skeletonizer Placeholders ───────────────────
-const fakeProfileEntity = ProfileEntity(
-  fullName: 'Meera Sharma',
-  roleBadge: 'Guardian',
-  isPro: true,
-  operatingMode: OperatingMode.normal,
-  sim1: SimInfo(
-    label: 'S1 · Active',
-    carrier: 'Airtel 4G',
-    dataLeft: '2.4 GB left',
-    signalBars: 4,
-  ),
-  sim2: SimInfo(
-    label: 'S2 · Switch',
-    carrier: 'Jio 5G',
-    dataLeft: '8.1 GB left',
-    signalBars: 3,
-  ),
-  notifications: NotificationSettings(
-    emergency: true,
-    daily: true,
-    movement: false,
-    battery: true,
-  ),
-  guardians: [
-    GuardianEntity(
-      name: 'Primary Contact',
-      phoneNumber: '9934303749',
-      isPrimary: true,
-    ),
-    GuardianEntity(
-      name: 'Secondary Contact',
-      phoneNumber: '9835960843',
-      isPrimary: false,
-    ),
-  ],
+// ── Dummy Settings Entity for Skeletonizer Placeholders ──────────────────
+final fakeSettingsEntity = SettingsEntity(
+  phoneNum1: '9576113111',
+  phoneNum2: '9576263111',
+  controlRoomNum: '9576000000',
+  currentProfile: 'Airtel',
+  incomingCallEnabled: true,
+  outgoingCallEnabled: true,
+  autoModeSwitch: true,
+  createdAt: DateTime.now(),
+  updatedAt: DateTime.now(),
 );
 
 // ── Dummy Mode Entities for Skeletonizer Scroll Row ──────────────────────
@@ -71,9 +46,10 @@ final fakeModes = List.generate(
   ),
 );
 
-class ProfileSkeleton extends StatelessWidget {
+class ManageSkeleton extends StatelessWidget {
   final DeviceEntity device;
-  const ProfileSkeleton({super.key, required this.device});
+
+  const ManageSkeleton({super.key, required this.device});
 
   @override
   Widget build(BuildContext context) {
@@ -83,12 +59,13 @@ class ProfileSkeleton extends StatelessWidget {
         baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         highlightColor: Theme.of(context).colorScheme.surface,
       ),
-      child: ProfileBody(
-        profile: fakeProfileEntity,
+      child: ManageBody(
         device: device,
-        modes: fakeModes, // Passes fake modes so Skeletonizer draws mode chips
+        settings: fakeSettingsEntity,
+        modes: fakeModes,
         activeModeId: 'fake_0',
         isSwitchingMode: false,
+        isUpdatingSettings: false,
       ),
     );
   }
