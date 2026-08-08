@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/colour_util.dart';
+
 class BottomMetricsBar extends StatelessWidget {
   final int battery;
   final String networkStatus;
@@ -71,14 +73,14 @@ class BottomMetricsBar extends StatelessWidget {
                 Icon(
                   Icons.battery_4_bar_rounded,
                   size: 14,
-                  color: Colors.amber[700],
+                  color: batteryColor(battery),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '$battery%',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: Colors.amber[700],
+                    color: batteryColor(battery),
                   ),
                 ),
               ],

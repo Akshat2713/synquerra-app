@@ -44,14 +44,14 @@ class AttentionBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$attentionCount needs attention',
+                      '$attentionCount ${attentionCount == 1 ? 'device needs' : 'devices need'} attention',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
                     Text(
-                      '${devices.length} devices',
+                      'Of ${devices.length} ${devices.length == 1 ? 'device' : 'devices'}',
                       style: TextStyle(
                         fontSize: 12,
                         color: colors.onSurfaceVariant,

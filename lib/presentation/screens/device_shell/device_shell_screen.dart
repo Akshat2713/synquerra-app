@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../domain/entities/alerts/alert_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
@@ -53,7 +53,11 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
   void _openAttentionSheet(BuildContext context) {
     final deviceListBloc = context.read<DeviceListBloc>();
     final landingBloc = context.read<LandingBloc>();
-    final alertsBloc = context.read<AlertsBloc>();
+    final landingState = landingBloc.state;
+    final alerts = landingState is LandingLoaded
+        ? landingState.alerts
+        : <AlertEntity>[];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -62,9 +66,8 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         providers: [
           BlocProvider.value(value: deviceListBloc),
           BlocProvider.value(value: landingBloc),
-          BlocProvider.value(value: alertsBloc),
         ],
-        child: const AttentionDeviceSheet(),
+        child: AttentionDeviceSheet(alerts: alerts),
       ),
     );
   }
