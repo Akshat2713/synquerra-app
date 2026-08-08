@@ -23,6 +23,10 @@ class _TimelineSliderState extends State<TimelineSlider> {
   bool _isPlaying = false;
   Timer? _playbackTimer;
 
+  // 1. Playback Speed State & Available Options
+  double _selectedSpeed = 1.0;
+  final List<double> _speedOptions = [1.0, 2.0, 4.0];
+
   @override
   void dispose() {
     _stopPlayback();
@@ -37,6 +41,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
   }
 
+  // 2. Dynamic playback timing based on selected speed
   void _startPlayback() {
     if (widget.points.isEmpty) return;
     setState(() => _isPlaying = true);
@@ -45,7 +50,14 @@ class _TimelineSliderState extends State<TimelineSlider> {
       widget.onChanged(0);
     }
 
-    _playbackTimer = Timer.periodic(const Duration(milliseconds: 800), (timer) {
+    _playbackTimer?.cancel();
+
+    // Calculate dynamic delay: Base is 800ms at 1x
+    final intervalMs = (800 / _selectedSpeed).round();
+
+    _playbackTimer = Timer.periodic(Duration(milliseconds: intervalMs), (
+      timer,
+    ) {
       if (widget.currentIndex < widget.points.length - 1) {
         widget.onChanged(widget.currentIndex + 1);
       } else {
@@ -58,6 +70,19 @@ class _TimelineSliderState extends State<TimelineSlider> {
     _playbackTimer?.cancel();
     if (mounted && _isPlaying) {
       setState(() => _isPlaying = false);
+    }
+  }
+
+  // 3. Handle speed selection change
+  void _updateSpeed(double speed) {
+    if (_selectedSpeed == speed) return;
+    setState(() {
+      _selectedSpeed = speed;
+    });
+
+    // If already playing, re-arm the timer immediately with new speed
+    if (_isPlaying) {
+      _startPlayback();
     }
   }
 
@@ -109,7 +134,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
             ),
           ),
 
-          // Primary Timestamp Header (Point count badge removed)
+          // Primary Timestamp Header
           if (current != null) ...[
             Row(
               children: [
@@ -174,54 +199,134 @@ class _TimelineSliderState extends State<TimelineSlider> {
             const SizedBox(height: 8),
           ],
 
-          // Playback & Interactive Slider
-          // Playback Controls (Centered Above Slider)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Playback & Interactive Controls
+          Stack(
+            alignment: Alignment.center,
             children: [
-              // Step Backward
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.skip_previous_rounded),
-                iconSize: 26,
-                color: colors.onSurfaceVariant,
-                onPressed: hasPoints && safeIndex > 0
-                    ? () => widget.onChanged(safeIndex - 1)
-                    : null,
-              ),
-              const SizedBox(width: 16),
+              // Playback Controls (Centered)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Step Backward
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.skip_previous_rounded),
+                    iconSize: 26,
+                    color: colors.onSurfaceVariant,
+                    onPressed: hasPoints && safeIndex > 0
+                        ? () => widget.onChanged(safeIndex - 1)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
 
-              // Play / Pause
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                icon: Icon(
-                  _isPlaying
-                      ? Icons.pause_circle_filled_rounded
-                      : Icons.play_circle_fill_rounded,
+                  // Play / Pause
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      _isPlaying
+                          ? Icons.pause_circle_filled_rounded
+                          : Icons.play_circle_fill_rounded,
+                    ),
+                    iconSize: 36,
+                    color: colors.primary,
+                    onPressed: hasPoints ? _togglePlayback : null,
+                  ),
+                  const SizedBox(width: 16),
+
+                  // Step Forward
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.skip_next_rounded),
+                    iconSize: 26,
+                    color: colors.onSurfaceVariant,
+                    onPressed: hasPoints && safeIndex < sortedPoints.length - 1
+                        ? () => widget.onChanged(safeIndex + 1)
+                        : null,
+                  ),
+                ],
+              ),
+
+              // 4. Speed Multiplier Dropdown (Positioned on the Right)
+              Positioned(
+                right: 0,
+                child: PopupMenuButton<double>(
+                  tooltip: 'Playback Speed',
+                  initialValue: _selectedSpeed,
+                  onSelected: _updateSpeed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  itemBuilder: (context) => _speedOptions.map((speed) {
+                    final label =
+                        '${speed.toStringAsFixed(speed == speed.toInt() ? 0 : 1)}x';
+                    return PopupMenuItem<double>(
+                      value: speed,
+                      height: 36,
+                      child: Row(
+                        children: [
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontWeight: _selectedSpeed == speed
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: _selectedSpeed == speed
+                                  ? colors.primary
+                                  : colors.onSurface,
+                            ),
+                          ),
+                          if (_selectedSpeed == speed) ...[
+                            const Spacer(),
+                            Icon(
+                              Icons.check_rounded,
+                              size: 16,
+                              color: colors.primary,
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: colors.outlineVariant.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${_selectedSpeed.toStringAsFixed(_selectedSpeed == _selectedSpeed.toInt() ? 0 : 1)}x',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: colors.primary,
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down_rounded,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                iconSize: 36,
-                color: colors.primary,
-                onPressed: hasPoints ? _togglePlayback : null,
-              ),
-              const SizedBox(width: 16),
-
-              // Step Forward
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.skip_next_rounded),
-                iconSize: 26,
-                color: colors.onSurfaceVariant,
-                onPressed: hasPoints && safeIndex < sortedPoints.length - 1
-                    ? () => widget.onChanged(safeIndex + 1)
-                    : null,
               ),
             ],
           ),
 
-          // Seek Slider (Full Width Below Controls)
+          // Seek Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 4,
@@ -245,7 +350,8 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   : null,
             ),
           ),
-          // Timeline Start (Past) & End (Present) Labels
+
+          // Start & End Timestamps
           if (hasPoints)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -253,9 +359,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _formatDate(
-                      sortedPoints.first.deviceTimestamp,
-                    ), // Oldest Date
+                    _formatDate(sortedPoints.first.deviceTimestamp),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -263,9 +367,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     ),
                   ),
                   Text(
-                    _formatDate(
-                      sortedPoints.last.deviceTimestamp,
-                    ), // Newest Date
+                    _formatDate(sortedPoints.last.deviceTimestamp),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -280,8 +382,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
     );
   }
 
-  // --- Utility & Formatting Helpers ---
-
+  // --- Helpers ---
   String _formatSpeed(dynamic speed) {
     if (speed == null) return 'N/A';
     if (speed is num) {

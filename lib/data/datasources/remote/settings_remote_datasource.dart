@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
+import 'package:synquerra/data/models/settings/send_query_command_model.dart';
 import '../../../core/error/app_exceptions.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../models/settings/settings_model.dart';
@@ -92,5 +93,40 @@ class SettingsRemoteDataSource {
     }
 
     return SettingsModel.fromJson(rawData);
+  }
+
+  /// Sends a query command to the device to retrieve telemetry data
+  Future<SendQueryCommandModel> sendQueryCommand({
+    required String deviceId,
+  }) async {
+    AppLogger.d(
+      'SettingsRemoteDataSource',
+      'sendQueryCommand() called for deviceId: $deviceId',
+    );
+
+    final response = await _dioClient.dio.post(
+      ApiConstants
+          .sendQueryCommand, // Ensure this endpoint path is defined in ApiConstants
+      data: {'device_id': deviceId},
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to send query command.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final rawData = body['data'];
+    if (rawData == null || rawData is! Map<String, dynamic>) {
+      throw ServerException(
+        message: 'Invalid response received after sending query command.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return SendQueryCommandModel.fromJson(rawData);
   }
 }

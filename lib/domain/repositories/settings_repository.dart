@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:synquerra/domain/entities/settings/send_query_command_entity.dart';
 import '../entities/settings/settings_entity.dart';
 import '../failures/failure.dart';
 
@@ -14,5 +15,10 @@ abstract class SettingsRepository {
     String? phoneNum1,
     String? phoneNum2,
     String? controlRoomNum,
+  });
+
+  /// Sends a query command to the device
+  Future<Either<Failure, SendQueryCommandEntity>> sendQueryCommand({
+    required String deviceId,
   });
 }

@@ -60,6 +60,8 @@ class ApiConstants {
   // ── Settings ─────────────────────────────────────────
   static const String getSettings = '/api/v1/device-settings/get';
   static const String updatephone = '/api/v1/device-settings/update-core';
+  static const String sendQueryCommand =
+      '/api/v1/device-settings/send-query-command';
 
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;

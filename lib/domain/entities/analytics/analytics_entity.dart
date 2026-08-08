@@ -39,8 +39,12 @@ class AnalyticsEntity extends Equatable {
     this.formattedAddress,
   });
 
-  bool get hasLocation => latitude != null && longitude != null;
-
+  bool get hasLocation =>
+      latitude != null &&
+      longitude != null &&
+      latitude != 0.0 &&
+      longitude != 0.0 &&
+      geofenceName != 'gps_error';
   @override
   List<Object?> get props => [
     id,

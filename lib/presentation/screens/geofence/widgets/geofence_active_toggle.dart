@@ -23,8 +23,6 @@ class GeofenceActiveToggle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.toggle_on_outlined, color: colors.primary),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
