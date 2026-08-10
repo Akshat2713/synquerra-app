@@ -57,7 +57,6 @@ class SettingsRemoteDataSource {
     required String deviceId,
     String? phoneNum1,
     String? phoneNum2,
-    String? controlRoomNum,
   }) async {
     AppLogger.d(
       'SettingsRemoteDataSource',
@@ -70,7 +69,6 @@ class SettingsRemoteDataSource {
         'device_id': deviceId,
         if (phoneNum1 != null) 'phonenum1': phoneNum1,
         if (phoneNum2 != null) 'phonenum2': phoneNum2,
-        if (controlRoomNum != null) 'controlroomnum': controlRoomNum,
       },
     );
 

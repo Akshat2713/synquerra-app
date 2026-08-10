@@ -1,8 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../app/app_router.dart';
 import '../../../blocs/alerts/alerts_bloc.dart';
+import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../utils/colour_util.dart';
 
 class NotificationBell extends StatefulWidget {
@@ -32,6 +37,8 @@ class _NotificationBellState extends State<NotificationBell>
     AppLogger.d('NotificationBell', '_open() called');
     final overlay = Overlay.of(context);
     final alertsBloc = context.read<AlertsBloc>();
+    final deviceListBloc = context.read<DeviceListBloc>();
+    final authBloc = context.read<AuthBloc>();
 
     _barrierEntry = OverlayEntry(
       builder: (_) => GestureDetector(
@@ -67,8 +74,12 @@ class _NotificationBellState extends State<NotificationBell>
                 alignment: Alignment.topRight,
                 child: FadeTransition(
                   opacity: _controller,
-                  child: BlocProvider.value(
-                    value: alertsBloc,
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider.value(value: alertsBloc),
+                      BlocProvider.value(value: deviceListBloc),
+                      BlocProvider.value(value: authBloc),
+                    ],
                     child: _AlertsPanel(onClose: _close),
                   ),
                 ),
@@ -164,6 +175,14 @@ class _AlertsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final deviceState = context.watch<DeviceListBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserFullName = authState is AuthAuthenticated
+        ? authState.user.fullName
+        : '—';
+    final devices = deviceState is DeviceListLoaded
+        ? deviceState.devices
+        : <DeviceEntity>[];
     return Material(
       elevation: 8,
       borderRadius: BorderRadius.circular(16),
@@ -225,30 +244,52 @@ class _AlertsPanel extends StatelessWidget {
                   Divider(height: 1, color: colors.outlineVariant),
               itemBuilder: (context, i) {
                 final alert = sorted[i];
+                final device = devices
+                    .where((d) => d.imei == alert.imei)
+                    .firstOrNull;
+                final name =
+                    device?.displayOwnerName(currentUserFullName) ?? alert.imei;
+
                 return ListTile(
                   dense: true,
-                  leading: Icon(
+                  leading: CircleAvatar(
+                    backgroundImage: device?.carrier?.profilePhoto != null
+                        ? CachedNetworkImageProvider(
+                            device!.carrier!.profilePhoto!,
+                          )
+                        : null,
+                    child: device?.carrier?.profilePhoto == null
+                        ? const Icon(Icons.person)
+                        : null,
+                  ),
+                  title: Text(name),
+                  subtitle: Text(
+                    alert.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Icon(
                     alert.severity == AlertSeverity.critical
                         ? Icons.error_rounded
                         : Icons.warning_amber_rounded,
                     color: alertColor(alert),
                     size: 20,
                   ),
-                  title: Text(
-                    alert.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    alert.imei,
-                    style: const TextStyle(fontSize: 11),
-                  ),
                   onTap: () {
                     debugPrint(
                       '[NotificationBell/_AlertsPanel] alert tapped: ${alert.id}',
                     );
-                    // TODO: navigate to this alert's device / mark acknowledged
                     onClose();
+                    if (device != null) {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.deviceDetail,
+                        arguments: DeviceDetailArgs(
+                          device: device,
+                          deviceListBloc: context.read<DeviceListBloc>(),
+                        ),
+                      );
+                    }
                   },
                 );
               },

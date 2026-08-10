@@ -97,15 +97,15 @@ class _LoadedBody extends StatelessWidget {
         final aTime = DateTimeFormatter.parseUtcToLocal(a.createdAt);
         final bTime = DateTimeFormatter.parseUtcToLocal(b.createdAt);
         if (aTime == null || bTime == null) return 0;
-        return bTime.compareTo(aTime); // newest first
+        return bTime.compareTo(aTime);
       });
-
     return deviceAlerts
         .map(
           (a) => ActivityFeedEntry(
             title: a.description.isNotEmpty ? a.description : a.code,
             time: DateTimeFormatter.toTimeAmPm(a.createdAt),
             color: alertColor(a),
+            date: DateTimeFormatter.parseUtcToLocal(a.createdAt), // add this
           ),
         )
         .toList();

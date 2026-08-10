@@ -12,11 +12,9 @@ class UpdatePhoneNumbersUseCase {
     required String deviceId,
     String? phoneNum1,
     String? phoneNum2,
-    String? controlRoomNum,
   }) => _repository.updatePhoneNumbers(
     deviceId: deviceId,
     phoneNum1: phoneNum1,
     phoneNum2: phoneNum2,
-    controlRoomNum: controlRoomNum,
   );
 }

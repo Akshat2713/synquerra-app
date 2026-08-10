@@ -147,7 +147,6 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
       deviceId: event.deviceId,
       phoneNum1: event.phoneNum1,
       phoneNum2: event.phoneNum2,
-      controlRoomNum: event.controlRoomNum,
     );
 
     result.fold(

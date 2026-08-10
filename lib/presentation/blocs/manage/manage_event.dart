@@ -36,15 +36,13 @@ class ManagePhoneNumbersUpdateRequested extends ManageEvent {
   final String deviceId;
   final String? phoneNum1;
   final String? phoneNum2;
-  final String? controlRoomNum;
 
   const ManagePhoneNumbersUpdateRequested({
     required this.deviceId,
     this.phoneNum1,
     this.phoneNum2,
-    this.controlRoomNum,
   });
 
   @override
-  List<Object?> get props => [deviceId, phoneNum1, phoneNum2, controlRoomNum];
+  List<Object?> get props => [deviceId, phoneNum1, phoneNum2];
 }

@@ -14,7 +14,6 @@ abstract class SettingsRepository {
     required String deviceId,
     String? phoneNum1,
     String? phoneNum2,
-    String? controlRoomNum,
   });
 
   /// Sends a query command to the device

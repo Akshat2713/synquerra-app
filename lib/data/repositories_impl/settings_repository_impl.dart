@@ -25,13 +25,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
     required String deviceId,
     String? phoneNum1,
     String? phoneNum2,
-    String? controlRoomNum,
   }) => safeCall(
     call: () => _remote.updatePhoneNumbers(
       deviceId: deviceId,
       phoneNum1: phoneNum1,
       phoneNum2: phoneNum2,
-      controlRoomNum: controlRoomNum,
     ),
     toEntity: (m) => m.toEntity(),
   );

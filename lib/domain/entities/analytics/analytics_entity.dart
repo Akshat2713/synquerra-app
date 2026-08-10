@@ -43,8 +43,7 @@ class AnalyticsEntity extends Equatable {
       latitude != null &&
       longitude != null &&
       latitude != 0.0 &&
-      longitude != 0.0 &&
-      geofenceName != 'gps_error';
+      longitude != 0.0;
   @override
   List<Object?> get props => [
     id,

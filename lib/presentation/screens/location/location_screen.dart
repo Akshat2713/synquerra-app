@@ -154,7 +154,6 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
             ),
-            const EmptyDataBanner(),
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 12,
@@ -195,17 +194,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
             ),
-            // Positioned(
-            //   top: MediaQuery.of(context).padding.top + 8,
-            //   right: 12,
-            //   child: MapControlsColumn(
-            //     mapController: _mapController,
-            //     userLocationBloc: _userLocationBloc,
-            //     deviceCenter: _defaultCenter,
-            //   ),
-            // ),
-            // Address card — sits just below the view tabs, works for both
-            // live and history modes since it reads AnalyticsLoaded.currentPoint.
+
             Positioned(
               top: MediaQuery.of(context).padding.top + 8 + 54,
               left: 12,
@@ -229,6 +218,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 },
               ),
             ),
+
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -249,6 +239,12 @@ class _LocationScreenState extends State<LocationScreen> {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Use horizontal padding to constrain width safely
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: const EmptyDataBanner(),
+                        ),
+                        const SizedBox(height: 20),
                         Skeletonizer(
                           enabled: isLoading,
                           child: TimelineSlider(

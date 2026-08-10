@@ -16,7 +16,6 @@ class AttentionDeviceSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final deviceState = context.watch<DeviceListBloc>().state;
-    // remove: final alertsState = context.watch<AlertsBloc>().state;
     final authState = context.watch<AuthBloc>().state;
     final currentUserFullName = authState is AuthAuthenticated
         ? authState.user.fullName
@@ -70,6 +69,9 @@ class AttentionDeviceSheet extends StatelessWidget {
                     final deviceAlerts = alerts
                         .where((a) => a.imei == d.imei && !a.isAcknowledged)
                         .toList();
+                    final criticalCount = deviceAlerts
+                        .where((a) => a.isCritical)
+                        .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
                     final name = d.displayOwnerName(currentUserFullName);
                     return ListTile(
@@ -92,9 +94,9 @@ class AttentionDeviceSheet extends StatelessWidget {
                       ),
                       title: Text(name),
                       subtitle: Text(
-                        deviceAlerts.isEmpty
-                            ? 'No active alerts'
-                            : '${deviceAlerts.length} unacknowledged alert${deviceAlerts.length > 1 ? 's' : ''}',
+                        criticalCount == 0
+                            ? 'No critical alerts'
+                            : '$criticalCount critical alert${criticalCount > 1 ? 's' : ''}',
                       ),
                       onTap: () {
                         final deviceListBloc = context.read<DeviceListBloc>();

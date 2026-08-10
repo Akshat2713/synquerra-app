@@ -25,9 +25,6 @@ class EmergencyContactsSection extends StatelessWidget {
           ? ''
           : settings.phoneNum2,
     );
-    final controlRoomController = TextEditingController(
-      text: settings.controlRoomNum ?? '',
-    );
 
     final colors = Theme.of(context).colorScheme;
 
@@ -82,16 +79,7 @@ class EmergencyContactsSection extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controlRoomController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Control Room Number (Optional)',
-                  prefixIcon: Icon(Icons.support_agent_rounded),
-                  border: OutlineInputBorder(),
-                ),
-              ),
+
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -111,7 +99,6 @@ class EmergencyContactsSection extends StatelessWidget {
                         deviceId: deviceId,
                         phoneNum1: primaryController.text.trim(),
                         phoneNum2: secondaryController.text.trim(),
-                        controlRoomNum: controlRoomController.text.trim(),
                       ),
                     );
                   },
