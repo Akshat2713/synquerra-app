@@ -1,5 +1,5 @@
 import 'dart:isolate';
-import 'package:flutter/foundation.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/alerts/alert_model.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
@@ -11,7 +11,7 @@ class AlertsRemoteDataSource {
   AlertsRemoteDataSource(this._dioClient);
 
   Future<List<AlertModel>> getAlerts(String? imei) async {
-    debugPrint('[AlertsRemoteDataSource] getAlerts() called');
+    AppLogger.d('AlertsRemoteDataSource', 'getAlerts() called');
     final response = await _dioClient.dio.get(ApiConstants.alerts);
 
     final body = response.data as Map<String, dynamic>;
@@ -32,7 +32,7 @@ class AlertsRemoteDataSource {
           .toList(),
     );
 
-    debugPrint('[AlertsRemoteDataSource] Fetched ${alerts.length} alerts');
+    AppLogger.d('AlertsRemoteDataSource', 'Fetched ${alerts.length} alerts');
 
     return alerts;
   }

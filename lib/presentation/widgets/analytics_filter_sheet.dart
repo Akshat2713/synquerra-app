@@ -1,5 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../blocs/analytics/analytics_bloc.dart';
+import '../../domain/entities/analytics/analytics_filter.dart';
 
 void showAnalyticsFilterSheet({
   required BuildContext context,
@@ -31,18 +32,20 @@ void showCustomRangePicker({
       activeFilter: AnalyticsFilter.custom,
       onFilterSelected: (_) {},
       onCustomSelected: onCustomSelected,
-      startAtCustomPicker: true, // new param
+      startAtCustomPicker: true,
     ),
   );
 }
+
+/// Allowed durations (hours) for a custom range. Max is 24h per business rule.
+const List<int> _kDurationOptions = [2, 4, 6, 12, 18, 24];
 
 class _AnalyticsFilterSheet extends StatefulWidget {
   final AnalyticsFilter activeFilter;
   final void Function(AnalyticsFilter filter) onFilterSelected;
   final void Function(DateTime start, DateTime end) onCustomSelected;
-
-  // _AnalyticsFilterSheet constructor — add:
   final bool startAtCustomPicker;
+
   const _AnalyticsFilterSheet({
     required this.activeFilter,
     required this.onFilterSelected,
@@ -56,36 +59,57 @@ class _AnalyticsFilterSheet extends StatefulWidget {
 
 class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
   bool _showCustomPicker = false;
-  DateTime? _startDate;
-  DateTime? _endDate;
+
+  DateTime? _selectedDate;
+  int _selectedHour = 0; // 0-23, index into the CupertinoPicker
+  int _durationIndex = 0; // index into _kDurationOptions
+
+  late final FixedExtentScrollController _hourController;
+  late final FixedExtentScrollController _durationController;
 
   @override
   void initState() {
     super.initState();
     _showCustomPicker = widget.startAtCustomPicker;
+    _selectedHour = DateTime.now().hour;
+    _hourController = FixedExtentScrollController(initialItem: _selectedHour);
+    _durationController = FixedExtentScrollController(
+      initialItem: _durationIndex,
+    );
   }
 
-  Future<void> _pickDate({required bool isStart}) async {
+  @override
+  void dispose() {
+    _hourController.dispose();
+    _durationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: isStart ? (_startDate ?? now) : (_endDate ?? now),
+      initialDate: _selectedDate ?? now,
       firstDate: DateTime(2020),
       lastDate: now,
     );
     if (picked == null) return;
-    setState(() {
-      if (isStart) {
-        _startDate = picked;
-        // Reset end date if it's before new start
-        if (_endDate != null && _endDate!.isBefore(_startDate!)) {
-          _endDate = null;
-        }
-      } else {
-        _endDate = picked;
-      }
-    });
+    setState(() => _selectedDate = picked);
   }
+
+  String _hourLabel(int hour) {
+    final period = hour < 12 ? 'AM' : 'PM';
+    final displayHour = hour % 12 == 0 ? 12 : hour % 12;
+    return '$displayHour:00 $period';
+  }
+
+  DateTime get _startDateTime {
+    final d = _selectedDate ?? DateTime.now();
+    return DateTime(d.year, d.month, d.day, _selectedHour);
+  }
+
+  DateTime get _endDateTime =>
+      _startDateTime.add(Duration(hours: _kDurationOptions[_durationIndex]));
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +129,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle bar
           Center(
             child: Container(
               width: 40,
@@ -117,7 +140,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             ),
           ),
           const SizedBox(height: 20),
-
           if (!_showCustomPicker) ...[
             Text(
               'Filter by Time',
@@ -154,7 +176,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               },
               colors: colors,
             ),
-
             _filterOption(
               label: 'Custom Range',
               icon: Icons.tune_rounded,
@@ -163,7 +184,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               colors: colors,
             ),
           ] else ...[
-            // ── Custom date picker ───────────────────────────────
+            // ── Custom date/time picker (max 24h range) ──────────
             Row(
               children: [
                 if (!widget.startAtCustomPicker) ...[
@@ -185,21 +206,74 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            _dateTile(
-              label: 'Start Date',
-              date: _startDate,
-              onTap: () => _pickDate(isStart: true),
-              colors: colors,
-            ),
-            const SizedBox(height: 10),
-            _dateTile(
-              label: 'End Date',
-              date: _endDate,
-              onTap: () => _pickDate(isStart: false),
-              colors: colors,
+            const SizedBox(height: 4),
+            Text(
+              'Max range is 24 hours',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
+
+            _dateTile(
+              label: 'Date',
+              date: _selectedDate,
+              onTap: _pickDate,
+              colors: colors,
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'Start Time',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _wheelPicker(
+              controller: _hourController,
+              itemCount: 24,
+              labelBuilder: _hourLabel,
+              onChanged: (i) => setState(() => _selectedHour = i),
+              colors: colors,
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'Duration',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _wheelPicker(
+              controller: _durationController,
+              itemCount: _kDurationOptions.length,
+              labelBuilder: (i) => '${_kDurationOptions[i]} hrs',
+              onChanged: (i) => setState(() => _durationIndex = i),
+              colors: colors,
+            ),
+            const SizedBox(height: 12),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '${_formatDateTime(_startDateTime)}  →  ${_formatDateTime(_endDateTime)}',
+                style: TextStyle(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
             Row(
               children: [
                 Expanded(
@@ -213,10 +287,13 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _startDate != null && _endDate != null
+                    onPressed: _selectedDate != null
                         ? () {
                             Navigator.pop(context);
-                            widget.onCustomSelected(_startDate!, _endDate!);
+                            widget.onCustomSelected(
+                              _startDateTime,
+                              _endDateTime,
+                            );
                           }
                         : null,
                     child: const Text('Apply'),
@@ -228,6 +305,51 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         ],
       ),
     );
+  }
+
+  Widget _wheelPicker({
+    required FixedExtentScrollController controller,
+    required int itemCount,
+    required String Function(int index) labelBuilder,
+    required void Function(int index) onChanged,
+    required ColorScheme colors,
+  }) {
+    return Container(
+      height: 120,
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.outline),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: CupertinoPicker(
+        scrollController: controller,
+        itemExtent: 36,
+        onSelectedItemChanged: onChanged,
+        selectionOverlay: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+              bottom: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+            ),
+          ),
+        ),
+        children: List.generate(
+          itemCount,
+          (i) => Center(
+            child: Text(
+              labelBuilder(i),
+              style: TextStyle(color: colors.onSurface, fontSize: 15),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final d =
+        '${dt.day.toString().padLeft(2, '0')}/'
+        '${dt.month.toString().padLeft(2, '0')}';
+    return '$d ${_hourLabel(dt.hour)}';
   }
 
   Widget _filterOption({

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/alerts/alert_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../../domain/utils/alert_device_matcher.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../../utils/colour_util.dart';
 import '../../utils/date_time_formatter.dart';
-import '../../utils/device_alert_matcher.dart';
 import 'landing_skeleton.dart';
 import 'widgets/activity_feed_card.dart';
 import 'widgets/attention_banner.dart';
@@ -34,7 +34,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Future<void> _onRefresh() async {
     final bloc = context.read<LandingBloc>();
-    bloc.add(LandingRefreshRequested(widget.device));
+    bloc.add(LandingLoadRequested(widget.device));
     await bloc.stream.firstWhere((s) => s is! LandingLoading);
   }
 
@@ -43,7 +43,10 @@ class _LandingScreenState extends State<LandingScreen> {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colors.surface,
-      appBar: AppBar(title: const Text('Home'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('AADYA', style: TextStyle(fontSize: 25)),
+        centerTitle: true,
+      ),
       body: BlocBuilder<LandingBloc, LandingState>(
         builder: (context, state) {
           if (state is LandingInitial || state is LandingLoading) {
@@ -94,15 +97,15 @@ class _LoadedBody extends StatelessWidget {
         final aTime = DateTimeFormatter.parseUtcToLocal(a.createdAt);
         final bTime = DateTimeFormatter.parseUtcToLocal(b.createdAt);
         if (aTime == null || bTime == null) return 0;
-        return bTime.compareTo(aTime); // newest first
+        return bTime.compareTo(aTime);
       });
-
     return deviceAlerts
         .map(
           (a) => ActivityFeedEntry(
             title: a.description.isNotEmpty ? a.description : a.code,
             time: DateTimeFormatter.toTimeAmPm(a.createdAt),
             color: alertColor(a),
+            date: DateTimeFormatter.parseUtcToLocal(a.createdAt), // add this
           ),
         )
         .toList();
@@ -121,11 +124,11 @@ class _LoadedBody extends StatelessWidget {
     final statusLogs = [
       const StatusLogEntry(label: 'Left home', value: '7:58 AM'),
       const StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
-      const StatusLogEntry(
-        label: 'Pattern check',
-        value: 'Normal',
-        isHighlightValue: true,
-      ),
+      // const StatusLogEntry(
+      //   label: 'Pattern check',
+      //   value: 'Normal',
+      //   isHighlightValue: true,
+      // ),
     ];
     const defaultSchedule = <ScheduleEntry>[
       ScheduleEntry(time: '18:00', label: 'Evening routine', id: 'uiyghcvjhb'),

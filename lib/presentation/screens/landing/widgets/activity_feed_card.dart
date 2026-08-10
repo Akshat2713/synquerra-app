@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/date_time_formatter.dart';
+
 class ActivityFeedEntry {
   final String title;
   final String time;
   final Color color;
-
+  final DateTime? date;
   const ActivityFeedEntry({
     required this.title,
     required this.time,
     required this.color,
+    this.date,
   });
 }
 
@@ -23,6 +26,80 @@ class ActivityFeedCard extends StatefulWidget {
 
 class _ActivityFeedCardState extends State<ActivityFeedCard> {
   bool _isExpanded = false;
+
+  List<Widget> _buildGroupedItems(ColorScheme colors) {
+    final today = <ActivityFeedEntry>[];
+    final yesterday = <ActivityFeedEntry>[];
+    final older = <ActivityFeedEntry>[];
+
+    for (final item in widget.activities) {
+      if (item.date == null) {
+        older.add(item);
+      } else if (DateTimeFormatter.isToday(item.date!)) {
+        today.add(item);
+      } else if (DateTimeFormatter.isYesterday(item.date!)) {
+        yesterday.add(item);
+      } else {
+        older.add(item);
+      }
+    }
+
+    final widgets = <Widget>[];
+    if (today.isNotEmpty) {
+      widgets.add(_sectionHeader('Today', colors));
+      widgets.addAll(today.map((item) => _buildItemRow(item, colors)));
+    }
+    if (yesterday.isNotEmpty) {
+      widgets.add(_sectionHeader('Yesterday', colors));
+      widgets.addAll(yesterday.map((item) => _buildItemRow(item, colors)));
+    }
+    if (older.isNotEmpty) {
+      widgets.add(_sectionHeader('Earlier', colors));
+      widgets.addAll(older.map((item) => _buildItemRow(item, colors)));
+    }
+    return widgets;
+  }
+
+  Widget _sectionHeader(String label, ColorScheme colors) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+          letterSpacing: 0.5,
+        ),
+      ),
+    ),
+  );
+
+  Widget _buildItemRow(ActivityFeedEntry item, ColorScheme colors) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      children: [
+        Icon(Icons.circle, size: 8, color: item.color),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            item.title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: item.color,
+            ),
+          ),
+        ),
+        const SizedBox(width: 3),
+        Text(
+          item.time,
+          style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +139,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -77,37 +154,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
               height: 1,
               color: colors.outlineVariant.withValues(alpha: 0.3),
             ),
-            ...widget.activities.map(
-              (item) => Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.circle, size: 8, color: item.color),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: item.color,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      item.time,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            ..._buildGroupedItems(colors),
           ],
         ],
       ),

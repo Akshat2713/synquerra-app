@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:isolate';
 import '../../models/signup/person_model.dart';
-
+import '../../../core/utils/app_logger.dart';
 import '../../../core/error/app_exceptions.dart';
 import '../../network/api_constants.dart';
 import '../../network/dio_client.dart';
@@ -25,7 +25,7 @@ class SignupRemoteDataSource {
     required String country,
     required String pincode,
   }) async {
-    debugPrint('[SignupRemoteDataSource] createPerson() called for $email');
+    AppLogger.d('SignupRemoteDataSource', 'createPerson() called for $email');
 
     final response = await _dioClient.dio.post(
       ApiConstants.createPerson,
@@ -69,7 +69,7 @@ class SignupRemoteDataSource {
     // ← Isolate.run AFTER status check, passing rawData not full body
     final person = await Isolate.run(() => PersonModel.fromJson(rawData));
 
-    debugPrint('[SignupRemoteDataSource] Person created: ${person.personId}');
+    AppLogger.d('SignupRemoteDataSource', 'Person created: ${person.personId}');
     return person;
   }
 

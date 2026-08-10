@@ -1,7 +1,16 @@
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // Core & Network
+import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../domain/repositories/settings_repository.dart';
+import '../../domain/usecases/settings/get_settings_usecase.dart';
+import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../../presentation/blocs/settings/settings_bloc.dart';
+import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
 
 // Entities
@@ -13,7 +22,6 @@ import '../../data/datasources/local/signup_local_datasource.dart';
 import '../../data/datasources/local/theme_local_datasource.dart';
 
 // Data Sources (Remote)
-import '../../data/datasources/remote/alerts_errors_remote_datasource.dart';
 import '../../data/datasources/remote/alerts_remote_datasource.dart';
 import '../../data/datasources/remote/analytics_remote_datasource.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
@@ -24,7 +32,6 @@ import '../../data/datasources/remote/mode_remote_datasource.dart';
 import '../../data/datasources/remote/signup_remote_datasource.dart';
 
 // Repositories (Interfaces)
-import '../../domain/repositories/alerts_errors_repository.dart';
 import '../../domain/repositories/alerts_repository.dart';
 import '../../domain/repositories/analytics_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -36,7 +43,6 @@ import '../../domain/repositories/mode_repository.dart';
 import '../../domain/repositories/signup_repository.dart';
 
 // Repository Implementations
-import '../../data/repositories_impl/alerts_errors_repository_impl.dart';
 import '../../data/repositories_impl/alerts_repository_impl.dart';
 import '../../data/repositories_impl/analytics_repository_impl.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
@@ -46,15 +52,17 @@ import '../../data/repositories_impl/link_device_repository_impl.dart';
 import '../../data/repositories_impl/location_repository_impl.dart';
 import '../../data/repositories_impl/mode_repository_impl.dart';
 import '../../data/repositories_impl/signup_repository_impl.dart';
+import '../../data/repositories_impl/theme_repository_impl.dart';
 
 // Use Cases
+import '../../domain/repositories/theme_repository.dart';
 import '../../domain/usecases/alerts/get_alerts_usecase.dart';
-import '../../domain/usecases/alerts_errors/get_alerts_errors_usecase.dart';
 import '../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../domain/usecases/auth/check_auth_status_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/device/get_device_list_usecase.dart';
+import '../../domain/usecases/device/invalidate_device_cache_usecase.dart';
 import '../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../domain/usecases/geofence/edit_geofence_usecase.dart';
@@ -70,7 +78,6 @@ import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 
 // Blocs & Cubits
 import '../../presentation/blocs/alerts/alerts_bloc.dart';
-import '../../presentation/blocs/alerts_errors/alerts_errors_bloc.dart';
 import '../../presentation/blocs/analytics/analytics_bloc.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/device_list/device_list_bloc.dart';
@@ -78,7 +85,7 @@ import '../../presentation/blocs/geofence/geofence_bloc.dart';
 import '../../presentation/blocs/landing/landing_bloc.dart';
 import '../../presentation/blocs/link_device/link_device_bloc.dart';
 import '../../presentation/blocs/modes/mode_bloc.dart';
-import '../../presentation/blocs/profile/profile_bloc.dart';
+import '../../presentation/blocs/manage/manage_bloc.dart';
 import '../../presentation/blocs/signup/signup_bloc.dart';
 import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
@@ -92,6 +99,9 @@ class UserHolder {
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  await Hive.initFlutter();
+  await MapConfig.init();
+
   // ── Core & External ─────────────────────────────────────
   sl.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
@@ -104,8 +114,17 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<UserHolder>(() => const UserHolder(null));
 
   // ── Theme Feature ───────────────────────────────────────
+
   sl.registerLazySingleton(() => ThemeLocalDataSource(sl()));
-  sl.registerLazySingleton(() => ThemeCubit(sl()));
+  sl.registerLazySingleton<ThemeRepository>(
+    () => ThemeRepositoryImpl(sl<ThemeLocalDataSource>()),
+  );
+
+  sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl<ThemeRepository>()));
+
+  // ── Map Tile ────────────────────────────────────────
+
+  sl.registerLazySingleton<TileProvider>(() => MapConfig.tileProvider);
 
   // ── Auth Feature ────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -159,8 +178,13 @@ Future<void> initDependencies() async {
     () => DeviceRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetDeviceListUseCase(sl()));
+  sl.registerLazySingleton(() => InvalidateDeviceCacheUseCase(sl()));
   sl.registerFactory<DeviceListBloc>(
-    () => DeviceListBloc(getDeviceListUseCase: sl(), deviceRepository: sl()),
+    () => DeviceListBloc(
+      getDeviceListUseCase: sl(),
+      invalidateDeviceCacheUseCase: sl(),
+      userHolder: sl(),
+    ),
   );
 
   // ── Link Device Feature ─────────────────────────────────
@@ -184,18 +208,6 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetAlertsUseCase(sl()));
   sl.registerFactory<AlertsBloc>(() => AlertsBloc(getAlertsUseCase: sl()));
-
-  // ── Alerts & Errors Feature ─────────────────────────────
-  sl.registerLazySingleton<AlertErrorsRemoteDataSource>(
-    () => AlertErrorsRemoteDataSource(sl()),
-  );
-  sl.registerLazySingleton<AlertsErrorsRepository>(
-    () => AlertsErrorsRepositoryImpl(remote: sl()),
-  );
-  sl.registerLazySingleton(() => GetAlertsErrorsUseCase(sl()));
-  sl.registerFactory<AlertsErrorsBloc>(
-    () => AlertsErrorsBloc(getAlertsErrors: sl()),
-  );
 
   // ── Analytics Feature ───────────────────────────────────
   sl.registerLazySingleton<AnalyticsRemoteDataSource>(
@@ -241,8 +253,14 @@ Future<void> initDependencies() async {
   sl.registerFactory<ModeBloc>(
     () => ModeBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
   );
-  sl.registerFactory<ProfileBloc>(
-    () => ProfileBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
+  // ── Manage Feature ──────────────────────────────────────
+  sl.registerFactory<ManageBloc>(
+    () => ManageBloc(
+      getModesUseCase: sl(),
+      switchModeUseCase: sl(),
+      getSettingsUseCase: sl(),
+      updatePhoneNumbersUseCase: sl(),
+    ),
   );
 
   // ── User Location Feature ───────────────────────────────
@@ -252,7 +270,25 @@ Future<void> initDependencies() async {
 
   // ── UI Navigation / Shell Blocs ─────────────────────────
   sl.registerFactory<LandingBloc>(
-    () => LandingBloc(getAnalyticsUseCase: sl(), getAlertsUseCase: sl()),
+    () => LandingBloc(
+      getAnalyticsUseCase: sl(),
+      getAlertsUseCase: sl(),
+      userHolder: sl(),
+    ),
+  );
+
+  // ── Settings Feature ───────────────────────────────────
+  sl.registerLazySingleton<SettingsRemoteDataSource>(
+    () => SettingsRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetSettingsUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePhoneNumbersUseCase(sl()));
+  sl.registerFactory<SettingsBloc>(
+    () =>
+        SettingsBloc(getSettingsUseCase: sl(), updatePhoneNumbersUseCase: sl()),
   );
 }
 

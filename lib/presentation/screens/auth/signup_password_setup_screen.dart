@@ -151,8 +151,9 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                       if (v == null || v.trim().isEmpty) {
                         return 'Email is required';
                       }
-                      if (!v.contains('@'))
+                      if (!v.contains('@')) {
                         return 'Enter a valid email address';
+                      }
                       return null;
                     },
                   ),

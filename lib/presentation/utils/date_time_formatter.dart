@@ -90,4 +90,12 @@ class DateTimeFormatter {
   static String toIsoString(DateTime dateTime) {
     return dateTime.toUtc().toIso8601String();
   }
+
+  static bool isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  static bool isToday(DateTime dateTime) => isSameDay(dateTime, DateTime.now());
+
+  static bool isYesterday(DateTime dateTime) =>
+      isSameDay(dateTime, DateTime.now().subtract(const Duration(days: 1)));
 }

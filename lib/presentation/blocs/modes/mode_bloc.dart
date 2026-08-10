@@ -1,10 +1,10 @@
 // presentation/blocs/mode/mode_bloc.dart
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
+import '../../../core/utils/app_logger.dart';
 
 part 'mode_event.dart';
 part 'mode_state.dart';
@@ -25,16 +25,16 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
   }
 
   Future<void> _onLoad(ModeLoad event, Emitter<ModeState> emit) async {
-    debugPrint('[ModeBloc] Load');
+    AppLogger.d('ModeBloc', 'Load');
     emit(const ModeLoading());
     final result = await _getModesUseCase();
     result.fold(
       (failure) {
-        debugPrint('[ModeBloc] Load failed: ${failure.message}');
+        AppLogger.d('ModeBloc', 'Load failed: ${failure.message}');
         emit(ModeError(failure.userMessage));
       },
       (modes) {
-        debugPrint('[ModeBloc] Loaded ${modes.length} modes');
+        AppLogger.d('ModeBloc', 'Loaded ${modes.length} modes');
         final preselected = modes
             .where(
               (m) =>
@@ -51,7 +51,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
   void _onSelect(ModeSelect event, Emitter<ModeState> emit) {
     final current = state;
     if (current is! ModeLoaded) return;
-    debugPrint('[ModeBloc] Selected: ${event.modeId}');
+    AppLogger.d('ModeBloc', 'Selected: ${event.modeId}');
     emit(ModeLoaded(modes: current.modes, selectedModeId: event.modeId));
   }
 
@@ -62,7 +62,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
     final current = state;
     if (current is! ModeLoaded) return;
 
-    debugPrint('[ModeBloc] Switch → modeId: ${event.modeId}');
+    AppLogger.d('ModeBloc', 'Switch → modeId: ${event.modeId}');
     emit(ModeSwitching(modes: current.modes, selectedModeId: event.modeId));
 
     final result = await _switchModeUseCase(
@@ -72,7 +72,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
 
     result.fold(
       (failure) {
-        debugPrint('[ModeBloc] Switch failed: ${failure.message}');
+        AppLogger.d('ModeBloc', 'Switch failed: ${failure.message}');
         emit(
           ModeSwitchFailure(
             modes: current.modes,
@@ -82,7 +82,7 @@ class ModeBloc extends Bloc<ModeEvent, ModeState> {
         );
       },
       (_) {
-        debugPrint('[ModeBloc] Switch success');
+        AppLogger.d('ModeBloc', 'Switch success');
         emit(
           ModeSwitchSuccess(modes: current.modes, activeModeId: event.modeId),
         );

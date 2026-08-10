@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../models/analytics/analytics_model.dart';
@@ -50,7 +51,7 @@ class AnalyticsRemoteDataSource {
 
     final data = body['data'] as Map<String, dynamic>?;
     final rawList = data?['analyticsDataByDeviceId'] as List<dynamic>? ?? [];
-    debugPrint('[AnalyticsRemoteDataSource] Raw count: ${rawList.length}');
+    AppLogger.d('AnalyticsRemoteDataSource', 'Raw count: ${rawList.length}');
 
     // Parse list off the main thread
     final analytics = await Isolate.run(
@@ -58,7 +59,10 @@ class AnalyticsRemoteDataSource {
           .map((e) => AnalyticsModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
-    debugPrint('[AnalyticsRemoteDataSource] Parsed ${analytics.length} points');
+    AppLogger.d(
+      'AnalyticsRemoteDataSource',
+      'Parsed ${analytics.length} points',
+    );
 
     return analytics;
   }

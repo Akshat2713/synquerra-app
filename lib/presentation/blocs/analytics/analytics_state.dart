@@ -1,15 +1,5 @@
 part of 'analytics_bloc.dart';
 
-enum AnalyticsFilter {
-  latest,
-  lastHour,
-  last2Hours,
-  last6Hours,
-  last12Hours,
-  last24Hours,
-  custom,
-}
-
 // 1. Extend Equatable on the base class
 abstract class AnalyticsState extends Equatable {
   const AnalyticsState();

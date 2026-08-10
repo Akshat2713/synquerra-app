@@ -1,21 +1,21 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
-import '../../../blocs/alerts/alerts_bloc.dart';
 import '../../../app/app_router.dart';
 import '../../../utils/colour_util.dart';
-import '../../../utils/device_display_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
-  const AttentionDeviceSheet({super.key});
+  final List<AlertEntity> alerts;
+  const AttentionDeviceSheet({super.key, required this.alerts});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final deviceState = context.watch<DeviceListBloc>().state;
-    final alertsState = context.watch<AlertsBloc>().state;
     final authState = context.watch<AuthBloc>().state;
     final currentUserFullName = authState is AuthAuthenticated
         ? authState.user.fullName
@@ -23,7 +23,6 @@ class AttentionDeviceSheet extends StatelessWidget {
     final devices = deviceState is DeviceListLoaded
         ? deviceState.devices
         : <DeviceEntity>[];
-    final alerts = alertsState is AlertsLoaded ? alertsState.alerts : const [];
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -70,8 +69,11 @@ class AttentionDeviceSheet extends StatelessWidget {
                     final deviceAlerts = alerts
                         .where((a) => a.imei == d.imei && !a.isAcknowledged)
                         .toList();
+                    final criticalCount = deviceAlerts
+                        .where((a) => a.isCritical)
+                        .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
-                    final name = ownerDisplayName(d, currentUserFullName);
+                    final name = d.displayOwnerName(currentUserFullName);
                     return ListTile(
                       leading: Container(
                         decoration: BoxDecoration(
@@ -81,7 +83,9 @@ class AttentionDeviceSheet extends StatelessWidget {
                         padding: const EdgeInsets.all(2),
                         child: CircleAvatar(
                           backgroundImage: d.carrier?.profilePhoto != null
-                              ? NetworkImage(d.carrier!.profilePhoto!)
+                              ? CachedNetworkImageProvider(
+                                  d.carrier!.profilePhoto!,
+                                )
                               : null,
                           child: d.carrier?.profilePhoto == null
                               ? const Icon(Icons.person)
@@ -90,18 +94,19 @@ class AttentionDeviceSheet extends StatelessWidget {
                       ),
                       title: Text(name),
                       subtitle: Text(
-                        deviceAlerts.isEmpty
-                            ? 'No active alerts'
-                            : '${deviceAlerts.length} unacknowledged alert${deviceAlerts.length > 1 ? 's' : ''}',
+                        criticalCount == 0
+                            ? 'No critical alerts'
+                            : '$criticalCount critical alert${criticalCount > 1 ? 's' : ''}',
                       ),
                       onTap: () {
+                        final deviceListBloc = context.read<DeviceListBloc>();
                         Navigator.pop(context);
-                        Navigator.pushNamed(
+                        Navigator.pushReplacementNamed(
                           context,
                           AppRoutes.deviceDetail,
                           arguments: DeviceDetailArgs(
                             device: d,
-                            deviceListBloc: context.read<DeviceListBloc>(),
+                            deviceListBloc: deviceListBloc,
                           ),
                         );
                       },

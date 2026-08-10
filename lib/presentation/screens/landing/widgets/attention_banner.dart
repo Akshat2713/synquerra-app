@@ -1,11 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../utils/colour_util.dart';
-import '../../../utils/device_alert_matcher.dart';
-import '../../../utils/device_display_util.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -44,14 +44,14 @@ class AttentionBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$attentionCount needs attention',
+                      '$attentionCount ${attentionCount == 1 ? 'device needs' : 'devices need'} attention',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
                     Text(
-                      '${devices.length} devices',
+                      'Of ${devices.length} ${devices.length == 1 ? 'device' : 'devices'}',
                       style: TextStyle(
                         fontSize: 12,
                         color: colors.onSurfaceVariant,
@@ -106,7 +106,7 @@ class _AvatarStack extends StatelessWidget {
               alerts,
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
-            final name = ownerDisplayName(d, currentUserFullName).trim();
+            final name = d.displayOwnerName(currentUserFullName);
             final parts = name
                 .split(RegExp(r'\s+'))
                 .where((p) => p.isNotEmpty)
@@ -128,7 +128,7 @@ class _AvatarStack extends StatelessWidget {
                 child: CircleAvatar(
                   backgroundColor: colors.primaryContainer,
                   backgroundImage: d.carrier?.profilePhoto != null
-                      ? NetworkImage(d.carrier!.profilePhoto!)
+                      ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
                       : null,
                   child: d.carrier?.profilePhoto == null
                       ? Text(

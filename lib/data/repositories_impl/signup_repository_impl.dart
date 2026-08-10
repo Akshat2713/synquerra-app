@@ -1,11 +1,13 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import '../../domain/failures/failure.dart';
-import '../../domain/repositories/signup_repository.dart';
+
 import '../../core/error/app_exceptions.dart';
 import '../../domain/entities/signup/signup_entity.dart';
-import '../datasources/remote/signup_remote_datasource.dart';
+import '../../domain/entities/signup/signup_progress_entity.dart';
+import '../../domain/failures/failure.dart';
+import '../../domain/repositories/signup_repository.dart';
 import '../datasources/local/signup_local_datasource.dart';
+import '../datasources/remote/signup_remote_datasource.dart';
 import '../mappers/failure_mapper.dart';
 
 class SignupRepositoryImpl implements SignupRepository {
@@ -93,10 +95,13 @@ class SignupRepositoryImpl implements SignupRepository {
 
   // ── Get Saved Progress ────────────────────────────────────
   @override
-  Future<Either<Failure, SignupProgress?>> getSavedProgress() async {
+  Future<Either<Failure, SignupProgressEntity?>> getSavedProgress() async {
     try {
-      final progress = await _local.getProgress();
-      return Right(progress);
+      final localProgress = await _local.getSavedProgress();
+      if (localProgress == null) return const Right(null);
+
+      // Clean mapping using the model's toEntity() method
+      return Right(localProgress.toEntity());
     } catch (e) {
       return Left(mapExceptionToFailure(e));
     }

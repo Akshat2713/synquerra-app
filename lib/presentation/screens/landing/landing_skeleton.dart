@@ -37,7 +37,7 @@ class _LandingSkeletonState extends State<LandingSkeleton>
       builder: (context, _) {
         final shimmer = Color.lerp(
           colors.surfaceContainerHighest,
-          colors.surfaceContainerHighest.withOpacity(0.3),
+          colors.surfaceContainerHighest.withValues(alpha: 0.3),
           _anim.value,
         )!;
 

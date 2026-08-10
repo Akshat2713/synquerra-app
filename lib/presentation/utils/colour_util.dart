@@ -13,7 +13,7 @@ Color batteryColor(int? battery) {
 }
 
 String hexFromColor(Color c) =>
-    '#${c.value.toRadixString(16).substring(2).toUpperCase()}';
+    '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
 Color colorFromHex(String hex) {
   final cleaned = hex.replaceFirst('#', '');
