@@ -9,6 +9,7 @@ import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
 import '../../themes/colors.dart';
 import '../location/widgets/map_icon_button.dart';
+import 'utils/map_bounds_util.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
 
@@ -102,6 +103,11 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
             FlutterMap(
               mapController: _mapController,
               options: MapOptions(
+                onMapReady: () {
+                  if (_points.isNotEmpty) {
+                    fitBoundsToPoints(_mapController, _points);
+                  }
+                },
                 initialCenter: widget.initialCenter,
                 initialZoom: MapConfig.defaultZoom,
                 onTap: _onMapTap,
@@ -147,20 +153,22 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     );
                   }).toList(),
                 ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: widget.initialCenter,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: AppColors.safeGreen,
-                        size: 32,
+                if (widget.initialPoints == null ||
+                    widget.initialPoints!.isEmpty)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: widget.initialCenter,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: AppColors.safeGreen,
+                          size: 32,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 BlocBuilder<UserLocationBloc, UserLocationState>(
                   bloc: _userLocationBloc,
                   builder: (context, state) {

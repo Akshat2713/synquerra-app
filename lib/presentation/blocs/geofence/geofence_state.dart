@@ -20,7 +20,6 @@ class GeofenceLoaded extends GeofenceState {
 
   const GeofenceLoaded(this.geofences);
 
-  // Only active geofences should be rendered on the map
   List<GeofenceEntity> get activeGeofences =>
       geofences.where((g) => g.isActive).toList();
 

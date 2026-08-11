@@ -22,8 +22,6 @@ class GeofenceRemoteDataSource {
 
     final body = response.data as Map<String, dynamic>;
 
-    // Check status first, so the server's own message is preserved
-    // Only check status if it exists
     final status = body['status'];
     if (status != null && status != 'success') {
       throw ServerException(
@@ -59,6 +57,14 @@ class GeofenceRemoteDataSource {
     required bool isActive,
     required List<Coordinate> coordinates,
     required String color,
+    String? locality,
+    String? block,
+    String? district,
+    String? state,
+    String? postcode,
+    String? country,
+    String? landmark,
+    String? address,
   }) async {
     AppLogger.d('GeofenceRemoteDataSource', 'createGeofence() called');
 
@@ -72,12 +78,19 @@ class GeofenceRemoteDataSource {
             .map((c) => {'lat': c.lat, 'lng': c.lng})
             .toList(),
         'geofence_color': color,
+        'locality': locality ?? '',
+        'block': block ?? '',
+        'district': district ?? '',
+        'state': state ?? '',
+        'postcode': postcode ?? '',
+        'country': country ?? '',
+        'landmark': landmark ?? '',
+        'address': address ?? '',
       },
     );
 
     final body = response.data as Map<String, dynamic>;
 
-    // Check status first
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to create geofence.',
@@ -104,8 +117,14 @@ class GeofenceRemoteDataSource {
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
-    required int entryAlertDelay,
-    required int exitAlertDelay,
+    String? locality,
+    String? block,
+    String? district,
+    String? state,
+    String? postcode,
+    String? country,
+    String? landmark,
+    String? address,
   }) async {
     final response = await _dioClient.dio.post(
       ApiConstants.editGeofence,
@@ -119,10 +138,17 @@ class GeofenceRemoteDataSource {
             .toList(),
         'geofence_number': geofenceNumber,
         'geofence_color': color,
-        'entry_alert_delay': entryAlertDelay,
-        'exit_alert_delay': exitAlertDelay,
+        'locality': locality ?? '',
+        'block': block ?? '',
+        'district': district ?? '',
+        'state': state ?? '',
+        'postcode': postcode ?? '',
+        'country': country ?? '',
+        'landmark': landmark ?? '',
+        'address': address ?? '',
       },
     );
+
     final body = response.data as Map<String, dynamic>;
     if (body['status'] != 'success') {
       throw ServerException(

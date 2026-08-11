@@ -19,15 +19,47 @@ class GeofenceCreate extends GeofenceEvent {
   final bool isActive;
   final List<Coordinate> coordinates;
   final String color;
+  final String? locality;
+  final String? block;
+  final String? district;
+  final String? state;
+  final String? postcode;
+  final String? country;
+  final String? landmark;
+  final String? address;
+
   const GeofenceCreate({
     required this.deviceId,
     required this.name,
     required this.isActive,
     required this.coordinates,
     required this.color,
+    this.locality,
+    this.block,
+    this.district,
+    this.state,
+    this.postcode,
+    this.country,
+    this.landmark,
+    this.address,
   });
+
   @override
-  List<Object?> get props => [deviceId, name, isActive, coordinates, color];
+  List<Object?> get props => [
+    deviceId,
+    name,
+    isActive,
+    coordinates,
+    color,
+    locality,
+    block,
+    district,
+    state,
+    postcode,
+    country,
+    landmark,
+    address,
+  ];
 }
 
 class GeofenceEdit extends GeofenceEvent {
@@ -38,8 +70,15 @@ class GeofenceEdit extends GeofenceEvent {
   final List<Coordinate> coordinates;
   final String color;
   final String geofenceNumber;
-  final int entryAlertDelay;
-  final int exitAlertDelay;
+  final String? locality;
+  final String? block;
+  final String? district;
+  final String? state;
+  final String? postcode;
+  final String? country;
+  final String? landmark;
+  final String? address;
+
   const GeofenceEdit({
     required this.deviceId,
     required this.geofenceId,
@@ -48,9 +87,16 @@ class GeofenceEdit extends GeofenceEvent {
     required this.coordinates,
     required this.color,
     required this.geofenceNumber,
-    required this.entryAlertDelay,
-    required this.exitAlertDelay,
+    this.locality,
+    this.block,
+    this.district,
+    this.state,
+    this.postcode,
+    this.country,
+    this.landmark,
+    this.address,
   });
+
   @override
   List<Object?> get props => [
     deviceId,
@@ -60,8 +106,14 @@ class GeofenceEdit extends GeofenceEvent {
     coordinates,
     color,
     geofenceNumber,
-    entryAlertDelay,
-    exitAlertDelay,
+    locality,
+    block,
+    district,
+    state,
+    postcode,
+    country,
+    landmark,
+    address,
   ];
 }
 

@@ -133,22 +133,6 @@ class AppRouter {
           ),
         );
 
-      // case AppRoutes.manage:
-      //   final args = settings.arguments as Map<String, dynamic>;
-      //   final device = args['device'] as DeviceEntity;
-      //   final analytics = args['analytics'] as AnalyticsEntity?;
-      //   final analyticsBloc = args['analyticsBloc'] as AnalyticsBloc;
-      //   return _slide(
-      //     settings,
-      //     MultiBlocProvider(
-      //       providers: [
-      //         BlocProvider(create: (_) => sl<ManageBloc>()),
-      //         BlocProvider.value(value: analyticsBloc),
-      //       ],
-      //       child: ProfileScreen(device: device, analytics: analytics),
-      //     ),
-      //   );
-
       case AppRoutes.geofence:
         final args = settings.arguments as Map<String, dynamic>;
         final deviceId = args['deviceId'] as String;
@@ -180,7 +164,7 @@ class AppRouter {
 
       case AppRoutes.geofenceMapPicker:
         final args = settings.arguments as GeofenceMapPickerArgs;
-        return _slide(
+        return _slide<List<Coordinate>>(
           settings,
           GeofenceMapPickerPage(
             initialCenter: args.initialCenter,
@@ -245,15 +229,12 @@ class AppRouter {
   // ── Transition helpers ──────────────────────────────────────────────────────
 
   /// Standard slide-up for main content screens.
-  static MaterialPageRoute<dynamic> _slide(
-    RouteSettings settings,
-    Widget child,
-  ) {
+  static MaterialPageRoute<T> _slide<T>(RouteSettings settings, Widget child) {
     return MaterialPageRoute(settings: settings, builder: (_) => child);
   }
 
   /// Fade for auth / splash (no back-stack feel).
-  static PageRouteBuilder<dynamic> _fade(RouteSettings settings, Widget child) {
+  static PageRouteBuilder<T> _fade<T>(RouteSettings settings, Widget child) {
     return PageRouteBuilder(
       settings: settings,
       pageBuilder: (_, __, ___) => child,

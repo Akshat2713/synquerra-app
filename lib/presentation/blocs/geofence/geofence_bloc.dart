@@ -25,7 +25,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
        _createGeofenceUseCase = createGeofenceUseCase,
        _editGeofenceUseCase = editGeofenceUseCase,
        _deleteGeofenceUseCase = deleteGeofenceUseCase,
-       super(GeofenceInitial()) {
+       super(const GeofenceInitial()) {
     on<GeofenceLoad>(_onLoad);
     on<GeofenceCreate>(_onCreate);
     on<GeofenceEdit>(_onEdit);
@@ -34,7 +34,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
 
   Future<void> _onLoad(GeofenceLoad event, Emitter<GeofenceState> emit) async {
     AppLogger.d('GeofenceBloc', 'Load → deviceId: ${event.deviceId}');
-    emit(GeofenceLoading());
+    emit(const GeofenceLoading());
     final result = await _getGeofencesUseCase(event.deviceId);
     result.fold(
       (failure) {
@@ -60,6 +60,14 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       isActive: event.isActive,
       coordinates: event.coordinates,
       color: event.color,
+      locality: event.locality,
+      block: event.block,
+      district: event.district,
+      state: event.state,
+      postcode: event.postcode,
+      country: event.country,
+      landmark: event.landmark,
+      address: event.address,
     );
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
@@ -82,8 +90,14 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       coordinates: event.coordinates,
       color: event.color,
       geofenceNumber: event.geofenceNumber,
-      entryAlertDelay: event.entryAlertDelay,
-      exitAlertDelay: event.exitAlertDelay,
+      locality: event.locality,
+      block: event.block,
+      district: event.district,
+      state: event.state,
+      postcode: event.postcode,
+      country: event.country,
+      landmark: event.landmark,
+      address: event.address,
     );
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),

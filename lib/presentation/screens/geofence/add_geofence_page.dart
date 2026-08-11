@@ -7,10 +7,13 @@ import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../utils/colour_util.dart' as colour_utils;
-import 'widgets/coordinates_list.dart';
+import 'utils/map_bounds_util.dart';
+// import 'widgets/coordinates_list.dart';
 import 'widgets/empty_coordinates_placeholder.dart';
 import 'widgets/geofence_active_toggle.dart';
+import 'widgets/geofence_address_section.dart';
 import 'widgets/geofence_color_picker.dart';
+import 'widgets/geofence_map_preview.dart';
 import 'widgets/geofence_name_input.dart';
 
 class AddGeofencePage extends StatefulWidget {
@@ -38,6 +41,16 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   late Color _selectedColor;
   List<Coordinate>? _coordinates;
   bool get _isEditing => widget.existing != null;
+  late final _addressFields = GeofenceAddressFields(
+    address: widget.existing?.address,
+    locality: widget.existing?.locality,
+    block: widget.existing?.block,
+    district: widget.existing?.district,
+    state: widget.existing?.state,
+    postcode: widget.existing?.postcode,
+    country: widget.existing?.country,
+    landmark: widget.existing?.landmark,
+  );
 
   @override
   void initState() {
@@ -51,15 +64,21 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _addressFields.dispose();
     super.dispose();
   }
 
   Future<void> _openMapPicker() async {
+    final existingPoints = _coordinates
+        ?.map((c) => LatLng(c.lat, c.lng))
+        .toList();
+    final center = centroidOf(existingPoints ?? []) ?? widget.initialCenter;
+
     final result = await Navigator.pushNamed<List<Coordinate>>(
       context,
       AppRoutes.geofenceMapPicker,
       arguments: GeofenceMapPickerArgs(
-        initialCenter: widget.initialCenter,
+        initialCenter: center,
         initialPoints: _coordinates,
       ),
     );
@@ -103,8 +122,14 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
           coordinates: _coordinates!,
           color: colour_utils.hexFromColor(_selectedColor),
           geofenceNumber: widget.existing!.geofenceNumber,
-          entryAlertDelay: widget.existing!.entryAlertDelay,
-          exitAlertDelay: widget.existing!.exitAlertDelay,
+          locality: _addressFields.locality,
+          block: _addressFields.block,
+          district: _addressFields.district,
+          state: _addressFields.state,
+          postcode: _addressFields.postcode,
+          country: _addressFields.country,
+          landmark: _addressFields.landmark,
+          address: _addressFields.address,
         ),
       );
     } else {
@@ -116,6 +141,14 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
           isActive: _isActive,
           coordinates: _coordinates!,
           color: colour_utils.hexFromColor(_selectedColor),
+          locality: _addressFields.locality,
+          block: _addressFields.block,
+          district: _addressFields.district,
+          state: _addressFields.state,
+          postcode: _addressFields.postcode,
+          country: _addressFields.country,
+          landmark: _addressFields.landmark,
+          address: _addressFields.address,
         ),
       );
     }
@@ -177,18 +210,21 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                     onChanged: (v) => setState(() => _isActive = v),
                   ),
                   const SizedBox(height: 24),
+                  GeofenceAddressSection(fields: _addressFields),
+                  const SizedBox(height: 24),
                   GeofenceColorPickerTile(
                     selectedColor: _selectedColor,
                     onColorChanged: (c) => setState(() => _selectedColor = c),
                   ),
                   const SizedBox(height: 24),
-                  Text('Coordinates', style: textTheme.labelLarge),
+                  Text('Geofence Area', style: textTheme.labelLarge),
                   const SizedBox(height: 8),
                   _coordinates == null
                       ? EmptyCoordinatesPlaceholder(onTap: _openMapPicker)
-                      : CoordinatesList(
+                      : GeofenceMapPreview(
                           coordinates: _coordinates!,
-                          onReset: _openMapPicker,
+                          color: _selectedColor,
+                          onTap: _openMapPicker,
                         ),
                   const SizedBox(height: 32),
                   FilledButton(
