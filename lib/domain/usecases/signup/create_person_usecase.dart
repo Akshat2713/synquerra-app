@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../failures/failure.dart';
 import '../../repositories/signup_repository.dart';
-import '../../entities/signup/signup_entity.dart';
+import '../../entities/signup/person_entity.dart';
 import '../base_usecase.dart';
 
 class CreatePersonParams {
@@ -16,6 +16,7 @@ class CreatePersonParams {
   final String state;
   final String country;
   final String pincode;
+  final bool saveSignupProgress;
 
   const CreatePersonParams({
     required this.firstName,
@@ -29,6 +30,7 @@ class CreatePersonParams {
     required this.state,
     required this.country,
     required this.pincode,
+    this.saveSignupProgress = false,
   });
 }
 
@@ -51,6 +53,7 @@ class CreatePersonUseCase implements UseCase<PersonEntity, CreatePersonParams> {
       state: params.state,
       country: params.country,
       pincode: params.pincode,
+      saveSignupProgress: params.saveSignupProgress,
     );
   }
 }

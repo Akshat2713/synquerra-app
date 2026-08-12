@@ -51,6 +51,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         state: event.state,
         country: event.country,
         pincode: event.pincode,
+        saveSignupProgress: true,
       ),
     );
     result.fold(
@@ -71,7 +72,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     );
   }
 
-  // ── Step 2 (now final step) ─────────────────────────────────
+  // ── Step 2 ────────────────────────────────────────────────
   Future<void> _onCredentialsSubmitted(
     SignupCredentialsSubmitted event,
     Emitter<SignupState> emit,
@@ -94,7 +95,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       ),
       (_) => emit(
         state.copyWith(
-          status: SignupStatus.done, // ← was stepSuccess; see question #1 below
+          status: SignupStatus.done,
           credentialsEmail: event.email,
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/relationship/relationship_entity.dart';
-import 'manage_device_card.dart';
+import 'widget/manage_device_card.dart';
 
 class ManageDevicesScreen extends StatefulWidget {
   final List<DeviceEntity> devices;

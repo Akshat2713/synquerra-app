@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../domain/entities/device/device_entity.dart';
-import '../../../../domain/entities/relationship/relationship_entity.dart';
-import '../../../../domain/entities/signup/signup_entity.dart';
+import '../../../../../domain/entities/device/device_entity.dart';
+import '../../../../../domain/entities/relationship/relationship_entity.dart';
+import '../../../../domain/entities/signup/person_entity.dart';
 
 class ManageDeviceCard extends StatelessWidget {
   final DeviceEntity device;

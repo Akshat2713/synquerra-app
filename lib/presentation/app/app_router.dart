@@ -17,6 +17,7 @@ import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/landing/landing_bloc.dart';
 import '../blocs/link_device/link_device_bloc.dart';
 import '../blocs/manage_devices/manage_devices_bloc.dart';
+import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
@@ -28,8 +29,8 @@ import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
-import '../screens/manage_devices/manage_device_screen.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
+import '../screens/manage_users/manage_users_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -93,6 +94,7 @@ class AppRoutes {
   static const String geofencePreview = '/geofence-preview';
   static const String geofenceMapPicker = '/geofence-map-picker';
   static const String manageDevices = '/manage-devices';
+  static const String manageUsers = '/manage-users';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -241,6 +243,15 @@ class AppRouter {
               ),
             ],
             child: const ManageDevicesPage(),
+          ),
+        );
+
+      case AppRoutes.manageUsers:
+        return _slide(
+          settings,
+          BlocProvider<ManageUsersBloc>(
+            create: (_) => sl<ManageUsersBloc>(),
+            child: const ManageUsersScreen(),
           ),
         );
       default:

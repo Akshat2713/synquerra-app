@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../signup/signup_entity.dart';
+import '../signup/person_entity.dart';
 
 class DeviceAssociationEntity extends Equatable {
   final String id;

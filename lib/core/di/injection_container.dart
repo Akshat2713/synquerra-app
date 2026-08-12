@@ -15,10 +15,13 @@ import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
+import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
@@ -326,6 +329,19 @@ Future<void> initDependencies() async {
       unassignDeviceUseCase: sl(),
       userHolder: sl(),
       deviceListBloc: deviceListBloc,
+    ),
+  );
+
+  // ── Manage Users Feature ────────────────────────────────
+  sl.registerLazySingleton(() => CreateRelationshipUseCase(sl()));
+  sl.registerLazySingleton(() => DeletePersonUseCase(sl()));
+  sl.registerFactory<ManageUsersBloc>(
+    () => ManageUsersBloc(
+      getRelationshipListUseCase: sl(),
+      createPersonUseCase: sl(),
+      createRelationshipUseCase: sl(),
+      deletePersonUseCase: sl(),
+      userHolder: sl(),
     ),
   );
 }

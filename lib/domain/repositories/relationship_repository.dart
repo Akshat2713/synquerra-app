@@ -6,4 +6,10 @@ abstract class RelationshipRepository {
   Future<Either<Failure, List<RelationshipEntity>>> getRelationshipList(
     String personId,
   );
+
+  Future<Either<Failure, void>> createRelationship({
+    required String personAId,
+    required String personBId,
+    required String relationshipType,
+  });
 }

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../signup/signup_entity.dart';
+import '../signup/person_entity.dart';
 
 enum relationtype { child, parent }
 

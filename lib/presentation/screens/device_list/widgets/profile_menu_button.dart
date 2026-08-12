@@ -51,19 +51,19 @@ class ProfileMenuButton extends StatelessWidget {
         ),
         PopupMenuItem<String>(
           value: 'manage_users',
-          enabled: false,
+          enabled: true,
           child: Row(
             children: [
               Icon(
                 Icons.people_alt_rounded,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                color: colors.onSurfaceVariant,
                 size: 18,
               ),
               const SizedBox(width: 10),
               Text(
                 'Manage Users',
                 style: TextStyle(
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -152,6 +152,8 @@ class ProfileMenuButton extends StatelessWidget {
               deviceListBloc: context.read<DeviceListBloc>(),
             ),
           );
+        } else if (value == 'manage_users') {
+          Navigator.pushNamed(context, AppRoutes.manageUsers);
         }
       },
     );

@@ -34,7 +34,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   static const List<MapEntry<String, String>> _relationshipOrder = [
-    MapEntry('both', 'Owned & Assigned'),
+    MapEntry('both', 'Assigned to'),
     MapEntry('owned', 'Owned by Me'),
     MapEntry('assigned', 'Assigned to Me'),
   ];

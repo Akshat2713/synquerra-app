@@ -50,7 +50,6 @@ class SignupRemoteDataSource {
       '[SignupRemoteDataSource] createPerson status: ${body['status']}',
     );
 
-    // ← status check FIRST, before any parsing
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to create profile.',
@@ -66,11 +65,31 @@ class SignupRemoteDataSource {
       );
     }
 
-    // ← Isolate.run AFTER status check, passing rawData not full body
     final person = await Isolate.run(() => PersonModel.fromJson(rawData));
 
     AppLogger.d('SignupRemoteDataSource', 'Person created: ${person.personId}');
     return person;
+  }
+
+  // ── Delete Person ──────────────────────────────────────────
+  Future<void> deletePerson(String personId) async {
+    debugPrint('[SignupRemoteDataSource] deletePerson() called for $personId');
+
+    final response = await _dioClient.dio.delete(
+      '${ApiConstants.createPerson}/$personId', // Resolves to /api/v1/persons/:id
+    );
+
+    final body = response.data as Map<String, dynamic>;
+    debugPrint(
+      '[SignupRemoteDataSource] deletePerson status: ${body['status']}',
+    );
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to delete person.',
+        statusCode: body['code'] as int?,
+      );
+    }
   }
 
   // ── Step 2: Create Credentials ────────────────────────────

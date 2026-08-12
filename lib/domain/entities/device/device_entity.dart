@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../signup/signup_entity.dart';
+import '../signup/person_entity.dart';
 import 'device_owner_entity.dart';
 
 class DeviceEntity extends Equatable {
