@@ -31,33 +31,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-
-          // Builder(
-          //   builder: (ctx) => SettingsTile(
-          //     icon: Icons.person_outline_rounded,
-          //     title: 'Manage',
-          //     subtitle: 'View device owner & mode details',
-          //     onTap: () {
-          //       final analyticsBloc = ctx.read<AnalyticsBloc>();
-          //       final analyticsState = analyticsBloc.state;
-          //       final latest =
-          //           analyticsState is AnalyticsLoaded &&
-          //               analyticsState.points.isNotEmpty
-          //           ? analyticsState.points.first
-          //           : null;
-          //       Navigator.pushNamed(
-          //         ctx,
-          //         AppRoutes.manage,
-          //         arguments: {
-          //           'device': device,
-          //           'analytics': latest,
-          //           'analyticsBloc': analyticsBloc,
-          //         },
-          //       );
-          //     },
-          //   ),
-          // ),
-
           // const SizedBox(height: 16),
           Text(
             'Zone Management',

@@ -18,7 +18,7 @@ class MapConfig {
 
   static const String userAgentPackageName = 'com.synquerra.app';
 
-  static const double defaultZoom = 14.0;
+  static const double defaultZoom = 16.0;
 
   static HiveCacheStore? _cacheStore;
 

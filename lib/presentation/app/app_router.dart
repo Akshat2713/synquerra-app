@@ -16,6 +16,7 @@ import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/landing/landing_bloc.dart';
 import '../blocs/link_device/link_device_bloc.dart';
+import '../blocs/manage_devices/manage_devices_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
@@ -27,6 +28,8 @@ import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
+import '../screens/manage_devices/manage_device_screen.dart';
+import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -63,6 +66,11 @@ class GeofenceMapPickerArgs {
     this.initialPoints,
   });
 }
+
+class ManageDevicesArgs {
+  final DeviceListBloc deviceListBloc;
+  const ManageDevicesArgs({required this.deviceListBloc});
+}
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -84,6 +92,7 @@ class AppRoutes {
   static const String linkDevice = '/link-device';
   static const String geofencePreview = '/geofence-preview';
   static const String geofenceMapPicker = '/geofence-map-picker';
+  static const String manageDevices = '/manage-devices';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -216,6 +225,22 @@ class AppRouter {
           BlocProvider(
             create: (_) => sl<LinkDeviceBloc>(),
             child: const LinkDeviceScreen(),
+          ),
+        );
+
+      case AppRoutes.manageDevices:
+        final args = settings.arguments as ManageDevicesArgs;
+        return _slide(
+          settings,
+          MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: args.deviceListBloc),
+              BlocProvider(
+                create: (_) =>
+                    sl<ManageDevicesBloc>(param1: args.deviceListBloc),
+              ),
+            ],
+            child: const ManageDevicesPage(),
           ),
         );
       default:

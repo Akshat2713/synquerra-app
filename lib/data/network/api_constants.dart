@@ -12,7 +12,7 @@ class ApiConstants {
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';
   static const String linkDevice = '/api/v1/device-owners';
-  static const String assignDevice = '/api/v1/device-assignments';
+  static const String deviceAssignments = '/api/v1/device-assignments';
 
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/devices';
@@ -21,6 +21,8 @@ class ApiConstants {
       '/api/v1/device-assignments/person/$personId/all-devices';
   static String personDevices(String personId) =>
       '/api/v1/device-assignments/person/$personId/devices';
+  static String relationshipList(String personId) =>
+      '/api/v1/persons/$personId/relationships';
 
   // ── Alerts & Errors ───────────────────────────────
   static const String alerts = '/api/v1/alerts-errors/alerts';

@@ -132,5 +132,6 @@ class DeviceModel {
     updatedAt: updatedAt,
     relationship: relationship,
     deviceOwner: deviceOwner?.toEntity(),
+    carrier: carrier?.toEntity(),
   );
 }

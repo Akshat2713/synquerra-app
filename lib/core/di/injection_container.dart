@@ -4,11 +4,21 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Core & Network
+import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
+import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/repositories_impl/device_assignment_repository_impl.dart';
+import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../domain/repositories/device_assignment_repository.dart';
+import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
+import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
@@ -289,6 +299,34 @@ Future<void> initDependencies() async {
   sl.registerFactory<SettingsBloc>(
     () =>
         SettingsBloc(getSettingsUseCase: sl(), updatePhoneNumbersUseCase: sl()),
+  );
+
+  // ── Manage Devices Feature ──────────────────────────────
+  sl.registerLazySingleton<RelationshipRemoteDataSource>(
+    () => RelationshipRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<RelationshipRepository>(
+    () => RelationshipRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetRelationshipListUseCase(sl()));
+
+  sl.registerLazySingleton<DeviceAssignmentRemoteDataSource>(
+    () => DeviceAssignmentRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<DeviceAssignmentRepository>(
+    () => DeviceAssignmentRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => AssignDeviceUseCase(sl()));
+  sl.registerLazySingleton(() => UnassignDeviceUseCase(sl()));
+
+  sl.registerFactoryParam<ManageDevicesBloc, DeviceListBloc, void>(
+    (deviceListBloc, _) => ManageDevicesBloc(
+      getRelationshipListUseCase: sl(),
+      assignDeviceUseCase: sl(),
+      unassignDeviceUseCase: sl(),
+      userHolder: sl(),
+      deviceListBloc: deviceListBloc,
+    ),
   );
 }
 
