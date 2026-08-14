@@ -30,6 +30,7 @@ import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
+import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -95,6 +96,7 @@ class AppRoutes {
   static const String geofenceMapPicker = '/geofence-map-picker';
   static const String manageDevices = '/manage-devices';
   static const String manageUsers = '/manage-users';
+  static const String addMember = '/add-member';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -123,10 +125,7 @@ class AppRouter {
             child: const DeviceListScreen(),
           ),
         );
-      // NEW
-      // REPLACE (delete the DeviceDetailArgs class I added — not needed)
 
-      // deviceDetail case:
       case AppRoutes.deviceDetail:
         final args = settings.arguments as DeviceDetailArgs;
         return _slide(
@@ -208,9 +207,6 @@ class AppRouter {
           ),
         );
 
-      // ── ADD this helper to AppRouter class ──
-      //  SignupBloc? _signupBloc;
-
       case AppRoutes.signupCredentials:
         final bloc = _activeSignupBloc ??= sl<SignupBloc>();
         return _fade(
@@ -253,6 +249,13 @@ class AppRouter {
             create: (_) => sl<ManageUsersBloc>(),
             child: const ManageUsersScreen(),
           ),
+        );
+
+      case AppRoutes.addMember:
+        final bloc = settings.arguments as ManageUsersBloc;
+        return _slide(
+          settings,
+          BlocProvider.value(value: bloc, child: const AddMemberScreen()),
         );
       default:
         return _fade(

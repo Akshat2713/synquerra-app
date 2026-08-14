@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
-import 'add_member_screen.dart';
+import 'widget/link_member_by_phone_screen.dart';
 import 'widget/member_card.dart';
 
 class ManageUsersScreen extends StatefulWidget {
@@ -18,6 +18,39 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     context.read<ManageUsersBloc>().add(const ManageUsersLoadRequested());
   }
 
+  Future<void> _confirmUnlink(
+    BuildContext context,
+    String relationshipId,
+    String name,
+  ) async {
+    final colors = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Unlink Member'),
+        content: Text(
+          'Unlink ${name.isEmpty ? 'this member' : name}? '
+          'They will be removed from your linked network.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text('Unlink', style: TextStyle(color: colors.primary)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      context.read<ManageUsersBloc>().add(
+        ManageUsersUnlinkRequested(relationshipId),
+      );
+    }
+  }
+
   Future<void> _confirmDelete(
     BuildContext context,
     String personId,
@@ -27,10 +60,10 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Remove Member'),
+        title: const Text('Delete Member'),
         content: Text(
-          'Remove ${name.isEmpty ? 'this member' : name}? '
-          'This cannot be undone.',
+          'Permanently delete ${name.isEmpty ? 'this member' : name}? '
+          'This action cannot be undone and deletes all associated records.',
         ),
         actions: [
           TextButton(
@@ -39,13 +72,15 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Remove', style: TextStyle(color: colors.error)),
+            child: Text('Delete', style: TextStyle(color: colors.error)),
           ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      context.read<ManageUsersBloc>().add(ManageUsersDeleteRequested(personId));
+      context.read<ManageUsersBloc>().add(
+        ManageUsersDeletePersonRequested(personId),
+      );
     }
   }
 
@@ -57,18 +92,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       backgroundColor: colors.surface,
       appBar: AppBar(title: const Text('Manage Users'), centerTitle: false),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          final bloc = context.read<ManageUsersBloc>();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: bloc,
-                child: const AddMemberScreen(),
-              ),
-            ),
-          );
-        },
+        onPressed: () => LinkMemberByPhoneBottomSheet.show(context),
         backgroundColor: colors.primary,
         foregroundColor: colors.onPrimary,
         icon: const Icon(Icons.person_add_alt_1_rounded),
@@ -161,7 +185,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Tap "Add Member" to add a family member.',
+                        'Tap "Add Member" to link or create a family member.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
@@ -175,21 +199,26 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     itemCount: members.length,
                     itemBuilder: (context, index) {
                       final member = members[index];
-                      final isDeleting =
-                          loaded.deletingPersonId == member.personId;
-                      return Opacity(
-                        opacity: isDeleting ? 0.5 : 1,
-                        child: MemberCard(
-                          person: member,
-                          onDelete: isDeleting
-                              ? null
-                              : () => _confirmDelete(
-                                  context,
-                                  member.personId,
-                                  '${member.firstName} ${member.lastName}'
-                                      .trim(),
-                                ),
-                        ),
+                      final fullName =
+                          '${member.person.firstName} ${member.person.lastName}'
+                              .trim();
+
+                      return MemberCard(
+                        person: member.person,
+                        onUnlink: loaded.isProcessing
+                            ? null
+                            : () => _confirmUnlink(
+                                context,
+                                member.relationshipId,
+                                fullName,
+                              ),
+                        onDelete: loaded.isProcessing
+                            ? null
+                            : () => _confirmDelete(
+                                context,
+                                member.person.personId,
+                                fullName,
+                              ),
                       );
                     },
                   ),

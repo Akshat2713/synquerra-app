@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-
 import '../../../../domain/entities/signup/person_entity.dart';
 
 class MemberCard extends StatelessWidget {
   final PersonEntity person;
   final VoidCallback? onTap;
+  final VoidCallback? onUnlink;
   final VoidCallback? onDelete;
 
   const MemberCard({
     super.key,
     required this.person,
     this.onTap,
+    this.onUnlink,
     this.onDelete,
   });
 
@@ -36,7 +37,7 @@ class MemberCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: circularBorder(16),
         boxShadow: [
           BoxShadow(
             color: colors.shadow.withValues(alpha: 0.05),
@@ -55,7 +56,7 @@ class MemberCard extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              // Avatar with Initials
+              // Avatar
               CircleAvatar(
                 radius: 24,
                 backgroundColor: colors.primaryContainer,
@@ -70,7 +71,7 @@ class MemberCard extends StatelessWidget {
               ),
               const SizedBox(width: 14),
 
-              // Info Column (Name, Email, Phone)
+              // Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,8 +87,6 @@ class MemberCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
-
-                    // Phone Row
                     Row(
                       children: [
                         Icon(
@@ -112,8 +111,6 @@ class MemberCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-
-                    // Email Row
                     Row(
                       children: [
                         Icon(
@@ -141,8 +138,8 @@ class MemberCard extends StatelessWidget {
                 ),
               ),
 
-              // Optional Action Menu (Edit/Delete)
-              if (onDelete != null)
+              // Action Menu with Unlink & Delete
+              if (onUnlink != null || onDelete != null)
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert_rounded,
@@ -152,26 +149,43 @@ class MemberCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   onSelected: (value) {
+                    if (value == 'unlink') onUnlink?.call();
                     if (value == 'delete') onDelete?.call();
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline_rounded,
-                            color: colors.error,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Remove Member',
-                            style: TextStyle(color: colors.error),
-                          ),
-                        ],
+                    if (onUnlink != null)
+                      PopupMenuItem<String>(
+                        value: 'unlink',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.link_off_rounded,
+                              color: colors.onSurfaceVariant,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Unlink Member'),
+                          ],
+                        ),
                       ),
-                    ),
+                    if (onDelete != null)
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline_rounded,
+                              color: colors.error,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Delete Member',
+                              style: TextStyle(color: colors.error),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
             ],
@@ -180,4 +194,6 @@ class MemberCard extends StatelessWidget {
       ),
     );
   }
+
+  BorderRadius circularBorder(double radius) => BorderRadius.circular(radius);
 }

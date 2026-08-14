@@ -38,6 +38,10 @@ class ApiConstants {
   static const String analytics = '/api/v1/analytics/device-analytics-query';
   static const String analyticsQuery = '/api/v1/analytics';
 
+  // ── Relationship ─────────────────────────────────────
+  static const String createRelationshipByPhone =
+      '/api/v1/persons/relationship/by-phone';
+
   // ── Geofences ─────────────────────────────────────
   // RESTful standard endpoints (Recommended)
   static const String geofences =

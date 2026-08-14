@@ -5,37 +5,49 @@ import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/signup/person_entity.dart';
 import '../../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../../domain/usecases/relationship/create_relationship_usecase.dart';
+import '../../../domain/usecases/relationship/create_relationship_by_phone_usecase.dart';
+import '../../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../../domain/usecases/signup/create_person_usecase.dart';
 import '../../../domain/usecases/signup/delete_person_usecase.dart';
-
 part 'manage_users_event.dart';
 part 'manage_users_state.dart';
+
+/// Deleting a person outright is wired but off in the UI until confirmed.
+const bool kEnableDeletePerson = true;
 
 class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
   final GetRelationshipListUseCase _getRelationshipListUseCase;
   final CreatePersonUseCase _createPersonUseCase;
   final CreateRelationshipUseCase _createRelationshipUseCase;
+  final CreateRelationshipByPhoneUseCase _createRelationshipByPhoneUseCase;
   final DeletePersonUseCase _deletePersonUseCase;
+  final UnlinkRelationshipUseCase _unlinkRelationshipUseCase;
   final UserHolder _userHolder;
 
   ManageUsersBloc({
     required GetRelationshipListUseCase getRelationshipListUseCase,
     required CreatePersonUseCase createPersonUseCase,
     required CreateRelationshipUseCase createRelationshipUseCase,
+    required CreateRelationshipByPhoneUseCase createRelationshipByPhoneUseCase,
     required DeletePersonUseCase deletePersonUseCase,
+    required UnlinkRelationshipUseCase unlinkRelationshipUseCase,
     required UserHolder userHolder,
   }) : _getRelationshipListUseCase = getRelationshipListUseCase,
        _createPersonUseCase = createPersonUseCase,
        _createRelationshipUseCase = createRelationshipUseCase,
+       _createRelationshipByPhoneUseCase = createRelationshipByPhoneUseCase,
        _deletePersonUseCase = deletePersonUseCase,
+       _unlinkRelationshipUseCase = unlinkRelationshipUseCase,
        _userHolder = userHolder,
        super(const ManageUsersInitial()) {
     on<ManageUsersLoadRequested>(_onLoad);
     on<ManageUsersAddRequested>(_onAdd);
-    on<ManageUsersDeleteRequested>(_onDelete);
+    on<ManageUsersLinkByPhoneRequested>(_onLinkByPhone);
+    on<ManageUsersDeletePersonRequested>(_onDeletePerson);
+    on<ManageUsersUnlinkRequested>(_onUnlink);
   }
 
-  List<PersonEntity> _currentMembers() {
+  List<MemberItem> _currentMembers() {
     final s = state;
     return s is ManageUsersLoaded ? s.members : const [];
   }
@@ -61,8 +73,14 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
       },
       (relationships) {
         final members = relationships
-            .map((r) => r.personB)
-            .whereType<PersonEntity>()
+            .map((r) {
+              final other = r.personAId == personId
+                  ? r.personB
+                  : (r.personBId == personId ? r.personA : null);
+              if (other == null) return null;
+              return MemberItem(relationshipId: r.id, person: other);
+            })
+            .whereType<MemberItem>()
             .toList();
         AppLogger.d('ManageUsersBloc', 'Loaded ${members.length} members');
         emit(ManageUsersLoaded(members: members));
@@ -80,8 +98,7 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
       return;
     }
     final baseMembers = _currentMembers();
-    emit(ManageUsersLoaded(members: baseMembers, isAdding: true));
-
+    emit(ManageUsersLoaded(members: baseMembers, isProcessing: true));
     final personResult = await _createPersonUseCase(
       CreatePersonParams(
         firstName: event.firstName,
@@ -98,7 +115,6 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
         saveSignupProgress: false,
       ),
     );
-
     await personResult.fold(
       (failure) async {
         AppLogger.d(
@@ -108,7 +124,6 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
         emit(
           ManageUsersLoaded(
             members: baseMembers,
-            isAdding: false,
             errorMessage: failure.userMessage,
           ),
         );
@@ -119,68 +134,87 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
           personBId: newPerson.personId,
           relationshipType: event.relationshipType,
         );
-        relResult.fold(
-          (failure) {
-            AppLogger.d(
-              'ManageUsersBloc',
-              'Create relationship failed: ${failure.message}',
-            );
-            // Person exists server-side even though linking failed —
-            // show them, but surface the error so the user knows to retry.
-            emit(
-              ManageUsersLoaded(
-                members: [...baseMembers, newPerson],
-                isAdding: false,
-                errorMessage: failure.userMessage,
-              ),
-            );
-          },
-          (_) {
-            emit(
-              ManageUsersLoaded(
-                members: [...baseMembers, newPerson],
-                isAdding: false,
-                clearError: true,
-              ),
-            );
-          },
-        );
+        await relResult.fold((failure) async {
+          AppLogger.d(
+            'ManageUsersBloc',
+            'Create relationship failed: ${failure.message}',
+          );
+          emit(
+            ManageUsersLoaded(
+              members: baseMembers,
+              errorMessage: failure.userMessage,
+            ),
+          );
+        }, (_) async => add(const ManageUsersLoadRequested()));
       },
     );
   }
 
-  Future<void> _onDelete(
-    ManageUsersDeleteRequested event,
+  Future<void> _onLinkByPhone(
+    ManageUsersLinkByPhoneRequested event,
     Emitter<ManageUsersState> emit,
   ) async {
     final baseMembers = _currentMembers();
-    emit(
-      ManageUsersLoaded(members: baseMembers, deletingPersonId: event.personId),
+    emit(ManageUsersLoaded(members: baseMembers, isProcessing: true));
+    final result = await _createRelationshipByPhoneUseCase(
+      personId: _userHolder.user!.personId,
+      phoneNumber: event.phoneNumber,
+      relationType: event.relationshipType,
     );
+    await result.fold((failure) async {
+      AppLogger.d(
+        'ManageUsersBloc',
+        'Link by phone failed: ${failure.message}',
+      );
+      emit(
+        ManageUsersLoaded(
+          members: baseMembers,
+          errorMessage: failure.userMessage,
+        ),
+      );
+    }, (_) async => add(const ManageUsersLoadRequested()));
+  }
 
+  Future<void> _onDeletePerson(
+    ManageUsersDeletePersonRequested event,
+    Emitter<ManageUsersState> emit,
+  ) async {
+    if (!kEnableDeletePerson) return;
+    final baseMembers = _currentMembers();
+    emit(ManageUsersLoaded(members: baseMembers, isProcessing: true));
     final result = await _deletePersonUseCase(event.personId);
-    result.fold(
-      (failure) {
-        AppLogger.d('ManageUsersBloc', 'Delete failed: ${failure.message}');
-        emit(
-          ManageUsersLoaded(
-            members: baseMembers,
-            clearDeletingId: true,
-            errorMessage: failure.userMessage,
-          ),
-        );
-      },
-      (_) {
-        emit(
-          ManageUsersLoaded(
-            members: baseMembers
-                .where((m) => m.personId != event.personId)
-                .toList(),
-            clearDeletingId: true,
-            clearError: true,
-          ),
-        );
-      },
-    );
+    await result.fold((failure) async {
+      AppLogger.d(
+        'ManageUsersBloc',
+        'Delete person failed: ${failure.message}',
+      );
+      emit(
+        ManageUsersLoaded(
+          members: baseMembers,
+          errorMessage: failure.userMessage,
+        ),
+      );
+    }, (_) async => add(const ManageUsersLoadRequested()));
+  }
+
+  Future<void> _onUnlink(
+    ManageUsersUnlinkRequested event,
+    Emitter<ManageUsersState> emit,
+  ) async {
+    final baseMembers = _currentMembers();
+    emit(ManageUsersLoaded(members: baseMembers, isProcessing: true));
+
+    final result = await _unlinkRelationshipUseCase(event.relationshipId);
+
+    await result.fold((failure) async {
+      AppLogger.d('ManageUsersBloc', 'Unlink failed: ${failure.message}');
+      emit(
+        ManageUsersLoaded(
+          members: baseMembers,
+          isProcessing: false,
+          errorMessage: failure.userMessage,
+        ),
+      );
+    }, (_) async => add(const ManageUsersLoadRequested()));
   }
 }

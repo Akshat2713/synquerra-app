@@ -10,7 +10,12 @@ import '../../../utils/colour_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
   final List<AlertEntity> alerts;
-  const AttentionDeviceSheet({super.key, required this.alerts});
+  final String? currentDeviceId;
+  const AttentionDeviceSheet({
+    super.key,
+    required this.alerts,
+    this.currentDeviceId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                         .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
                     final name = d.displayOwnerName(currentUserFullName);
+                    final isCurrentDevice = d.imei == currentDeviceId;
                     return ListTile(
                       leading: Container(
                         decoration: BoxDecoration(
@@ -92,7 +98,14 @@ class AttentionDeviceSheet extends StatelessWidget {
                               : null,
                         ),
                       ),
-                      title: Text(name),
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          fontWeight: isCurrentDevice
+                              ? FontWeight.w900
+                              : FontWeight.w500,
+                        ),
+                      ),
                       subtitle: Text(
                         criticalCount == 0
                             ? 'No critical alerts'

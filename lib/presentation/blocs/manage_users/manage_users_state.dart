@@ -14,54 +14,30 @@ class ManageUsersLoading extends ManageUsersState {
   const ManageUsersLoading();
 }
 
-class ManageUsersLoaded extends ManageUsersState {
-  final List<PersonEntity> members;
-  final bool isAdding;
-  final String? deletingPersonId;
-  final String? errorMessage;
-  final bool? clearDeletingId;
-  final bool? clearError;
+class MemberItem extends Equatable {
+  final String relationshipId;
+  final PersonEntity person;
+  const MemberItem({required this.relationshipId, required this.person});
+  @override
+  List<Object?> get props => [relationshipId, person];
+}
 
+class ManageUsersLoaded extends ManageUsersState {
+  final List<MemberItem> members;
+  final bool isProcessing;
+  final String? errorMessage;
   const ManageUsersLoaded({
     required this.members,
-    this.isAdding = false,
-    this.deletingPersonId,
+    this.isProcessing = false,
     this.errorMessage,
-    this.clearDeletingId,
-    this.clearError,
   });
-
-  ManageUsersLoaded copyWith({
-    List<PersonEntity>? members,
-    bool? isAdding,
-    String? deletingPersonId,
-    bool clearDeletingId = false,
-    String? errorMessage,
-    bool clearError = false,
-  }) {
-    return ManageUsersLoaded(
-      members: members ?? this.members,
-      isAdding: isAdding ?? this.isAdding,
-      deletingPersonId: clearDeletingId
-          ? null
-          : (deletingPersonId ?? this.deletingPersonId),
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-    );
-  }
-
   @override
-  List<Object?> get props => [
-    members,
-    isAdding,
-    deletingPersonId,
-    errorMessage,
-  ];
+  List<Object?> get props => [members, isProcessing, errorMessage];
 }
 
 class ManageUsersError extends ManageUsersState {
   final String message;
   const ManageUsersError(this.message);
-
   @override
   List<Object?> get props => [message];
 }

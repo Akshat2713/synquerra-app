@@ -32,6 +32,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   // Tracks whether the in-flight submission belongs to this screen, so the
   // listener doesn't react to isAdding changes triggered elsewhere.
   bool _wasSubmitting = false;
+  bool _awaitingReload = false;
 
   @override
   void dispose() {
@@ -66,6 +67,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _wasSubmitting = true;
+    _awaitingReload = false;
     context.read<ManageUsersBloc>().add(
       ManageUsersAddRequested(
         firstName: _firstNameController.text.trim(),
@@ -89,31 +91,47 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return BlocConsumer<ManageUsersBloc, ManageUsersState>(
       listener: (context, state) {
-        if (state is ManageUsersLoaded && _wasSubmitting && !state.isAdding) {
+        if (!_wasSubmitting) return;
+
+        if (state is ManageUsersLoaded && state.errorMessage != null) {
+          // Add or relationship-create failed.
           _wasSubmitting = false;
-          if (state.errorMessage == null) {
-            Navigator.pop(context, true);
-          } else {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage!),
-                  backgroundColor: colors.error,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+          _awaitingReload = false;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: colors.error,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              );
-          }
+              ),
+            );
+          return;
+        }
+
+        if (state is ManageUsersLoading) {
+          // The bloc succeeded and is now re-fetching the list.
+          _awaitingReload = true;
+          return;
+        }
+
+        if (state is ManageUsersLoaded && _awaitingReload) {
+          // Reload after a successful add completed.
+          _wasSubmitting = false;
+          _awaitingReload = false;
+          Navigator.pop(context, true);
         }
       },
       builder: (context, state) {
-        final isAdding = state is ManageUsersLoaded && state.isAdding;
+        final isAdding =
+            _wasSubmitting &&
+            (state is ManageUsersLoading ||
+                (state is ManageUsersLoaded && state.isProcessing));
         return Scaffold(
           backgroundColor: colors.surface,
           appBar: AppBar(

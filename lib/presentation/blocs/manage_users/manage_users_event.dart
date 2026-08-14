@@ -23,7 +23,6 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   final String country;
   final String pincode;
   final String relationshipType;
-
   const ManageUsersAddRequested({
     required this.firstName,
     required this.lastName,
@@ -38,7 +37,6 @@ class ManageUsersAddRequested extends ManageUsersEvent {
     required this.pincode,
     required this.relationshipType,
   });
-
   @override
   List<Object?> get props => [
     firstName,
@@ -56,10 +54,28 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   ];
 }
 
-class ManageUsersDeleteRequested extends ManageUsersEvent {
-  final String personId;
-  const ManageUsersDeleteRequested(this.personId);
+class ManageUsersLinkByPhoneRequested extends ManageUsersEvent {
+  final String phoneNumber;
+  final String relationshipType;
+  const ManageUsersLinkByPhoneRequested({
+    required this.phoneNumber,
+    required this.relationshipType,
+  });
+  @override
+  List<Object?> get props => [phoneNumber, relationshipType];
+}
 
+/// Wired but disabled in UI (see kEnableDeletePerson).
+class ManageUsersDeletePersonRequested extends ManageUsersEvent {
+  final String personId;
+  const ManageUsersDeletePersonRequested(this.personId);
   @override
   List<Object?> get props => [personId];
+}
+
+class ManageUsersUnlinkRequested extends ManageUsersEvent {
+  final String relationshipId;
+  const ManageUsersUnlinkRequested(this.relationshipId);
+  @override
+  List<Object?> get props => [relationshipId];
 }

@@ -67,7 +67,10 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
           BlocProvider.value(value: deviceListBloc),
           BlocProvider.value(value: landingBloc),
         ],
-        child: AttentionDeviceSheet(alerts: alerts),
+        child: AttentionDeviceSheet(
+          alerts: alerts,
+          currentDeviceId: widget.device.imei,
+        ),
       ),
     );
   }

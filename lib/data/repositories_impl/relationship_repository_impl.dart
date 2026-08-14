@@ -1,3 +1,5 @@
+// lib/features/relationship/data/repositories/relationship_repository_impl.dart
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
@@ -36,6 +38,42 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
         personAId: personAId,
         personBId: personBId,
         relationshipType: relationshipType,
+      );
+      return const Right(null);
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unlinkRelationship(
+    String relationshipId,
+  ) async {
+    try {
+      await _remote.unlinkRelationship(relationshipId);
+      return const Right(null);
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> createRelationshipByPhone({
+    required String personId,
+    required String phoneNumber,
+    required String relationType,
+  }) async {
+    try {
+      await _remote.createRelationshipByPhone(
+        personId: personId,
+        phoneNumber: phoneNumber,
+        relationType: relationType,
       );
       return const Right(null);
     } catch (e) {

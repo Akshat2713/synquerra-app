@@ -1,3 +1,5 @@
+// lib/features/relationship/data/datasources/remote/relationship_remote_datasource.dart
+
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import '../../network/dio_client.dart';
@@ -56,7 +58,7 @@ class RelationshipRemoteDataSource {
     );
 
     final response = await _dioClient.dio.post(
-      '${ApiConstants.createPerson}/relationship', // Resolves to /api/v1/persons/relationship
+      '${ApiConstants.createPerson}/relationship', // /api/v1/persons/relationship
       data: {
         'person_a_id': personAId,
         'person_b_id': personBId,
@@ -73,6 +75,77 @@ class RelationshipRemoteDataSource {
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to create relationship.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
+
+  /// Unlink / Delete Relationship by ID
+  Future<void> deleteRelationship(String relationshipId) async {
+    AppLogger.d(
+      'RelationshipRemoteDataSource',
+      'deleteRelationship() called for $relationshipId',
+    );
+
+    final response = await _dioClient.dio.delete(
+      '/api/v1/relationships/$relationshipId',
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to unlink relationship.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
+
+  /// Create / Link Relationship by Phone Number
+  Future<void> createRelationshipByPhone({
+    required String personId,
+    required String phoneNumber,
+    required String relationType,
+  }) async {
+    AppLogger.d(
+      'RelationshipRemoteDataSource',
+      'createRelationshipByPhone() called for $phoneNumber with type $relationType',
+    );
+
+    final response = await _dioClient.dio.post(
+      ApiConstants.createRelationshipByPhone,
+      data: {
+        'person_id': personId,
+        'phone_number': phoneNumber,
+        'relation_type': relationType,
+      },
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to create relationship by phone.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
+
+  Future<void> unlinkRelationship(String relationshipId) async {
+    AppLogger.d(
+      'RelationshipRemoteDataSource',
+      'deleteRelationship() called for $relationshipId',
+    );
+
+    final response = await _dioClient.dio.delete(
+      '${ApiConstants.createPerson}/relationship/$relationshipId', // Resolves to /api/v1/persons/relationship/:relationship_id
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to unlink relationship.',
         statusCode: body['code'] as int?,
       );
     }
