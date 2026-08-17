@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 
 /// Card showing the address of the currently active analytics point
@@ -17,8 +18,12 @@ class AddressCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final address = point?.formattedAddress;
+    final address = point?.userAddress;
+    final realAddress = point?.formattedAddress;
     final geofence = point?.geofenceName;
+    AppLogger.d("[Address card]", "The address is $address");
+    AppLogger.d("[Address card]", "The real address is $realAddress");
+    AppLogger.d("[Address card]", "The geofence is $geofence");
 
     return Skeletonizer(
       enabled: isLoading,
@@ -41,9 +46,10 @@ class AddressCard extends StatelessWidget {
           children: [
             Icon(Icons.location_on_rounded, size: 18, color: colors.primary),
             const SizedBox(width: 8),
+
             Expanded(
               child: Text(
-                address ?? geofence ?? 'Address Unavailable',
+                address ?? 'Address Unavailable',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

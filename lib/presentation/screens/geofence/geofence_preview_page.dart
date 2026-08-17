@@ -7,6 +7,7 @@ import '../../../core/di/injection_container.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../utils/colour_util.dart';
 import '../location/widgets/map_icon_button.dart';
+import 'utils/map_bounds_util.dart';
 import 'widgets/geofence_status_chip.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
@@ -37,27 +38,10 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
     super.dispose();
   }
 
-  LatLng get _centroid {
-    final coords = widget.geofence.coordinates;
-    final lat =
-        coords.map((c) => c.lat).reduce((a, b) => a + b) / coords.length;
-    final lng =
-        coords.map((c) => c.lng).reduce((a, b) => a + b) / coords.length;
-    return LatLng(lat, lng);
-  }
-
   void _fitGeofence() {
-    final points = widget.geofence.coordinates
-        .map((c) => LatLng(c.lat, c.lng))
-        .toList();
-    if (points.isEmpty) return;
-    if (points.length == 1) {
-      _mapController.move(points.first, MapConfig.defaultZoom);
-      return;
-    }
-    final bounds = LatLngBounds.fromPoints(points);
-    _mapController.fitCamera(
-      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(64)),
+    fitBoundsToPoints(
+      _mapController,
+      widget.geofence.coordinates.map((c) => LatLng(c.lat, c.lng)).toList(),
     );
   }
 
@@ -76,7 +60,7 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: _centroid,
+              // initialCenter: centroidOf(points) ?? const LatLng(0, 0),
               initialZoom: MapConfig.defaultZoom,
               onMapReady: _fitGeofence,
             ),

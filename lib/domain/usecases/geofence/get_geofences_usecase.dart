@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-// import '../../entities/geofence/geofence_entity.dart';
 import '../../entities/geofence/geofence_entity.dart';
 import '../../failures/failure.dart';
 import '../../repositories/geofence_repository.dart';
@@ -11,6 +10,6 @@ class GetGeofencesUseCase implements UseCase<List<GeofenceEntity>, String> {
   GetGeofencesUseCase(this._repository);
 
   @override
-  Future<Either<Failure, List<GeofenceEntity>>> call(String imei) =>
-      _repository.getDeviceGeofences(imei);
+  Future<Either<Failure, List<GeofenceEntity>>> call(String deviceId) =>
+      _repository.getDeviceGeofences(deviceId);
 }

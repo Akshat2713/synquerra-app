@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/auth/user_entity.dart';
+import '../../../app/app_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
+import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../blocs/theme/theme_cubit.dart';
 
 class ProfileMenuButton extends StatelessWidget {
@@ -49,19 +51,19 @@ class ProfileMenuButton extends StatelessWidget {
         ),
         PopupMenuItem<String>(
           value: 'manage_users',
-          enabled: false,
+          enabled: true,
           child: Row(
             children: [
               Icon(
                 Icons.people_alt_rounded,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                color: colors.onSurfaceVariant,
                 size: 18,
               ),
               const SizedBox(width: 10),
               Text(
                 'Manage Users',
                 style: TextStyle(
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -70,25 +72,26 @@ class ProfileMenuButton extends StatelessWidget {
         ),
         PopupMenuItem<String>(
           value: 'manage_devices',
-          enabled: false,
+          enabled: true,
           child: Row(
             children: [
               Icon(
                 Icons.developer_board_rounded,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                color: colors.onSurfaceVariant,
                 size: 18,
               ),
               const SizedBox(width: 10),
               Text(
                 'Manage Devices',
                 style: TextStyle(
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.38),
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
         ),
+
         PopupMenuItem<String>(
           value: 'toggle_theme',
           child: Builder(
@@ -141,6 +144,16 @@ class ProfileMenuButton extends StatelessWidget {
       onSelected: (value) {
         if (value == 'logout') {
           context.read<AuthBloc>().add(const AuthLogoutRequested());
+        } else if (value == 'manage_devices') {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.manageDevices,
+            arguments: ManageDevicesArgs(
+              deviceListBloc: context.read<DeviceListBloc>(),
+            ),
+          );
+        } else if (value == 'manage_users') {
+          Navigator.pushNamed(context, AppRoutes.manageUsers);
         }
       },
     );

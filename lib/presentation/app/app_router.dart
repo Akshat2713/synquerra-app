@@ -16,6 +16,8 @@ import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
 import '../blocs/landing/landing_bloc.dart';
 import '../blocs/link_device/link_device_bloc.dart';
+import '../blocs/manage_devices/manage_devices_bloc.dart';
+import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
@@ -27,6 +29,9 @@ import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
+import '../screens/manage_devices/manage_devices_page.dart';
+import '../screens/manage_users/add_member_screen.dart';
+import '../screens/manage_users/manage_users_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -63,6 +68,11 @@ class GeofenceMapPickerArgs {
     this.initialPoints,
   });
 }
+
+class ManageDevicesArgs {
+  final DeviceListBloc deviceListBloc;
+  const ManageDevicesArgs({required this.deviceListBloc});
+}
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -84,6 +94,9 @@ class AppRoutes {
   static const String linkDevice = '/link-device';
   static const String geofencePreview = '/geofence-preview';
   static const String geofenceMapPicker = '/geofence-map-picker';
+  static const String manageDevices = '/manage-devices';
+  static const String manageUsers = '/manage-users';
+  static const String addMember = '/add-member';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -112,10 +125,7 @@ class AppRouter {
             child: const DeviceListScreen(),
           ),
         );
-      // NEW
-      // REPLACE (delete the DeviceDetailArgs class I added — not needed)
 
-      // deviceDetail case:
       case AppRoutes.deviceDetail:
         final args = settings.arguments as DeviceDetailArgs;
         return _slide(
@@ -132,22 +142,6 @@ class AppRouter {
             child: DeviceShellScreen(device: args.device),
           ),
         );
-
-      // case AppRoutes.manage:
-      //   final args = settings.arguments as Map<String, dynamic>;
-      //   final device = args['device'] as DeviceEntity;
-      //   final analytics = args['analytics'] as AnalyticsEntity?;
-      //   final analyticsBloc = args['analyticsBloc'] as AnalyticsBloc;
-      //   return _slide(
-      //     settings,
-      //     MultiBlocProvider(
-      //       providers: [
-      //         BlocProvider(create: (_) => sl<ManageBloc>()),
-      //         BlocProvider.value(value: analyticsBloc),
-      //       ],
-      //       child: ProfileScreen(device: device, analytics: analytics),
-      //     ),
-      //   );
 
       case AppRoutes.geofence:
         final args = settings.arguments as Map<String, dynamic>;
@@ -180,7 +174,7 @@ class AppRouter {
 
       case AppRoutes.geofenceMapPicker:
         final args = settings.arguments as GeofenceMapPickerArgs;
-        return _slide(
+        return _slide<List<Coordinate>>(
           settings,
           GeofenceMapPickerPage(
             initialCenter: args.initialCenter,
@@ -213,9 +207,6 @@ class AppRouter {
           ),
         );
 
-      // ── ADD this helper to AppRouter class ──
-      //  SignupBloc? _signupBloc;
-
       case AppRoutes.signupCredentials:
         final bloc = _activeSignupBloc ??= sl<SignupBloc>();
         return _fade(
@@ -234,6 +225,38 @@ class AppRouter {
             child: const LinkDeviceScreen(),
           ),
         );
+
+      case AppRoutes.manageDevices:
+        final args = settings.arguments as ManageDevicesArgs;
+        return _slide(
+          settings,
+          MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: args.deviceListBloc),
+              BlocProvider(
+                create: (_) =>
+                    sl<ManageDevicesBloc>(param1: args.deviceListBloc),
+              ),
+            ],
+            child: const ManageDevicesPage(),
+          ),
+        );
+
+      case AppRoutes.manageUsers:
+        return _slide(
+          settings,
+          BlocProvider<ManageUsersBloc>(
+            create: (_) => sl<ManageUsersBloc>(),
+            child: const ManageUsersScreen(),
+          ),
+        );
+
+      case AppRoutes.addMember:
+        final bloc = settings.arguments as ManageUsersBloc;
+        return _slide(
+          settings,
+          BlocProvider.value(value: bloc, child: const AddMemberScreen()),
+        );
       default:
         return _fade(
           settings,
@@ -245,15 +268,12 @@ class AppRouter {
   // ── Transition helpers ──────────────────────────────────────────────────────
 
   /// Standard slide-up for main content screens.
-  static MaterialPageRoute<dynamic> _slide(
-    RouteSettings settings,
-    Widget child,
-  ) {
+  static MaterialPageRoute<T> _slide<T>(RouteSettings settings, Widget child) {
     return MaterialPageRoute(settings: settings, builder: (_) => child);
   }
 
   /// Fade for auth / splash (no back-stack feel).
-  static PageRouteBuilder<dynamic> _fade(RouteSettings settings, Widget child) {
+  static PageRouteBuilder<T> _fade<T>(RouteSettings settings, Widget child) {
     return PageRouteBuilder(
       settings: settings,
       pageBuilder: (_, __, ___) => child,

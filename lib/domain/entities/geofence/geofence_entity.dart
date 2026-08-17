@@ -19,9 +19,15 @@ class GeofenceEntity extends Equatable {
   final bool isActive;
   final List<Coordinate> coordinates;
   final String geofenceColor;
-  final int entryAlertDelay;
   final bool isSyncToDevice;
-  final int exitAlertDelay;
+  final String? locality;
+  final String? block;
+  final String? district;
+  final String? state;
+  final String? postcode;
+  final String? country;
+  final String? landmark;
+  final String? address;
   final String createdAt;
   final String updatedAt;
 
@@ -34,9 +40,15 @@ class GeofenceEntity extends Equatable {
     required this.isActive,
     required this.coordinates,
     required this.geofenceColor,
-    required this.entryAlertDelay,
     required this.isSyncToDevice,
-    required this.exitAlertDelay,
+    this.locality,
+    this.block,
+    this.district,
+    this.state,
+    this.postcode,
+    this.country,
+    this.landmark,
+    this.address,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -53,9 +65,15 @@ class GeofenceEntity extends Equatable {
     isActive,
     coordinates,
     geofenceColor,
-    entryAlertDelay,
     isSyncToDevice,
-    exitAlertDelay,
+    locality,
+    block,
+    district,
+    state,
+    postcode,
+    country,
+    landmark,
+    address,
     createdAt,
     updatedAt,
   ];

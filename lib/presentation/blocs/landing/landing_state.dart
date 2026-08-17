@@ -17,7 +17,7 @@ class LandingLoading extends LandingState {
 class LandingLoaded extends LandingState {
   final AnalyticsEntity? latest;
   final List<AlertEntity> alerts;
-  const LandingLoaded({required this.latest, required this.alerts});
+  const LandingLoaded({this.latest, required this.alerts});
   @override
   List<Object?> get props => [latest, alerts];
 }

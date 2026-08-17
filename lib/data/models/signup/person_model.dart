@@ -1,4 +1,4 @@
-import '../../../domain/entities/signup/signup_entity.dart';
+import '../../../domain/entities/signup/person_entity.dart';
 
 class PersonModel {
   final String personId;

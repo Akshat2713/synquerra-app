@@ -4,11 +4,28 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Core & Network
+import '../../data/datasources/remote/analytics_realtime_datasource.dart';
+import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
+import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/repositories_impl/device_assignment_repository_impl.dart';
+import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../domain/repositories/device_assignment_repository.dart';
+import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
+import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
+import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/relationship/create_relationship_by_phone_usecase.dart';
+import '../../domain/usecases/relationship/create_relationship_usecase.dart';
+import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
+import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../../domain/usecases/signup/delete_person_usecase.dart';
+import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
+import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
@@ -213,14 +230,20 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<AnalyticsRemoteDataSource>(
     () => AnalyticsRemoteDataSource(sl()),
   );
+  sl.registerLazySingleton<AnalyticsRealtimeDataSource>(
+    () => AnalyticsRealtimeDataSource(),
+  );
   sl.registerLazySingleton<AnalyticsRepository>(
-    () => AnalyticsRepositoryImpl(remote: sl()),
+    () => AnalyticsRepositoryImpl(remote: sl(), realtime: sl()),
   );
   sl.registerLazySingleton(() => GetAnalyticsUseCase(sl()));
+  sl.registerLazySingleton(() => SubscribeAnalyticsRealtimeUseCase(sl()));
   sl.registerFactory<AnalyticsBloc>(
-    () => AnalyticsBloc(getAnalyticsUseCase: sl()),
+    () => AnalyticsBloc(
+      getAnalyticsUseCase: sl(),
+      subscribeRealtimeUseCase: sl(),
+    ),
   );
-
   // ── Geofence Feature ────────────────────────────────────
   sl.registerLazySingleton<GeofenceRemoteDataSource>(
     () => GeofenceRemoteDataSource(sl()),
@@ -271,7 +294,7 @@ Future<void> initDependencies() async {
   // ── UI Navigation / Shell Blocs ─────────────────────────
   sl.registerFactory<LandingBloc>(
     () => LandingBloc(
-      getAnalyticsUseCase: sl(),
+      // getAnalyticsUseCase: sl(),
       getAlertsUseCase: sl(),
       userHolder: sl(),
     ),
@@ -289,6 +312,51 @@ Future<void> initDependencies() async {
   sl.registerFactory<SettingsBloc>(
     () =>
         SettingsBloc(getSettingsUseCase: sl(), updatePhoneNumbersUseCase: sl()),
+  );
+
+  // ── Manage Devices Feature ──────────────────────────────
+  sl.registerLazySingleton<RelationshipRemoteDataSource>(
+    () => RelationshipRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<RelationshipRepository>(
+    () => RelationshipRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetRelationshipListUseCase(sl()));
+
+  sl.registerLazySingleton<DeviceAssignmentRemoteDataSource>(
+    () => DeviceAssignmentRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<DeviceAssignmentRepository>(
+    () => DeviceAssignmentRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => AssignDeviceUseCase(sl()));
+  sl.registerLazySingleton(() => UnassignDeviceUseCase(sl()));
+
+  sl.registerFactoryParam<ManageDevicesBloc, DeviceListBloc, void>(
+    (deviceListBloc, _) => ManageDevicesBloc(
+      getRelationshipListUseCase: sl(),
+      assignDeviceUseCase: sl(),
+      unassignDeviceUseCase: sl(),
+      userHolder: sl(),
+      deviceListBloc: deviceListBloc,
+    ),
+  );
+
+  // ── Manage Users Feature ────────────────────────────────
+  sl.registerLazySingleton(() => CreateRelationshipUseCase(sl()));
+  sl.registerLazySingleton(() => CreateRelationshipByPhoneUseCase(sl()));
+  sl.registerLazySingleton(() => DeletePersonUseCase(sl()));
+  sl.registerLazySingleton(() => UnlinkRelationshipUseCase(sl()));
+  sl.registerFactory<ManageUsersBloc>(
+    () => ManageUsersBloc(
+      getRelationshipListUseCase: sl(),
+      createPersonUseCase: sl(),
+      createRelationshipUseCase: sl(),
+      createRelationshipByPhoneUseCase: sl(),
+      deletePersonUseCase: sl(),
+      unlinkRelationshipUseCase: sl(),
+      userHolder: sl(),
+    ),
   );
 }
 

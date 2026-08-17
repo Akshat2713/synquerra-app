@@ -44,6 +44,19 @@ class AnalyticsEntity extends Equatable {
       longitude != null &&
       latitude != 0.0 &&
       longitude != 0.0;
+
+  String? get userAddress {
+    if (geofenceName != null &&
+        geofenceName!.isNotEmpty &&
+        geofenceName!.trim().toLowerCase() != 'outside' &&
+        geofenceName!.trim().toLowerCase() != 'gps_error' &&
+        geofenceName != "10" &&
+        geofenceName != "11") {
+      return geofenceName;
+    }
+    return formattedAddress;
+  }
+
   @override
   List<Object?> get props => [
     id,

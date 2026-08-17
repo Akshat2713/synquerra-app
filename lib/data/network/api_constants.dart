@@ -12,7 +12,7 @@ class ApiConstants {
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';
   static const String linkDevice = '/api/v1/device-owners';
-  static const String assignDevice = '/api/v1/device-assignments';
+  static const String deviceAssignments = '/api/v1/device-assignments';
 
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/devices';
@@ -21,6 +21,8 @@ class ApiConstants {
       '/api/v1/device-assignments/person/$personId/all-devices';
   static String personDevices(String personId) =>
       '/api/v1/device-assignments/person/$personId/devices';
+  static String relationshipList(String personId) =>
+      '/api/v1/persons/$personId/relationships';
 
   // ── Alerts & Errors ───────────────────────────────
   static const String alerts = '/api/v1/alerts-errors/alerts';
@@ -35,6 +37,10 @@ class ApiConstants {
   // ── Analytics ─────────────────────────────────────
   static const String analytics = '/api/v1/analytics/device-analytics-query';
   static const String analyticsQuery = '/api/v1/analytics';
+
+  // ── Relationship ─────────────────────────────────────
+  static const String createRelationshipByPhone =
+      '/api/v1/persons/relationship/by-phone';
 
   // ── Geofences ─────────────────────────────────────
   // RESTful standard endpoints (Recommended)
@@ -62,6 +68,12 @@ class ApiConstants {
   static const String updatephone = '/api/v1/device-settings/update-core';
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
+
+  // ── Realtime (Soketi) ─────────────────────────────
+  static const String soketiHost = 'websocket.synquerra.com';
+  static const int soketiPort = 443;
+  static const String soketiKey = 'synquerra@23';
+  static const bool soketiUseTLS = true;
 
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;

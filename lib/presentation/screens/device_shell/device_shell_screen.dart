@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/alerts/alert_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
@@ -31,6 +32,12 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    context.read<AnalyticsBloc>().add(
+      AnalyticsLoadDefault(
+        deviceId: widget.device.id,
+        imei: widget.device.imei,
+      ),
+    );
   }
 
   @override
@@ -67,7 +74,10 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
           BlocProvider.value(value: deviceListBloc),
           BlocProvider.value(value: landingBloc),
         ],
-        child: AttentionDeviceSheet(alerts: alerts),
+        child: AttentionDeviceSheet(
+          alerts: alerts,
+          currentDeviceId: widget.device.imei,
+        ),
       ),
     );
   }

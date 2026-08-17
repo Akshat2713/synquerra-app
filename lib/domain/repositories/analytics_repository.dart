@@ -11,4 +11,8 @@ abstract class AnalyticsRepository {
     String? startDate,
     String? endDate,
   });
+
+  Stream<AnalyticsEntity> subscribeToTelemetry(String imei);
+  Stream<String> get telemetryErrors;
+  Future<void> unsubscribeFromTelemetry();
 }

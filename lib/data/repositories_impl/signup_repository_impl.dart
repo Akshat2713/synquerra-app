@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
 import '../../core/error/app_exceptions.dart';
-import '../../domain/entities/signup/signup_entity.dart';
+import '../../domain/entities/signup/person_entity.dart';
 import '../../domain/entities/signup/signup_progress_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/signup_repository.dart';
@@ -20,7 +20,7 @@ class SignupRepositoryImpl implements SignupRepository {
   }) : _remote = remote,
        _local = local;
 
-  // ── Step 1 ────────────────────────────────────────────────
+  // ── Create Person ─────────────────────────────────────────
   @override
   Future<Either<Failure, PersonEntity>> createPerson({
     required String firstName,
@@ -34,6 +34,7 @@ class SignupRepositoryImpl implements SignupRepository {
     required String state,
     required String country,
     required String pincode,
+    bool saveSignupProgress = false,
   }) async {
     try {
       final model = await _remote.createPerson(
@@ -51,13 +52,30 @@ class SignupRepositoryImpl implements SignupRepository {
       );
       final entity = model.toEntity();
 
-      await _local.saveProgress(
-        step: 2,
-        personId: entity.personId,
-        email: entity.email!,
-      );
+      // Only save local progress if explicitly requested (e.g., during signup flow)
+      if (saveSignupProgress) {
+        await _local.saveProgress(
+          step: 2,
+          personId: entity.personId,
+          email: entity.email ?? email,
+        );
+      }
 
       return Right(entity);
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  // ── Delete Person ──────────────────────────────────────────
+  @override
+  Future<Either<Failure, void>> deletePerson(String personId) async {
+    try {
+      await _remote.deletePerson(personId);
+      return const Right(null);
     } catch (e) {
       final cause = (e is DioException && e.error is AppException)
           ? e.error as AppException
@@ -93,21 +111,17 @@ class SignupRepositoryImpl implements SignupRepository {
     }
   }
 
-  // ── Get Saved Progress ────────────────────────────────────
   @override
   Future<Either<Failure, SignupProgressEntity?>> getSavedProgress() async {
     try {
       final localProgress = await _local.getSavedProgress();
       if (localProgress == null) return const Right(null);
-
-      // Clean mapping using the model's toEntity() method
       return Right(localProgress.toEntity());
     } catch (e) {
       return Left(mapExceptionToFailure(e));
     }
   }
 
-  // ── Clear Saved Progress ──────────────────────────────────
   @override
   Future<Either<Failure, void>> clearSavedProgress() async {
     try {

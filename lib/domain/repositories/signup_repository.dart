@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 
-import '../entities/signup/signup_entity.dart';
+import '../entities/signup/person_entity.dart';
 import '../entities/signup/signup_progress_entity.dart';
 import '../failures/failure.dart';
 
@@ -17,7 +17,10 @@ abstract class SignupRepository {
     required String state,
     required String country,
     required String pincode,
+    bool saveSignupProgress = false,
   });
+
+  Future<Either<Failure, void>> deletePerson(String personId);
 
   Future<Either<Failure, void>> createCredentials({
     required String personId,
@@ -26,7 +29,6 @@ abstract class SignupRepository {
     required String passwordConfirmation,
   });
 
-  /// Returns [SignupProgressEntity] instead of the data layer model
   Future<Either<Failure, SignupProgressEntity?>> getSavedProgress();
 
   Future<Either<Failure, void>> clearSavedProgress();

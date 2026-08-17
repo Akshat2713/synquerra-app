@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../signup/signup_entity.dart';
+import '../signup/person_entity.dart';
+import 'device_association_entity.dart';
 import 'device_owner_entity.dart';
 
 class DeviceEntity extends Equatable {
@@ -30,6 +31,7 @@ class DeviceEntity extends Equatable {
   final String relationship;
   final DeviceOwnerEntity? deviceOwner;
   final PersonEntity? carrier;
+  final List<DeviceAssociationEntity> associations;
 
   const DeviceEntity({
     required this.id,
@@ -58,6 +60,7 @@ class DeviceEntity extends Equatable {
     required this.relationship,
     this.deviceOwner,
     this.carrier,
+    this.associations = const [],
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -70,6 +73,14 @@ class DeviceEntity extends Equatable {
     if (carrier == null) return currentUserFullName;
     final name = '${carrier!.firstName} ${carrier!.lastName}'.trim();
     return name.isEmpty ? currentUserFullName : name;
+  }
+
+  DeviceAssociationEntity? associationFor(String roleKey) {
+    try {
+      return associations.firstWhere((a) => a.associationType == roleKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
@@ -100,5 +111,6 @@ class DeviceEntity extends Equatable {
     relationship,
     deviceOwner,
     carrier,
+    associations,
   ];
 }
