@@ -36,13 +36,13 @@ class _LocationScreenState extends State<LocationScreen> {
   late final UserLocationBloc _userLocationBloc;
   late final TileProvider _tileProvider;
   bool _showTimeline = false;
+
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _userLocationBloc = sl<UserLocationBloc>();
     _tileProvider = sl<TileProvider>();
-    context.read<AnalyticsBloc>().add(AnalyticsLoadDefault(widget.device.id));
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.device.id));
     AppLogger.d('LocationScreen', 'initState → deviceId: ${widget.device.id}');
   }

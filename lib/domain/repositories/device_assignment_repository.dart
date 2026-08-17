@@ -9,6 +9,7 @@ abstract class DeviceAssignmentRepository {
   });
 
   Future<Either<Failure, void>> unassignDevice({
+    required String personId,
     required String deviceId,
     required String associationType,
   });

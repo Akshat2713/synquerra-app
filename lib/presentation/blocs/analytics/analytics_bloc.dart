@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
+import '../../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
 import '../../../core/utils/app_logger.dart';
 
@@ -12,28 +15,73 @@ part 'analytics_state.dart';
 
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final GetAnalyticsUseCase _getAnalyticsUseCase;
-  // final AnalyticsFetchParams _computeParams;
+  final SubscribeAnalyticsRealtimeUseCase _subscribeRealtimeUseCase;
+  StreamSubscription<AnalyticsEntity>? _realtimeSub;
+  StreamSubscription<String>? _realtimeErrorSub;
+  String? _currentDeviceId;
 
-  AnalyticsBloc({required GetAnalyticsUseCase getAnalyticsUseCase})
-    : _getAnalyticsUseCase = getAnalyticsUseCase,
-      super(AnalyticsInitial()) {
+  AnalyticsBloc({
+    required GetAnalyticsUseCase getAnalyticsUseCase,
+    required SubscribeAnalyticsRealtimeUseCase subscribeRealtimeUseCase,
+  }) : _getAnalyticsUseCase = getAnalyticsUseCase,
+       _subscribeRealtimeUseCase = subscribeRealtimeUseCase,
+       super(AnalyticsInitial()) {
     on<AnalyticsLoadDefault>(_onLoadDefault);
     on<AnalyticsFilterChanged>(_onFilterChanged);
     on<AnalyticsCustomRangeSelected>(_onCustomRange);
     on<AnalyticsSliderChanged>(_onSliderChanged);
+    on<AnalyticsRealtimePointReceived>(_onRealtimePoint);
   }
 
   Future<void> _onLoadDefault(
     AnalyticsLoadDefault event,
     Emitter<AnalyticsState> emit,
   ) async {
-    AppLogger.d('AnalyticsBloc', 'LoadDefault → deviceId: ${event.deviceId}');
     emit(AnalyticsLoading());
     await _fetch(
       emit: emit,
       deviceId: event.deviceId,
       filter: AnalyticsFilter.latest,
     );
+    _currentDeviceId = event.deviceId;
+    _startRealtime(event.imei);
+  }
+
+  void _startRealtime(String imei) {
+    _realtimeSub?.cancel();
+    _realtimeErrorSub?.cancel();
+    _realtimeSub = _subscribeRealtimeUseCase(
+      imei,
+    ).listen((point) => add(AnalyticsRealtimePointReceived(point)));
+    _realtimeErrorSub = _subscribeRealtimeUseCase.errors.listen((_) {
+      if (_currentDeviceId != null) {
+        add(
+          AnalyticsFilterChanged(
+            deviceId: _currentDeviceId!,
+            filter: AnalyticsFilter.latest,
+          ),
+        );
+      }
+    });
+  }
+
+  void _onRealtimePoint(
+    AnalyticsRealtimePointReceived event,
+    Emitter<AnalyticsState> emit,
+  ) {
+    if (state is! AnalyticsLoaded) return;
+    final current = state as AnalyticsLoaded;
+    if (current.activeFilter != AnalyticsFilter.latest)
+      return; // don't disturb history browsing
+    emit(current.copyWith(points: [event.point, ...current.points]));
+  }
+
+  @override
+  Future<void> close() {
+    _realtimeSub?.cancel();
+    _realtimeErrorSub?.cancel();
+    _subscribeRealtimeUseCase.stop();
+    return super.close();
   }
 
   Future<void> _onFilterChanged(

@@ -8,10 +8,12 @@ class UnassignDeviceUseCase {
   UnassignDeviceUseCase(this._repository);
 
   Future<Either<Failure, void>> call({
+    required String personId,
     required String deviceId,
     required String associationType,
   }) {
     return _repository.unassignDevice(
+      personId: personId,
       deviceId: deviceId,
       associationType: associationType,
     );

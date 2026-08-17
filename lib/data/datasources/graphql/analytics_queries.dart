@@ -10,7 +10,6 @@ class AnalyticsQueries {
     int? dataInterval,
     String? startDate,
     String? endDate,
-    bool uniqueLatLong = true,
   }) {
     return '''
       query {
@@ -21,7 +20,7 @@ class AnalyticsQueries {
           ${dataInterval != null ? ', dataInterval: $dataInterval' : ''}
           ${startDate != null ? ', startDate: "$startDate"' : ''}
           ${endDate != null ? ', endDate: "$endDate"' : ''}
-          , uniqueLatLong: $uniqueLatLong
+          
         ) {
           id
           imei

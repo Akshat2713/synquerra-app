@@ -24,9 +24,11 @@ class ManageDevicesAssignRequested extends ManageDevicesEvent {
 }
 
 class ManageDevicesUnassignRequested extends ManageDevicesEvent {
+  final String? personId;
   final String deviceId;
   final String associationType;
   const ManageDevicesUnassignRequested({
+    this.personId,
     required this.deviceId,
     required this.associationType,
   });

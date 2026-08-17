@@ -11,8 +11,8 @@ class ManageDevicesScreen extends StatefulWidget {
   final Future<void> Function()? onRefresh;
   final Function(String deviceId, String personId, String associationType)?
   onAssignDevice;
-  final Function(String deviceId, String associationType)? onUnassignDevice;
-
+  final Function(String deviceId, String personId, String associationType)?
+  onUnassignDevice;
   const ManageDevicesScreen({
     super.key,
     this.devices = const [],
@@ -52,10 +52,14 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
     if (mounted) setState(() => _processingDeviceId = null);
   }
 
-  Future<void> _handleUnassign(String deviceId, String associationType) async {
+  Future<void> _handleUnassign(
+    String deviceId,
+    String personId,
+    String associationType,
+  ) async {
     if (widget.onUnassignDevice == null) return;
     setState(() => _processingDeviceId = deviceId);
-    await widget.onUnassignDevice!(deviceId, associationType);
+    await widget.onUnassignDevice!(deviceId, personId, associationType);
     if (mounted) setState(() => _processingDeviceId = null);
   }
 
@@ -103,8 +107,12 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                                 personId,
                                 associationType,
                               ),
-                          onUnassign: (associationType) =>
-                              _handleUnassign(device.id, associationType),
+                          onUnassign: (personId, associationType) =>
+                              _handleUnassign(
+                                device.id,
+                                personId,
+                                associationType,
+                              ),
                         );
                       }, childCount: _unassignedDevices.length),
                     ),
@@ -134,8 +142,12 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                                 personId,
                                 associationType,
                               ),
-                          onUnassign: (associationType) =>
-                              _handleUnassign(device.id, associationType),
+                          onUnassign: (personId, associationType) =>
+                              _handleUnassign(
+                                device.id,
+                                personId,
+                                associationType,
+                              ),
                         );
                       }, childCount: _assignedDevices.length),
                     ),

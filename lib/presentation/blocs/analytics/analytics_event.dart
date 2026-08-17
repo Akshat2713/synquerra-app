@@ -7,10 +7,18 @@ abstract class AnalyticsEvent extends Equatable {
 }
 
 class AnalyticsLoadDefault extends AnalyticsEvent {
-  final String deviceId; // ~ renamed from imei
-  const AnalyticsLoadDefault(this.deviceId);
+  final String deviceId;
+  final String imei;
+  const AnalyticsLoadDefault({required this.deviceId, required this.imei});
   @override
-  List<Object?> get props => [deviceId];
+  List<Object?> get props => [deviceId, imei];
+}
+
+class AnalyticsRealtimePointReceived extends AnalyticsEvent {
+  final AnalyticsEntity point;
+  const AnalyticsRealtimePointReceived(this.point);
+  @override
+  List<Object?> get props => [point];
 }
 
 class AnalyticsFilterChanged extends AnalyticsEvent {

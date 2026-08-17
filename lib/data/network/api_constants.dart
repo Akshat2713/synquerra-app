@@ -69,6 +69,12 @@ class ApiConstants {
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
 
+  // ── Realtime (Soketi) ─────────────────────────────
+  static const String soketiHost = 'websocket.synquerra.com';
+  static const int soketiPort = 443;
+  static const String soketiKey = 'synquerra@23';
+  static const bool soketiUseTLS = true;
+
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;
   static const int receiveTimeoutMs = 30000;

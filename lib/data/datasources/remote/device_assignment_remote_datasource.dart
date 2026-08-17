@@ -44,6 +44,7 @@ class DeviceAssignmentRemoteDataSource {
 
   /// Unassign Device (DELETE with query parameters)
   Future<void> unassignDevice({
+    required String personId,
     required String deviceId,
     required String associationType,
   }) async {
@@ -54,6 +55,7 @@ class DeviceAssignmentRemoteDataSource {
     final response = await _dioClient.dio.delete(
       ApiConstants.deviceAssignments,
       queryParameters: {
+        'person_id': personId,
         'device_id': deviceId,
         'association_type': associationType,
       },

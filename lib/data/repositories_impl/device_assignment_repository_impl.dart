@@ -37,11 +37,13 @@ class DeviceAssignmentRepositoryImpl implements DeviceAssignmentRepository {
 
   @override
   Future<Either<Failure, void>> unassignDevice({
+    required String personId,
     required String deviceId,
     required String associationType,
   }) async {
     try {
       await _remote.unassignDevice(
+        personId: personId,
         deviceId: deviceId,
         associationType: associationType,
       );

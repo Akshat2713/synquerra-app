@@ -100,10 +100,14 @@ class ManageDevicesBloc extends Bloc<ManageDevicesEvent, ManageDevicesState> {
     if (state is! ManageDevicesLoaded) return;
     final current = state as ManageDevicesLoaded;
     emit(current.copyWith(processingDeviceId: event.deviceId));
+
+    // Passes personId (or falls back to carrier personId if required by usecase)
     final result = await _unassignDeviceUseCase(
       deviceId: event.deviceId,
       associationType: event.associationType,
+      personId: event.personId!,
     );
+
     result.fold(
       (failure) {
         AppLogger.d('ManageDevicesBloc', 'Unassign failed: ${failure.message}');

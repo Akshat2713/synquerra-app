@@ -49,7 +49,9 @@ class AnalyticsEntity extends Equatable {
     if (geofenceName != null &&
         geofenceName!.isNotEmpty &&
         geofenceName!.trim().toLowerCase() != 'outside' &&
-        geofenceName!.trim().toLowerCase() != 'gps_error') {
+        geofenceName!.trim().toLowerCase() != 'gps_error' &&
+        geofenceName != "10" &&
+        geofenceName != "11") {
       return geofenceName;
     }
     return formattedAddress;

@@ -71,10 +71,11 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
         );
         await _awaitDone(deviceId);
       },
-      onUnassignDevice: (deviceId, associationType) async {
+      onUnassignDevice: (deviceId, personId, associationType) async {
         context.read<ManageDevicesBloc>().add(
           ManageDevicesUnassignRequested(
             deviceId: deviceId,
+            personId: personId,
             associationType: associationType,
           ),
         );

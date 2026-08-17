@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/alerts/alert_entity.dart';
+import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
+import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../../utils/colour_util.dart';
@@ -61,14 +63,30 @@ class _LandingScreenState extends State<LandingScreen> {
             );
           }
           if (state is LandingLoaded) {
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: colors.primary,
-              child: _LoadedBody(
-                device: widget.device,
-                state: state,
-                onAttentionTap: widget.onAttentionTap,
-              ),
+            return BlocBuilder<AnalyticsBloc, AnalyticsState>(
+              builder: (context, analyticsState) {
+                final isAnalyticsLoading =
+                    analyticsState is AnalyticsInitial ||
+                    analyticsState is AnalyticsLoading;
+                if (isAnalyticsLoading) {
+                  return const LandingSkeleton();
+                }
+                final latest =
+                    analyticsState is AnalyticsLoaded &&
+                        analyticsState.points.isNotEmpty
+                    ? analyticsState.points.first
+                    : null;
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: colors.primary,
+                  child: _LoadedBody(
+                    device: widget.device,
+                    state: state,
+                    latest: latest,
+                    onAttentionTap: widget.onAttentionTap,
+                  ),
+                );
+              },
             );
           }
           return const SizedBox.shrink();
@@ -81,13 +99,14 @@ class _LandingScreenState extends State<LandingScreen> {
 class _LoadedBody extends StatelessWidget {
   final DeviceEntity device;
   final LandingLoaded state;
+  final AnalyticsEntity? latest; // ADD THIS
   final VoidCallback? onAttentionTap;
   const _LoadedBody({
     required this.device,
     required this.state,
+    required this.latest, // ADD THIS
     this.onAttentionTap,
   });
-
   List<ActivityFeedEntry> _buildActivityFeed(
     DeviceEntity device,
     List<AlertEntity> allAlerts,
@@ -148,15 +167,17 @@ class _LoadedBody extends StatelessWidget {
                 onTap: onAttentionTap ?? () {},
               ),
               const SizedBox(height: 16),
-              HeroSection(device: device, latest: state.latest),
+              HeroSection(device: device, latest: latest), // was state.latest
               const SizedBox(height: 16),
               InfoCard(
                 icon: Icons.location_on_rounded,
                 iconBg: kBlue.withValues(alpha: 0.15),
                 iconColor: kBlue,
-                title: state.latest?.formattedAddress ?? 'Location unavailable',
-                subtitle: state.latest?.deviceTimestamp != null
-                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(state.latest!.deviceTimestamp)}'
+                title:
+                    latest?.formattedAddress ??
+                    'Location unavailable', // was state.latest
+                subtitle: latest?.deviceTimestamp != null
+                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
                     : 'Awaiting first fix',
               ),
               const SizedBox(height: 16),
