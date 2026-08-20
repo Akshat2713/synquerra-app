@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../themes/colors.dart';
 
 class CoordinatesList extends StatelessWidget {
   final List<Coordinate> coordinates;
@@ -14,14 +15,13 @@ class CoordinatesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     // Show only first 5 — last is closing point (duplicate of first)
     final display = coordinates.take(5).toList();
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
+        border: Border.all(color: AppColors.outlineVariant(context)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -40,14 +40,14 @@ class CoordinatesList extends StatelessWidget {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: colors.primaryContainer,
+                          color: AppColors.primaryContainer,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             '${e.key + 1}',
                             style: textTheme.labelSmall?.copyWith(
-                              color: colors.onPrimaryContainer,
+                              color: AppColors.onPrimaryContainer(context),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -66,11 +66,11 @@ class CoordinatesList extends StatelessWidget {
                   ),
                 ),
                 if (e.key < display.length - 1)
-                  Divider(height: 1, color: colors.outlineVariant),
+                  Divider(height: 1, color: AppColors.outlineVariant(context)),
               ],
             );
           }),
-          Divider(height: 1, color: colors.outlineVariant),
+          Divider(height: 1, color: AppColors.outlineVariant(context)),
           TextButton.icon(
             onPressed: onReset,
             icon: const Icon(Icons.edit_location_alt_outlined, size: 18),

@@ -7,9 +7,9 @@ import '../themes/colors.dart';
 Color batteryColor(int? battery) {
   if (battery == null) return Colors.grey;
 
-  if (battery <= 20) return AppColors.alertCritical;
-  if (battery <= 50) return AppColors.alertWarning;
-  return AppColors.alertSuccess;
+  if (battery <= 20) return AppColors.danger;
+  if (battery <= 50) return AppColors.warning;
+  return AppColors.success;
 }
 
 String hexFromColor(Color c) =>
@@ -31,18 +31,18 @@ Color deviceSeverityColor(List<AlertEntity> deviceAlerts) {
             a.severity == AlertSeverity.warning) &&
         !a.isAcknowledged,
   );
-  if (hasCritical) return AppColors.alertCritical;
-  if (hasWarning) return AppColors.alertWarning;
-  return AppColors.alertSuccess;
+  if (hasCritical) return AppColors.danger;
+  if (hasWarning) return AppColors.warning;
+  return AppColors.success;
 }
 
 Color alertColor(AlertEntity alert) {
   switch (alert.severity) {
     case AlertSeverity.critical:
-      return AppColors.alertCritical;
+      return AppColors.danger;
     case AlertSeverity.warning:
-      return AppColors.alertWarning;
+      return AppColors.warning;
     case AlertSeverity.advisory:
-      return AppColors.alertSuccess;
+      return AppColors.success;
   }
 }

@@ -9,6 +9,7 @@ import '../../../app/app_router.dart';
 import '../../../blocs/alerts/alerts_bloc.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
+import '../../../themes/colors.dart';
 import 'notification_panel.dart';
 
 class NotificationBell extends StatefulWidget {
@@ -181,7 +182,7 @@ class _NotificationBellState extends State<NotificationBell>
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: const BoxDecoration(
-                  color: Colors.red,
+                  color: AppColors.danger,
                   shape: BoxShape.circle,
                 ),
                 constraints: const BoxConstraints(minWidth: 16, minHeight: 16),

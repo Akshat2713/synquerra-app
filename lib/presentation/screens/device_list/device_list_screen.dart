@@ -9,6 +9,7 @@ import '../../app/app_router.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
+import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
 import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
@@ -87,7 +88,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
 
@@ -107,7 +107,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           if (!didPop) await SystemNavigator.pop();
         },
         child: Scaffold(
-          backgroundColor: colors.surface,
           appBar: AppBar(
             title: const Text('My Devices'),
             automaticallyImplyLeading: false,
@@ -140,12 +139,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                       Icon(
                         Icons.error_outline_rounded,
                         size: 48,
-                        color: colors.error,
+                        color: AppColors.danger,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         state.message,
-                        style: TextStyle(color: colors.error),
+                        style: TextStyle(color: AppColors.danger),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -168,7 +167,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
 
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: colors.primary,
+                  color: AppColors.primary,
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
@@ -179,7 +178,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: colors.onSurfaceVariant,
+                              color: AppColors.textSecondary(context),
                             ),
                           ),
                         ),
@@ -189,7 +188,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           child: Center(
                             child: Text(
                               'No devices found.',
-                              style: TextStyle(color: colors.onSurfaceVariant),
+                              style: TextStyle(
+                                color: AppColors.textSecondary(context),
+                              ),
                             ),
                           ),
                         )
@@ -198,7 +199,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           if (grouped[entry.key]?.isNotEmpty ?? false)
                             ..._buildSection(
                               context,
-                              colors,
                               title: entry.value,
                               devices: grouped[entry.key]!,
                               user: user,
@@ -218,8 +218,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   List<Widget> _buildSection(
-    BuildContext context,
-    ColorScheme colors, {
+    BuildContext context, {
     required String title,
     required List<DeviceEntity> devices,
     required dynamic user,
@@ -236,13 +235,16 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: colors.primary,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 '(${devices.length})',
-                style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary(context),
+                ),
               ),
             ],
           ),

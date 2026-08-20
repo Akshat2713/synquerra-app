@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
+
 /// Holds controllers + null-safe getters for optional geofence address fields.
 /// Reusable wherever a geofence address needs to be collected/edited.
 class GeofenceAddressFields {
@@ -62,12 +64,11 @@ class GeofenceAddressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: colors.outlineVariant),
+          border: Border.all(color: AppColors.outlineVariant(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         clipBehavior: Clip.antiAlias,

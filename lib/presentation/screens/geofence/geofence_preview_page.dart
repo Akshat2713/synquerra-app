@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/config/map_config.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../themes/colors.dart';
 import '../../utils/colour_util.dart';
 import '../location/widgets/map_icon_button.dart';
 import 'utils/map_bounds_util.dart';
@@ -47,7 +48,6 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final geofence = widget.geofence;
     final borderColor = colorFromHex(geofence.geofenceColor);
     final points = geofence.coordinates
@@ -116,11 +116,11 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colors.surface,
+                color: AppColors.surface(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: colors.shadow.withValues(alpha: 0.08),
+                    color: AppColors.shadow(context).withValues(alpha: 0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -152,6 +152,7 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
           ),
 
           // Zoom Controls
+          // Zoom Controls section within build()
           Positioned(
             right: 12,
             bottom: 120,
@@ -163,7 +164,6 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
                     _mapController.camera.center,
                     _mapController.camera.zoom + 1,
                   ),
-                  colors: colors,
                 ),
                 const SizedBox(height: 8),
                 MapIconButton(
@@ -172,13 +172,11 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
                     _mapController.camera.center,
                     _mapController.camera.zoom - 1,
                   ),
-                  colors: colors,
                 ),
                 const SizedBox(height: 8),
                 MapIconButton(
                   icon: Icons.fit_screen_rounded,
                   onTap: _fitGeofence,
-                  colors: colors,
                 ),
               ],
             ),

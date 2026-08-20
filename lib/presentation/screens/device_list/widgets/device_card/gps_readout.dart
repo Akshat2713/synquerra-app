@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../themes/colors.dart';
+
 class GpsReadout extends StatelessWidget {
   final String? gpsStrength;
 
@@ -7,8 +9,6 @@ class GpsReadout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return SizedBox(
       width: 42,
       child: Column(
@@ -17,7 +17,7 @@ class GpsReadout extends StatelessWidget {
           Icon(
             Icons.satellite_alt_rounded,
             size: 16,
-            color: colors.onSurfaceVariant,
+            color: AppColors.textSecondary(context),
           ),
           const SizedBox(height: 6),
           Text(
@@ -26,7 +26,7 @@ class GpsReadout extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               fontFamily: 'monospace',
-              color: colors.onSurface,
+              color: AppColors.textPrimary(context),
             ),
           ),
         ],

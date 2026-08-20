@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
 
 class ActivityFeedEntry {
@@ -27,7 +28,7 @@ class ActivityFeedCard extends StatefulWidget {
 class _ActivityFeedCardState extends State<ActivityFeedCard> {
   bool _isExpanded = false;
 
-  List<Widget> _buildGroupedItems(ColorScheme colors) {
+  List<Widget> _buildGroupedItems() {
     final today = <ActivityFeedEntry>[];
     final yesterday = <ActivityFeedEntry>[];
     final older = <ActivityFeedEntry>[];
@@ -46,21 +47,21 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
 
     final widgets = <Widget>[];
     if (today.isNotEmpty) {
-      widgets.add(_sectionHeader('Today', colors));
-      widgets.addAll(today.map((item) => _buildItemRow(item, colors)));
+      widgets.add(_sectionHeader('Today'));
+      widgets.addAll(today.map((item) => _buildItemRow(item)));
     }
     if (yesterday.isNotEmpty) {
-      widgets.add(_sectionHeader('Yesterday', colors));
-      widgets.addAll(yesterday.map((item) => _buildItemRow(item, colors)));
+      widgets.add(_sectionHeader('Yesterday'));
+      widgets.addAll(yesterday.map((item) => _buildItemRow(item)));
     }
     if (older.isNotEmpty) {
-      widgets.add(_sectionHeader('Earlier', colors));
-      widgets.addAll(older.map((item) => _buildItemRow(item, colors)));
+      widgets.add(_sectionHeader('Earlier'));
+      widgets.addAll(older.map((item) => _buildItemRow(item)));
     }
     return widgets;
   }
 
-  Widget _sectionHeader(String label, ColorScheme colors) => Padding(
+  Widget _sectionHeader(String label) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
     child: Align(
       alignment: Alignment.centerLeft,
@@ -69,14 +70,14 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+          color: AppColors.textSecondary(context).withValues(alpha: 0.7),
           letterSpacing: 0.5,
         ),
       ),
     ),
   );
 
-  Widget _buildItemRow(ActivityFeedEntry item, ColorScheme colors) => Padding(
+  Widget _buildItemRow(ActivityFeedEntry item) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     child: Row(
       children: [
@@ -95,7 +96,10 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
         const SizedBox(width: 3),
         Text(
           item.time,
-          style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary(context),
+          ),
         ),
       ],
     ),
@@ -103,13 +107,13 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 1)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 1),
+        ),
       ),
       child: Column(
         children: [
@@ -125,7 +129,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                     _isExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -152,9 +156,9 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
           if (_isExpanded) ...[
             Divider(
               height: 1,
-              color: colors.outlineVariant.withValues(alpha: 0.3),
+              color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
             ),
-            ..._buildGroupedItems(colors),
+            ..._buildGroupedItems(),
           ],
         ],
       ),

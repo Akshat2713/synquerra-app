@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 
 class BottomMetricsBar extends StatelessWidget {
@@ -14,14 +15,14 @@ class BottomMetricsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         border: Border(
-          top: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.3)),
+          top: BorderSide(
+            color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+          ),
         ),
       ),
       child: Row(
@@ -35,14 +36,14 @@ class BottomMetricsBar extends StatelessWidget {
                 Icon(
                   Icons.signal_cellular_alt,
                   size: 14,
-                  color: Colors.amber[700],
+                  color: AppColors.warning,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   networkStatus,
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: Colors.amber[700],
+                    color: AppColors.warning,
                   ),
                 ),
               ],
@@ -53,13 +54,13 @@ class BottomMetricsBar extends StatelessWidget {
             valueRow: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.wifi, size: 14, color: Colors.orange[700]),
+                Icon(Icons.wifi, size: 14, color: AppColors.warning),
                 const SizedBox(width: 4),
                 Text(
                   'Poor',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: Colors.orange[700],
+                    color: AppColors.warning,
                   ),
                 ),
               ],
@@ -99,7 +100,7 @@ class BottomMetricsBar extends StatelessWidget {
               '38°',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: Colors.green,
+                color: AppColors.success,
               ),
             ),
           ),
@@ -126,9 +127,7 @@ class _MetricCell extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            color: AppColors.textSecondary(context).withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 4),

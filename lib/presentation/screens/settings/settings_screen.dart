@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../app/app_router.dart';
+import '../../themes/colors.dart';
 import 'settings_tile.dart';
 import '../../../domain/entities/device/device_entity.dart';
 
@@ -15,7 +16,6 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -26,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
           Text(
             'Account',
             style: textTheme.labelSmall?.copyWith(
-              color: colors.onSurfaceVariant,
+              color: AppColors.textSecondary(context),
               letterSpacing: 1.1,
             ),
           ),
@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
           Text(
             'Zone Management',
             style: textTheme.labelSmall?.copyWith(
-              color: colors.onSurfaceVariant,
+              color: AppColors.textSecondary(context),
               letterSpacing: 1.1,
             ),
           ),
@@ -55,7 +55,7 @@ class SettingsScreen extends StatelessWidget {
           Text(
             'Coming Soon',
             style: textTheme.labelSmall?.copyWith(
-              color: colors.onSurfaceVariant,
+              color: AppColors.textSecondary(context),
               letterSpacing: 1.1,
             ),
           ),

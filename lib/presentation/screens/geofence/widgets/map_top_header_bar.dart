@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
 import '../../location/widgets/map_icon_button.dart';
 
 class MapTopHeaderBar extends StatelessWidget {
@@ -14,18 +15,12 @@ class MapTopHeaderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
-            MapIconButton(
-              icon: Icons.arrow_back_rounded,
-              onTap: onBackTap,
-              colors: colors,
-            ),
+            MapIconButton(icon: Icons.arrow_back_rounded, onTap: onBackTap),
             const SizedBox(width: 12),
             Expanded(
               child: Container(
@@ -34,11 +29,11 @@ class MapTopHeaderBar extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.surface.withValues(alpha: 0.95),
+                  color: AppColors.surface(context).withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.shadow.withValues(alpha: 0.08),
+                      color: AppColors.shadow(context).withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -48,7 +43,7 @@ class MapTopHeaderBar extends StatelessWidget {
                   title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: colors.onSurface,
+                    color: AppColors.textPrimary(context),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),

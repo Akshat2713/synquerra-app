@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
+
 class ViewTabs extends StatelessWidget {
   final bool isHistory;
   final ValueChanged<bool> onChanged; // true = History
@@ -7,11 +9,10 @@ class ViewTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8),
@@ -33,14 +34,13 @@ class ViewTabs extends StatelessWidget {
     bool active,
     VoidCallback onTap,
   ) {
-    final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? colors.primary : Colors.transparent,
+          color: active ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -48,7 +48,7 @@ class ViewTabs extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: active ? colors.onPrimary : colors.onSurfaceVariant,
+            color: active ? Colors.white : AppColors.textSecondary(context),
           ),
         ),
       ),

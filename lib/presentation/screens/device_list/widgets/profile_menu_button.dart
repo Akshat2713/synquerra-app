@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/auth/user_entity.dart';
 import '../../../blocs/theme/theme_cubit.dart';
+import '../../../themes/colors.dart';
 
 class ProfileMenuButton extends StatelessWidget {
   final UserEntity? user;
@@ -21,7 +22,6 @@ class ProfileMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.person_outline_rounded),
       offset: const Offset(0, 48),
@@ -65,14 +65,14 @@ class ProfileMenuButton extends StatelessWidget {
             children: [
               Icon(
                 Icons.people_alt_rounded,
-                color: colors.onSurfaceVariant,
+                color: AppColors.textSecondary(context),
                 size: 18,
               ),
               const SizedBox(width: 10),
               Text(
                 'Manage Users',
                 style: TextStyle(
-                  color: colors.onSurface,
+                  color: AppColors.textPrimary(context),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -86,14 +86,14 @@ class ProfileMenuButton extends StatelessWidget {
             children: [
               Icon(
                 Icons.developer_board_rounded,
-                color: colors.onSurfaceVariant,
+                color: AppColors.textSecondary(context),
                 size: 18,
               ),
               const SizedBox(width: 10),
               Text(
                 'Manage Devices',
                 style: TextStyle(
-                  color: colors.onSurface,
+                  color: AppColors.textPrimary(context),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -110,14 +110,14 @@ class ProfileMenuButton extends StatelessWidget {
                 children: [
                   Icon(
                     isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     size: 18,
                   ),
                   const SizedBox(width: 10),
                   Text(
                     isDark ? 'Dark Mode' : 'Light Mode',
                     style: TextStyle(
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -125,7 +125,7 @@ class ProfileMenuButton extends StatelessWidget {
                   Switch(
                     value: isDark,
                     onChanged: (_) => menuCtx.read<ThemeCubit>().toggle(),
-                    activeThumbColor: colors.primary,
+                    activeThumbColor: AppColors.primary,
                   ),
                 ],
               );
@@ -136,12 +136,12 @@ class ProfileMenuButton extends StatelessWidget {
           value: 'logout',
           child: Row(
             children: [
-              Icon(Icons.logout_rounded, color: colors.error, size: 18),
+              Icon(Icons.logout_rounded, color: AppColors.danger, size: 18),
               const SizedBox(width: 10),
               Text(
                 'Logout',
                 style: TextStyle(
-                  color: colors.error,
+                  color: AppColors.danger,
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -1,20 +1,23 @@
 #!/bin/bash
-# Run from your project root (where lib/ lives). Commit your work first!
-# Fixes broken/invented tokens found in the screens_zip audit.
+# Run from project root. Scans the ENTIRE lib/ folder (not just screens/),
+# which is what was missed last time.
+TARGET="lib"
 
-TARGET="lib"   # change if your screens live elsewhere
+echo "=== 1) 'colors: colors' or 'colors,' passed as bare arg ==="
+grep -rn "colors: colors\|(colors,\| colors,$" --include="*.dart" "$TARGET"
 
-# --- Broken AppColors.* refs that don't exist in colors.dart -> real tokens ---
-grep -rl "AppColors.safeGreen"        --include="*.dart" "$TARGET" | xargs -r sed -i 's/AppColors\.safeGreen/AppColors.success/g'
-grep -rl "AppColors.alertSuccess"     --include="*.dart" "$TARGET" | xargs -r sed -i 's/AppColors\.alertSuccess/AppColors.success/g'
-grep -rl "AppColors.alertWarning"     --include="*.dart" "$TARGET" | xargs -r sed -i 's/AppColors\.alertWarning/AppColors.warning/g'
-grep -rl "AppColors.backgroundContainer" --include="*.dart" "$TARGET" | xargs -r sed -i 's/AppColors\.backgroundContainer/AppColors.lightSurfaceVariant/g'
+echo ""
+echo "=== 2) Method/constructor params or fields still typed ColorScheme ==="
+grep -rn "ColorScheme colors" --include="*.dart" "$TARGET"
 
-# --- Unambiguous status-color hardcodes -> semantic tokens ---
-grep -rl "Colors.green"  --include="*.dart" "$TARGET" | xargs -r sed -i 's/Colors\.green\b/AppColors.success/g'
-grep -rl "Colors.amber"  --include="*.dart" "$TARGET" | xargs -r sed -i 's/Colors\.amber\b/AppColors.warning/g'
-grep -rl "Colors.orange" --include="*.dart" "$TARGET" | xargs -r sed -i 's/Colors\.orange\b/AppColors.warning/g'
-grep -rl "Colors.red"    --include="*.dart" "$TARGET" | xargs -r sed -i 's/Colors\.red\b/AppColors.danger/g'
+echo ""
+echo "=== 3) Any bare 'colors.' member access left ==="
+grep -rn "colors\.[a-zA-Z]" --include="*.dart" "$TARGET" | grep -v "AppColors\."
 
-echo "Done. Now: flutter analyze  ->  fix any import errors (add colors.dart import where missing)."
-echo "Review each fixed file's diff — a few of these may need Container/Success context, not the raw color."
+echo ""
+echo "=== 4) Any remaining Theme.of(context).colorScheme (not yet migrated) ==="
+grep -rn "colorScheme" --include="*.dart" "$TARGET"
+
+echo ""
+echo "=== 5) Files with 'colors' as identifier where surrounding method has no BuildContext param ==="
+echo "(manual check needed for any hits above — same fix pattern: swap ColorScheme colors -> BuildContext context, remove colors: colors call args)"

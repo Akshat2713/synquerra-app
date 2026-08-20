@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../themes/colors.dart';
+
 class StatusDot extends StatelessWidget {
   final bool state;
   final String onLabel;
@@ -16,10 +18,9 @@ class StatusDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final color = state
         ? onColor
-        : colors.onSurfaceVariant.withValues(alpha: 0.6);
+        : AppColors.textSecondary(context).withValues(alpha: 0.6);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/signup/person_entity.dart';
+import '../../../themes/colors.dart';
 
 class UnassignConfirmSheet extends StatelessWidget {
   final DeviceEntity device;
@@ -32,7 +33,6 @@ class UnassignConfirmSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final carrierAssoc = device.associationFor('carrier');
     final managerAssoc = device.associationFor('manager');
     final viewerAssoc = device.associationFor('viewer');
@@ -57,7 +57,10 @@ class UnassignConfirmSheet extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Select an assigned person or role to remove.',
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
           const SizedBox(height: 16),
           Flexible(
@@ -102,7 +105,6 @@ class UnassignConfirmSheet extends StatelessWidget {
     required PersonEntity? person,
     required IconData icon,
   }) {
-    final colors = Theme.of(context).colorScheme;
     final isAssignedToRole = person != null;
     final personName = isAssignedToRole
         ? '${person.firstName} ${person.lastName}'.trim()
@@ -113,14 +115,14 @@ class UnassignConfirmSheet extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: colors.primary),
+            Icon(icon, size: 16, color: AppColors.primary),
             const SizedBox(width: 6),
             Text(
               roleTitle,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: colors.primary,
+                color: AppColors.primary,
                 letterSpacing: 0.5,
               ),
             ),
@@ -131,11 +133,13 @@ class UnassignConfirmSheet extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
           leading: CircleAvatar(
             backgroundColor: isAssignedToRole
-                ? colors.errorContainer.withValues(alpha: 0.4)
-                : colors.surfaceContainerHighest,
+                ? AppColors.dangerContainer.withValues(alpha: 0.4)
+                : AppColors.surfaceVariant(context),
             child: Icon(
               Icons.person_outline_rounded,
-              color: isAssignedToRole ? colors.error : colors.onSurfaceVariant,
+              color: isAssignedToRole
+                  ? AppColors.danger
+                  : AppColors.textSecondary(context),
             ),
           ),
           title: Text(
@@ -145,14 +149,17 @@ class UnassignConfirmSheet extends StatelessWidget {
                   ? FontWeight.w600
                   : FontWeight.normal,
               color: isAssignedToRole
-                  ? colors.onSurface
-                  : colors.onSurfaceVariant,
+                  ? AppColors.textPrimary(context)
+                  : AppColors.textSecondary(context),
               fontSize: 14,
             ),
           ),
           trailing: isAssignedToRole
               ? IconButton(
-                  icon: Icon(Icons.remove_circle_outline, color: colors.error),
+                  icon: Icon(
+                    Icons.remove_circle_outline,
+                    color: AppColors.danger,
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                     onUnassign(person.personId, roleKey);

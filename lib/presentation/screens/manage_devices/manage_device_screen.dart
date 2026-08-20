@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/relationship/relationship_entity.dart';
+import '../../themes/colors.dart';
 import 'widgets/manage_device_card.dart';
 
 class ManageDevicesScreen extends StatefulWidget {
@@ -59,19 +60,16 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colors.surface,
       appBar: AppBar(title: const Text('Manage Devices'), centerTitle: false),
       body: RefreshIndicator(
         onRefresh: widget.onRefresh ?? () async {},
-        color: colors.primary,
+        color: AppColors.primary,
         child: _ownedDevices.isEmpty
             ? Center(
                 child: Text(
                   'No owned devices found.',
-                  style: TextStyle(color: colors.onSurfaceVariant),
+                  style: TextStyle(color: AppColors.textSecondary(context)),
                 ),
               )
             : CustomScrollView(
@@ -81,7 +79,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                     context,
                     title: 'Unassigned Devices',
                     count: _unassignedDevices.length,
-                    color: colors.error,
+                    color: AppColors.danger,
                   ),
                   if (_unassignedDevices.isEmpty)
                     _buildEmptyPlaceholder('No unassigned devices')
@@ -116,7 +114,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                     context,
                     title: 'Assigned Devices',
                     count: _assignedDevices.length,
-                    color: colors.primary,
+                    color: AppColors.primary,
                   ),
                   if (_assignedDevices.isEmpty)
                     _buildEmptyPlaceholder('No assigned devices')
@@ -159,7 +157,6 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
     required int count,
     required Color color,
   }) {
-    final colors = Theme.of(context).colorScheme;
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -176,7 +173,10 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
             const SizedBox(width: 6),
             Text(
               '($count)',
-              style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary(context),
+              ),
             ),
           ],
         ),
@@ -191,9 +191,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            color: AppColors.surfaceVariant(context).withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -201,7 +199,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: AppColors.textSecondary(context),
             ),
           ),
         ),

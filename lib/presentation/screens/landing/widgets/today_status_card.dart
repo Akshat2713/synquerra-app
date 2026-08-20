@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
+
 // Simple model to hold the live status logs
 class StatusLogEntry {
   final String label;
@@ -32,14 +34,13 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     const kGreen = Color(0xFF3DDC84);
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors.outlineVariant, width: 1),
+        border: Border.all(color: AppColors.outlineVariant(context), width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -69,7 +70,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                     _expanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     size: 18,
                   ),
                 ],
@@ -84,7 +85,9 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: colors.outlineVariant.withValues(alpha: 0.2),
+                      color: AppColors.outlineVariant(
+                        context,
+                      ).withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -103,7 +106,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                         log.label,
                         style: TextStyle(
                           fontSize: 15,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -115,7 +118,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                         fontWeight: FontWeight.w600,
                         color: log.isHighlightValue
                             ? kGreen
-                            : colors.onSurfaceVariant,
+                            : AppColors.textSecondary(context),
                       ),
                     ),
                   ],

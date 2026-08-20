@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../themes/colors.dart';
+
 class AppTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -39,8 +41,6 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return TextFormField(
       controller: widget.controller,
       obscureText: widget.isPassword && _obscure,
@@ -51,12 +51,16 @@ class _AppTextFieldState extends State<AppTextField> {
       validator: widget.validator,
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onSubmitted,
-      style: TextStyle(color: colors.onSurface, fontSize: 15),
+      style: TextStyle(color: AppColors.textPrimary(context), fontSize: 15),
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
         prefixIcon: widget.prefixIcon != null
-            ? Icon(widget.prefixIcon, size: 20, color: colors.onSurfaceVariant)
+            ? Icon(
+                widget.prefixIcon,
+                size: 20,
+                color: AppColors.textSecondary(context),
+              )
             : null,
         suffixIcon: widget.isPassword
             ? IconButton(
@@ -65,7 +69,7 @@ class _AppTextFieldState extends State<AppTextField> {
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   size: 20,
-                  color: colors.onSurfaceVariant,
+                  color: AppColors.textSecondary(context),
                 ),
                 onPressed: () => setState(() => _obscure = !_obscure),
               )

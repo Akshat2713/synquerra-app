@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/link_member_by_phone_screen.dart';
 import 'widgets/member_card.dart';
@@ -26,7 +27,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     String relationshipId,
     String name,
   ) async {
-    final colors = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -42,7 +42,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Unlink', style: TextStyle(color: colors.primary)),
+            child: Text('Unlink', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
@@ -59,7 +59,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     String personId,
     String name,
   ) async {
-    final colors = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -75,7 +74,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Delete', style: TextStyle(color: colors.error)),
+            child: Text('Delete', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -89,15 +88,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colors.surface,
       appBar: AppBar(title: const Text('Manage Users'), centerTitle: false),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => LinkMemberByPhoneBottomSheet.show(context),
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: const Text(
           'Add Member',
@@ -112,7 +108,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               ..showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage!),
-                  backgroundColor: colors.error,
+                  backgroundColor: AppColors.danger,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -146,7 +142,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 Icon(
                   Icons.people_outline_rounded,
                   size: 56,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: AppColors.textSecondary(
+                    context,
+                  ).withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -155,7 +153,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -164,7 +162,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+                    color: AppColors.textSecondary(
+                      context,
+                    ).withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -175,7 +175,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   const ManageUsersLoadRequested(),
                 );
               },
-              color: colors.primary,
+              color: AppColors.primary,
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 12, bottom: 80),
                 itemCount: members.length,

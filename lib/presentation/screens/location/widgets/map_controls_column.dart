@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../blocs/user_location/user_location_bloc.dart';
+import '../../../themes/colors.dart';
 import 'map_icon_button.dart';
 
 class MapControlsColumn extends StatelessWidget {
@@ -21,13 +22,11 @@ class MapControlsColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         MapIconButton(
           icon: Icons.add_rounded,
-          colors: colors,
           onTap: () => mapController.move(
             mapController.camera.center,
             mapController.camera.zoom + 1,
@@ -36,34 +35,27 @@ class MapControlsColumn extends StatelessWidget {
         const SizedBox(height: 8),
         MapIconButton(
           icon: Icons.remove_rounded,
-          colors: colors,
           onTap: () => mapController.move(
             mapController.camera.center,
             mapController.camera.zoom - 1,
           ),
         ),
         const SizedBox(height: 8),
-        _CompassButton(mapController: mapController, colors: colors),
+        _CompassButton(mapController: mapController),
         const SizedBox(height: 8),
         // Reserved for future use — intentionally disabled (onTap: null).
-        MapIconButton(
-          icon: Icons.location_searching,
-          onTap: null,
-          colors: colors,
-        ),
+        const MapIconButton(icon: Icons.location_searching, onTap: null),
         const SizedBox(height: 8),
         // Recenter on the device's last known location.
         MapIconButton(
           icon: Icons.phone_android,
-          colors: colors,
-          onTap: () => mapController.move(deviceCenter, 14),
+          onTap: () => mapController.move(deviceCenter, 16),
         ),
         const SizedBox(height: 8),
         // Recenter on the user's real GPS location.
         _MyLocationButton(
           mapController: mapController,
           userLocationBloc: userLocationBloc,
-          colors: colors,
         ),
       ],
     );
@@ -72,9 +64,8 @@ class MapControlsColumn extends StatelessWidget {
 
 class _CompassButton extends StatelessWidget {
   final MapController mapController;
-  final ColorScheme colors;
 
-  const _CompassButton({required this.mapController, required this.colors});
+  const _CompassButton({required this.mapController});
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +76,6 @@ class _CompassButton extends StatelessWidget {
         final isNorthUp = rotationDeg.abs() < 0.5;
         return MapIconButton(
           icon: Icons.explore_rounded,
-          colors: colors,
           onTap: isNorthUp ? null : () => mapController.rotate(0),
           child: Transform.rotate(
             angle: -rotationDeg * (math.pi / 180),
@@ -93,8 +83,8 @@ class _CompassButton extends StatelessWidget {
               Icons.explore_rounded,
               size: 20,
               color: isNorthUp
-                  ? colors.onSurfaceVariant.withValues(alpha: 0.4)
-                  : colors.onSurface,
+                  ? AppColors.textSecondary(context).withValues(alpha: 0.4)
+                  : AppColors.textPrimary(context),
             ),
           ),
         );
@@ -106,12 +96,10 @@ class _CompassButton extends StatelessWidget {
 class _MyLocationButton extends StatelessWidget {
   final MapController mapController;
   final UserLocationBloc userLocationBloc;
-  final ColorScheme colors;
 
   const _MyLocationButton({
     required this.mapController,
     required this.userLocationBloc,
-    required this.colors,
   });
 
   @override
@@ -124,7 +112,6 @@ class _MyLocationButton extends StatelessWidget {
           icon: isLoading
               ? Icons.hourglass_bottom_rounded
               : Icons.my_location_rounded,
-          colors: colors,
           onTap: isLoading
               ? null
               : () => userLocationBloc.add(FetchUserLocation()),

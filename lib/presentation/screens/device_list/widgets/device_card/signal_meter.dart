@@ -11,7 +11,6 @@ class SignalMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final filled = UnitFormatter.signalBarsFilled(signal);
     const heights = [7.0, 11.0, 15.0, 19.0];
 
@@ -32,7 +31,7 @@ class SignalMeter extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isFilled
                       ? AppColors.info
-                      : colors.onSurfaceVariant.withValues(alpha: 0.18),
+                      : AppColors.textSecondary(context).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(1.5),
                 ),
               );
@@ -44,7 +43,7 @@ class SignalMeter extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: colors.onSurface,
+              color: AppColors.textPrimary(context),
             ),
           ),
         ],

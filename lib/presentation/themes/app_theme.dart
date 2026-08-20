@@ -7,16 +7,23 @@ import 'app_text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  // --- SHARED APP BAR CONFIG ---
-  static const AppBarTheme _fixedAppBarTheme = AppBarTheme(
-    backgroundColor: AppColors.primary,
-    foregroundColor: Colors.white,
-    elevation: 0,
-    centerTitle: true,
-    iconTheme: IconThemeData(color: Colors.white),
-    actionsIconTheme: IconThemeData(color: Colors.white),
-    titleTextStyle: AppTextStyles.heading4,
-  );
+  // --- APP BAR CONFIG (per-brightness: surfaceVariant bg needs matching text) ---
+  static AppBarTheme _appBarTheme({
+    required Color background,
+    required Color foreground,
+    required Color borderColor,
+  }) {
+    return AppBarTheme(
+      backgroundColor: background,
+      foregroundColor: foreground,
+      elevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: foreground),
+      actionsIconTheme: IconThemeData(color: foreground),
+      titleTextStyle: AppTextStyles.heading4.copyWith(color: foreground),
+      shape: Border(bottom: BorderSide(color: borderColor, width: 1)),
+    );
+  }
 
   // --- SHARED CARD THEME ---
   static CardThemeData _baseCardTheme({
@@ -102,7 +109,11 @@ class AppTheme {
       highlightColor: AppColors.primary.withValues(alpha: 0.08),
       splashColor: AppColors.primary.withValues(alpha: 0.12),
       disabledColor: AppColors.lightTextDisabled,
-      appBarTheme: _fixedAppBarTheme,
+      appBarTheme: _appBarTheme(
+        background: AppColors.lightSurfaceVariant,
+        foreground: AppColors.lightTextPrimary,
+        borderColor: AppColors.lightOutline,
+      ),
       cardTheme: _baseCardTheme(
         color: AppColors.lightSurface,
         borderColor: AppColors.lightOutline,
@@ -248,7 +259,11 @@ class AppTheme {
       highlightColor: AppColors.primary.withValues(alpha: 0.12),
       splashColor: AppColors.primary.withValues(alpha: 0.24),
       disabledColor: AppColors.darkTextDisabled,
-      appBarTheme: _fixedAppBarTheme,
+      appBarTheme: _appBarTheme(
+        background: AppColors.darkSurfaceVariant,
+        foreground: AppColors.darkTextPrimary,
+        borderColor: AppColors.darkOutline,
+      ),
       cardTheme: _baseCardTheme(
         color: AppColors.darkSurface,
         borderColor: AppColors.darkOutline,

@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/geofence_list_tile.dart';
 
@@ -93,8 +94,6 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Geofences')),
       floatingActionButton: FloatingActionButton.extended(
@@ -112,7 +111,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
               ),
             );
           }
@@ -166,7 +165,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                       Text(
                         '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
                     ],
@@ -220,7 +219,6 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -228,14 +226,14 @@ class _EmptyState extends StatelessWidget {
           Icon(
             isSearching ? Icons.search_off_rounded : Icons.fence_rounded,
             size: 56,
-            color: colors.onSurfaceVariant.withValues(alpha: 0.4),
+            color: AppColors.textSecondary(context).withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
           Text(
             isSearching
                 ? 'No geofences match your search.'
                 : 'No geofences yet.',
-            style: TextStyle(color: colors.onSurfaceVariant),
+            style: TextStyle(color: AppColors.textSecondary(context)),
           ),
           if (!isSearching) ...[
             const SizedBox(height: 16),

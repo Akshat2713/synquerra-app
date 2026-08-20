@@ -8,6 +8,7 @@ import '../../../../domain/entities/device/device_entity.dart';
 import '../../../app/app_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
@@ -21,7 +22,6 @@ class AttentionDeviceSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final deviceState = context.watch<DeviceListBloc>().state;
     final authState = context.watch<AuthBloc>().state;
     final currentUserFullName = authState is AuthAuthenticated
@@ -38,7 +38,7 @@ class AttentionDeviceSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) => Container(
         decoration: BoxDecoration(
-          color: colors.surface,
+          color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         clipBehavior: Clip.antiAlias,
@@ -51,7 +51,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colors.outlineVariant,
+                  color: AppColors.outlineVariant(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -62,7 +62,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: colors.onSurface,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
               ),

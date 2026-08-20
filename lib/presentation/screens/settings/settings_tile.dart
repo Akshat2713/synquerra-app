@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../themes/colors.dart';
+
 // NEW
 class SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -18,15 +20,14 @@ class SettingsTile extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.outlineVariant),
+          color: AppColors.surface(context),
+          border: Border.all(color: AppColors.outlineVariant(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -35,10 +36,10 @@ class SettingsTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colors.primaryContainer,
+                color: AppColors.primaryContainer,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: colors.onPrimaryContainer),
+              child: Icon(icon, color: AppColors.onPrimaryContainer(context)),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -55,7 +56,7 @@ class SettingsTile extends StatelessWidget {
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -64,7 +65,7 @@ class SettingsTile extends StatelessWidget {
             trailing ??
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: colors.onSurfaceVariant,
+                  color: AppColors.textSecondary(context),
                 ),
           ],
         ),

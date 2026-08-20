@@ -9,6 +9,7 @@ import '../../../domain/utils/alert_device_matcher.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
+import '../../themes/colors.dart';
 import '../../utils/colour_util.dart';
 import '../../utils/date_time_formatter.dart';
 import 'landing_skeleton.dart';
@@ -53,10 +54,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colors.surface,
       appBar: AppBar(
         title: const Text('AADYA', style: TextStyle(fontSize: 25)),
         centerTitle: true,
@@ -98,7 +96,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: colors.primary,
+                  color: AppColors.primary,
                   child: _LoadedBody(
                     device: widget.device,
                     state: state,
@@ -218,18 +216,21 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.danger,
+            ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(color: colors.error),
+              style: TextStyle(color: AppColors.danger),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),

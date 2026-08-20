@@ -8,6 +8,7 @@ import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../themes/colors.dart';
 import '../../utils/colour_util.dart' as colour_utils;
 import 'utils/map_bounds_util.dart';
 import 'widgets/empty_coordinates_placeholder.dart';
@@ -143,7 +144,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -158,7 +158,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} created successfully.',
                 ),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
             Navigator.pop(context);
@@ -168,7 +168,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} updated successfully.',
                 ),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
             Navigator.pop(context);
@@ -176,7 +176,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
               ),
             );
           }

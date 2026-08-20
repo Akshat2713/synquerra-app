@@ -34,7 +34,6 @@ class DeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final currentMode = device.currentMode;
 
     return GestureDetector(
@@ -42,11 +41,11 @@ class DeviceCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: colors.surface,
+          color: AppColors.surface(context),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: colors.shadow.withValues(alpha: 0.06),
+              color: AppColors.shadow(context).withValues(alpha: 0.06),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
@@ -75,7 +74,7 @@ class DeviceCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: colors.onSurface,
+                                color: AppColors.textPrimary(context),
                               ),
                             ),
                           ),
@@ -83,7 +82,7 @@ class DeviceCard extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             icon: Icon(
                               Icons.more_vert_rounded,
-                              color: colors.onSurfaceVariant,
+                              color: AppColors.textSecondary(context),
                               size: 20,
                             ),
                             shape: RoundedRectangleBorder(
@@ -132,7 +131,7 @@ class DeviceCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
-                          color: colors.onSurfaceVariant.withValues(
+                          color: AppColors.textSecondary(context).withValues(
                             alpha: 0.05,
                           ),
                           borderRadius: BorderRadius.circular(14),
@@ -160,7 +159,7 @@ class DeviceCard extends StatelessWidget {
                           Icon(
                             Icons.location_on_rounded,
                             size: 13,
-                            color: colors.onSurfaceVariant,
+                            color: AppColors.textSecondary(context),
                           ),
                           const SizedBox(width: 4),
                           Flexible(
@@ -170,7 +169,7 @@ class DeviceCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontFamily: 'monospace',
-                                color: colors.onSurfaceVariant,
+                                color: AppColors.textSecondary(context),
                               ),
                             ),
                           ),
@@ -179,7 +178,7 @@ class DeviceCard extends StatelessWidget {
                             Icon(
                               Icons.thermostat_rounded,
                               size: 13,
-                              color: colors.onSurfaceVariant,
+                              color: AppColors.textSecondary(context),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -187,7 +186,7 @@ class DeviceCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontFamily: 'monospace',
-                                color: colors.onSurfaceVariant,
+                                color: AppColors.textSecondary(context),
                               ),
                             ),
                           ],
@@ -197,7 +196,7 @@ class DeviceCard extends StatelessWidget {
 
                       Divider(
                         height: 1,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.12),
+                        color: AppColors.textSecondary(context).withValues(alpha: 0.12),
                       ),
                       const SizedBox(height: 8),
 
@@ -208,7 +207,7 @@ class DeviceCard extends StatelessWidget {
                             state: _isOnline,
                             onLabel: 'ONLINE',
                             offLabel: 'OFFLINE',
-                            onColor: AppColors.alertSuccess,
+                            onColor: AppColors.success,
                           ),
                           const Spacer(),
                           Container(
@@ -238,7 +237,7 @@ class DeviceCard extends StatelessWidget {
                             state: isActive,
                             onLabel: 'ACTIVE',
                             offLabel: 'INACTIVE',
-                            onColor: AppColors.alertSuccess,
+                            onColor: AppColors.success,
                           ),
                         ],
                       ),
@@ -259,11 +258,10 @@ class PanelDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Container(
       width: 1,
       height: 34,
-      color: colors.onSurfaceVariant.withValues(alpha: 0.15),
+      color: AppColors.textSecondary(context).withValues(alpha: 0.15),
     );
   }
 }

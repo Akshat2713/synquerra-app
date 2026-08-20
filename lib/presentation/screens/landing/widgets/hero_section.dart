@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../blocs/auth/auth_bloc.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
 
 class HeroSection extends StatelessWidget {
@@ -15,12 +16,11 @@ class HeroSection extends StatelessWidget {
     super.key,
     required this.device,
     this.latest,
-    this.successColor = const Color(0xFF3DDC84),
+    this.successColor = AppColors.success,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
 
     // ── Resolve display name: carrier if assigned, else logged-in user ──
     final authState = context.watch<AuthBloc>().state;
@@ -37,9 +37,9 @@ class HeroSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
+          color: AppColors.surfaceVariant(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.outlineVariant, width: 1),
+          border: Border.all(color: AppColors.outlineVariant(context), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,7 +51,7 @@ class HeroSection extends StatelessWidget {
                 Icon(
                   Icons.circle,
                   size: 8,
-                  color: isOnline ? successColor : colors.onSurfaceVariant,
+                  color: isOnline ? successColor : AppColors.textSecondary(context),
                 ),
                 const SizedBox(width: 2),
                 Text(
@@ -59,7 +59,7 @@ class HeroSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: isOnline ? successColor : colors.onSurfaceVariant,
+                    color: isOnline ? successColor : AppColors.textSecondary(context),
                   ),
                 ),
               ],
@@ -76,7 +76,7 @@ class HeroSection extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 36,
-                      backgroundColor: colors.primaryContainer,
+                      backgroundColor: AppColors.primaryContainer,
                       backgroundImage: device.carrier?.profilePhoto != null
                           ? CachedNetworkImageProvider(
                               device.carrier!.profilePhoto!,
@@ -96,7 +96,7 @@ class HeroSection extends StatelessWidget {
                         width: 16,
                         height: 16,
                         decoration: BoxDecoration(
-                          color: colors.surface,
+                          color: AppColors.surface(context),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -141,8 +141,8 @@ class HeroSection extends StatelessWidget {
                                 Icons.speed_rounded,
                                 size: 16,
                                 color: isOnline
-                                    ? colors.primary
-                                    : colors.onSurfaceVariant,
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary(context),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -171,8 +171,8 @@ class HeroSection extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: isOnline
-                                    ? colors.primary
-                                    : colors.onSurfaceVariant,
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary(context),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -183,7 +183,7 @@ class HeroSection extends StatelessWidget {
                                 : 'No updates yet',
                             style: TextStyle(
                               fontSize: 11,
-                              color: colors.onSurfaceVariant.withValues(
+                              color: AppColors.textSecondary(context).withValues(
                                 alpha: 0.7,
                               ),
                             ),
@@ -200,8 +200,8 @@ class HeroSection extends StatelessWidget {
                             Icons.circle,
                             size: 8,
                             color: isOnline
-                                ? Colors.amber
-                                : colors.onSurfaceVariant,
+                                ? AppColors.warning
+                                : AppColors.textSecondary(context),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
@@ -213,7 +213,7 @@ class HeroSection extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: colors.onSurfaceVariant,
+                                color: AppColors.textSecondary(context),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -225,7 +225,7 @@ class HeroSection extends StatelessWidget {
                                 : 'Stationary',
                             style: TextStyle(
                               fontSize: 11,
-                              color: colors.onSurfaceVariant,
+                              color: AppColors.textSecondary(context),
                             ),
                           ),
                         ],

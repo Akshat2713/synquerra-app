@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../../../domain/entities/signup/person_entity.dart';
+import '../../../themes/colors.dart';
 
 class AssignMemberSheet extends StatefulWidget {
   final DeviceEntity device;
@@ -101,8 +102,6 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -123,7 +122,10 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
           const SizedBox(height: 4),
           Text(
             'Select a role and a person to assign to this device.',
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -138,7 +140,9 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                 borderRadius: BorderRadius.circular(10),
               ),
               filled: true,
-              fillColor: colors.surfaceContainerHighest.withValues(alpha: 0.3),
+              fillColor: AppColors.surfaceVariant(
+                context,
+              ).withValues(alpha: 0.3),
             ),
             items: _availableRoles.entries.map((entry) {
               return DropdownMenuItem<String>(
@@ -158,7 +162,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: colors.onSurfaceVariant,
+              color: AppColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 8),
@@ -171,7 +175,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                         'All available contacts are already assigned.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
                     ),
@@ -188,12 +192,11 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           vertical: 2,
                         ),
                         leading: CircleAvatar(
-                          backgroundColor: colors.primaryContainer.withValues(
-                            alpha: 0.5,
-                          ),
+                          backgroundColor: AppColors.primaryContainer
+                              .withValues(alpha: 0.5),
                           child: Icon(
                             Icons.person_outline_rounded,
-                            color: colors.primary,
+                            color: AppColors.primary,
                           ),
                         ),
                         title: Text(

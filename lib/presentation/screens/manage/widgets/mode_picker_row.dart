@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
 
 class TrackingModeCard extends StatefulWidget {
@@ -45,8 +46,6 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     ModeEntity? activeMode;
     if (widget.modes.isNotEmpty) {
       activeMode = widget.modes.firstWhere(
@@ -63,9 +62,11 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +84,9 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                        color: AppColors.textSecondary(
+                          context,
+                        ).withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -103,9 +106,9 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
-                    ),
+                    color: AppColors.surfaceVariant(
+                      context,
+                    ).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -139,7 +142,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                       'No modes available',
                       style: TextStyle(
                         fontSize: 12,
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                   )
@@ -164,16 +167,16 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? colors.primaryContainer.withValues(
+                                    ? AppColors.primaryContainer.withValues(
                                         alpha: 0.3,
                                       )
-                                    : colors.surfaceContainerHighest.withValues(
-                                        alpha: 0.4,
-                                      ),
+                                    : AppColors.surfaceVariant(
+                                        context,
+                                      ).withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
-                                      ? colors.primary
+                                      ? AppColors.primary
                                       : Colors.transparent,
                                   width: 1.5,
                                 ),
@@ -194,8 +197,8 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                       ModeIconResolver.resolve(mode),
                                       size: 22,
                                       color: isSelected
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary(context),
                                     ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -206,8 +209,8 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                           ? FontWeight.w700
                                           : FontWeight.w500,
                                       color: isSelected
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary(context),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -223,7 +226,10 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
           const SizedBox(height: 12),
           Text(
             modeDesc,
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
         ],
       ),
@@ -244,14 +250,13 @@ class _SegmentTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? colors.surface : Colors.transparent,
+          color: isSelected ? AppColors.surface(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
@@ -269,7 +274,9 @@ class _SegmentTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? colors.onSurface : colors.onSurfaceVariant,
+              color: isSelected
+                  ? AppColors.textPrimary(context)
+                  : AppColors.textSecondary(context),
             ),
           ),
         ),

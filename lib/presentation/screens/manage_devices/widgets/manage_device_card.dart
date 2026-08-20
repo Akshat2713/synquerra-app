@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
+import '../../../themes/colors.dart';
 import 'assign_member_sheet.dart';
 import 'unassign_confirm_sheet.dart';
 
@@ -30,22 +31,20 @@ class ManageDeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: colors.shadow.withValues(alpha: 0.05),
+            color: AppColors.shadow(context).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
         border: Border.all(
-          color: colors.onSurfaceVariant.withValues(alpha: 0.12),
+          color: AppColors.textSecondary(context).withValues(alpha: 0.12),
         ),
       ),
       child: Padding(
@@ -59,12 +58,12 @@ class ManageDeviceCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: colors.primaryContainer.withValues(alpha: 0.4),
+                    color: AppColors.primaryContainer.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.devices_rounded,
-                    color: colors.primary,
+                    color: AppColors.primary,
                     size: 22,
                   ),
                 ),
@@ -78,7 +77,7 @@ class ManageDeviceCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: colors.onSurface,
+                          color: AppColors.textPrimary(context),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -89,13 +88,13 @@ class ManageDeviceCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: 'monospace',
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
                     ],
                   ),
                 ),
-                _buildStatusChip(colors),
+                _buildStatusChip(context),
               ],
             ),
             const SizedBox(height: 14),
@@ -111,7 +110,7 @@ class ManageDeviceCard extends StatelessWidget {
                         'Carrier / Assigned To',
                         style: TextStyle(
                           fontSize: 11,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -124,7 +123,9 @@ class ManageDeviceCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: _isAssigned ? colors.onSurface : colors.error,
+                          color: _isAssigned
+                              ? AppColors.textPrimary(context)
+                              : AppColors.danger,
                         ),
                       ),
                     ],
@@ -140,9 +141,9 @@ class ManageDeviceCard extends StatelessWidget {
                   if (_isAssigned) ...[
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.error,
+                        foregroundColor: AppColors.danger,
                         side: BorderSide(
-                          color: colors.error.withValues(alpha: 0.5),
+                          color: AppColors.danger.withValues(alpha: 0.5),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -170,8 +171,8 @@ class ManageDeviceCard extends StatelessWidget {
                   ],
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: colors.onPrimary,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -207,13 +208,13 @@ class ManageDeviceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(ColorScheme colors) {
+  Widget _buildStatusChip(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: _isAssigned
-            ? colors.primary.withValues(alpha: 0.1)
-            : colors.surfaceContainerHighest,
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -221,7 +222,9 @@ class ManageDeviceCard extends StatelessWidget {
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _isAssigned ? colors.primary : colors.onSurfaceVariant,
+          color: _isAssigned
+              ? AppColors.primary
+              : AppColors.textSecondary(context),
         ),
       ),
     );

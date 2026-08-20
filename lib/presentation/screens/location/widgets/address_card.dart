@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../themes/colors.dart';
 
 /// Card showing the address of the currently active analytics point
 /// (works for both live and history/timeline modes).
@@ -13,7 +14,6 @@ class AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     if (point == null && !isLoading) {
       return const SizedBox.shrink();
     }
@@ -31,7 +31,7 @@ class AddressCard extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 320),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: colors.surface,
+          color: AppColors.surface(context),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -44,7 +44,7 @@ class AddressCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.location_on_rounded, size: 18, color: colors.primary),
+            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary),
             const SizedBox(width: 8),
 
             Expanded(
@@ -55,7 +55,7 @@ class AddressCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: colors.onSurface,
+                  color: AppColors.textPrimary(context),
                   height: 1.3,
                 ),
               ),

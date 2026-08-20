@@ -1,10 +1,10 @@
 // lib/presentation/widgets/analytics_filter_sheet.dart
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../domain/entities/analytics/analytics_filter.dart';
+import '../themes/colors.dart';
 
 void showAnalyticsFilterSheet({
   required BuildContext context,
@@ -63,11 +63,9 @@ class _AnalyticsFilterSheet extends StatefulWidget {
 
 class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
   bool _showCustomPicker = false;
-
   DateTime? _selectedDate;
   int _selectedHour = 0;
   int _durationIndex = 0;
-
   late final FixedExtentScrollController _hourController;
   late final FixedExtentScrollController _durationController;
 
@@ -111,10 +109,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -132,7 +129,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: colors.onSurfaceVariant.withValues(alpha: 0.3),
+                color: AppColors.textSecondary(context).withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -143,15 +140,15 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               'Filter by Time',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Select a time range for telemetry data',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 16),
             _filterOption(
@@ -162,7 +159,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 Navigator.pop(context);
                 widget.onFilterSelected(AnalyticsFilter.lastHour);
               },
-              colors: colors,
             ),
             _filterOption(
               label: 'Last 24 Hours',
@@ -172,14 +168,12 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 Navigator.pop(context);
                 widget.onFilterSelected(AnalyticsFilter.last24Hours);
               },
-              colors: colors,
             ),
             _filterOption(
               label: 'Custom Range',
               icon: Icons.tune_rounded,
               isActive: widget.activeFilter == AnalyticsFilter.custom,
               onTap: () => setState(() => _showCustomPicker = true),
-              colors: colors,
             ),
           ] else ...[
             Row(
@@ -189,7 +183,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                     onTap: () => setState(() => _showCustomPicker = false),
                     child: Icon(
                       Icons.arrow_back_rounded,
-                      color: colors.primary,
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -198,7 +192,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                   'Custom Range',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: colors.onSurface,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -206,24 +200,17 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             const SizedBox(height: 4),
             Text(
               'Max range is 24 hours',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 20),
-
-            _dateTile(
-              label: 'Date',
-              date: _selectedDate,
-              onTap: _pickDate,
-              colors: colors,
-            ),
+            _dateTile(label: 'Date', date: _selectedDate, onTap: _pickDate),
             const SizedBox(height: 20),
-
             Text(
               'Start Time',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -233,14 +220,12 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               itemCount: 24,
               labelBuilder: UnitFormatter.hourLabel,
               onChanged: (i) => setState(() => _selectedHour = i),
-              colors: colors,
             ),
             const SizedBox(height: 20),
-
             Text(
               'Duration',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -250,27 +235,24 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               itemCount: _kDurationOptions.length,
               labelBuilder: (i) => '${_kDurationOptions[i]} hrs',
               onChanged: (i) => setState(() => _durationIndex = i),
-              colors: colors,
             ),
             const SizedBox(height: 12),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  ${DateTimeFormatter.formatDateTime(_endDateTime)}',
                 style: TextStyle(
-                  color: colors.primary,
+                  color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
             Row(
               children: [
                 Expanded(
@@ -309,12 +291,11 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
     required int itemCount,
     required String Function(int index) labelBuilder,
     required void Function(int index) onChanged,
-    required ColorScheme colors,
   }) {
     return Container(
       height: 120,
       decoration: BoxDecoration(
-        border: Border.all(color: colors.outline),
+        border: Border.all(color: AppColors.outline(context)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: CupertinoPicker(
@@ -324,8 +305,10 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         selectionOverlay: Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-              bottom: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+              top: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+              bottom: BorderSide(
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
             ),
           ),
         ),
@@ -334,7 +317,10 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
           (i) => Center(
             child: Text(
               labelBuilder(i),
-              style: TextStyle(color: colors.onSurface, fontSize: 15),
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontSize: 15,
+              ),
             ),
           ),
         ),
@@ -347,24 +333,26 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
     required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
-    required ColorScheme colors,
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(
         icon,
-        color: isActive ? colors.primary : colors.onSurfaceVariant,
+        color: isActive ? AppColors.primary : AppColors.textSecondary(context),
       ),
       title: Text(
         label,
         style: TextStyle(
-          color: isActive ? colors.primary : colors.onSurface,
+          color: isActive ? AppColors.primary : AppColors.textPrimary(context),
           fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
       trailing: isActive
-          ? Icon(Icons.check_circle_rounded, color: colors.primary, size: 20)
-          : Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+          ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
+          : Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary(context),
+            ),
       onTap: onTap,
     );
   }
@@ -373,7 +361,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
     required String label,
     required DateTime? date,
     required VoidCallback onTap,
-    required ColorScheme colors,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -381,7 +368,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(
-            color: date != null ? colors.primary : colors.outline,
+            color: date != null
+                ? AppColors.primary
+                : AppColors.outline(context),
             width: date != null ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -391,7 +380,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             Icon(
               Icons.calendar_today_rounded,
               size: 18,
-              color: date != null ? colors.primary : colors.onSurfaceVariant,
+              color: date != null
+                  ? AppColors.primary
+                  : AppColors.textSecondary(context),
             ),
             const SizedBox(width: 12),
             Text(
@@ -402,8 +393,8 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                   : label,
               style: TextStyle(
                 color: date != null
-                    ? colors.onSurface
-                    : colors.onSurfaceVariant,
+                    ? AppColors.textPrimary(context)
+                    : AppColors.textSecondary(context),
                 fontWeight: date != null ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

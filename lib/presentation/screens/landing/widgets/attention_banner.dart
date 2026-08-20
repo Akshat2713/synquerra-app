@@ -5,6 +5,7 @@ import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../blocs/auth/auth_bloc.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 
 class AttentionBanner extends StatelessWidget {
@@ -20,7 +21,6 @@ class AttentionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     // In AttentionBanner build method:
     final attentionCount = devices
         .where(
@@ -31,10 +31,10 @@ class AttentionBanner extends StatelessWidget {
         )
         .length;
     return Material(
-      color: colors.surfaceContainerLow,
+      color: AppColors.surfaceVariant(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: colors.outline, width: 1),
+        side: BorderSide(color: AppColors.outline(context), width: 1),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -58,7 +58,7 @@ class AttentionBanner extends StatelessWidget {
                       'Of ${devices.length} ${devices.length == 1 ? 'device' : 'devices'}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -68,7 +68,7 @@ class AttentionBanner extends StatelessWidget {
               const SizedBox(width: 6),
               Icon(
                 Icons.chevron_right_rounded,
-                color: colors.onSurfaceVariant,
+                color: AppColors.textSecondary(context),
                 size: 20,
               ),
             ],
@@ -86,7 +86,6 @@ class _AvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final currentUserFullName = authState is AuthAuthenticated
         ? authState.user.fullName
@@ -130,7 +129,7 @@ class _AvatarStack extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(1.5),
                 child: CircleAvatar(
-                  backgroundColor: colors.primaryContainer,
+                  backgroundColor: AppColors.primaryContainer,
                   backgroundImage: d.carrier?.profilePhoto != null
                       ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
                       : null,
@@ -140,7 +139,7 @@ class _AvatarStack extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
-                            color: colors.onPrimaryContainer,
+                            color: AppColors.onPrimaryContainer(context),
                           ),
                         )
                       : null,
@@ -156,8 +155,11 @@ class _AvatarStack extends StatelessWidget {
                 height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: colors.surface, width: 1.5),
-                  color: colors.surfaceContainerHighest,
+                  border: Border.all(
+                    color: AppColors.surface(context),
+                    width: 1.5,
+                  ),
+                  color: AppColors.surfaceVariant(context),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -165,7 +167,7 @@ class _AvatarStack extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
               ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+import '../../../themes/colors.dart';
+
 class GeofenceColorPickerTile extends StatelessWidget {
   final Color selectedColor;
   final ValueChanged<Color> onColorChanged;
@@ -36,7 +38,6 @@ class GeofenceColorPickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
@@ -52,7 +53,7 @@ class GeofenceColorPickerTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: selectedColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.outlineVariant),
+              border: Border.all(color: AppColors.outlineVariant(context)),
             ),
           ),
         ),

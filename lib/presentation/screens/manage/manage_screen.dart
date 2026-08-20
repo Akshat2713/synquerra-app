@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../blocs/manage/manage_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'manage_skeleton.dart';
 import 'widgets/manage_body.dart';
@@ -43,13 +44,12 @@ class _ManageScreenState extends State<ManageScreen> {
         body: BlocConsumer<ManageBloc, ManageState>(
           listener: (context, state) {
             if (state is! ManageLoaded) return;
-            final colors = Theme.of(context).colorScheme;
 
             if (state.modeSwitchError != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.modeSwitchError!),
-                  backgroundColor: colors.error,
+                  backgroundColor: AppColors.danger,
                 ),
               );
             }
@@ -58,7 +58,7 @@ class _ManageScreenState extends State<ManageScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.settingsUpdateError!),
-                  backgroundColor: colors.error,
+                  backgroundColor: AppColors.danger,
                 ),
               );
             }

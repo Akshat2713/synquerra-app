@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/app_router.dart';
 import '../../blocs/signup/signup_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/signup_progress_tracker.dart';
@@ -64,7 +65,6 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return BlocListener<SignupBloc, SignupState>(
@@ -81,7 +81,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -91,7 +91,6 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: colors.surface,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -105,7 +104,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     'Secure Your Account',
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -113,7 +112,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     'Configure your system sign-in credentials.',
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -135,7 +134,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     onChanged: _onCheckboxChanged,
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: colors.primary,
+                    activeColor: AppColors.primary,
                   ),
                   const SizedBox(height: 12),
 
@@ -208,7 +207,9 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                         },
                         child: Text(
                           'Back',
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                          ),
                         ),
                       ),
                       BlocBuilder<SignupBloc, SignupState>(

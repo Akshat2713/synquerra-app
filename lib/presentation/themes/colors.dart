@@ -176,4 +176,50 @@ class AppColors {
   static const Color darkScrim = Color(
     0x80000000,
   ); // 50% black — modal/dialog backdrop
+
+  // ADD THIS BLOCK to your existing colors.dart (paste before the closing brace).
+  // Everything else in your file stays exactly as-is — it's already good.
+
+  // ==========================================
+  // ===== SHADOWS (missing, theme.dart needs these) =====
+  // ==========================================
+  // static const Color lightShadow = Color(0x14000000);
+  // static const Color lightScrim = Color(0x52000000);
+  // static const Color darkShadow = Color(0x33000000);
+  // static const Color darkScrim = Color(0x80000000);
+
+  // ==========================================
+  // ===== BRIGHTNESS-AWARE HELPERS ===========
+  // ==========================================
+  // Use these everywhere instead of Theme.of(context).colorScheme.
+  // Every value still comes from AppColors above — this is just the
+  // light/dark switch, not a second color source.
+  static bool _isDark(BuildContext c) =>
+      Theme.of(c).brightness == Brightness.dark;
+
+  static Color surface(BuildContext c) =>
+      _isDark(c) ? darkSurface : lightSurface;
+  static Color surfaceVariant(BuildContext c) =>
+      _isDark(c) ? darkSurfaceVariant : lightSurfaceVariant;
+  static Color background(BuildContext c) =>
+      _isDark(c) ? darkBackground : lightBackground;
+  static Color outline(BuildContext c) =>
+      _isDark(c) ? darkOutline : lightOutline;
+  static Color outlineVariant(BuildContext c) =>
+      _isDark(c) ? darkOutlineVariant : lightOutlineVariant;
+  static Color textPrimary(BuildContext c) =>
+      _isDark(c) ? darkTextPrimary : lightTextPrimary;
+  static Color textSecondary(BuildContext c) =>
+      _isDark(c) ? darkTextSecondary : lightTextSecondary;
+  static Color textTertiary(BuildContext c) =>
+      _isDark(c) ? darkTextTertiary : lightTextTertiary;
+  static Color iconPrimary(BuildContext c) =>
+      _isDark(c) ? darkIconPrimary : lightIconPrimary;
+  static Color iconSecondary(BuildContext c) =>
+      _isDark(c) ? darkIconSecondary : lightIconSecondary;
+  static Color shadow(BuildContext c) => _isDark(c) ? darkShadow : lightShadow;
+  static Color scrim(BuildContext c) => _isDark(c) ? darkScrim : lightScrim;
+  // primaryContainer's "on" color is asymmetric by design (see app_theme.dart)
+  static Color onPrimaryContainer(BuildContext c) =>
+      _isDark(c) ? primarySubtle : primaryHover;
 }

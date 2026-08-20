@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../themes/colors.dart';
 
 class TimelineSlider extends StatefulWidget {
   final List<AnalyticsEntity> points;
@@ -86,8 +87,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     final sortedPoints = List<AnalyticsEntity>.from(widget.points)
       ..sort((a, b) {
         final aTime = a.deviceTimestamp;
@@ -107,7 +106,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHigh,
+        color: AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -125,7 +124,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
             height: 4,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: colors.onSurfaceVariant.withValues(alpha: 0.25),
+              color: AppColors.textSecondary(context).withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -135,7 +134,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                 Icon(
                   Icons.access_time_filled_rounded,
                   size: 16,
-                  color: colors.primary,
+                  color: AppColors.iconSecondary(context),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -146,7 +145,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -160,8 +159,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   child: _MetricBadge(
                     icon: Icons.speed_rounded,
                     label: UnitFormatter.formatSpeed(current.speed),
-                    color: colors.primary,
-                    colors: colors,
+                    color: AppColors.iconSecondary(context),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -171,8 +169,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     label: current.battery != null
                         ? '${current.battery}%'
                         : 'N/A',
-                    color: _getBatteryColor(current.battery, colors),
-                    colors: colors,
+                    color: _getBatteryColor(current.battery),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -182,8 +179,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     label: current.signal != null
                         ? '${current.signal}%'
                         : 'N/A',
-                    color: _getSignalColor(current.signal, colors),
-                    colors: colors,
+                    color: _getSignalColor(current.signal),
                   ),
                 ),
               ],
@@ -201,7 +197,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.skip_previous_rounded),
                     iconSize: 26,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     onPressed: hasPoints && safeIndex > 0
                         ? () => widget.onChanged(safeIndex - 1)
                         : null,
@@ -216,7 +212,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           : Icons.play_circle_fill_rounded,
                     ),
                     iconSize: 36,
-                    color: colors.primary,
+                    color: AppColors.primary,
                     onPressed: hasPoints ? _togglePlayback : null,
                   ),
                   const SizedBox(width: 16),
@@ -225,7 +221,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.skip_next_rounded),
                     iconSize: 26,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     onPressed: hasPoints && safeIndex < sortedPoints.length - 1
                         ? () => widget.onChanged(safeIndex + 1)
                         : null,
@@ -256,8 +252,8 @@ class _TimelineSliderState extends State<TimelineSlider> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                               color: _selectedSpeed == speed
-                                  ? colors.primary
-                                  : colors.onSurface,
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary(context),
                             ),
                           ),
                           if (_selectedSpeed == speed) ...[
@@ -265,7 +261,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                             Icon(
                               Icons.check_rounded,
                               size: 16,
-                              color: colors.primary,
+                              color: AppColors.primary,
                             ),
                           ],
                         ],
@@ -278,10 +274,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.surface,
+                      color: AppColors.surface(context),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: colors.outlineVariant.withValues(alpha: 0.3),
+                        color: AppColors.outlineVariant(
+                          context,
+                        ).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -292,13 +290,13 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: colors.primary,
+                            color: AppColors.primary,
                           ),
                         ),
                         Icon(
                           Icons.arrow_drop_down_rounded,
                           size: 18,
-                          color: colors.primary,
+                          color: AppColors.primary,
                         ),
                       ],
                     ),
@@ -312,8 +310,10 @@ class _TimelineSliderState extends State<TimelineSlider> {
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-              activeTrackColor: colors.primary,
-              inactiveTrackColor: colors.outlineVariant.withValues(alpha: 0.4),
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: AppColors.outlineVariant(
+                context,
+              ).withValues(alpha: 0.4),
             ),
             child: Slider(
               value: safeIndex.toDouble(),
@@ -343,7 +343,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                   Text(
@@ -353,7 +353,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -364,11 +364,11 @@ class _TimelineSliderState extends State<TimelineSlider> {
     );
   }
 
-  Color _getBatteryColor(int? battery, ColorScheme colors) {
-    if (battery == null) return colors.onSurfaceVariant;
-    if (battery <= 15) return colors.error;
-    if (battery <= 30) return Colors.amber.shade700;
-    return Colors.green.shade600;
+  Color _getBatteryColor(int? battery) {
+    if (battery == null) return AppColors.textSecondary(context);
+    if (battery <= 15) return AppColors.danger;
+    if (battery <= 30) return AppColors.warning;
+    return AppColors.success;
   }
 
   IconData _getBatteryIcon(int? battery) {
@@ -379,11 +379,11 @@ class _TimelineSliderState extends State<TimelineSlider> {
     return Icons.battery_full_rounded;
   }
 
-  Color _getSignalColor(int? signal, ColorScheme colors) {
-    if (signal == null) return colors.onSurfaceVariant;
-    if (signal <= 25) return colors.error;
-    if (signal <= 50) return Colors.amber.shade700;
-    return colors.primary;
+  Color _getSignalColor(int? signal) {
+    if (signal == null) return AppColors.textSecondary(context);
+    if (signal <= 25) return AppColors.danger;
+    if (signal <= 50) return AppColors.warning;
+    return AppColors.primary;
   }
 
   IconData _getSignalIcon(int? signal) {
@@ -399,13 +399,11 @@ class _MetricBadge extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  final ColorScheme colors;
 
   const _MetricBadge({
     required this.icon,
     required this.label,
     required this.color,
-    required this.colors,
   });
 
   @override
@@ -413,9 +411,11 @@ class _MetricBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -428,7 +428,7 @@ class _MetricBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,

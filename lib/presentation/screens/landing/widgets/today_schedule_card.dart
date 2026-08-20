@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
+
 class TodayScheduleCard extends StatefulWidget {
   final List<ScheduleEntry> schedule;
 
@@ -14,13 +16,13 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 1)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +39,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                     _isExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -64,7 +66,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
           if (_isExpanded) ...[
             Divider(
               height: 1,
-              color: colors.outlineVariant.withValues(alpha: 0.3),
+              color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
             ),
             if (widget.schedule.isNotEmpty)
               ...widget.schedule.map(
@@ -82,7 +84,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: colors.primary,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -102,7 +104,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                               'Safe environment',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: colors.onSurfaceVariant,
+                                color: AppColors.textSecondary(context),
                               ),
                             ),
                           ],
@@ -116,7 +118,9 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           side: BorderSide(
-                            color: colors.outlineVariant.withValues(alpha: 0.5),
+                            color: AppColors.outlineVariant(
+                              context,
+                            ).withValues(alpha: 0.5),
                           ),
                         ),
                         child: const Text(
@@ -135,7 +139,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                   'No scheduled events today.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
               ),

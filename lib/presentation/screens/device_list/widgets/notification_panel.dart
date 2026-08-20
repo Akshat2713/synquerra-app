@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import '../../../widgets/async_state_view.dart';
 
@@ -35,8 +36,6 @@ class NotificationPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     final sortedAlerts = [...alerts]
       ..sort((a, b) {
         final r = _severityRank(
@@ -50,7 +49,7 @@ class NotificationPanel extends StatelessWidget {
       elevation: 8,
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
-      color: colors.surface,
+      color: AppColors.surface(context),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 420),
         child: AsyncStateView(
@@ -63,7 +62,7 @@ class NotificationPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             itemCount: sortedAlerts.length,
             separatorBuilder: (_, __) =>
-                Divider(height: 1, color: colors.outlineVariant),
+                Divider(height: 1, color: AppColors.outlineVariant(context)),
             itemBuilder: (context, i) {
               final alert = sortedAlerts[i];
               final device = devices

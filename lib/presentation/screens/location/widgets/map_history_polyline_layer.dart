@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../blocs/analytics/analytics_bloc.dart';
+import '../../../themes/colors.dart';
 
 class MapHistoryPolylineLayer extends StatelessWidget {
   const MapHistoryPolylineLayer({super.key});
@@ -28,7 +29,7 @@ class MapHistoryPolylineLayer extends StatelessWidget {
               points: loaded.mappablePoints
                   .map((p) => LatLng(p.latitude!, p.longitude!))
                   .toList(),
-              color: Theme.of(context).colorScheme.primary,
+              color: AppColors.primary,
               strokeWidth: 3,
             ),
           ],

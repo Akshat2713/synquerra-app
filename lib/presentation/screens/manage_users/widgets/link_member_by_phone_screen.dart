@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/app_router.dart';
 import '../../../blocs/manage_users/manage_users_bloc.dart';
+import '../../../themes/colors.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
 
@@ -74,12 +75,11 @@ class _LinkMemberByPhoneBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(24, 12, 24, bottomInset + 24),
@@ -97,7 +97,9 @@ class _LinkMemberByPhoneBottomSheetState
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.3),
+                    color: AppColors.textSecondary(
+                      context,
+                    ).withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -112,21 +114,24 @@ class _LinkMemberByPhoneBottomSheetState
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded),
                     visualDensity: VisualDensity.compact,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Text(
                 'Enter the registered phone number of the member you want to link.',
-                style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary(context),
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -155,7 +160,7 @@ class _LinkMemberByPhoneBottomSheetState
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: colors.onSurface,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 6),
@@ -168,11 +173,13 @@ class _LinkMemberByPhoneBottomSheetState
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.outlineVariant),
+                    borderSide: BorderSide(
+                      color: AppColors.outlineVariant(context),
+                    ),
                   ),
                   prefixIcon: Icon(
                     Icons.diversity_3_outlined,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     size: 20,
                   ),
                 ),
@@ -204,7 +211,7 @@ class _LinkMemberByPhoneBottomSheetState
                     text: "Can't find them? ",
                     style: TextStyle(
                       fontSize: 13,
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                     children: [
                       TextSpan(
@@ -212,7 +219,7 @@ class _LinkMemberByPhoneBottomSheetState
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: colors.primary,
+                          color: AppColors.primary,
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: TapGestureRecognizer()

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 
 import '../../../blocs/user_location/user_location_bloc.dart';
+import '../../../themes/colors.dart';
 
 class MapUserLocationLayer extends StatelessWidget {
   final UserLocationBloc userLocationBloc;
@@ -17,7 +18,6 @@ class MapUserLocationLayer extends StatelessWidget {
         if (state is! UserLocationLoaded) {
           return const SizedBox.shrink();
         }
-        final colors = Theme.of(context).colorScheme;
         return MarkerLayer(
           markers: [
             Marker(
@@ -26,12 +26,12 @@ class MapUserLocationLayer extends StatelessWidget {
               height: 32,
               child: Container(
                 decoration: BoxDecoration(
-                  color: colors.primary,
+                  color: AppColors.primary,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 4,
                     ),

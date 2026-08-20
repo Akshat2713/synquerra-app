@@ -3,6 +3,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/settings/settings_entity.dart';
+import '../../themes/colors.dart';
 import 'widgets/manage_body.dart';
 
 // ── Dummy Settings Entity for Skeletonizer Placeholders ──────────────────
@@ -56,8 +57,8 @@ class ManageSkeleton extends StatelessWidget {
     return Skeletonizer(
       enabled: true,
       effect: ShimmerEffect(
-        baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        highlightColor: Theme.of(context).colorScheme.surface,
+        baseColor: AppColors.surfaceVariant(context),
+        highlightColor: AppColors.surface(context),
       ),
       child: ManageBody(
         device: device,

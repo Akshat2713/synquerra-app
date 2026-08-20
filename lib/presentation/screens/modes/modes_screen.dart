@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../blocs/modes/mode_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/mode_list_tile.dart';
 import 'widgets/mode_skeleton.dart';
@@ -54,8 +55,6 @@ class _ModesScreenState extends State<ModesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Modes')),
       body: BlocConsumer<ModeBloc, ModeState>(
@@ -64,14 +63,14 @@ class _ModesScreenState extends State<ModesScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Mode switched successfully.'),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
           } else if (state is ModeSwitchFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
               ),
             );
           }
@@ -139,8 +138,6 @@ class _SaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -149,8 +146,10 @@ class _SaveBar extends StatelessWidget {
         12 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.outlineVariant)),
+        color: AppColors.surface(context),
+        border: Border(
+          top: BorderSide(color: AppColors.outlineVariant(context)),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),

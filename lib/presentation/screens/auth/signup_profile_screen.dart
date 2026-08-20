@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/app_router.dart';
 import '../../blocs/signup/signup_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
@@ -86,7 +87,6 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return BlocListener<SignupBloc, SignupState>(
@@ -103,7 +103,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -113,7 +113,6 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: colors.surface,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -128,7 +127,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       'Create Your Account',
                       style: textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                   ),
@@ -138,7 +137,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       'Register your profile, secure your account, and connect your smart device in three simple steps.',
                       textAlign: TextAlign.center,
                       style: textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                   ),
@@ -214,7 +213,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -227,11 +226,13 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colors.outlineVariant),
+                        borderSide: BorderSide(
+                          color: AppColors.outlineVariant(context),
+                        ),
                       ),
                       prefixIcon: Icon(
                         Icons.wc_outlined,
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                         size: 20,
                       ),
                     ),
@@ -298,7 +299,9 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                         onPressed: () => Navigator.pop(context),
                         child: Text(
                           'Back to Login',
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                          ),
                         ),
                       ),
                       BlocBuilder<SignupBloc, SignupState>(

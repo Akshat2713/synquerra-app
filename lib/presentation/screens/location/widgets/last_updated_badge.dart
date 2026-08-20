@@ -41,13 +41,13 @@ class _LastUpdatedBadgeState extends State<LastUpdatedBadge>
   Widget build(BuildContext context) {
     if (widget.timestamp == null) return const SizedBox.shrink();
 
-    const color = AppColors.alertSuccess;
+    const color = AppColors.success;
     final isLive = DateTimeFormatter.isLive(widget.timestamp);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.backgroundContainer.withValues(alpha: 0.85),
+        color: AppColors.lightSurfaceVariant.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

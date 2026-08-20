@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
@@ -90,7 +91,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return BlocConsumer<ManageUsersBloc, ManageUsersState>(
       listener: (context, state) {
         if (!_wasSubmitting) return;
@@ -104,7 +104,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -133,7 +133,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             (state is ManageUsersLoading ||
                 (state is ManageUsersLoaded && state.isProcessing));
         return Scaffold(
-          backgroundColor: colors.surface,
           appBar: AppBar(
             title: const Text('Add Family Member'),
             centerTitle: false,
@@ -200,7 +199,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -213,11 +212,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colors.outlineVariant),
+                          borderSide: BorderSide(
+                            color: AppColors.outlineVariant(context),
+                          ),
                         ),
                         prefixIcon: Icon(
                           Icons.wc_outlined,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           size: 20,
                         ),
                       ),
@@ -239,7 +240,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -252,11 +253,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colors.outlineVariant),
+                          borderSide: BorderSide(
+                            color: AppColors.outlineVariant(context),
+                          ),
                         ),
                         prefixIcon: Icon(
                           Icons.diversity_3_outlined,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           size: 20,
                         ),
                       ),
@@ -329,7 +332,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                           onPressed: () => Navigator.pop(context),
                           child: Text(
                             'Cancel',
-                            style: TextStyle(color: colors.onSurfaceVariant),
+                            style: TextStyle(
+                              color: AppColors.textSecondary(context),
+                            ),
                           ),
                         ),
                         SizedBox(

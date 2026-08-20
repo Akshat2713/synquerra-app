@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import 'geofence_status_chip.dart';
 
@@ -18,7 +19,6 @@ class GeofenceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return InkWell(
@@ -27,7 +27,8 @@ class GeofenceListTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.outlineVariant),
+          color: AppColors.surface(context),
+          border: Border.all(color: AppColors.outlineVariant(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -51,7 +52,7 @@ class GeofenceListTile extends StatelessWidget {
                         Icon(
                           Icons.sync_rounded,
                           size: 14,
-                          color: colors.primary,
+                          color: AppColors.primary,
                         ),
                       ],
                     ],
@@ -61,7 +62,11 @@ class GeofenceListTile extends StatelessWidget {
             ),
             IconButton(
               onPressed: onEdit,
-              icon: Icon(Icons.edit_outlined, size: 20, color: colors.primary),
+              icon: Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: AppColors.darkIconSecondary,
+              ),
               visualDensity: VisualDensity.compact,
               tooltip: 'Edit',
             ),
@@ -70,7 +75,7 @@ class GeofenceListTile extends StatelessWidget {
               icon: Icon(
                 Icons.delete_outline_rounded,
                 size: 20,
-                color: colors.error,
+                color: AppColors.danger,
               ),
               visualDensity: VisualDensity.compact,
               tooltip: 'Delete',

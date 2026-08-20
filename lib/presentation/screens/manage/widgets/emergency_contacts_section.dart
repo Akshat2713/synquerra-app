@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/settings/settings_entity.dart';
+import '../../../themes/colors.dart';
 
 class EmergencyContactsSection extends StatelessWidget {
   final String deviceId;
@@ -26,8 +27,6 @@ class EmergencyContactsSection extends StatelessWidget {
           ? ''
           : settings.phoneNum2,
     );
-
-    final colors = Theme.of(context).colorScheme;
 
     showModalBottomSheet(
       context: context,
@@ -85,8 +84,8 @@ class EmergencyContactsSection extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: colors.onPrimary,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -114,14 +113,14 @@ class EmergencyContactsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +134,9 @@ class EmergencyContactsSection extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                  color: AppColors.textSecondary(
+                    context,
+                  ).withValues(alpha: 0.6),
                 ),
               ),
               if (isUpdating)
@@ -150,7 +151,7 @@ class EmergencyContactsSection extends StatelessWidget {
                   icon: Icon(
                     Icons.edit_rounded,
                     size: 18,
-                    color: colors.primary,
+                    color: AppColors.primary,
                   ),
                   onPressed: () => _showEditBottomSheet(context),
                 ),
@@ -159,7 +160,10 @@ class EmergencyContactsSection extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Called when this device sends SOS · two numbers max',
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
           const SizedBox(height: 14),
           _ContactBox(
@@ -185,7 +189,6 @@ class _ContactBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -194,7 +197,7 @@ class _ContactBox extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+            color: AppColors.textSecondary(context).withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 6),
@@ -202,7 +205,7 @@ class _ContactBox extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest.withValues(alpha: 0.4),
+            color: AppColors.surfaceVariant(context).withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(

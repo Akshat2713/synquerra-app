@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/analytics/analytics_bloc.dart';
+import '../../../themes/colors.dart';
 
 class EmptyDataBanner extends StatelessWidget {
   const EmptyDataBanner({super.key});
@@ -21,16 +22,14 @@ class EmptyDataBanner extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final colors = Theme.of(context).colorScheme;
-
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: colors.errorContainer.withValues(alpha: 0.95),
+            color: AppColors.dangerContainer.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: colors.shadow.withValues(alpha: 0.1),
+                color: AppColors.shadow(context).withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -41,7 +40,7 @@ class EmptyDataBanner extends StatelessWidget {
             children: [
               Icon(
                 Icons.info_outline_rounded,
-                color: colors.onErrorContainer,
+                color: AppColors.danger,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -50,7 +49,7 @@ class EmptyDataBanner extends StatelessWidget {
                   'No data found for this timeframe.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: colors.onErrorContainer,
+                    color: AppColors.danger,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),

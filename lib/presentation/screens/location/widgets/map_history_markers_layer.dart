@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../blocs/analytics/analytics_bloc.dart';
+import '../../../themes/colors.dart';
 
 class MapHistoryMarkersLayer extends StatelessWidget {
   const MapHistoryMarkersLayer({super.key});
@@ -21,7 +22,6 @@ class MapHistoryMarkersLayer extends StatelessWidget {
       builder: (context, state) {
         final loaded = state is AnalyticsLoaded ? state : null;
         if (loaded == null) return const SizedBox.shrink();
-        final colors = Theme.of(context).colorScheme;
 
         return MarkerLayer(
           markers: loaded.mappablePoints
@@ -35,8 +35,8 @@ class MapHistoryMarkersLayer extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: e.key == loaded.sliderIndex
-                          ? colors.primary
-                          : colors.primary.withValues(alpha: 0.4),
+                          ? AppColors.primary
+                          : AppColors.primary.withValues(alpha: 0.4),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.white,
