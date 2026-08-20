@@ -6,6 +6,7 @@ import '../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../base/base_state.dart';
 import '../device_list/device_list_bloc.dart';
 
 part 'manage_devices_event.dart';

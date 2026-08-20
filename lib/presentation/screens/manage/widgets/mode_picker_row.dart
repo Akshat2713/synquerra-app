@@ -1,3 +1,5 @@
+// lib/presentation/screens/manage/widgets/mode_picker_row.dart
+
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../utils/mode_icon_resolver.dart';
@@ -23,19 +25,17 @@ class TrackingModeCard extends StatefulWidget {
 }
 
 class _TrackingModeCardState extends State<TrackingModeCard> {
-  // Defaults to Auto mode selected
   late bool _isAutoMode;
+
   @override
   void initState() {
     super.initState();
-    // 3. Initialize from backend setting
     _isAutoMode = widget.autoModeSwitch;
   }
 
   @override
   void didUpdateWidget(covariant TrackingModeCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 4. Update state if settings reload from backend
     if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
       setState(() {
         _isAutoMode = widget.autoModeSwitch;
@@ -47,7 +47,6 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    // Safe lookup: handles empty list during loading/skeleton states without throwing exception
     ModeEntity? activeMode;
     if (widget.modes.isNotEmpty) {
       activeMode = widget.modes.firstWhere(
@@ -71,11 +70,9 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Top Header Row with Auto/Manual on the Right ──────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left column: Section Title & Active Mode Name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,10 +97,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                   ],
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // Right: Compact Auto / Manual Segment Toggle
               SizedBox(
                 width: 150,
                 child: Container(
@@ -136,10 +130,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
-
-          // ── Horizontal Scrollable Modes List ──────────────────────
           SizedBox(
             height: 72,
             child: widget.modes.isEmpty
@@ -191,12 +182,11 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (widget.isSwitching && isSelected)
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(
+                                      child: CircularProgressIndicator.adaptive(
                                         strokeWidth: 2,
-                                        color: colors.primary,
                                       ),
                                     )
                                   else

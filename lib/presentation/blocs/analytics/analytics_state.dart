@@ -1,16 +1,18 @@
+// lib/presentation/blocs/analytics/analytics_state.dart
+
 part of 'analytics_bloc.dart';
 
-// 1. Extend Equatable on the base class
-abstract class AnalyticsState extends Equatable {
+abstract class AnalyticsState extends BaseState {
   const AnalyticsState();
-
-  @override
-  List<Object?> get props => [];
 }
 
-class AnalyticsInitial extends AnalyticsState {}
+class AnalyticsInitial extends AnalyticsState {
+  const AnalyticsInitial();
+}
 
-class AnalyticsLoading extends AnalyticsState {}
+class AnalyticsLoading extends AnalyticsState with LoadingState {
+  const AnalyticsLoading();
+}
 
 class AnalyticsLoaded extends AnalyticsState {
   final List<AnalyticsEntity> points;
@@ -20,7 +22,6 @@ class AnalyticsLoaded extends AnalyticsState {
   final int sliderIndex;
 
   const AnalyticsLoaded({
-    // Added const
     required this.points,
     required this.activeFilter,
     this.startDate,
@@ -28,11 +29,9 @@ class AnalyticsLoaded extends AnalyticsState {
     this.sliderIndex = 0,
   });
 
-  // Points that have valid location for map rendering
   List<AnalyticsEntity> get mappablePoints =>
       points.where((p) => p.hasLocation).toList();
 
-  // Currently selected point via slider
   AnalyticsEntity? get currentPoint => mappablePoints.isEmpty
       ? null
       : mappablePoints[sliderIndex.clamp(0, mappablePoints.length - 1)];
@@ -53,7 +52,6 @@ class AnalyticsLoaded extends AnalyticsState {
     );
   }
 
-  // 2. Override props with all fields that determine state equality
   @override
   List<Object?> get props => [
     points,
@@ -64,12 +62,12 @@ class AnalyticsLoaded extends AnalyticsState {
   ];
 }
 
-class AnalyticsError extends AnalyticsState {
+class AnalyticsError extends AnalyticsState with ErrorState {
+  @override
   final String message;
 
-  const AnalyticsError(this.message); // Added const
+  const AnalyticsError(this.message);
 
-  // 3. Override props for the error message
   @override
   List<Object?> get props => [message];
 }

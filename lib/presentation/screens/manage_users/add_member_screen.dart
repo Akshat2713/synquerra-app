@@ -261,11 +261,25 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         ),
                       ),
                       items: const [
+                        // Static List using String values
                         DropdownMenuItem(value: 'child', child: Text('Child')),
                         DropdownMenuItem(
                           value: 'parent',
                           child: Text('Parent'),
                         ),
+                        DropdownMenuItem(
+                          value: 'teacher',
+                          child: Text('Teacher'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'guardian',
+                          child: Text('Guardian'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'spouse',
+                          child: Text('Spouse'),
+                        ),
+                        DropdownMenuItem(value: 'other', child: Text('Other')),
                       ],
                       onChanged: (val) =>
                           setState(() => _selectedRelationship = val!),

@@ -9,6 +9,7 @@ import '../../../domain/usecases/relationship/create_relationship_by_phone_useca
 import '../../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../../domain/usecases/signup/create_person_usecase.dart';
 import '../../../domain/usecases/signup/delete_person_usecase.dart';
+import '../base/base_state.dart';
 part 'manage_users_event.dart';
 part 'manage_users_state.dart';
 

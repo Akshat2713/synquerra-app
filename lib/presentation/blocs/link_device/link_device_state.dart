@@ -1,14 +1,21 @@
+// lib/presentation/blocs/link_device/link_device_state.dart
+
 part of 'link_device_bloc.dart';
 
 enum LinkDeviceStatus { idle, loading, success, error }
 
-class LinkDeviceState extends Equatable {
+class LinkDeviceState extends BaseState {
   final LinkDeviceStatus status;
   final String? errorMessage;
+
   const LinkDeviceState({
     this.status = LinkDeviceStatus.idle,
     this.errorMessage,
   });
+
+  bool get isLoading => status == LinkDeviceStatus.loading;
+  bool get isSuccess => status == LinkDeviceStatus.success;
+  bool get isError => status == LinkDeviceStatus.error;
 
   LinkDeviceState copyWith({LinkDeviceStatus? status, String? errorMessage}) {
     return LinkDeviceState(

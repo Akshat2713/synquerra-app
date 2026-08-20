@@ -34,6 +34,12 @@ class DateTimeFormatter {
     return DateFormat('dd MMM, yyyy').format(dateTime);
   }
 
+  /// Format timestamp to compact "d/M" (e.g., 25/8)
+  static String formatCompactDate(DateTime? dateTime) {
+    if (dateTime == null) return '--/--';
+    return '${dateTime.day}/${dateTime.month}';
+  }
+
   /// Format relative time (e.g., "5m ago", "2h ago")
   static String formatRelativeTime(DateTime? dateTime) {
     if (dateTime == null) return 'Never';
@@ -50,6 +56,15 @@ class DateTimeFormatter {
     } else {
       return formatDateTime(dateTime);
     }
+  }
+
+  /// Checks if a timestamp falls within the live threshold
+  static bool isLive(
+    DateTime? timestamp, {
+    Duration threshold = const Duration(seconds: 60),
+  }) {
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < threshold;
   }
 
   /// Converts a duration in seconds to a short human-readable label.

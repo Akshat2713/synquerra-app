@@ -1,3 +1,5 @@
+// lib/presentation/screens/geofence/add_geofence_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
@@ -8,7 +10,6 @@ import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../utils/colour_util.dart' as colour_utils;
 import 'utils/map_bounds_util.dart';
-// import 'widgets/coordinates_list.dart';
 import 'widgets/empty_coordinates_placeholder.dart';
 import 'widgets/geofence_active_toggle.dart';
 import 'widgets/geofence_address_section.dart';
@@ -76,7 +77,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
 
     final result = await Navigator.pushNamed<List<Coordinate>>(
       context,
-      AppRoutes.geofenceMapPicker,
+      '/geofence-map-picker',
       arguments: GeofenceMapPickerArgs(
         initialCenter: center,
         initialPoints: _coordinates,
@@ -89,22 +90,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   }
 
   void _onSave() {
-    AppLogger.d('AddGeofencePage', '_onSave called');
-    AppLogger.d(
-      'AddGeofencePage',
-      'form valid: ${_formKey.currentState?.validate()}',
-    );
-    AppLogger.d('AddGeofencePage', 'coordinates: $_coordinates');
-    AppLogger.d('AddGeofencePage', 'name: ${_nameController.text.trim()}');
-    AppLogger.d('AddGeofencePage', 'isActive: $_isActive');
-    AppLogger.d('AddGeofencePage', 'color: $_selectedColor');
-
     if (!_formKey.currentState!.validate()) {
-      AppLogger.d('AddGeofencePage', 'Form validation failed');
       return;
     }
     if (_coordinates == null) {
-      AppLogger.d('AddGeofencePage', 'Coordinates are null');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please pick geofence area on map.')),
       );
@@ -112,7 +101,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     }
 
     if (_isEditing) {
-      AppLogger.d('AddGeofencePage', 'Dispatching GeofenceEdit event');
       context.read<GeofenceBloc>().add(
         GeofenceEdit(
           deviceId: widget.deviceId,
@@ -133,7 +121,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
         ),
       );
     } else {
-      AppLogger.d('AddGeofencePage', 'Dispatching GeofenceCreate event');
       context.read<GeofenceBloc>().add(
         GeofenceCreate(
           deviceId: widget.deviceId,
@@ -152,7 +139,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
         ),
       );
     }
-    AppLogger.d('AddGeofencePage', 'event dispatched');
   }
 
   @override
@@ -239,7 +225,9 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator.adaptive(
+                              strokeWidth: 2,
+                            ),
                           )
                         : Text(
                             _isEditing ? 'Update Geofence' : 'Save Geofence',

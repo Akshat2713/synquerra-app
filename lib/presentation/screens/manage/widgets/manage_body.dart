@@ -1,3 +1,5 @@
+// lib/presentation/screens/manage/widgets/manage_body.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,7 +35,6 @@ class ManageBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Header Title & Subtitle ─────────────────────────────
         Padding(
           padding: const EdgeInsets.only(
             left: 16,
@@ -59,13 +60,10 @@ class ManageBody extends StatelessWidget {
             ],
           ),
         ),
-
-        // ── Main Content Body ───────────────────────────────────
         Expanded(
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
-              // Mode Picker Card
               TrackingModeCard(
                 modes: modes,
                 activeModeId: activeModeId,
@@ -78,16 +76,19 @@ class ManageBody extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // Emergency Contacts Section driven directly by Settings
               EmergencyContactsSection(
                 deviceId: device.id,
                 settings: settings,
                 isUpdating: isUpdatingSettings,
+                onSaveContacts: (phoneNum1, phoneNum2) => bloc.add(
+                  ManagePhoneNumbersUpdateRequested(
+                    deviceId: device.id,
+                    phoneNum1: phoneNum1,
+                    phoneNum2: phoneNum2,
+                  ),
+                ),
               ),
-
               const SizedBox(height: 16),
             ],
           ),

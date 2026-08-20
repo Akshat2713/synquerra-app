@@ -5,6 +5,7 @@ import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../../core/utils/app_logger.dart';
+import '../base/base_state.dart';
 
 part 'mode_event.dart';
 part 'mode_state.dart';

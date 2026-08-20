@@ -9,6 +9,7 @@ import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
 import '../../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
 import '../../../core/utils/app_logger.dart';
+import '../base/base_state.dart';
 
 part 'analytics_event.dart';
 part 'analytics_state.dart';

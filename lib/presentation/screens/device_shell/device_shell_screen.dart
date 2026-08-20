@@ -1,4 +1,5 @@
-// presentation/screens/device_shell/device_shell_screen.dart
+// lib/presentation/screens/device_shell/device_shell_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,20 +10,23 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 import '../landing/landing_screen.dart';
 import '../landing/widgets/attention_device_sheet.dart';
+import '../location/location_screen.dart';
 import '../manage/manage_screen.dart';
 import '../settings/settings_screen.dart';
-import '../location/location_screen.dart';
 
 class DeviceShellScreen extends StatefulWidget {
   final DeviceEntity device;
   const DeviceShellScreen({super.key, required this.device});
+
   @override
   State<DeviceShellScreen> createState() => _DeviceShellScreenState();
 }
 
 class _DeviceShellScreenState extends State<DeviceShellScreen> {
   int _currentIndex = 0;
-  late final PageController _pageController;
+
+  // Only Tab 0 (Home) is active initially. Tabs 1, 2, 3 only mount on first tap.
+  final Set<int> _activatedTabs = {0};
 
   LatLng get _defaultCenter => widget.device.hasLocation
       ? LatLng(widget.device.latitude!, widget.device.longitude!)
@@ -31,7 +35,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
+    // 1 single initial fetch for shared telemetry between Home & Map
     context.read<AnalyticsBloc>().add(
       AnalyticsLoadDefault(
         deviceId: widget.device.id,
@@ -40,22 +44,12 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
   void _goToTab(int index) {
-    setState(() => _currentIndex = index);
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
+    setState(() {
+      _currentIndex = index;
+      _activatedTabs.add(index); // Lazily mount tab on first click
+    });
   }
-
-  void _onPageChanged(int index) => setState(() => _currentIndex = index);
 
   void _openAttentionSheet(BuildContext context) {
     final deviceListBloc = context.read<DeviceListBloc>();
@@ -85,17 +79,32 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
+      body: IndexedStack(
+        index: _currentIndex,
         children: [
+          // Tab 0: Home (Always loaded first)
           LandingScreen(
             device: widget.device,
             onAttentionTap: () => _openAttentionSheet(context),
           ),
-          LocationScreen(device: widget.device),
-          ManageScreen(device: widget.device),
-          SettingsScreen(device: widget.device, initialCenter: _defaultCenter),
+
+          // Tab 1: Map (Mounts & shares AnalyticsBloc when tapped)
+          _activatedTabs.contains(1)
+              ? LocationScreen(device: widget.device)
+              : const SizedBox.shrink(),
+
+          // Tab 2: Manage (Only makes API calls when tapped for the first time)
+          _activatedTabs.contains(2)
+              ? ManageScreen(device: widget.device)
+              : const SizedBox.shrink(),
+
+          // Tab 3: Settings (Only loads when tapped)
+          _activatedTabs.contains(3)
+              ? SettingsScreen(
+                  device: widget.device,
+                  initialCenter: _defaultCenter,
+                )
+              : const SizedBox.shrink(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

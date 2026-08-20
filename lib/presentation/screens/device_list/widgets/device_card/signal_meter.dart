@@ -1,4 +1,7 @@
+// lib/presentation/screens/device_list/widgets/device_card/signal_meter.dart
+
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../themes/colors.dart';
 
 class SignalMeter extends StatelessWidget {
@@ -6,19 +9,10 @@ class SignalMeter extends StatelessWidget {
 
   const SignalMeter({super.key, required this.signal});
 
-  int _signalBarsFilled(int? s) {
-    final sig = s ?? 0;
-    if (sig >= 75) return 4;
-    if (sig >= 50) return 3;
-    if (sig >= 25) return 2;
-    if (sig > 0) return 1;
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final filled = _signalBarsFilled(signal);
+    final filled = UnitFormatter.signalBarsFilled(signal);
     const heights = [7.0, 11.0, 15.0, 19.0];
 
     return SizedBox(

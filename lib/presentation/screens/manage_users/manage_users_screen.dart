@@ -1,8 +1,11 @@
+// lib/presentation/screens/manage_users/manage_users_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
-import 'widget/link_member_by_phone_screen.dart';
-import 'widget/member_card.dart';
+import '../../widgets/async_state_view.dart';
+import 'widgets/link_member_by_phone_screen.dart';
+import 'widgets/member_card.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -119,109 +122,89 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           }
         },
         builder: (context, state) {
-          if (state is ManageUsersInitial || state is ManageUsersLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          final isLoading =
+              state is ManageUsersInitial || state is ManageUsersLoading;
+          final errorMessage = state is ManageUsersError ? state.message : null;
+          final members = state is ManageUsersLoaded
+              ? state.members
+              : <MemberItem>[];
+          final isProcessing = state is ManageUsersLoaded
+              ? state.isProcessing
+              : false;
 
-          if (state is ManageUsersError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline_rounded,
-                    size: 48,
-                    color: colors.error,
+          return AsyncStateView(
+            isLoading: isLoading,
+            errorMessage: errorMessage,
+            isEmpty: members.isEmpty,
+            onRetry: () => context.read<ManageUsersBloc>().add(
+              const ManageUsersLoadRequested(),
+            ),
+            emptyWidget: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.28),
+                Icon(
+                  Icons.people_outline_rounded,
+                  size: 56,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No members added yet.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: colors.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: colors.onSurfaceVariant),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tap "Add Member" to link or create a family member.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.7),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => context.read<ManageUsersBloc>().add(
-                      const ManageUsersLoadRequested(),
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            builder: () => RefreshIndicator(
+              onRefresh: () async {
+                context.read<ManageUsersBloc>().add(
+                  const ManageUsersLoadRequested(),
+                );
+              },
+              color: colors.primary,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 12, bottom: 80),
+                itemCount: members.length,
+                itemBuilder: (context, index) {
+                  final member = members[index];
+                  final fullName =
+                      '${member.person.firstName} ${member.person.lastName}'
+                          .trim();
+
+                  return MemberCard(
+                    person: member.person,
+                    onUnlink: isProcessing
+                        ? null
+                        : () => _confirmUnlink(
+                            context,
+                            member.relationshipId,
+                            fullName,
+                          ),
+                    onDelete: isProcessing
+                        ? null
+                        : () => _confirmDelete(
+                            context,
+                            member.person.personId,
+                            fullName,
+                          ),
+                  );
+                },
               ),
-            );
-          }
-
-          final loaded = state as ManageUsersLoaded;
-          final members = loaded.members;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<ManageUsersBloc>().add(
-                const ManageUsersLoadRequested(),
-              );
-            },
-            color: colors.primary,
-            child: members.isEmpty
-                ? ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.28,
-                      ),
-                      Icon(
-                        Icons.people_outline_rounded,
-                        size: 56,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No members added yet.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap "Add Member" to link or create a family member.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(top: 12, bottom: 80),
-                    itemCount: members.length,
-                    itemBuilder: (context, index) {
-                      final member = members[index];
-                      final fullName =
-                          '${member.person.firstName} ${member.person.lastName}'
-                              .trim();
-
-                      return MemberCard(
-                        person: member.person,
-                        onUnlink: loaded.isProcessing
-                            ? null
-                            : () => _confirmUnlink(
-                                context,
-                                member.relationshipId,
-                                fullName,
-                              ),
-                        onDelete: loaded.isProcessing
-                            ? null
-                            : () => _confirmDelete(
-                                context,
-                                member.person.personId,
-                                fullName,
-                              ),
-                      );
-                    },
-                  ),
+            ),
           );
         },
       ),

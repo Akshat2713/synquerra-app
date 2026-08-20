@@ -1,9 +1,12 @@
+// lib/presentation/screens/manage/manage_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../blocs/manage/manage_bloc.dart';
+import '../../widgets/async_state_view.dart';
 import 'manage_skeleton.dart';
 import 'widgets/manage_body.dart';
 
@@ -42,7 +45,6 @@ class _ManageScreenState extends State<ManageScreen> {
             if (state is! ManageLoaded) return;
             final colors = Theme.of(context).colorScheme;
 
-            // Handle Mode Switch Failures
             if (state.modeSwitchError != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -52,7 +54,6 @@ class _ManageScreenState extends State<ManageScreen> {
               );
             }
 
-            // Handle Phone Number Update Failures
             if (state.settingsUpdateError != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -63,63 +64,35 @@ class _ManageScreenState extends State<ManageScreen> {
             }
           },
           builder: (context, state) {
-            if (state is ManageLoading || state is ManageInitial) {
+            final isLoading = state is ManageLoading || state is ManageInitial;
+            final errorMessage = state is ManageError ? state.message : null;
+
+            if (isLoading) {
               return ManageSkeleton(device: widget.device);
             }
 
-            if (state is ManageError) {
-              return _ErrorView(
-                message: state.message,
-                onRetry: () {
-                  context.read<ManageBloc>().add(
-                    ManageLoadRequested(widget.device),
+            return AsyncStateView(
+              isLoading: false,
+              errorMessage: errorMessage,
+              onRetry: () {
+                _manageBloc.add(ManageLoadRequested(widget.device));
+              },
+              builder: () {
+                if (state is ManageLoaded) {
+                  return ManageBody(
+                    device: widget.device,
+                    settings: state.settings,
+                    modes: state.modes,
+                    activeModeId: state.activeModeId,
+                    isSwitchingMode: state.isSwitchingMode,
+                    isUpdatingSettings: state.isUpdatingSettings,
                   );
-                },
-              );
-            }
-
-            if (state is ManageLoaded) {
-              return ManageBody(
-                device: widget.device,
-                settings: state.settings,
-                modes: state.modes,
-                activeModeId: state.activeModeId,
-                isSwitchingMode: state.isSwitchingMode,
-                isUpdatingSettings: state.isUpdatingSettings,
-              );
-            }
-
-            return const SizedBox.shrink();
+                }
+                return const SizedBox.shrink();
+              },
+            );
           },
         ),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            style: TextStyle(color: colors.error),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
-        ],
       ),
     );
   }

@@ -1,19 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+// lib/presentation/screens/manage/widgets/emergency_contacts_section.dart
 
+import 'package:flutter/material.dart';
 import '../../../../domain/entities/settings/settings_entity.dart';
-import '../../../blocs/manage/manage_bloc.dart';
 
 class EmergencyContactsSection extends StatelessWidget {
   final String deviceId;
   final SettingsEntity settings;
   final bool isUpdating;
+  final void Function(String phoneNum1, String phoneNum2)? onSaveContacts;
 
   const EmergencyContactsSection({
     super.key,
     required this.deviceId,
     required this.settings,
     this.isUpdating = false,
+    this.onSaveContacts,
   });
 
   void _showEditBottomSheet(BuildContext context) {
@@ -79,7 +80,6 @@ class EmergencyContactsSection extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -94,12 +94,9 @@ class EmergencyContactsSection extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.pop(bottomSheetContext);
-                    context.read<ManageBloc>().add(
-                      ManagePhoneNumbersUpdateRequested(
-                        deviceId: deviceId,
-                        phoneNum1: primaryController.text.trim(),
-                        phoneNum2: secondaryController.text.trim(),
-                      ),
+                    onSaveContacts?.call(
+                      primaryController.text.trim(),
+                      secondaryController.text.trim(),
                     );
                   },
                   child: const Text(
@@ -145,7 +142,7 @@ class EmergencyContactsSection extends StatelessWidget {
                 const SizedBox(
                   height: 16,
                   width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(strokeWidth: 2),
                 )
               else
                 IconButton(

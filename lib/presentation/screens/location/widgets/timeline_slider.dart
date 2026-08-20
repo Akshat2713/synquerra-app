@@ -1,6 +1,9 @@
+// lib/presentation/screens/location/widgets/timeline_slider.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 
 class TimelineSlider extends StatefulWidget {
@@ -23,7 +26,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
   bool _isPlaying = false;
   Timer? _playbackTimer;
 
-  // 1. Playback Speed State & Available Options
   double _selectedSpeed = 1.0;
   final List<double> _speedOptions = [1.0, 2.0, 4.0];
 
@@ -41,7 +43,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
   }
 
-  // 2. Dynamic playback timing based on selected speed
   void _startPlayback() {
     if (widget.points.isEmpty) return;
     setState(() => _isPlaying = true);
@@ -52,7 +53,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
 
     _playbackTimer?.cancel();
 
-    // Calculate dynamic delay: Base is 800ms at 1x
     final intervalMs = (800 / _selectedSpeed).round();
 
     _playbackTimer = Timer.periodic(Duration(milliseconds: intervalMs), (
@@ -73,14 +73,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
   }
 
-  // 3. Handle speed selection change
   void _updateSpeed(double speed) {
     if (_selectedSpeed == speed) return;
     setState(() {
       _selectedSpeed = speed;
     });
 
-    // If already playing, re-arm the timer immediately with new speed
     if (_isPlaying) {
       _startPlayback();
     }
@@ -90,7 +88,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    // Ensure points are ordered chronologically: Oldest (Past) -> Newest (Present)
     final sortedPoints = List<AnalyticsEntity>.from(widget.points)
       ..sort((a, b) {
         final aTime = a.deviceTimestamp;
@@ -123,7 +120,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Container(
             width: 36,
             height: 4,
@@ -133,8 +129,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Primary Timestamp Header
           if (current != null) ...[
             Row(
               children: [
@@ -160,14 +154,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
               ],
             ),
             const SizedBox(height: 12),
-
-            // Metrics Row - Distributed Evenly (Speed, Battery, Signal)
             Row(
               children: [
                 Expanded(
                   child: _MetricBadge(
                     icon: Icons.speed_rounded,
-                    label: _formatSpeed(current.speed),
+                    label: UnitFormatter.formatSpeed(current.speed),
                     color: colors.primary,
                     colors: colors,
                   ),
@@ -198,16 +190,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
             ),
             const SizedBox(height: 8),
           ],
-
-          // Playback & Interactive Controls
           Stack(
             alignment: Alignment.center,
             children: [
-              // Playback Controls (Centered)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Step Backward
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -219,8 +207,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
                         : null,
                   ),
                   const SizedBox(width: 16),
-
-                  // Play / Pause
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -234,8 +220,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     onPressed: hasPoints ? _togglePlayback : null,
                   ),
                   const SizedBox(width: 16),
-
-                  // Step Forward
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -248,8 +232,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   ),
                 ],
               ),
-
-              // 4. Speed Multiplier Dropdown (Positioned on the Right)
               Positioned(
                 right: 0,
                 child: PopupMenuButton<double>(
@@ -325,8 +307,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
               ),
             ],
           ),
-
-          // Seek Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 4,
@@ -350,8 +330,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   : null,
             ),
           ),
-
-          // Start & End Timestamps
           if (hasPoints)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -359,7 +337,9 @@ class _TimelineSliderState extends State<TimelineSlider> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _formatDate(sortedPoints.first.deviceTimestamp),
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.first.deviceTimestamp,
+                    ),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -367,7 +347,9 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     ),
                   ),
                   Text(
-                    _formatDate(sortedPoints.last.deviceTimestamp),
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.last.deviceTimestamp,
+                    ),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -380,15 +362,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
         ],
       ),
     );
-  }
-
-  // --- Helpers ---
-  String _formatSpeed(dynamic speed) {
-    if (speed == null) return 'N/A';
-    if (speed is num) {
-      return '${speed.toStringAsFixed(1)} km/h';
-    }
-    return '$speed km/h';
   }
 
   Color _getBatteryColor(int? battery, ColorScheme colors) {
@@ -419,11 +392,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
     if (signal <= 50) return Icons.signal_cellular_alt_2_bar_rounded;
     if (signal <= 75) return Icons.signal_cellular_4_bar_rounded;
     return Icons.signal_cellular_4_bar_rounded;
-  }
-
-  String _formatDate(DateTime? timestamp) {
-    if (timestamp == null) return '--/--';
-    return '${timestamp.day}/${timestamp.month}';
   }
 }
 

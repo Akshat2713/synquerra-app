@@ -1,11 +1,13 @@
+// lib/presentation/screens/landing/widgets/attention_device_sheet.dart
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../app/app_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
-import '../../../app/app_router.dart';
 import '../../../utils/colour_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
@@ -39,8 +41,7 @@ class AttentionDeviceSheet extends StatelessWidget {
           color: colors.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        clipBehavior:
-            Clip.antiAlias, // keeps ink splashes clipped to rounded corners
+        clipBehavior: Clip.antiAlias,
         child: Material(
           color: Colors.transparent,
           child: Column(
@@ -114,13 +115,10 @@ class AttentionDeviceSheet extends StatelessWidget {
                       onTap: () {
                         final deviceListBloc = context.read<DeviceListBloc>();
                         Navigator.pop(context);
-                        Navigator.pushReplacementNamed(
+                        AppRouter.pushDeviceDetail(
                           context,
-                          AppRoutes.deviceDetail,
-                          arguments: DeviceDetailArgs(
-                            device: d,
-                            deviceListBloc: deviceListBloc,
-                          ),
+                          device: d,
+                          deviceListBloc: deviceListBloc,
                         );
                       },
                     );

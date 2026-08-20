@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/usecases/location/get_user_location_usecase.dart';
+import '../base/base_state.dart';
 
 part 'user_location_event.dart';
 part 'user_location_state.dart';

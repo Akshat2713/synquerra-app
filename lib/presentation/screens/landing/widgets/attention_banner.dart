@@ -21,11 +21,15 @@ class AttentionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final attentionCount = devices.where((d) {
-      final deviceAlerts = alertsForDevice(d, alerts);
-      return deviceAlerts.any((a) => a.isCritical && !a.isAcknowledged);
-    }).length;
-
+    // In AttentionBanner build method:
+    final attentionCount = devices
+        .where(
+          (d) => alertsForDevice(
+            d,
+            alerts,
+          ).any((a) => a.isCritical && !a.isAcknowledged),
+        )
+        .length;
     return Material(
       color: colors.surfaceContainerLow,
       shape: RoundedRectangleBorder(

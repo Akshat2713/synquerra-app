@@ -6,6 +6,7 @@ import '../../../domain/usecases/geofence/edit_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/get_geofences_usecase.dart';
 import '../../../core/utils/app_logger.dart';
+import '../base/base_state.dart';
 
 part 'geofence_event.dart';
 part 'geofence_state.dart';

@@ -3,140 +3,177 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._(); // Prevent instantiation
 
-  // ===== BRAND COLORS =====
-  static const Color brandPrimary = Color(0xFF007AFF);
-  static const Color brandSecondary = Color(0xFF5856D6);
-  static const Color brandTertiary = Color(0xFF34C759);
+  // ==========================================
+  // ===== BRAND / ACCENT (SEMANTIC) ==========
+  // ==========================================
+  // Primary CTA buttons, active tab indicators, selected chip borders ("Live", "Sync", "+ Device")
+  static const Color primary = Color(0xFFA855F7);
+  static const Color primaryHover = Color(0xFF9333EA);
+  static const Color primarySubtle = Color(0xFFC084FC);
 
-  // ===== SEMANTIC COLORS =====
-  // Error
-  static const Color error = Color(0xFFFF3B30);
-  static const Color errorLight = Color(0xFFFF6B6B);
-  static const Color errorDark = Color(0xFFC41E1E);
+  // Soft container background for active icons & subtle badges
+  static const Color primaryContainer = Color(0x1FA855F7);
+  static const Color primaryBorder = Color(0x66A855F7);
 
-  // Success
-  static const Color success = Color(0xFF34C759);
-  static const Color successLight = Color(0xFF6BDB8F);
-  static const Color successDark = Color(0xFF248A3D);
+  // ==========================================
+  // ===== STATUS / FEEDBACK ==================
+  // ==========================================
+  // Success (Safe, GPS Restored, Normal battery)
+  static const Color success = Color(0xFF22C55E);
+  static const Color successContainer = Color(0x1F22C55E); // "Safe" badge fill
+  static const Color onSuccess = Colors.white;
 
-  // Warning
-  static const Color warning = Color(0xFFFF9500);
-  static const Color warningLight = Color(0xFFFFB340);
-  static const Color warningDark = Color(0xFFC47100);
+  // Warning (Needs attention, Fair signal, GPS Lost)
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color warningContainer = Color(
+    0x1FF59E0B,
+  ); // "Needs attention" badge fill
+  static const Color onWarning = Colors.white;
 
-  // Info
-  static const Color info = Color(0xFF5856D6);
-  static const Color infoLight = Color(0xFF7A78E0);
-  static const Color infoDark = Color(0xFF3F3E9C);
+  // Danger / Error (SOS alert pressed, battery critical)
+  static const Color danger = Color(0xFFEF4444);
+  static const Color dangerContainer = Color(0x1FEF4444); // SOS item fill
+  static const Color onDanger = Colors.white;
 
-  // ===== ALERT COLORS =====
-  static const Color alertCritical = Color(0xFFFF4444);
-  static const Color alertCriticalBg = Color(0xFFFFEBEB);
-  static const Color alertCriticalText = Color(0xFFCC0000);
-  static const Color alertWarning = Color(0xFFFFAA00);
-  static const Color alertSuccess = Color(0xFF22C55E);
-  static const Color failureRed = Color(0xFFDC2626);
+  // Info / Live tracking indicator
+  static const Color info = Color(0xFF38BDF8);
+  static const Color infoContainer = Color(0x1F38BDF8);
 
-  // ===== LIGHT THEME COLORS =====
-  // Backgrounds & Surfaces
-  static const Color lightBackground = Color(0xFFF5F5F5);
-  static const Color lightSurface = Colors.white;
-  static const Color lightSurfaceSecondary = Color(0xFFF8F8F8);
-  static const Color lightSurfaceTertiary = Color(0xFFF0F0F0);
-
-  // Borders & Dividers
-  static const Color lightBorder = Color(0xFFE0E0E0);
-  static const Color lightDivider = Color(0xFFEEEEEE);
-
-  // Text
-  static const Color lightTextPrimary = Color(0xFF000000);
-  static const Color lightTextSecondary = Color(0xFF6B6B6B);
-  static const Color lightTextTertiary = Color(0xFF8E8E93);
-  static const Color lightTextDisabled = Color(0xFFB8B8B8);
-
-  // Icons
-  static const Color lightIconPrimary = Color(0xFF4A4A4A);
-  static const Color lightIconSecondary = Color(0xFF8E8E93);
-  static const Color lightIconDisabled = Color(0xFFC6C6C8);
-
-  // ===== DARK THEME COLORS =====
-  // Backgrounds & Surfaces
-  static const Color darkBackground = Color(0xFF071021);
-  static const Color darkSurface = Color(0xFF0F1B29);
-  static const Color darkSurfaceSecondary = Color(0xFF1A2635);
-  static const Color darkSurfaceTertiary = Color(0xFF253141);
+  // ==========================================
+  // ===== LIGHT THEME TOKENS =================
+  // ==========================================
+  // Surfaces & Backgrounds
+  static const Color lightBackground = Color(
+    0xFFF7F7FA,
+  ); // Main page/scaffold background
+  static const Color lightSurface = Color(
+    0xFFFFFFFF,
+  ); // Cards, bottom navigation, modals
+  static const Color lightSurfaceVariant = Color(
+    0xFFF3F3F8,
+  ); // Input fields, unselected chips, inner rows
 
   // Borders & Dividers
-  static const Color darkBorder = Color(0xFF2C2F33);
-  static const Color darkDivider = Color(0xFF353A40);
+  static const Color lightOutline = Color(
+    0xFFE8E8EE,
+  ); // Card borders, textfield strokes
+  static const Color lightOutlineVariant = Color(
+    0xFFF0F0F4,
+  ); // Inner item dividers, subtle separators
 
-  // Text
-  static const Color darkTextPrimary = Colors.white;
-  static const Color darkTextSecondary = Color(0xFFE0E0E0);
-  static const Color darkTextTertiary = Color(0xFFB0B0B0);
-  static const Color darkTextDisabled = Color(0xFF707070);
+  // Typography
+  static const Color lightTextPrimary = Color(
+    0xFF0F172A,
+  ); // Main titles, bold values, card headings
+  static const Color lightTextSecondary = Color(
+    0xFF64748B,
+  ); // Subtitles, descriptions, active chip text
+  static const Color lightTextTertiary = Color(
+    0xFF94A3B8,
+  ); // Timestamps, inactive labels, metrics captions
+  static const Color lightTextDisabled = Color(
+    0xFFCBD5E1,
+  ); // Disabled button/text state
 
   // Icons
-  static const Color darkIconPrimary = Colors.white;
-  static const Color darkIconSecondary = Color(0xFFB8B8B8);
-  static const Color darkIconDisabled = Color(0xFF666666);
+  static const Color lightIconPrimary = Color(
+    0xFF1E293B,
+  ); // Standalone action icons
+  static const Color lightIconSecondary = Color(
+    0xFF94A3B8,
+  ); // Chevrons, unselected nav icons
 
-  // ===== ACCENT COLORS =====
-  static const Color vibrantBlue = Color(0xFF0A84FF);
-  static const Color vibrantPurple = Color(0xFFBF5AF2);
-  static const Color vibrantPink = Color(0xFFFF2D55);
-  static const Color vibrantOrange = Color(0xFFFF9F0A);
-  static const Color vibrantTeal = Color(0xFF64D2FF);
+  // ==========================================
+  // ===== DARK THEME TOKENS ==================
+  // ==========================================
+  // Surfaces & Backgrounds
+  static const Color darkBackground = Color(
+    0xFF0B0A13,
+  ); // Main page/scaffold background
+  static const Color darkSurface = Color(
+    0xFF151421,
+  ); // Cards, bottom navigation, modals
+  static const Color darkSurfaceVariant = Color(
+    0xFF1D1C2B,
+  ); // Input fields, dropdowns, unselected chips
 
-  // Now proper Color constants with hex opacity values
-  static const Color shadowLight = Color(0x0C000000); // 5% opacity black
-  static const Color shadowMedium = Color(0x1A000000); // 10% opacity black
-  static const Color shadowHeavy = Color(0x26000000); // 15% opacity black
+  // Borders & Dividers
+  static const Color darkOutline = Color(
+    0xFF272538,
+  ); // Card borders, textfield strokes
+  static const Color darkOutlineVariant = Color(
+    0xFF1E1D2D,
+  ); // Inner item dividers, subtle separators
 
-  static const Color shadowDarkLight = Color(0x08FFFFFF); // 3% opacity white
-  static const Color shadowDarkMedium = Color(0x0DFFFFFF); // 5% opacity white
-  static const Color shadowDarkHeavy = Color(0x14FFFFFF); // 8% opacity white
+  // Typography
+  static const Color darkTextPrimary = Color(
+    0xFFF8FAFC,
+  ); // Main titles, bold values, card headings
+  static const Color darkTextSecondary = Color(
+    0xFFCBD5E1,
+  ); // Subtitles, descriptions, active chip text
+  static const Color darkTextTertiary = Color(
+    0xFF64748B,
+  ); // Timestamps, inactive labels, metrics captions
+  static const Color darkTextDisabled = Color(
+    0xFF475569,
+  ); // Disabled button/text state
 
-  // ===== GRADIENTS =====
-  static const List<Color> primaryGradient = [
-    Color(0xFF007AFF),
-    Color(0xFF5856D6),
-  ];
+  // Icons
+  static const Color darkIconPrimary = Color(
+    0xFFF8FAFC,
+  ); // Standalone action icons
+  static const Color darkIconSecondary = Color(
+    0xFF64748B,
+  ); // Chevrons, unselected nav icons
 
-  static const List<Color> successGradient = [
-    Color(0xFF34C759),
-    Color(0xFF30B0C7),
-  ];
+  // ==========================================
+  // ===== MAP / SPECIAL ENVIRONMENT TOKENS ===
+  // ==========================================
+  // Custom tag/zone categories
+  static const Color environmentCategory1 = Color(
+    0xFFF59E0B,
+  ); // "Home" geofence ring & badge
+  static const Color environmentCategory2 = Color(
+    0xFFA855F7,
+  ); // "Work" geofence ring & badge
+  static const Color environmentCategory3 = Color(
+    0xFF10B981,
+  ); // "Safe" geofence ring & badge
 
-  static const List<Color> errorGradient = [
-    Color(0xFFFF3B30),
-    Color(0xFFFF6B4A),
-  ];
+  // Map elements (Light Mode)
+  static const Color lightMapPath = Color(0xFFFFFFFF);
+  static const Color lightMapZonePrimary = Color(0xFFD1FAE5);
+  static const Color lightMapZoneSecondary = Color(0xFFDBEAFE);
 
-  static const List<Color> warningGradient = [
-    Color(0xFFFF9500),
-    Color(0xFFFFB340),
-  ];
+  // Map elements (Dark Mode)
+  static const Color darkMapPath = Color(0xFF1E1D2D);
+  static const Color darkMapZonePrimary = Color(0xFF064E3B);
+  static const Color darkMapZoneSecondary = Color(0xFF1E3A8A);
 
-  static const Color emergencyRed = Color(0xFFFF3B30); // bright red for danger
-  static const Color safeGreen = Color(0xFF34C759); // green for all good
-  static const Color warningAmber = Color(0xFFFF9500); // amber for caution
-  static const Color navBlue = Color(0xFF007AFF); // blue for navigation
-  static const Color background = Color.fromARGB(255, 220, 220, 220); // white
-  static const Color darkText = Color(0xFF000000); // black text
-  static const Color lightText = Color(0xFF8E8E93); // light gray for subtext
-  static const Color backgroundContainer =
-      Colors.white; // light gray container bg
-  static const Color containerSurfaceHighest = Color(
-    0xFFE5E8EB,
-  ); // gray for borders
+  // ==========================================
+  // ===== GRADIENTS ==========================
+  // ==========================================
+  // Primary CTA buttons ("+ Device", "Sync", "Add")
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFFC026D3), Color(0xFF7C3AED)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
-  // Dark mode
-  static const Color backgroundDarkMode = Color(0xFF071021);
-  static const Color backgroundContainerDark = Color(0xFF0F1B29);
-
-  static const Color containerSurfaceHighestDark = Color(0xFF2C2F33);
-
-  static const Color darkThemeText = Colors.white;
-  static const Color darkThemeTextSecondary = Colors.white70;
+  // ==========================================
+  // ===== SHADOWS (missing, theme.dart needs these) =====
+  // ==========================================
+  static const Color lightShadow = Color(
+    0x14000000,
+  ); // 8% black — card elevation
+  static const Color lightScrim = Color(
+    0x52000000,
+  ); // 32% black — modal/dialog backdrop
+  static const Color darkShadow = Color(
+    0x33000000,
+  ); // 20% black — card elevation
+  static const Color darkScrim = Color(
+    0x80000000,
+  ); // 50% black — modal/dialog backdrop
 }

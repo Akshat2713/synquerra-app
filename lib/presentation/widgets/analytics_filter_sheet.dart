@@ -1,5 +1,9 @@
+// lib/presentation/widgets/analytics_filter_sheet.dart
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../domain/entities/analytics/analytics_filter.dart';
 
 void showAnalyticsFilterSheet({
@@ -61,8 +65,8 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
   bool _showCustomPicker = false;
 
   DateTime? _selectedDate;
-  int _selectedHour = 0; // 0-23, index into the CupertinoPicker
-  int _durationIndex = 0; // index into _kDurationOptions
+  int _selectedHour = 0;
+  int _durationIndex = 0;
 
   late final FixedExtentScrollController _hourController;
   late final FixedExtentScrollController _durationController;
@@ -95,12 +99,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
     );
     if (picked == null) return;
     setState(() => _selectedDate = picked);
-  }
-
-  String _hourLabel(int hour) {
-    final period = hour < 12 ? 'AM' : 'PM';
-    final displayHour = hour % 12 == 0 ? 12 : hour % 12;
-    return '$displayHour:00 $period';
   }
 
   DateTime get _startDateTime {
@@ -184,7 +182,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               colors: colors,
             ),
           ] else ...[
-            // ── Custom date/time picker (max 24h range) ──────────
             Row(
               children: [
                 if (!widget.startAtCustomPicker) ...[
@@ -234,7 +231,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             _wheelPicker(
               controller: _hourController,
               itemCount: 24,
-              labelBuilder: _hourLabel,
+              labelBuilder: UnitFormatter.hourLabel,
               onChanged: (i) => setState(() => _selectedHour = i),
               colors: colors,
             ),
@@ -264,7 +261,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                '${_formatDateTime(_startDateTime)}  →  ${_formatDateTime(_endDateTime)}',
+                '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  ${DateTimeFormatter.formatDateTime(_endDateTime)}',
                 style: TextStyle(
                   color: colors.primary,
                   fontWeight: FontWeight.w600,
@@ -343,13 +340,6 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         ),
       ),
     );
-  }
-
-  String _formatDateTime(DateTime dt) {
-    final d =
-        '${dt.day.toString().padLeft(2, '0')}/'
-        '${dt.month.toString().padLeft(2, '0')}';
-    return '$d ${_hourLabel(dt.hour)}';
   }
 
   Widget _filterOption({

@@ -1,9 +1,12 @@
+// lib/presentation/screens/geofence/geofence_list_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../widgets/async_state_view.dart';
 import 'widgets/geofence_list_tile.dart';
 
 class GeofenceListPage extends StatefulWidget {
@@ -27,7 +30,6 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   @override
   void initState() {
     super.initState();
-    // Always refresh when page opens
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId));
   }
 
@@ -80,15 +82,12 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   }
 
   void _openAddPage({GeofenceEntity? existing}) {
-    Navigator.pushNamed(
+    AppRouter.pushAddGeofence(
       context,
-      AppRoutes.addGeofence,
-      arguments: AddGeofenceArgs(
-        bloc: context.read<GeofenceBloc>(),
-        deviceId: widget.deviceId,
-        initialCenter: widget.initialCenter,
-        existing: existing,
-      ),
+      bloc: context.read<GeofenceBloc>(),
+      deviceId: widget.deviceId,
+      initialCenter: widget.initialCenter,
+      existing: existing,
     );
   }
 
@@ -119,119 +118,90 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
           }
         },
         builder: (context, state) {
-          // ── Loading ──────────────────────────────
-          if (state is GeofenceLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // ── Operation in progress ────────────────
-          if (state is GeofenceOperationLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // ── Error ────────────────────────────────
-          if (state is GeofenceError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline, color: colors.error, size: 48),
-                  const SizedBox(height: 12),
-                  Text(state.message, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: () => context.read<GeofenceBloc>().add(
-                      GeofenceLoad(widget.deviceId),
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // ── Loaded ───────────────────────────────
+          final isLoading = state is GeofenceLoading;
+          final errorMessage = state is GeofenceError ? state.message : null;
           final geofences = state is GeofenceLoaded
               ? state.geofences
               : <GeofenceEntity>[];
           final filtered = _filtered(geofences);
 
-          return Column(
-            children: [
-              // ── Search bar ─────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (v) => setState(() => _query = v),
-                  decoration: InputDecoration(
-                    hintText: 'Search geofences...',
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: _query.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _query = '');
-                            },
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+          return AsyncStateView(
+            isLoading: isLoading,
+            errorMessage: errorMessage,
+            onRetry: () =>
+                context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId)),
+            builder: () => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (v) => setState(() => _query = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search geofences...',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _query.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
                 ),
-              ),
-
-              // ── Count label ────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-
-              // ── List ───────────────────────────
-              Expanded(
-                child: filtered.isEmpty
-                    ? _EmptyState(
-                        isSearching: _query.isNotEmpty,
-                        onAdd: _openAddPage,
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final g = filtered[index];
-                          return GeofenceListTile(
-                            geofence: g,
-                            onTap: () => _onTileTab(g),
-                            onEdit: () => _openAddPage(existing: g),
-                            onDelete: () => _confirmDelete(context, g),
-                          );
-                        },
-                      ),
-              ),
-            ],
+                Expanded(
+                  child: filtered.isEmpty
+                      ? _EmptyState(
+                          isSearching: _query.isNotEmpty,
+                          onAdd: _openAddPage,
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final g = filtered[index];
+                            return GeofenceListTile(
+                              geofence: g,
+                              onTap: () => _onTileTab(g),
+                              onEdit: () => _openAddPage(existing: g),
+                              onDelete: () => _confirmDelete(context, g),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  /// Navigates back to the map and moves camera to geofence center.
   void _onTileTab(GeofenceEntity geofence) {
     if (geofence.coordinates.isEmpty) return;
     Navigator.pushNamed(
@@ -241,8 +211,6 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 }
-
-// ── Empty state ────────────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
   final bool isSearching;

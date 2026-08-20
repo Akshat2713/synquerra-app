@@ -2,29 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import 'app_text_styles.dart';
 
-/// Theme data configuration for the entire app
-/// This file handles ONLY theme creation and configuration
+/// Theme data configuration for the entire app.
+/// This file handles ONLY theme creation and configuration.
 class AppTheme {
-  AppTheme._(); // Prevent instantiation
+  AppTheme._();
 
-  // --- SHARED APP BAR CONFIG (Constant White Text/Icons) ---
+  // --- SHARED APP BAR CONFIG ---
   static const AppBarTheme _fixedAppBarTheme = AppBarTheme(
-    backgroundColor:
-        AppColors.brandPrimary, // Using brandPrimary instead of navBlue
+    backgroundColor: AppColors.primary,
     foregroundColor: Colors.white,
     elevation: 0,
     centerTitle: true,
     iconTheme: IconThemeData(color: Colors.white),
     actionsIconTheme: IconThemeData(color: Colors.white),
-    titleTextStyle: TextStyle(
-      color: Colors.white,
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.15,
-    ),
+    titleTextStyle: AppTextStyles.heading4,
   );
 
-  // --- SHARED CARD THEME (Base configuration) ---
+  // --- SHARED CARD THEME ---
   static CardThemeData _baseCardTheme({
     required Color color,
     required Color borderColor,
@@ -62,6 +56,7 @@ class AppTheme {
     required Color borderColor,
     required Color focusedBorderColor,
     required Color errorColor,
+    required Color hintColor,
   }) {
     return InputDecorationTheme(
       filled: true,
@@ -87,9 +82,9 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: errorColor, width: 2),
       ),
-      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-      hintStyle: TextStyle(color: AppColors.lightTextTertiary, fontSize: 14),
-      errorStyle: TextStyle(color: AppColors.error, fontSize: 12),
+      labelStyle: AppTextStyles.label,
+      hintStyle: AppTextStyles.bodyMedium.copyWith(color: hintColor),
+      errorStyle: AppTextStyles.caption.copyWith(color: errorColor),
     );
   }
 
@@ -98,50 +93,32 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-
-      // 1. Core Colors
-      primaryColor: AppColors.brandPrimary,
+      primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.lightBackground,
       cardColor: AppColors.lightSurface,
-      dividerColor: AppColors.lightDivider,
-      focusColor: AppColors.brandPrimary.withValues(alpha: 0.12),
-      hoverColor: AppColors.brandPrimary.withValues(alpha: 0.04),
-      highlightColor: AppColors.brandPrimary.withValues(alpha: 0.08),
-      splashColor: AppColors.brandPrimary.withValues(alpha: 0.12),
+      dividerColor: AppColors.lightOutlineVariant,
+      focusColor: AppColors.primary.withValues(alpha: 0.12),
+      hoverColor: AppColors.primary.withValues(alpha: 0.04),
+      highlightColor: AppColors.primary.withValues(alpha: 0.08),
+      splashColor: AppColors.primary.withValues(alpha: 0.12),
       disabledColor: AppColors.lightTextDisabled,
-
-      // 2. App Bar
-      appBarTheme: _fixedAppBarTheme.copyWith(
-        backgroundColor: AppColors.brandPrimary,
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.15,
-        ),
-      ),
-
-      // 3. Card Theme
+      appBarTheme: _fixedAppBarTheme,
       cardTheme: _baseCardTheme(
         color: AppColors.lightSurface,
-        borderColor: AppColors.lightBorder.withValues(alpha: 0.5),
+        borderColor: AppColors.lightOutline,
       ),
-
-      // 4. Button Themes
-      elevatedButtonTheme: _elevatedButtonTheme(AppColors.brandPrimary),
-
+      elevatedButtonTheme: _elevatedButtonTheme(AppColors.primary),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.brandPrimary,
+          foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.brandPrimary,
-          side: const BorderSide(color: AppColors.brandPrimary),
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -149,16 +126,13 @@ class AppTheme {
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
-
-      // 5. Input Decoration Theme
       inputDecorationTheme: _inputDecorationTheme(
-        fillColor: AppColors.lightSurfaceSecondary,
-        borderColor: AppColors.lightBorder,
-        focusedBorderColor: AppColors.brandPrimary,
-        errorColor: AppColors.error,
+        fillColor: AppColors.lightSurfaceVariant,
+        borderColor: AppColors.lightOutline,
+        focusedBorderColor: AppColors.primary,
+        errorColor: AppColors.danger,
+        hintColor: AppColors.lightTextTertiary,
       ),
-
-      // 6. Text Theme
       textTheme: TextTheme(
         displayLarge: AppTextStyles.heading1.copyWith(
           color: AppColors.lightTextPrimary,
@@ -188,49 +162,37 @@ class AppTheme {
           color: AppColors.lightTextTertiary,
         ),
         labelLarge: AppTextStyles.buttonLarge.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
         labelMedium: AppTextStyles.buttonMedium.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
         labelSmall: AppTextStyles.buttonSmall.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
       ),
-
-      // 7. Icon Theme
       iconTheme: const IconThemeData(
         color: AppColors.lightIconPrimary,
         size: 24,
       ),
-
-      primaryIconTheme: const IconThemeData(
-        color: AppColors.brandPrimary,
-        size: 24,
-      ),
-
-      // 8. Bottom Navigation Bar Theme
+      primaryIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.lightSurface,
-        selectedItemColor: AppColors.brandPrimary,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.lightIconSecondary,
-        selectedIconTheme: IconThemeData(color: AppColors.brandPrimary),
+        selectedIconTheme: IconThemeData(color: AppColors.primary),
         unselectedIconTheme: IconThemeData(color: AppColors.lightIconSecondary),
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-
-      // 9. Tab Bar Theme
       tabBarTheme: TabBarThemeData(
-        labelColor: AppColors.brandPrimary,
+        labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.lightTextSecondary,
-        indicatorColor: AppColors.brandPrimary,
+        indicatorColor: AppColors.primary,
         indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: AppColors.lightDivider,
+        dividerColor: AppColors.lightOutlineVariant,
       ),
-
-      // 10. Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.lightSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -241,35 +203,33 @@ class AppTheme {
           color: AppColors.lightTextSecondary,
         ),
       ),
-
-      // 11. Color Scheme
       colorScheme: ColorScheme.light(
-        primary: AppColors.brandPrimary,
+        primary: AppColors.primary,
         onPrimary: Colors.white,
-        primaryContainer: AppColors.brandPrimary,
-        onPrimaryContainer: Colors.white,
-        secondary: AppColors.brandSecondary,
+        primaryContainer: AppColors.primaryContainer,
+        onPrimaryContainer: AppColors.primaryHover,
+        secondary: AppColors.info,
         onSecondary: Colors.white,
-        secondaryContainer: AppColors.brandSecondary,
-        onSecondaryContainer: Colors.white,
-        tertiary: AppColors.brandTertiary,
+        secondaryContainer: AppColors.infoContainer,
+        onSecondaryContainer: AppColors.info,
+        tertiary: AppColors.primarySubtle,
         onTertiary: Colors.white,
-        error: AppColors.error,
-        onError: Colors.white,
-        errorContainer: AppColors.errorLight,
-        onErrorContainer: AppColors.errorDark,
+        error: AppColors.danger,
+        onError: AppColors.onDanger,
+        errorContainer: AppColors.dangerContainer,
+        onErrorContainer: AppColors.danger,
         surface: AppColors.lightSurface,
         onSurface: AppColors.lightTextPrimary,
-        surfaceContainerHighest: AppColors.lightSurfaceSecondary,
+        surfaceContainerHighest: AppColors.lightSurfaceVariant,
         onSurfaceVariant: AppColors.lightTextSecondary,
-        outline: AppColors.lightBorder,
-        outlineVariant: AppColors.lightDivider,
-        shadow: AppColors.shadowMedium,
-        scrim: AppColors.shadowHeavy,
+        outline: AppColors.lightOutline,
+        outlineVariant: AppColors.lightOutlineVariant,
+        shadow: AppColors.lightShadow,
+        scrim: AppColors.lightScrim,
         inverseSurface: AppColors.darkSurface,
         onInverseSurface: AppColors.darkTextPrimary,
-        inversePrimary: AppColors.brandPrimary.withValues(alpha: 0.8),
-        surfaceTint: AppColors.brandPrimary,
+        inversePrimary: AppColors.primarySubtle,
+        surfaceTint: AppColors.primary,
       ),
     );
   }
@@ -279,50 +239,32 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-
-      // 1. Core Colors
-      primaryColor: AppColors.brandPrimary,
+      primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.darkBackground,
       cardColor: AppColors.darkSurface,
-      dividerColor: AppColors.darkDivider,
-      focusColor: AppColors.brandPrimary.withValues(alpha: 0.24),
-      hoverColor: AppColors.brandPrimary.withValues(alpha: 0.08),
-      highlightColor: AppColors.brandPrimary.withValues(alpha: 0.12),
-      splashColor: AppColors.brandPrimary.withValues(alpha: 0.24),
+      dividerColor: AppColors.darkOutlineVariant,
+      focusColor: AppColors.primary.withValues(alpha: 0.24),
+      hoverColor: AppColors.primary.withValues(alpha: 0.08),
+      highlightColor: AppColors.primary.withValues(alpha: 0.12),
+      splashColor: AppColors.primary.withValues(alpha: 0.24),
       disabledColor: AppColors.darkTextDisabled,
-
-      // 2. App Bar
-      appBarTheme: _fixedAppBarTheme.copyWith(
-        backgroundColor: AppColors.brandPrimary,
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.15,
-        ),
-      ),
-
-      // 3. Card Theme
+      appBarTheme: _fixedAppBarTheme,
       cardTheme: _baseCardTheme(
         color: AppColors.darkSurface,
-        borderColor: AppColors.darkBorder.withValues(alpha: 0.5),
+        borderColor: AppColors.darkOutline,
       ),
-
-      // 4. Button Themes
-      elevatedButtonTheme: _elevatedButtonTheme(AppColors.brandPrimary),
-
+      elevatedButtonTheme: _elevatedButtonTheme(AppColors.primary),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.brandPrimary,
+          foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.brandPrimary,
-          side: const BorderSide(color: AppColors.brandPrimary),
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -330,16 +272,13 @@ class AppTheme {
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
-
-      // 5. Input Decoration Theme
       inputDecorationTheme: _inputDecorationTheme(
-        fillColor: AppColors.darkSurfaceSecondary,
-        borderColor: AppColors.darkBorder,
-        focusedBorderColor: AppColors.brandPrimary,
-        errorColor: AppColors.error,
+        fillColor: AppColors.darkSurfaceVariant,
+        borderColor: AppColors.darkOutline,
+        focusedBorderColor: AppColors.primary,
+        errorColor: AppColors.danger,
+        hintColor: AppColors.darkTextTertiary,
       ),
-
-      // 6. Text Theme
       textTheme: TextTheme(
         displayLarge: AppTextStyles.heading1.copyWith(
           color: AppColors.darkTextPrimary,
@@ -369,49 +308,37 @@ class AppTheme {
           color: AppColors.darkTextTertiary,
         ),
         labelLarge: AppTextStyles.buttonLarge.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
         labelMedium: AppTextStyles.buttonMedium.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
         labelSmall: AppTextStyles.buttonSmall.copyWith(
-          color: AppColors.brandPrimary,
+          color: AppColors.primary,
         ),
       ),
-
-      // 7. Icon Theme
       iconTheme: const IconThemeData(
         color: AppColors.darkIconPrimary,
         size: 24,
       ),
-
-      primaryIconTheme: const IconThemeData(
-        color: AppColors.brandPrimary,
-        size: 24,
-      ),
-
-      // 8. Bottom Navigation Bar Theme
+      primaryIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.darkSurface,
-        selectedItemColor: AppColors.brandPrimary,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.darkIconSecondary,
-        selectedIconTheme: const IconThemeData(color: AppColors.brandPrimary),
+        selectedIconTheme: const IconThemeData(color: AppColors.primary),
         unselectedIconTheme: IconThemeData(color: AppColors.darkIconSecondary),
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-
-      // 9. Tab Bar Theme
       tabBarTheme: TabBarThemeData(
-        labelColor: AppColors.brandPrimary,
+        labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.darkTextSecondary,
-        indicatorColor: AppColors.brandPrimary,
+        indicatorColor: AppColors.primary,
         indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: AppColors.darkDivider,
+        dividerColor: AppColors.darkOutlineVariant,
       ),
-
-      // 10. Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.darkSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -422,46 +349,38 @@ class AppTheme {
           color: AppColors.darkTextSecondary,
         ),
       ),
-
-      // 11. Color Scheme
       colorScheme: ColorScheme.dark(
-        primary: AppColors.brandPrimary,
+        primary: AppColors.primary,
         onPrimary: Colors.white,
-        primaryContainer: AppColors.brandPrimary,
-        onPrimaryContainer: Colors.white,
-        secondary: AppColors.brandSecondary,
+        primaryContainer: AppColors.primaryContainer,
+        onPrimaryContainer: AppColors.primarySubtle,
+        secondary: AppColors.info,
         onSecondary: Colors.white,
-        secondaryContainer: AppColors.brandSecondary,
-        onSecondaryContainer: Colors.white,
-        tertiary: AppColors.brandTertiary,
+        secondaryContainer: AppColors.infoContainer,
+        onSecondaryContainer: AppColors.info,
+        tertiary: AppColors.primarySubtle,
         onTertiary: Colors.white,
-        error: AppColors.error,
-        onError: Colors.white,
-        errorContainer: AppColors.errorDark,
-        onErrorContainer: AppColors.errorLight,
+        error: AppColors.danger,
+        onError: AppColors.onDanger,
+        errorContainer: AppColors.dangerContainer,
+        onErrorContainer: AppColors.danger,
         surface: AppColors.darkSurface,
         onSurface: AppColors.darkTextPrimary,
-        surfaceContainerHighest: AppColors.darkSurfaceSecondary,
+        surfaceContainerHighest: AppColors.darkSurfaceVariant,
         onSurfaceVariant: AppColors.darkTextSecondary,
-        outline: AppColors.darkBorder,
-        outlineVariant: AppColors.darkDivider,
-        shadow: AppColors.shadowDarkMedium,
-        scrim: AppColors.shadowDarkHeavy,
+        outline: AppColors.darkOutline,
+        outlineVariant: AppColors.darkOutlineVariant,
+        shadow: AppColors.darkShadow,
+        scrim: AppColors.darkScrim,
         inverseSurface: AppColors.lightSurface,
         onInverseSurface: AppColors.lightTextPrimary,
-        inversePrimary: AppColors.brandPrimary.withValues(alpha: 0.8),
-        surfaceTint: AppColors.brandPrimary,
+        inversePrimary: AppColors.primarySubtle,
+        surfaceTint: AppColors.primary,
       ),
     );
   }
 
-  // --- HELPER METHOD TO GET THEME BASED ON BRIGHTNESS ---
-  static ThemeData of(BuildContext context) {
-    return Theme.of(context);
-  }
-
-  // --- HELPER METHOD TO CHECK IF DARK MODE IS ENABLED ---
-  static bool isDarkMode(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark;
-  }
+  static ThemeData of(BuildContext context) => Theme.of(context);
+  static bool isDarkMode(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 }

@@ -73,6 +73,7 @@ class ManageDevicesArgs {
   final DeviceListBloc deviceListBloc;
   const ManageDevicesArgs({required this.deviceListBloc});
 }
+
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -136,7 +137,6 @@ class AppRouter {
               BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
-              BlocProvider(create: (_) => sl<AlertsBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
             ],
             child: DeviceShellScreen(device: args.device),
@@ -286,7 +286,6 @@ class AppRouter {
   static Future<void> navigateToSignup(BuildContext context) async {
     _activeSignupBloc = sl<SignupBloc>();
 
-    // Fetch progress via the UseCase / Domain layer
     final getSavedProgressUseCase = sl<GetSavedSignupProgressUseCase>();
 
     try {
@@ -296,7 +295,6 @@ class AppRouter {
 
       result.fold(
         (failure) {
-          // Fallback on failure
           Navigator.pushNamed(context, AppRoutes.signupProfile);
         },
         (progress) {
@@ -314,5 +312,97 @@ class AppRouter {
         Navigator.pushNamed(context, AppRoutes.signupProfile);
       }
     }
+  }
+
+  // Add inside class AppRouter in lib/presentation/app/app_router.dart:
+
+  // ── Centralized Route Navigators ──────────────────────────────────────────
+
+  static Future<T?> pushDeviceDetail<T>(
+    BuildContext context, {
+    required DeviceEntity device,
+    required DeviceListBloc deviceListBloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.deviceDetail,
+      arguments: DeviceDetailArgs(
+        device: device,
+        deviceListBloc: deviceListBloc,
+      ),
+    );
+  }
+
+  static Future<T?> pushManageDevices<T>(
+    BuildContext context, {
+    required DeviceListBloc deviceListBloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.manageDevices,
+      arguments: ManageDevicesArgs(deviceListBloc: deviceListBloc),
+    );
+  }
+
+  static Future<T?> pushManageUsers<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.manageUsers);
+  }
+
+  static Future<T?> pushAddMember<T>(
+    BuildContext context, {
+    required ManageUsersBloc bloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.addMember,
+      arguments: bloc,
+    );
+  }
+
+  static Future<T?> pushGeofenceList<T>(
+    BuildContext context, {
+    required String deviceId,
+    required LatLng center,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.geofence,
+      arguments: {'deviceId': deviceId, 'center': center},
+    );
+  }
+
+  static Future<T?> pushAddGeofence<T>(
+    BuildContext context, {
+    required GeofenceBloc bloc,
+    required String deviceId,
+    required LatLng initialCenter,
+    GeofenceEntity? existing,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.addGeofence,
+      arguments: AddGeofenceArgs(
+        bloc: bloc,
+        deviceId: deviceId,
+        initialCenter: initialCenter,
+        existing: existing,
+      ),
+    );
+  }
+
+  static Future<T?> pushModes<T>(
+    BuildContext context, {
+    required String deviceId,
+    required String currentModeName,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.modes,
+      arguments: {'deviceId': deviceId, 'currentModeName': currentModeName},
+    );
+  }
+
+  static Future<T?> pushLinkDevice<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.linkDevice);
   }
 }

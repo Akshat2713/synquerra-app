@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/relationship/relationship_entity.dart';
-import 'widget/manage_device_card.dart';
+import 'widgets/manage_device_card.dart';
 
 class ManageDevicesScreen extends StatefulWidget {
   final List<DeviceEntity> devices;
@@ -31,15 +31,9 @@ class ManageDevicesScreen extends StatefulWidget {
 class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
   String? _processingDeviceId;
 
-  List<DeviceEntity> get _ownedDevices => widget.devices
-      .where((d) => d.relationship == 'owned' || d.relationship == 'both')
-      .toList();
-
-  List<DeviceEntity> get _unassignedDevices =>
-      _ownedDevices.where((d) => d.carrier == null).toList();
-
-  List<DeviceEntity> get _assignedDevices =>
-      _ownedDevices.where((d) => d.carrier != null).toList();
+  List<DeviceEntity> get _unassignedDevices => widget.devices.unassignedDevices;
+  List<DeviceEntity> get _assignedDevices => widget.devices.assignedDevices;
+  List<DeviceEntity> get _ownedDevices => widget.devices.ownedDevices;
 
   Future<void> _handleAssign(
     String deviceId,

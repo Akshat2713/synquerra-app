@@ -1,14 +1,23 @@
+// lib/presentation/screens/device_list/widgets/profile_menu_button.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/auth/user_entity.dart';
-import '../../../app/app_router.dart';
-import '../../../blocs/auth/auth_bloc.dart';
-import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../blocs/theme/theme_cubit.dart';
 
 class ProfileMenuButton extends StatelessWidget {
   final UserEntity? user;
-  const ProfileMenuButton({super.key, this.user});
+  final VoidCallback? onLogout;
+  final VoidCallback? onManageUsers;
+  final VoidCallback? onManageDevices;
+
+  const ProfileMenuButton({
+    super.key,
+    this.user,
+    this.onLogout,
+    this.onManageUsers,
+    this.onManageDevices,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +100,6 @@ class ProfileMenuButton extends StatelessWidget {
             ],
           ),
         ),
-
         PopupMenuItem<String>(
           value: 'toggle_theme',
           child: Builder(
@@ -142,18 +150,16 @@ class ProfileMenuButton extends StatelessWidget {
         ),
       ],
       onSelected: (value) {
-        if (value == 'logout') {
-          context.read<AuthBloc>().add(const AuthLogoutRequested());
-        } else if (value == 'manage_devices') {
-          Navigator.pushNamed(
-            context,
-            AppRoutes.manageDevices,
-            arguments: ManageDevicesArgs(
-              deviceListBloc: context.read<DeviceListBloc>(),
-            ),
-          );
-        } else if (value == 'manage_users') {
-          Navigator.pushNamed(context, AppRoutes.manageUsers);
+        switch (value) {
+          case 'logout':
+            onLogout?.call();
+            break;
+          case 'manage_devices':
+            onManageDevices?.call();
+            break;
+          case 'manage_users':
+            onManageUsers?.call();
+            break;
         }
       },
     );

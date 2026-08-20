@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../signup/person_entity.dart';
 
-enum relationtype { child, parent }
+enum relationtype { child, parent, teacher, guardian, spouse, other }
 
 class RelationshipEntity extends Equatable {
   final String id;

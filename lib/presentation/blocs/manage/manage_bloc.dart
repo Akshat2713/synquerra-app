@@ -9,6 +9,7 @@ import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
 import '../../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../../domain/usecases/settings/update_phone_numbers_usecase.dart';
+import '../base/base_state.dart';
 
 part 'manage_event.dart';
 part 'manage_state.dart';
