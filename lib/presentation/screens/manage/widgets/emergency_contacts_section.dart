@@ -49,9 +49,15 @@ class EmergencyContactsSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Edit Emergency Contacts',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColors.textPrimary(
+                        context,
+                      ).withValues(alpha: 0.8),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
@@ -119,7 +125,7 @@ class EmergencyContactsSection extends StatelessWidget {
         color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+          color: AppColors.outline(context).withValues(alpha: 0.6),
         ),
       ),
       child: Column(
@@ -131,12 +137,10 @@ class EmergencyContactsSection extends StatelessWidget {
               Text(
                 'EMERGENCY CONTACTS',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: AppColors.textSecondary(
-                    context,
-                  ).withValues(alpha: 0.6),
+                  color: AppColors.textPrimary(context).withValues(alpha: 0.8),
                 ),
               ),
               if (isUpdating)

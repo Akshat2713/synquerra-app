@@ -51,7 +51,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.outlineVariant(context),
+                  color: AppColors.outline(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

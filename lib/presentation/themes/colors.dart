@@ -44,7 +44,7 @@ class AppColors {
   // ==========================================
   // Surfaces & Backgrounds
   static const Color lightBackground = Color(
-    0xFFF7F7FA,
+    0xFFF6F4F8,
   ); // Main page/scaffold background
   static const Color lightSurface = Color(
     0xFFFFFFFF,
@@ -55,7 +55,7 @@ class AppColors {
 
   // Borders & Dividers
   static const Color lightOutline = Color(
-    0xFFE8E8EE,
+    0xFFEBE9ED,
   ); // Card borders, textfield strokes
   static const Color lightOutlineVariant = Color(
     0xFFF0F0F4,
@@ -88,10 +88,10 @@ class AppColors {
   // ==========================================
   // Surfaces & Backgrounds
   static const Color darkBackground = Color(
-    0xFF0B0A13,
+    0xFF0C0A12,
   ); // Main page/scaffold background
   static const Color darkSurface = Color(
-    0xFF151421,
+    0xFF1A1424,
   ); // Cards, bottom navigation, modals
   static const Color darkSurfaceVariant = Color(
     0xFF1D1C2B,

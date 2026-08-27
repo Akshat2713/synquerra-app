@@ -38,9 +38,9 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context),
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.outlineVariant(context), width: 1),
+        border: Border.all(color: AppColors.outline(context), width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

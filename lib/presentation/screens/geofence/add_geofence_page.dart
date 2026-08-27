@@ -144,8 +144,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Geofence' : 'New Geofence'),
@@ -203,7 +201,14 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                     onColorChanged: (c) => setState(() => _selectedColor = c),
                   ),
                   const SizedBox(height: 24),
-                  Text('Geofence Area', style: textTheme.labelLarge),
+                  Text(
+                    'Geofence Area',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary(context),
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   _coordinates == null
                       ? EmptyCoordinatesPlaceholder(onTap: _openMapPicker)

@@ -54,7 +54,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
       );
     }
 
-    final modeTitle = activeMode?.name ?? 'Live Tracking';
+    // final modeTitle = activeMode?.name ?? 'Live Tracking';
     final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
         ? activeMode.description
         : 'Fast updates (~10 sec)';
@@ -65,7 +65,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
         color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+          color: AppColors.outline(context).withValues(alpha: 0.8),
         ),
       ),
       child: Column(
@@ -79,24 +79,26 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TRACKING MODE:',
+                      'TRACKING MODE',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
-                        color: AppColors.textSecondary(
+                        color: AppColors.textPrimary(
                           context,
-                        ).withValues(alpha: 0.6),
+                        ).withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      modeTitle,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                    // Text(
+                    //   modeTitle,
+
+                    //   style: TextStyle(
+                    //     color: AppColors.textPrimary(context),
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.w800,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -170,9 +172,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                     ? AppColors.primaryContainer.withValues(
                                         alpha: 0.3,
                                       )
-                                    : AppColors.surfaceVariant(
-                                        context,
-                                      ).withValues(alpha: 0.4),
+                                    : AppColors.surfaceVariant(context),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected

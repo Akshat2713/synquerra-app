@@ -6,11 +6,13 @@ import '../../../utils/colour_util.dart';
 class BottomMetricsBar extends StatelessWidget {
   final int battery;
   final String networkStatus;
+  final String temperature;
 
   const BottomMetricsBar({
     super.key,
     required this.battery,
     this.networkStatus = 'Fair',
+    required this.temperature,
   });
 
   @override
@@ -94,11 +96,11 @@ class BottomMetricsBar extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
-          const _MetricCell(
+          _MetricCell(
             title: 'DEVICE\nTEMP',
             valueRow: Text(
-              '38°',
-              style: TextStyle(
+              '$temperature%',
+              style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 color: AppColors.success,
               ),

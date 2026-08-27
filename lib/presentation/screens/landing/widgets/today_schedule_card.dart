@@ -18,10 +18,10 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context),
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.outlineVariant(context).withValues(alpha: 1),
+          color: AppColors.outline(context).withValues(alpha: 1),
         ),
       ),
       child: Column(

@@ -109,10 +109,10 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context),
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.outlineVariant(context).withValues(alpha: 1),
+          color: AppColors.outline(context).withValues(alpha: 1),
         ),
       ),
       child: Column(
@@ -156,7 +156,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
           if (_isExpanded) ...[
             Divider(
               height: 1,
-              color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+              color: AppColors.outline(context).withValues(alpha: 0.3),
             ),
             ..._buildGroupedItems(),
           ],

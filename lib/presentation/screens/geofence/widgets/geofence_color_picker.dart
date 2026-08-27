@@ -38,12 +38,19 @@ class GeofenceColorPickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Color', style: textTheme.labelLarge),
+        Text(
+          'Color',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary(context),
+            fontSize: 16,
+          ),
+        ),
         const SizedBox(height: 8),
         InkWell(
           borderRadius: BorderRadius.circular(12),

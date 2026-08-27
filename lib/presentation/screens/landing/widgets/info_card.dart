@@ -23,9 +23,10 @@ class InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context),
+        color: AppColors.surface(context),
+        // color: Colors.amber,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant(context), width: 1),
+        border: Border.all(color: AppColors.outline(context), width: 1),
       ),
       child: Row(
         children: [

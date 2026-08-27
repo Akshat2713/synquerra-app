@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
 
 class GeofenceNameInput extends StatelessWidget {
   final TextEditingController controller;
@@ -7,12 +8,19 @@ class GeofenceNameInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Geofence Name', style: textTheme.labelLarge),
+        Text(
+          'Geofence Name',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary(context),
+            fontSize: 16,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,

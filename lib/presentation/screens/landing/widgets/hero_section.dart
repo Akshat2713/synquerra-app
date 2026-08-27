@@ -21,7 +21,6 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     // ── Resolve display name: carrier if assigned, else logged-in user ──
     final authState = context.watch<AuthBloc>().state;
     final loggedInName = authState is AuthAuthenticated
@@ -37,9 +36,10 @@ class HeroSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant(context),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.outlineVariant(context), width: 1),
+          color: AppColors.surface(context),
+          // color: Colors.blue,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.outline(context), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,7 +51,9 @@ class HeroSection extends StatelessWidget {
                 Icon(
                   Icons.circle,
                   size: 8,
-                  color: isOnline ? successColor : AppColors.textSecondary(context),
+                  color: isOnline
+                      ? successColor
+                      : AppColors.textSecondary(context),
                 ),
                 const SizedBox(width: 2),
                 Text(
@@ -59,7 +61,9 @@ class HeroSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: isOnline ? successColor : AppColors.textSecondary(context),
+                    color: isOnline
+                        ? successColor
+                        : AppColors.textSecondary(context),
                   ),
                 ),
               ],
@@ -183,9 +187,9 @@ class HeroSection extends StatelessWidget {
                                 : 'No updates yet',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.textSecondary(context).withValues(
-                                alpha: 0.7,
-                              ),
+                              color: AppColors.textSecondary(
+                                context,
+                              ).withValues(alpha: 0.7),
                             ),
                           ),
                         ],

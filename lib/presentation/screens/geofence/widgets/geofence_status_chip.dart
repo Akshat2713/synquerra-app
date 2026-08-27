@@ -15,7 +15,7 @@ class GeofenceStatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(
         color: isActive
-            ? AppColors.primaryContainer
+            ? AppColors.successContainer.withValues(alpha: 0.1)
             : AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -23,7 +23,7 @@ class GeofenceStatusChip extends StatelessWidget {
         isActive ? 'Active' : 'Inactive',
         style: textTheme.labelSmall?.copyWith(
           color: isActive
-              ? AppColors.onPrimaryContainer(context)
+              ? AppColors.success
               : AppColors.textSecondary(context),
           fontWeight: FontWeight.w500,
         ),

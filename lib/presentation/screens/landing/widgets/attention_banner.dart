@@ -31,7 +31,7 @@ class AttentionBanner extends StatelessWidget {
         )
         .length;
     return Material(
-      color: AppColors.surfaceVariant(context),
+      color: AppColors.surface(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
         side: BorderSide(color: AppColors.outline(context), width: 1),
@@ -159,7 +159,7 @@ class _AvatarStack extends StatelessWidget {
                     color: AppColors.surface(context),
                     width: 1.5,
                   ),
-                  color: AppColors.surfaceVariant(context),
+                  color: AppColors.surface(context),
                 ),
                 alignment: Alignment.center,
                 child: Text(

@@ -68,12 +68,19 @@ class GeofenceAddressSection extends StatelessWidget {
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.outlineVariant(context)),
+          border: Border.all(color: AppColors.outline(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         clipBehavior: Clip.antiAlias,
         child: ExpansionTile(
-          title: const Text('Address (optional)'),
+          title: Text(
+            'Address (optional)',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary(context),
+              fontSize: 14,
+            ),
+          ),
           leading: const Icon(Icons.location_on_outlined),
           tilePadding: const EdgeInsets.symmetric(horizontal: 16),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

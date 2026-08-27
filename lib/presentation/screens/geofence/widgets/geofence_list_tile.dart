@@ -52,7 +52,7 @@ class GeofenceListTile extends StatelessWidget {
                         Icon(
                           Icons.sync_rounded,
                           size: 14,
-                          color: AppColors.primary,
+                          color: AppColors.success,
                         ),
                       ],
                     ],

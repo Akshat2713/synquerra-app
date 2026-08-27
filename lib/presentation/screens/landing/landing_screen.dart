@@ -203,7 +203,10 @@ class _LoadedBody extends StatelessWidget {
             ],
           ),
         ),
-        BottomMetricsBar(battery: device.battery ?? 0),
+        BottomMetricsBar(
+          battery: device.battery ?? 0,
+          temperature: device.temperature ?? 'NA',
+        ),
       ],
     );
   }

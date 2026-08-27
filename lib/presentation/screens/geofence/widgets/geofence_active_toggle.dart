@@ -19,7 +19,7 @@ class GeofenceActiveToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.outlineVariant(context)),
+        border: Border.all(color: AppColors.outline(context)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -43,7 +43,12 @@ class GeofenceActiveToggle extends StatelessWidget {
               ],
             ),
           ),
-          Switch(value: isActive, onChanged: onChanged),
+          Switch(
+            value: isActive,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.success,
+            inactiveThumbColor: AppColors.textSecondary(context),
+          ),
         ],
       ),
     );

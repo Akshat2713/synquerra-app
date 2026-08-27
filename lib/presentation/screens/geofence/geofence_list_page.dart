@@ -100,6 +100,11 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         onPressed: _openAddPage,
         icon: const Icon(Icons.add_rounded),
         label: const Text('New Geofence'),
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.primary, // Or AppColors.primary
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 6,
       ),
       body: BlocConsumer<GeofenceBloc, GeofenceState>(
         listener: (context, state) {
