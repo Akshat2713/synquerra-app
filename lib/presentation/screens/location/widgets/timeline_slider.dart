@@ -11,12 +11,14 @@ class TimelineSlider extends StatefulWidget {
   final List<AnalyticsEntity> points;
   final int currentIndex;
   final void Function(int) onChanged;
+  final VoidCallback onMinimize;
 
   const TimelineSlider({
     super.key,
     required this.points,
     required this.currentIndex,
     required this.onChanged,
+    required this.onMinimize,
   });
 
   @override
@@ -119,16 +121,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 36,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: AppColors.textSecondary(context).withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          if (current != null) ...[
+          if (current != null)
             Row(
               children: [
                 Icon(
@@ -150,8 +143,31 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.expand_more_rounded),
+                  iconSize: 26,
+                  color: AppColors.iconSecondary(context),
+                  onPressed: widget.onMinimize,
+                ),
               ],
+            )
+          else
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.expand_more_rounded),
+                iconSize: 26,
+                color: AppColors.iconSecondary(context),
+                onPressed: widget.onMinimize,
+              ),
             ),
+          if (current != null) ...[
             const SizedBox(height: 12),
             Row(
               children: [

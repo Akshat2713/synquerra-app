@@ -29,8 +29,17 @@ class AnalyticsLoaded extends AnalyticsState {
     this.sliderIndex = 0,
   });
 
-  List<AnalyticsEntity> get mappablePoints =>
-      points.where((p) => p.hasLocation).toList();
+  List<AnalyticsEntity> get mappablePoints {
+    final filtered = points.where((p) => p.hasLocation).toList();
+    filtered.sort((a, b) {
+      final aTime = a.deviceTimestamp;
+      final bTime = b.deviceTimestamp;
+      if (aTime == null) return -1;
+      if (bTime == null) return 1;
+      return aTime.compareTo(bTime);
+    });
+    return filtered;
+  }
 
   AnalyticsEntity? get currentPoint => mappablePoints.isEmpty
       ? null

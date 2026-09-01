@@ -99,7 +99,7 @@ class BottomMetricsBar extends StatelessWidget {
           _MetricCell(
             title: 'DEVICE\nTEMP',
             valueRow: Text(
-              '$temperature%',
+              '$temperature ℃',
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 color: AppColors.success,
