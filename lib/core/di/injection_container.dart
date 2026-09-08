@@ -2,6 +2,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
 
 // Core & Network
 import '../../data/datasources/remote/analytics_realtime_datasource.dart';
@@ -17,7 +18,6 @@ import '../../domain/repositories/settings_repository.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
-import '../../domain/usecases/relationship/create_relationship_by_phone_usecase.dart';
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
@@ -344,7 +344,7 @@ Future<void> initDependencies() async {
 
   // ── Manage Users Feature ────────────────────────────────
   sl.registerLazySingleton(() => CreateRelationshipUseCase(sl()));
-  sl.registerLazySingleton(() => CreateRelationshipByPhoneUseCase(sl()));
+  sl.registerLazySingleton(() => SearchPersonByPhoneUseCase(sl()));
   sl.registerLazySingleton(() => DeletePersonUseCase(sl()));
   sl.registerLazySingleton(() => UnlinkRelationshipUseCase(sl()));
   sl.registerFactory<ManageUsersBloc>(
@@ -352,7 +352,7 @@ Future<void> initDependencies() async {
       getRelationshipListUseCase: sl(),
       createPersonUseCase: sl(),
       createRelationshipUseCase: sl(),
-      createRelationshipByPhoneUseCase: sl(),
+      searchPersonByPhoneUseCase: sl(),
       deletePersonUseCase: sl(),
       unlinkRelationshipUseCase: sl(),
       userHolder: sl(),

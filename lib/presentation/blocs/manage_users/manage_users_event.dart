@@ -54,15 +54,22 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   ];
 }
 
-class ManageUsersLinkByPhoneRequested extends ManageUsersEvent {
+class ManageUsersSearchByPhoneRequested extends ManageUsersEvent {
   final String phoneNumber;
-  final String relationshipType;
-  const ManageUsersLinkByPhoneRequested({
-    required this.phoneNumber,
-    required this.relationshipType,
-  });
+  const ManageUsersSearchByPhoneRequested(this.phoneNumber);
   @override
-  List<Object?> get props => [phoneNumber, relationshipType];
+  List<Object?> get props => [phoneNumber];
+}
+
+class ManageUsersConfirmLinkRequested extends ManageUsersEvent {
+  final String relationshipType;
+  const ManageUsersConfirmLinkRequested(this.relationshipType);
+  @override
+  List<Object?> get props => [relationshipType];
+}
+
+class ManageUsersClearFoundPerson extends ManageUsersEvent {
+  const ManageUsersClearFoundPerson();
 }
 
 /// Wired but disabled in UI (see kEnableDeletePerson).

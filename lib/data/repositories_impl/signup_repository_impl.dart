@@ -56,7 +56,7 @@ class SignupRepositoryImpl implements SignupRepository {
       if (saveSignupProgress) {
         await _local.saveProgress(
           step: 2,
-          personId: entity.personId,
+          personId: entity.id,
           email: entity.email ?? email,
         );
       }

@@ -105,7 +105,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
       context.read<GeofenceBloc>().add(
         GeofenceEdit(
           deviceId: widget.deviceId,
-          geofenceId: widget.existing!.geofenceId,
+          id: widget.existing!.id,
           name: _nameController.text.trim(),
           isActive: _isActive,
           coordinates: _coordinates!,

@@ -2,6 +2,7 @@ import '../../../domain/entities/alerts/alert_entity.dart';
 
 class AlertModel {
   final String id;
+  final String? deviceId;
   final String imei;
   final String topic;
   final String code;
@@ -14,6 +15,7 @@ class AlertModel {
 
   const AlertModel({
     required this.id,
+    this.deviceId,
     required this.imei,
     required this.topic,
     required this.code,
@@ -27,6 +29,7 @@ class AlertModel {
 
   factory AlertModel.fromJson(Map<String, dynamic> json) => AlertModel(
     id: json['id'] as String,
+    deviceId: json['device_id'] as String? ?? json['deviceId'] as String?,
     imei: json['imei'] as String,
     topic: json['topic'] as String,
     code: json['code'] as String,

@@ -10,6 +10,7 @@ import '../../domain/repositories/relationship_repository.dart';
 import '../datasources/remote/relationship_remote_datasource.dart';
 import '../mappers/failure_mapper.dart';
 import 'repository_helper.dart';
+import '../../domain/entities/signup/person_entity.dart';
 
 class RelationshipRepositoryImpl implements RelationshipRepository {
   final RelationshipRemoteDataSource _remote;
@@ -28,15 +29,28 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   }
 
   @override
+  Future<Either<Failure, PersonEntity>> searchPersonByPhone(
+    String phoneNumber,
+  ) async {
+    try {
+      final person = await _remote.searchPersonByPhone(phoneNumber);
+      return Right(person.toEntity());
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> createRelationship({
-    required String personAId,
-    required String personBId,
+    required String relatedUserId,
     required String relationshipType,
   }) async {
     try {
       await _remote.createRelationship(
-        personAId: personAId,
-        personBId: personBId,
+        relatedUserId: relatedUserId,
         relationshipType: relationshipType,
       );
       return const Right(null);
@@ -54,27 +68,6 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   ) async {
     try {
       await _remote.unlinkRelationship(relationshipId);
-      return const Right(null);
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> createRelationshipByPhone({
-    required String personId,
-    required String phoneNumber,
-    required String relationType,
-  }) async {
-    try {
-      await _remote.createRelationshipByPhone(
-        personId: personId,
-        phoneNumber: phoneNumber,
-        relationType: relationType,
-      );
       return const Right(null);
     } catch (e) {
       final cause = (e is DioException && e.error is AppException)

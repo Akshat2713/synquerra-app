@@ -70,7 +70,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         ],
         child: AttentionDeviceSheet(
           alerts: alerts,
-          currentDeviceId: widget.device.imei,
+          currentDeviceId: widget.device.id,
         ),
       ),
     );

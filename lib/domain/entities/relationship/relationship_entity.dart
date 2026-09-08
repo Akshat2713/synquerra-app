@@ -1,42 +1,28 @@
 import 'package:equatable/equatable.dart';
+import 'related_user_entity.dart';
 
-import '../signup/person_entity.dart';
-
-enum relationtype { child, parent, teacher, guardian, spouse, other }
+enum RelationType { child, parent, teacher, guardian, spouse, other }
 
 class RelationshipEntity extends Equatable {
-  final String id;
-  final String personAId;
-  final String personBId;
+  final String relatedUserId;
   final String relationshipType;
-  final DateTime? effectiveFrom;
-  final DateTime? effectiveTo;
-  final bool isActive;
-  final PersonEntity? personA;
-  final PersonEntity? personB;
-
+  final bool isHead;
+  final DateTime? createdAt;
+  final RelatedUserEntity? relatedUser;
   const RelationshipEntity({
-    required this.id,
-    required this.personAId,
-    required this.personBId,
+    required this.relatedUserId,
     required this.relationshipType,
-    this.effectiveFrom,
-    this.effectiveTo,
-    required this.isActive,
-    this.personA,
-    this.personB,
+    required this.isHead,
+    this.createdAt,
+    this.relatedUser,
   });
 
   @override
   List<Object?> get props => [
-    id,
-    personAId,
-    personBId,
+    relatedUserId,
     relationshipType,
-    effectiveFrom,
-    effectiveTo,
-    isActive,
-    personA,
-    personB,
+    isHead,
+    createdAt,
+    relatedUser,
   ];
 }

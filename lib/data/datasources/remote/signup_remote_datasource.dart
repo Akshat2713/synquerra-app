@@ -67,7 +67,7 @@ class SignupRemoteDataSource {
 
     final person = await Isolate.run(() => PersonModel.fromJson(rawData));
 
-    AppLogger.d('SignupRemoteDataSource', 'Person created: ${person.personId}');
+    AppLogger.d('SignupRemoteDataSource', 'Person created: ${person.id}');
     return person;
   }
 

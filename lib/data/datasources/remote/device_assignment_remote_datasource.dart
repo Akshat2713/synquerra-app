@@ -20,7 +20,7 @@ class DeviceAssignmentRemoteDataSource {
     );
 
     final response = await _dioClient.dio.post(
-      ApiConstants.deviceAssignments,
+      ApiConstants.deviceAssignments(deviceId),
       data: {
         'person_id': personId,
         'device_id': deviceId,
@@ -53,12 +53,12 @@ class DeviceAssignmentRemoteDataSource {
     );
 
     final response = await _dioClient.dio.delete(
-      ApiConstants.deviceAssignments,
-      queryParameters: {
-        'person_id': personId,
-        'device_id': deviceId,
-        'association_type': associationType,
-      },
+      '${ApiConstants.deviceAssignments(deviceId)}/$personId',
+      // queryParameters: {
+      // 'person_id': personId,
+      //   'device_id': deviceId,
+      //   'association_type': associationType,
+      // },
     );
 
     final body = response.data as Map<String, dynamic>;

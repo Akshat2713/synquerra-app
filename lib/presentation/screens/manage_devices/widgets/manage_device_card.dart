@@ -84,7 +84,7 @@ class ManageDeviceCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'S/N: ${device.serialNo}',
+                        'S/N: ${device.id}',
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: 'monospace',

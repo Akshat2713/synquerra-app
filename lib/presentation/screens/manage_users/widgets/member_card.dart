@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../domain/entities/signup/person_entity.dart';
+import '../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../themes/colors.dart';
 
 class MemberCard extends StatelessWidget {
-  final PersonEntity person;
+  final RelatedUserEntity person;
   final VoidCallback? onTap;
   final VoidCallback? onUnlink;
   final VoidCallback? onDelete;
@@ -17,7 +17,7 @@ class MemberCard extends StatelessWidget {
   });
 
   String get _fullName {
-    final name = '${person.firstName} ${person.lastName}'.trim();
+    final name = person.fullName;
     return name.isEmpty ? 'Unnamed Member' : name;
   }
 
@@ -32,11 +32,14 @@ class MemberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasPhoto =
+        person.profilePhoto != null && person.profilePhoto!.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: circularBorder(16),
+        borderRadius: _circularBorder(16),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow(context).withValues(alpha: 0.05),
@@ -59,14 +62,19 @@ class MemberCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.primaryContainer,
-                child: Text(
-                  _initials,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.onPrimaryContainer(context),
-                  ),
-                ),
+                backgroundImage: hasPhoto
+                    ? NetworkImage(person.profilePhoto!)
+                    : null,
+                child: !hasPhoto
+                    ? Text(
+                        _initials,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onPrimaryContainer(context),
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(width: 14),
 
@@ -96,8 +104,8 @@ class MemberCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            person.phone != null && person.phone!.isNotEmpty
-                                ? person.phone!
+                            person.mobile != null && person.mobile!.isNotEmpty
+                                ? person.mobile!
                                 : 'No phone number',
                             style: TextStyle(
                               fontSize: 13,
@@ -122,7 +130,9 @@ class MemberCard extends StatelessWidget {
                           child: Text(
                             person.email != null && person.email!.isNotEmpty
                                 ? person.email!
-                                : 'No email address',
+                                : (person.uniqueId.isNotEmpty
+                                      ? 'ID: ${person.uniqueId}'
+                                      : 'No email address'),
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary(context),
@@ -194,5 +204,5 @@ class MemberCard extends StatelessWidget {
     );
   }
 
-  BorderRadius circularBorder(double radius) => BorderRadius.circular(radius);
+  BorderRadius _circularBorder(double radius) => BorderRadius.circular(radius);
 }

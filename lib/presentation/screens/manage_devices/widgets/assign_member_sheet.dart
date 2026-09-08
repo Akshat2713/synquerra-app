@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
+import '../../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
-import '../../../../../domain/entities/signup/person_entity.dart';
 import '../../../themes/colors.dart';
 
 class AssignMemberSheet extends StatefulWidget {
@@ -53,7 +53,7 @@ class AssignMemberSheet extends StatefulWidget {
 class _AssignMemberSheetState extends State<AssignMemberSheet> {
   late String _selectedRole;
   late final Map<String, String> _availableRoles;
-  late final List<PersonEntity> _availablePersons;
+  late final List<RelatedUserEntity> _availablePersons;
 
   @override
   void initState() {
@@ -74,28 +74,31 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
         ? 'carrier'
         : _availableRoles.keys.first;
 
+    // Collect IDs of members already associated with this device
     final assignedPersonIds = <String>{
       for (final a in widget.device.associations)
-        if (a.person != null) a.person!.personId,
+        if (a.person != null) a.person!.id,
     };
 
-    _availablePersons = <PersonEntity>[];
+    _availablePersons = <RelatedUserEntity>[];
 
+    // Add current user as a choice if not already assigned
     if (!assignedPersonIds.contains(widget.currentUserId)) {
       _availablePersons.add(
-        PersonEntity(
-          personId: widget.currentUserId,
+        RelatedUserEntity(
+          id: widget.currentUserId,
+          uniqueId: widget.currentUserId,
           firstName: widget.currentUserFullName,
           lastName: '(Myself)',
-          isActive: true,
         ),
       );
     }
 
+    // Add related contacts if they are not already assigned
     for (final rel in widget.relationships) {
-      if (rel.personB != null &&
-          !assignedPersonIds.contains(rel.personB!.personId)) {
-        _availablePersons.add(rel.personB!);
+      final user = rel.relatedUser;
+      if (user != null && !assignedPersonIds.contains(user.id)) {
+        _availablePersons.add(user);
       }
     }
   }
@@ -186,6 +189,10 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final person = _availablePersons[index];
+                      final hasPhoto =
+                          person.profilePhoto != null &&
+                          person.profilePhoto!.isNotEmpty;
+
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 4,
@@ -194,19 +201,26 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                         leading: CircleAvatar(
                           backgroundColor: AppColors.primaryContainer
                               .withValues(alpha: 0.5),
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            color: AppColors.primary,
-                          ),
+                          backgroundImage: hasPhoto
+                              ? NetworkImage(person.profilePhoto!)
+                              : null,
+                          child: !hasPhoto
+                              ? Icon(
+                                  Icons.person_outline_rounded,
+                                  color: AppColors.primary,
+                                )
+                              : null,
                         ),
                         title: Text(
-                          '${person.firstName} ${person.lastName}'.trim(),
+                          person.fullName.isEmpty
+                              ? 'Unnamed Member'
+                              : person.fullName,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () {
                           Navigator.pop(context);
-                          widget.onAssign(person.personId, _selectedRole);
+                          widget.onAssign(person.id, _selectedRole);
                         },
                       );
                     },

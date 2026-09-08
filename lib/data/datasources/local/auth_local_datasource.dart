@@ -13,21 +13,25 @@ class AuthLocalDataSource {
   AuthLocalDataSource(this._storage);
 
   Future<void> saveUser(UserModel user) async {
-    await Future.wait([
-      _storage.write(key: _keyUser, value: jsonEncode(user.toJson())),
-      _storage.write(key: _keyAccessToken, value: user.accessToken),
-      _storage.write(key: _keyRefreshToken, value: user.refreshToken),
-      _storage.write(key: _keyPersonId, value: user.personId),
-    ]);
+    try {
+      await Future.wait([
+        _storage.write(key: _keyUser, value: jsonEncode(user.toJson())),
+        _storage.write(key: _keyAccessToken, value: user.accessToken),
+        _storage.write(key: _keyRefreshToken, value: user.refreshToken),
+        _storage.write(key: _keyPersonId, value: user.personId),
+      ]);
+    } catch (e) {
+      throw CacheException(message: 'Failed to save cached user: $e');
+    }
   }
 
   Future<UserModel?> getUser() async {
     try {
       final raw = await _storage.read(key: _keyUser);
-      if (raw == null) return null;
+      if (raw == null || raw.isEmpty) return null;
       return UserModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
-      throw const CacheException(message: 'Failed to read cached user.');
+      return null; // Return null instead of throwing to prevent accidental forced logout
     }
   }
 

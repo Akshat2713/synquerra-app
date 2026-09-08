@@ -100,12 +100,12 @@ class _NotificationBellState extends State<NotificationBell>
                         final errorMessage = state is AlertsError
                             ? state.message
                             : null;
-                        final alerts = state is AlertsLoaded
+                        final List<AlertEntity> alerts = state is AlertsLoaded
                             ? state.alerts
-                            : [];
+                            : const <AlertEntity>[];
 
                         return NotificationPanel(
-                          alerts: alerts as List<AlertEntity>,
+                          alerts: alerts,
                           devices: devices,
                           currentUserFullName: currentUserFullName,
                           isLoading: isLoading,

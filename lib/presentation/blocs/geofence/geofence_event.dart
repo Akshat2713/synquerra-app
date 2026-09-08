@@ -64,7 +64,8 @@ class GeofenceCreate extends GeofenceEvent {
 
 class GeofenceEdit extends GeofenceEvent {
   final String deviceId;
-  final String geofenceId;
+  final String id;
+  // final String geofenceId;
   final String name;
   final bool isActive;
   final List<Coordinate> coordinates;
@@ -81,7 +82,8 @@ class GeofenceEdit extends GeofenceEvent {
 
   const GeofenceEdit({
     required this.deviceId,
-    required this.geofenceId,
+    required this.id,
+    // required this.geofenceId,
     required this.name,
     required this.isActive,
     required this.coordinates,
@@ -100,7 +102,8 @@ class GeofenceEdit extends GeofenceEvent {
   @override
   List<Object?> get props => [
     deviceId,
-    geofenceId,
+    id,
+    // geofenceId,
     name,
     isActive,
     coordinates,
@@ -119,8 +122,8 @@ class GeofenceEdit extends GeofenceEvent {
 
 class GeofenceDelete extends GeofenceEvent {
   final String deviceId;
-  final String geofenceId;
-  const GeofenceDelete({required this.deviceId, required this.geofenceId});
+  final String id;
+  const GeofenceDelete({required this.deviceId, required this.id});
   @override
-  List<Object?> get props => [deviceId, geofenceId];
+  List<Object?> get props => [deviceId, id];
 }

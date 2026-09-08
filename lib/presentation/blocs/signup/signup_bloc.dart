@@ -65,7 +65,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         state.copyWith(
           status: SignupStatus.stepSuccess,
           step: 2,
-          personId: person.personId,
+          personId: person.id,
           email: person.email,
         ),
       ),

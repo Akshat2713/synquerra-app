@@ -162,14 +162,14 @@ class UnassignConfirmSheet extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    onUnassign(person.personId, roleKey);
+                    onUnassign(person.id, roleKey);
                   },
                 )
               : null,
           onTap: isAssignedToRole
               ? () {
                   Navigator.pop(context);
-                  onUnassign(person.personId, roleKey);
+                  onUnassign(person.id, roleKey);
                 }
               : null,
         ),

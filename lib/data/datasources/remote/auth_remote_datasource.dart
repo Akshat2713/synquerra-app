@@ -34,9 +34,7 @@ class AuthRemoteDataSource {
     }
 
     // Parse off the main thread
-    final user = await Isolate.run(
-      () => UserModel.fromJson(body['data'] as Map<String, dynamic>),
-    );
+    final user = await Isolate.run(() => UserModel.fromJson(body));
 
     debugPrint(
       '[AuthRemoteDataSource] User parsed: ${user.firstName} ${user.lastName}',

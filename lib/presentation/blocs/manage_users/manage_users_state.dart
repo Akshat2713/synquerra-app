@@ -16,7 +16,7 @@ class ManageUsersLoading extends ManageUsersState with LoadingState {
 
 class MemberItem extends Equatable {
   final String relationshipId;
-  final PersonEntity person;
+  final RelatedUserEntity person;
 
   const MemberItem({required this.relationshipId, required this.person});
 
@@ -27,16 +27,24 @@ class MemberItem extends Equatable {
 class ManageUsersLoaded extends ManageUsersState {
   final List<MemberItem> members;
   final bool isProcessing;
+  final bool isSearching;
+  final PersonEntity? foundPerson;
   final String? errorMessage;
-
   const ManageUsersLoaded({
     required this.members,
     this.isProcessing = false,
+    this.isSearching = false,
+    this.foundPerson,
     this.errorMessage,
   });
-
   @override
-  List<Object?> get props => [members, isProcessing, errorMessage];
+  List<Object?> get props => [
+    members,
+    isProcessing,
+    isSearching,
+    foundPerson,
+    errorMessage,
+  ];
 }
 
 class ManageUsersError extends ManageUsersState with ErrorState {

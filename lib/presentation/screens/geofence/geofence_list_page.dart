@@ -69,10 +69,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onPressed: () {
               Navigator.pop(context);
               context.read<GeofenceBloc>().add(
-                GeofenceDelete(
-                  deviceId: widget.deviceId,
-                  geofenceId: geofence.geofenceId,
-                ),
+                GeofenceDelete(deviceId: widget.deviceId, id: geofence.id),
               );
             },
             child: const Text('Delete'),

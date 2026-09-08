@@ -181,9 +181,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 itemCount: members.length,
                 itemBuilder: (context, index) {
                   final member = members[index];
-                  final fullName =
-                      '${member.person.firstName} ${member.person.lastName}'
-                          .trim();
+                  final fullName = member.person.fullName;
 
                   return MemberCard(
                     person: member.person,
@@ -198,7 +196,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         ? null
                         : () => _confirmDelete(
                             context,
-                            member.person.personId,
+                            member.person.id,
                             fullName,
                           ),
                   );

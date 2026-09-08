@@ -24,6 +24,7 @@ class AlertsRemoteDataSource {
     }
 
     final rawList = body['data'] as List<dynamic>;
+    // final rawList = <dynamic>[];
 
     // Parse list off the main thread
     final alerts = await Isolate.run(
@@ -42,9 +43,10 @@ class AlertsRemoteDataSource {
     int hours = 24,
   }) async {
     final response = await _dioClient.dio.get(
-      ApiConstants.alertsByPerson(personId),
+      ApiConstants.alerts,
       queryParameters: {'hours': hours},
     );
+
     final body = response.data as Map<String, dynamic>;
     if (body['status'] != 'success') {
       throw ServerException(
@@ -52,7 +54,12 @@ class AlertsRemoteDataSource {
         statusCode: body['code'] as int?,
       );
     }
-    final rawList = body['data'] as List<dynamic>;
+
+    // Extract the map first
+    final dataMap = body['data'] as Map<String, dynamic>;
+    // Access the records array inside the map
+    final rawList = (dataMap['records'] ?? []) as List<dynamic>;
+
     return Isolate.run(
       () => rawList
           .map((e) => AlertModel.fromJson(e as Map<String, dynamic>))

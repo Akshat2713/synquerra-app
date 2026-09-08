@@ -81,11 +81,11 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
   }
 
   Future<void> _onEdit(GeofenceEdit event, Emitter<GeofenceState> emit) async {
-    AppLogger.d('GeofenceBloc', 'Edit → geofenceId: ${event.geofenceId}');
+    AppLogger.d('GeofenceBloc', 'Edit → geofenceId: ${event.id}');
     emit(const GeofenceOperationLoading());
     final result = await _editGeofenceUseCase(
       deviceId: event.deviceId,
-      geofenceId: event.geofenceId,
+      id: event.id,
       name: event.name,
       isActive: event.isActive,
       coordinates: event.coordinates,
@@ -114,16 +114,16 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     GeofenceDelete event,
     Emitter<GeofenceState> emit,
   ) async {
-    AppLogger.d('GeofenceBloc', 'Delete → geofenceId: ${event.geofenceId}');
+    AppLogger.d('GeofenceBloc', 'Delete → geofenceId: ${event.id}');
     emit(const GeofenceOperationLoading());
     final result = await _deleteGeofenceUseCase(
       deviceId: event.deviceId,
-      geofenceId: event.geofenceId,
+      id: event.id,
     );
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (_) {
-        AppLogger.d('GeofenceBloc', 'Deleted: ${event.geofenceId}');
+        AppLogger.d('GeofenceBloc', 'Deleted: ${event.id}');
         emit(const GeofenceDeleted());
         add(GeofenceLoad(event.deviceId));
       },
