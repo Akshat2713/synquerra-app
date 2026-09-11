@@ -189,7 +189,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         ? null
                         : () => _confirmUnlink(
                             context,
-                            member.relationshipId,
+                            member.person.id,
                             fullName,
                           ),
                     onDelete: isProcessing

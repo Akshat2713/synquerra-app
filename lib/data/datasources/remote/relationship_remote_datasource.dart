@@ -101,15 +101,70 @@ class RelationshipRemoteDataSource {
     }
   }
 
-  /// Unlink / Delete Relationship by ID
-  Future<void> deleteRelationship(String relationshipId) async {
+  Future<PersonModel> createPersonWithRelationship({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String relationshipType,
+    String? middleName,
+    String? mobile,
+    String? birthDate,
+    String? gender,
+    String? address,
+    String? city,
+    String? state,
+    String? country,
+    String? pincode,
+    bool isHead = false,
+  }) async {
     AppLogger.d(
       'RelationshipRemoteDataSource',
-      'deleteRelationship() called for $relationshipId',
+      'createPersonWithRelationship() called for $email',
+    );
+
+    final response = await _dioClient.dio.post(
+      ApiConstants.createPersonWithRelationship,
+      data: {
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'password': password,
+        'relationship_type': relationshipType,
+        'is_head': isHead,
+        if (middleName != null && middleName.isNotEmpty)
+          'middle_name': middleName,
+        if (mobile != null && mobile.isNotEmpty) 'mobile': mobile,
+        if (birthDate != null && birthDate.isNotEmpty) 'birth_date': birthDate,
+        if (gender != null && gender.isNotEmpty) 'gender': gender,
+        if (address != null && address.isNotEmpty) 'address': address,
+        if (city != null && city.isNotEmpty) 'city': city,
+        if (state != null && state.isNotEmpty) 'state': state,
+        if (country != null && country.isNotEmpty) 'country': country,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+      },
+    );
+
+    final body = response.data as Map<String, dynamic>;
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to add family member.',
+        statusCode: body['code'] as int?,
+      );
+    }
+
+    return PersonModel.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  /// Unlink / Delete Relationship by ID
+  Future<void> deleteRelationship(String userId) async {
+    AppLogger.d(
+      'RelationshipRemoteDataSource',
+      'deleteRelationship() called for $userId',
     );
 
     final response = await _dioClient.dio.delete(
-      '/api/v1/relationships/$relationshipId',
+      ApiConstants.deleteUser(userId),
     );
 
     final body = response.data as Map<String, dynamic>;
@@ -124,14 +179,14 @@ class RelationshipRemoteDataSource {
 
   /// Create / Link Relationship by Phone Number
 
-  Future<void> unlinkRelationship(String relationshipId) async {
+  Future<void> unlinkRelationship(String relatedUserId) async {
     AppLogger.d(
       'RelationshipRemoteDataSource',
-      'deleteRelationship() called for $relationshipId',
+      'deleteRelationship() called for $relatedUserId',
     );
 
     final response = await _dioClient.dio.delete(
-      '${ApiConstants.createPerson}/relationship/$relationshipId', // Resolves to /api/v1/persons/relationship/:relationship_id
+      ApiConstants.removeRelationship(relatedUserId),
     );
 
     final body = response.data as Map<String, dynamic>;

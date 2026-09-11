@@ -6,10 +6,11 @@ import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/relationship/related_user_entity.dart';
 // import '../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../domain/entities/signup/person_entity.dart';
+import '../../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
 import '../../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../../domain/usecases/relationship/get_relationship_list_usecase.dart';
-import '../../../domain/usecases/signup/create_person_usecase.dart';
+// import '../../../domain/usecases/signup/create_person_usecase.dart';
 import '../../../domain/usecases/signup/delete_person_usecase.dart';
 import '../base/base_state.dart';
 
@@ -20,7 +21,8 @@ const bool kEnableDeletePerson = true;
 
 class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
   final GetRelationshipListUseCase _getRelationshipListUseCase;
-  final CreatePersonUseCase _createPersonUseCase;
+  final CreatePersonWithRelationshipUseCase
+  _createPersonWithRelationshipUseCase;
   final CreateRelationshipUseCase _createRelationshipUseCase;
   final SearchPersonByPhoneUseCase _searchPersonByPhoneUseCase;
   final DeletePersonUseCase _deletePersonUseCase;
@@ -29,14 +31,16 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
 
   ManageUsersBloc({
     required GetRelationshipListUseCase getRelationshipListUseCase,
-    required CreatePersonUseCase createPersonUseCase,
+    required CreatePersonWithRelationshipUseCase
+    createPersonWithRelationshipUseCase,
     required CreateRelationshipUseCase createRelationshipUseCase,
     required SearchPersonByPhoneUseCase searchPersonByPhoneUseCase,
     required DeletePersonUseCase deletePersonUseCase,
     required UnlinkRelationshipUseCase unlinkRelationshipUseCase,
     required UserHolder userHolder,
   }) : _getRelationshipListUseCase = getRelationshipListUseCase,
-       _createPersonUseCase = createPersonUseCase,
+       _createPersonWithRelationshipUseCase =
+           createPersonWithRelationshipUseCase,
        _createRelationshipUseCase = createRelationshipUseCase,
        _searchPersonByPhoneUseCase = searchPersonByPhoneUseCase,
        _deletePersonUseCase = deletePersonUseCase,
@@ -107,12 +111,13 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
     final baseMembers = _currentMembers();
     emit(ManageUsersLoaded(members: baseMembers, isProcessing: true));
 
-    final personResult = await _createPersonUseCase(
-      CreatePersonParams(
+    final result = await _createPersonWithRelationshipUseCase(
+      CreatePersonWithRelationshipParams(
         firstName: event.firstName,
         lastName: event.lastName,
         email: event.email,
-        phone: event.phone,
+        password: event.password,
+        mobile: event.mobile,
         birthDate: event.birthDate,
         gender: event.gender,
         address: event.address,
@@ -120,43 +125,21 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
         state: event.state,
         country: event.country,
         pincode: event.pincode,
-        saveSignupProgress: false,
+        relationshipType: event.relationshipType,
+        middleName: event.middleName,
+        isHead: event.isHead,
       ),
     );
 
-    await personResult.fold(
-      (failure) async {
-        AppLogger.d(
-          'ManageUsersBloc',
-          'Create person failed: ${failure.message}',
-        );
-        emit(
-          ManageUsersLoaded(
-            members: baseMembers,
-            errorMessage: failure.userMessage,
-          ),
-        );
-      },
-      (newPerson) async {
-        final relResult = await _createRelationshipUseCase(
-          relatedUserId: newPerson.id,
-          relationshipType: event.relationshipType,
-        );
-
-        await relResult.fold((failure) async {
-          AppLogger.d(
-            'ManageUsersBloc',
-            'Create relationship failed: ${failure.message}',
-          );
-          emit(
-            ManageUsersLoaded(
-              members: baseMembers,
-              errorMessage: failure.userMessage,
-            ),
-          );
-        }, (_) async => add(const ManageUsersLoadRequested()));
-      },
-    );
+    result.fold((failure) {
+      AppLogger.d('ManageUsersBloc', 'Add member failed: ${failure.message}');
+      emit(
+        ManageUsersLoaded(
+          members: baseMembers,
+          errorMessage: failure.userMessage,
+        ),
+      );
+    }, (_) => add(const ManageUsersLoadRequested()));
   }
 
   Future<void> _onSearchByPhone(

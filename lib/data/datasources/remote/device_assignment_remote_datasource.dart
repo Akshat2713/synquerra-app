@@ -22,9 +22,9 @@ class DeviceAssignmentRemoteDataSource {
     final response = await _dioClient.dio.post(
       ApiConstants.deviceAssignments(deviceId),
       data: {
-        'person_id': personId,
-        'device_id': deviceId,
-        'association_type': associationType,
+        'assigned_user_id': personId,
+        // 'device_id': deviceId,
+        'role': associationType,
       },
     );
 

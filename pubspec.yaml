@@ -62,7 +62,7 @@ dependencies:
 
   dropdown_search: ^6.0.2
   #firebase dependencies
-  # firebase_core: ^4.3.0
+  firebase_core: ^4.3.0
   cached_network_image: ^3.4.1
 
   #bloc dependencies

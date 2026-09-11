@@ -6,8 +6,9 @@ class ApiConstants {
       'https://synquerraapi.devnik.in/'; // ⚠️ DEV ONLY
 
   static const String signIn = '/api/v1/auth/sign-in';
-  static const String signUp = '/api/v1/auth/sign-up';
+  static const String signUp = '/api/v1/auth/register-user';
   static const String orgMemberSignIn = '/api/v1/auth/org-member/sign-in';
+  static String deleteUser(String userId) => '/api/v1/users/$userId';
 
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';
@@ -42,6 +43,10 @@ class ApiConstants {
   // ── Relationship ─────────────────────────────────────
   static const String createRelationshipByPhone = '/api/v1/users/search';
   static const String createRelation = '/api/v1/users/relationships';
+  static const String createPersonWithRelationship =
+      '/api/v1/users/create-with-relationship';
+  static String removeRelationship(String relatedUserId) =>
+      '/api/v1/users/relationships/$relatedUserId';
 
   // ── Geofences ─────────────────────────────────────
   // RESTful standard endpoints (Recommended)

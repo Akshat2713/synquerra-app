@@ -16,8 +16,10 @@ class AddMemberScreen extends StatefulWidget {
 class _AddMemberScreenState extends State<AddMemberScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _addressController = TextEditingController();
@@ -29,6 +31,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   String _selectedGender = 'male';
   String _selectedRelationship = 'child';
   DateTime? _selectedBirthDate;
+  bool _isHead = false;
 
   // Tracks whether the in-flight submission belongs to this screen, so the
   // listener doesn't react to isAdding changes triggered elsewhere.
@@ -38,8 +41,10 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   @override
   void dispose() {
     _firstNameController.dispose();
+    _middleNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     _phoneController.dispose();
     _birthDateController.dispose();
     _addressController.dispose();
@@ -72,9 +77,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     context.read<ManageUsersBloc>().add(
       ManageUsersAddRequested(
         firstName: _firstNameController.text.trim(),
+        middleName: _middleNameController.text.trim().isEmpty
+            ? null
+            : _middleNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+        mobile: _phoneController.text.trim(),
         birthDate: _selectedBirthDate != null
             ? DateTimeFormatter.toIsoString(_selectedBirthDate!)
             : '',
@@ -85,6 +94,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         country: _countryController.text.trim(),
         pincode: _pincodeController.text.trim(),
         relationshipType: _selectedRelationship,
+        isHead: _isHead,
       ),
     );
   }
@@ -154,6 +164,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
+                      controller: _middleNameController,
+                      label: 'Middle Name',
+                      hint: 'M',
+                      prefixIcon: Icons.person_outline,
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
                       controller: _lastNameController,
                       label: 'Last Name',
                       hint: 'Kumar',
@@ -173,6 +190,25 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
+
+                    AppTextField(
+                      controller: _passwordController,
+                      label: 'Set Password *',
+                      hint: '••••••••',
+                      prefixIcon: Icons.lock_outline_rounded,
+                      isPassword: true,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Password is required';
+                        }
+                        if (v.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
                     AppTextField(
                       controller: _phoneController,
                       label: 'Phone *',
@@ -286,6 +322,24 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       ],
                       onChanged: (val) =>
                           setState(() => _selectedRelationship = val!),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: Text(
+                        'Set as Head of Family',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary(context),
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'This member will have primary account privileges',
+                      ),
+                      value: _isHead,
+                      onChanged: (val) => setState(() => _isHead = val),
+                      activeThumbColor: AppColors.primary,
+                      contentPadding: EdgeInsets.zero,
                     ),
                     const SizedBox(height: 16),
                     AppTextField(

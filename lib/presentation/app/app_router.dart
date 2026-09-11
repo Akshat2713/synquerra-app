@@ -6,11 +6,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
-import '../../core/utils/app_logger.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
-import '../../domain/usecases/base_usecase.dart';
-import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
+import '../../domain/entities/signup/signup_profile_data.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -209,14 +207,14 @@ class AppRouter {
 
       case AppRoutes.signupCredentials:
         final bloc = _activeSignupBloc ??= sl<SignupBloc>();
+        final profileData = settings.arguments as SignupProfileData;
         return _fade(
           settings,
           BlocProvider.value(
             value: bloc,
-            child: const SignupPasswordSetupScreen(),
+            child: SignupPasswordSetupScreen(profileData: profileData),
           ),
         );
-
       case AppRoutes.linkDevice:
         return _fade(
           settings,
@@ -285,35 +283,8 @@ class AppRouter {
 
   static Future<void> navigateToSignup(BuildContext context) async {
     _activeSignupBloc = sl<SignupBloc>();
-
-    final getSavedProgressUseCase = sl<GetSavedSignupProgressUseCase>();
-
-    try {
-      final result = await getSavedProgressUseCase(NoParams());
-
-      if (!context.mounted) return;
-
-      result.fold(
-        (failure) {
-          Navigator.pushNamed(context, AppRoutes.signupProfile);
-        },
-        (progress) {
-          if (progress == null || progress.step == 1) {
-            Navigator.pushNamed(context, AppRoutes.signupProfile);
-          } else if (progress.step == 2) {
-            _activeSignupBloc!.add(SignupProgressRestored());
-            Navigator.pushNamed(context, AppRoutes.signupCredentials);
-          }
-        },
-      );
-    } catch (e, stackTrace) {
-      AppLogger.e('AppRouter', 'SIGNUP ROUTING ERROR', e, stackTrace);
-      if (context.mounted) {
-        Navigator.pushNamed(context, AppRoutes.signupProfile);
-      }
-    }
+    Navigator.pushNamed(context, AppRoutes.signupProfile);
   }
-
   // Add inside class AppRouter in lib/presentation/app/app_router.dart:
 
   // ── Centralized Route Navigators ──────────────────────────────────────────

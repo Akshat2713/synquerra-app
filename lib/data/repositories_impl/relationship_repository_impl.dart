@@ -63,6 +63,51 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   }
 
   @override
+  Future<Either<Failure, PersonEntity>> createPersonWithRelationship({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String relationshipType,
+    String? middleName,
+    String? mobile,
+    String? birthDate,
+    String? gender,
+    String? address,
+    String? city,
+    String? state,
+    String? country,
+    String? pincode,
+    bool isHead = false,
+  }) async {
+    try {
+      final model = await _remote.createPersonWithRelationship(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        relationshipType: relationshipType,
+        middleName: middleName,
+        mobile: mobile,
+        birthDate: birthDate,
+        gender: gender,
+        address: address,
+        city: city,
+        state: state,
+        country: country,
+        pincode: pincode,
+        isHead: isHead,
+      );
+      return Right(model.toEntity());
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> unlinkRelationship(
     String relationshipId,
   ) async {

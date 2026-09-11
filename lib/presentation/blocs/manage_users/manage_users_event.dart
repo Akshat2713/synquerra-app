@@ -14,7 +14,8 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   final String firstName;
   final String lastName;
   final String email;
-  final String phone;
+  final String password;
+  final String mobile;
   final String birthDate;
   final String gender;
   final String address;
@@ -23,11 +24,15 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   final String country;
   final String pincode;
   final String relationshipType;
+  final String? middleName;
+  final bool isHead;
+
   const ManageUsersAddRequested({
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.phone,
+    required this.password,
+    required this.mobile,
     required this.birthDate,
     required this.gender,
     required this.address,
@@ -36,13 +41,17 @@ class ManageUsersAddRequested extends ManageUsersEvent {
     required this.country,
     required this.pincode,
     required this.relationshipType,
+    this.middleName,
+    this.isHead = false,
   });
+
   @override
   List<Object?> get props => [
     firstName,
     lastName,
     email,
-    phone,
+    password,
+    mobile,
     birthDate,
     gender,
     address,
@@ -51,6 +60,8 @@ class ManageUsersAddRequested extends ManageUsersEvent {
     country,
     pincode,
     relationshipType,
+    middleName,
+    isHead,
   ];
 }
 
