@@ -1,18 +1,24 @@
+// lib/presentation/screens/location/widgets/timeline_slider.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../themes/colors.dart';
 
 class TimelineSlider extends StatefulWidget {
   final List<AnalyticsEntity> points;
   final int currentIndex;
   final void Function(int) onChanged;
+  final VoidCallback onMinimize;
 
   const TimelineSlider({
     super.key,
     required this.points,
     required this.currentIndex,
     required this.onChanged,
+    required this.onMinimize,
   });
 
   @override
@@ -23,7 +29,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
   bool _isPlaying = false;
   Timer? _playbackTimer;
 
-  // 1. Playback Speed State & Available Options
   double _selectedSpeed = 1.0;
   final List<double> _speedOptions = [1.0, 2.0, 4.0];
 
@@ -41,7 +46,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
   }
 
-  // 2. Dynamic playback timing based on selected speed
   void _startPlayback() {
     if (widget.points.isEmpty) return;
     setState(() => _isPlaying = true);
@@ -52,7 +56,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
 
     _playbackTimer?.cancel();
 
-    // Calculate dynamic delay: Base is 800ms at 1x
     final intervalMs = (800 / _selectedSpeed).round();
 
     _playbackTimer = Timer.periodic(Duration(milliseconds: intervalMs), (
@@ -73,14 +76,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
   }
 
-  // 3. Handle speed selection change
   void _updateSpeed(double speed) {
     if (_selectedSpeed == speed) return;
     setState(() {
       _selectedSpeed = speed;
     });
 
-    // If already playing, re-arm the timer immediately with new speed
     if (_isPlaying) {
       _startPlayback();
     }
@@ -88,9 +89,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    // Ensure points are ordered chronologically: Oldest (Past) -> Newest (Present)
     final sortedPoints = List<AnalyticsEntity>.from(widget.points)
       ..sort((a, b) {
         final aTime = a.deviceTimestamp;
@@ -110,7 +108,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHigh,
+        color: AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -123,25 +121,13 @@ class _TimelineSliderState extends State<TimelineSlider> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
-          Container(
-            width: 36,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: colors.onSurfaceVariant.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Primary Timestamp Header
-          if (current != null) ...[
+          if (current != null)
             Row(
               children: [
                 Icon(
                   Icons.access_time_filled_rounded,
                   size: 16,
-                  color: colors.primary,
+                  color: AppColors.iconSecondary(context),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -152,24 +138,44 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.expand_more_rounded),
+                  iconSize: 26,
+                  color: AppColors.iconSecondary(context),
+                  onPressed: widget.onMinimize,
+                ),
               ],
+            )
+          else
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.expand_more_rounded),
+                iconSize: 26,
+                color: AppColors.iconSecondary(context),
+                onPressed: widget.onMinimize,
+              ),
             ),
+          if (current != null) ...[
             const SizedBox(height: 12),
-
-            // Metrics Row - Distributed Evenly (Speed, Battery, Signal)
             Row(
               children: [
                 Expanded(
                   child: _MetricBadge(
                     icon: Icons.speed_rounded,
-                    label: _formatSpeed(current.speed),
-                    color: colors.primary,
-                    colors: colors,
+                    label: UnitFormatter.formatSpeed(current.speed),
+                    color: AppColors.iconSecondary(context),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -179,8 +185,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     label: current.battery != null
                         ? '${current.battery}%'
                         : 'N/A',
-                    color: _getBatteryColor(current.battery, colors),
-                    colors: colors,
+                    color: _getBatteryColor(current.battery),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -190,37 +195,30 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     label: current.signal != null
                         ? '${current.signal}%'
                         : 'N/A',
-                    color: _getSignalColor(current.signal, colors),
-                    colors: colors,
+                    color: _getSignalColor(current.signal),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
           ],
-
-          // Playback & Interactive Controls
           Stack(
             alignment: Alignment.center,
             children: [
-              // Playback Controls (Centered)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Step Backward
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.skip_previous_rounded),
                     iconSize: 26,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     onPressed: hasPoints && safeIndex > 0
                         ? () => widget.onChanged(safeIndex - 1)
                         : null,
                   ),
                   const SizedBox(width: 16),
-
-                  // Play / Pause
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -230,26 +228,22 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           : Icons.play_circle_fill_rounded,
                     ),
                     iconSize: 36,
-                    color: colors.primary,
+                    color: AppColors.primary,
                     onPressed: hasPoints ? _togglePlayback : null,
                   ),
                   const SizedBox(width: 16),
-
-                  // Step Forward
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.skip_next_rounded),
                     iconSize: 26,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                     onPressed: hasPoints && safeIndex < sortedPoints.length - 1
                         ? () => widget.onChanged(safeIndex + 1)
                         : null,
                   ),
                 ],
               ),
-
-              // 4. Speed Multiplier Dropdown (Positioned on the Right)
               Positioned(
                 right: 0,
                 child: PopupMenuButton<double>(
@@ -274,8 +268,8 @@ class _TimelineSliderState extends State<TimelineSlider> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                               color: _selectedSpeed == speed
-                                  ? colors.primary
-                                  : colors.onSurface,
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary(context),
                             ),
                           ),
                           if (_selectedSpeed == speed) ...[
@@ -283,7 +277,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                             Icon(
                               Icons.check_rounded,
                               size: 16,
-                              color: colors.primary,
+                              color: AppColors.primary,
                             ),
                           ],
                         ],
@@ -296,10 +290,12 @@ class _TimelineSliderState extends State<TimelineSlider> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.surface,
+                      color: AppColors.surface(context),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: colors.outlineVariant.withValues(alpha: 0.3),
+                        color: AppColors.outlineVariant(
+                          context,
+                        ).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -310,13 +306,13 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: colors.primary,
+                            color: AppColors.primary,
                           ),
                         ),
                         Icon(
                           Icons.arrow_drop_down_rounded,
                           size: 18,
-                          color: colors.primary,
+                          color: AppColors.primary,
                         ),
                       ],
                     ),
@@ -325,15 +321,15 @@ class _TimelineSliderState extends State<TimelineSlider> {
               ),
             ],
           ),
-
-          // Seek Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-              activeTrackColor: colors.primary,
-              inactiveTrackColor: colors.outlineVariant.withValues(alpha: 0.4),
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: AppColors.outlineVariant(
+                context,
+              ).withValues(alpha: 0.4),
             ),
             child: Slider(
               value: safeIndex.toDouble(),
@@ -350,8 +346,6 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   : null,
             ),
           ),
-
-          // Start & End Timestamps
           if (hasPoints)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -359,19 +353,23 @@ class _TimelineSliderState extends State<TimelineSlider> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _formatDate(sortedPoints.first.deviceTimestamp),
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.first.deviceTimestamp,
+                    ),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                   Text(
-                    _formatDate(sortedPoints.last.deviceTimestamp),
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.last.deviceTimestamp,
+                    ),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -382,20 +380,11 @@ class _TimelineSliderState extends State<TimelineSlider> {
     );
   }
 
-  // --- Helpers ---
-  String _formatSpeed(dynamic speed) {
-    if (speed == null) return 'N/A';
-    if (speed is num) {
-      return '${speed.toStringAsFixed(1)} km/h';
-    }
-    return '$speed km/h';
-  }
-
-  Color _getBatteryColor(int? battery, ColorScheme colors) {
-    if (battery == null) return colors.onSurfaceVariant;
-    if (battery <= 15) return colors.error;
-    if (battery <= 30) return Colors.amber.shade700;
-    return Colors.green.shade600;
+  Color _getBatteryColor(int? battery) {
+    if (battery == null) return AppColors.textSecondary(context);
+    if (battery <= 15) return AppColors.danger;
+    if (battery <= 30) return AppColors.warning;
+    return AppColors.success;
   }
 
   IconData _getBatteryIcon(int? battery) {
@@ -406,11 +395,11 @@ class _TimelineSliderState extends State<TimelineSlider> {
     return Icons.battery_full_rounded;
   }
 
-  Color _getSignalColor(int? signal, ColorScheme colors) {
-    if (signal == null) return colors.onSurfaceVariant;
-    if (signal <= 25) return colors.error;
-    if (signal <= 50) return Colors.amber.shade700;
-    return colors.primary;
+  Color _getSignalColor(int? signal) {
+    if (signal == null) return AppColors.textSecondary(context);
+    if (signal <= 25) return AppColors.danger;
+    if (signal <= 50) return AppColors.warning;
+    return AppColors.primary;
   }
 
   IconData _getSignalIcon(int? signal) {
@@ -420,24 +409,17 @@ class _TimelineSliderState extends State<TimelineSlider> {
     if (signal <= 75) return Icons.signal_cellular_4_bar_rounded;
     return Icons.signal_cellular_4_bar_rounded;
   }
-
-  String _formatDate(DateTime? timestamp) {
-    if (timestamp == null) return '--/--';
-    return '${timestamp.day}/${timestamp.month}';
-  }
 }
 
 class _MetricBadge extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  final ColorScheme colors;
 
   const _MetricBadge({
     required this.icon,
     required this.label,
     required this.color,
-    required this.colors,
   });
 
   @override
@@ -445,9 +427,11 @@ class _MetricBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -460,7 +444,7 @@ class _MetricBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,

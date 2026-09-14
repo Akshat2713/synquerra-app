@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../blocs/analytics/analytics_bloc.dart';
+import '../../../themes/colors.dart';
 
 class MapHistoryPolylineLayer extends StatelessWidget {
   const MapHistoryPolylineLayer({super.key});
@@ -13,7 +14,7 @@ class MapHistoryPolylineLayer extends StatelessWidget {
     return BlocBuilder<AnalyticsBloc, AnalyticsState>(
       buildWhen: (prev, curr) {
         if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
-          return prev.points.isEmpty != curr.points.isEmpty;
+          return prev.points != curr.points;
         }
         return prev.runtimeType != curr.runtimeType;
       },
@@ -28,8 +29,12 @@ class MapHistoryPolylineLayer extends StatelessWidget {
               points: loaded.mappablePoints
                   .map((p) => LatLng(p.latitude!, p.longitude!))
                   .toList(),
-              color: Theme.of(context).colorScheme.primary,
+              color: AppColors.primarySubtle,
               strokeWidth: 3,
+              borderStrokeWidth: 1,
+              borderColor: AppColors.darkMapPath,
+              pattern: StrokePattern.dashed(segments: [10, 12]),
+              strokeCap: StrokeCap.round,
             ),
           ],
         );

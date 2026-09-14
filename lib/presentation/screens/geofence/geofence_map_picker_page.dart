@@ -82,7 +82,6 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final isDone = _points.length == _maxPoints;
 
     return Scaffold(
@@ -123,8 +122,8 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     polygons: [
                       Polygon(
                         points: isDone ? [..._points, _points.first] : _points,
-                        color: colors.primary.withValues(alpha: 0.15),
-                        borderColor: colors.primary,
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderColor: AppColors.primary,
                         borderStrokeWidth: 2,
                       ),
                     ],
@@ -134,7 +133,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     polylines: [
                       Polyline(
                         points: _points,
-                        color: colors.primary,
+                        color: AppColors.primary,
                         strokeWidth: 2,
                       ),
                     ],
@@ -147,7 +146,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                       height: 28,
                       child: MapNumberedMarker(
                         number: e.key + 1,
-                        backgroundColor: colors.primary,
+                        backgroundColor: AppColors.primary,
                         size: 28,
                       ),
                     );
@@ -163,7 +162,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                         height: 40,
                         child: const Icon(
                           Icons.location_pin,
-                          color: AppColors.safeGreen,
+                          color: AppColors.success,
                           size: 32,
                         ),
                       ),
@@ -181,7 +180,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                             height: 32,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: colors.primary,
+                                color: AppColors.primary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white,
@@ -189,7 +188,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: colors.primary.withValues(
+                                    color: AppColors.primary.withValues(
                                       alpha: 0.4,
                                     ),
                                     blurRadius: 8,
@@ -219,6 +218,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
             ),
 
             // Location Controls
+            // Location Controls & Bottom Actions section within build()
             Positioned(
               bottom: 100,
               right: 24,
@@ -230,7 +230,6 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     onTap: () {
                       _mapController.move(widget.initialCenter, 16.0);
                     },
-                    colors: colors,
                   ),
                   const SizedBox(height: 12),
                   BlocBuilder<UserLocationBloc, UserLocationState>(
@@ -244,7 +243,6 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                         onTap: isLoading
                             ? null
                             : () => _userLocationBloc.add(FetchUserLocation()),
-                        colors: colors,
                       );
                     },
                   ),
@@ -262,7 +260,6 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                   MapIconButton(
                     icon: Icons.undo_rounded,
                     onTap: _points.isEmpty ? null : _removeLastPoint,
-                    colors: colors,
                   ),
                   const Spacer(),
                   AnimatedOpacity(

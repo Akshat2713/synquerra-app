@@ -1,19 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+// lib/presentation/screens/manage/widgets/emergency_contacts_section.dart
 
+import 'package:flutter/material.dart';
 import '../../../../domain/entities/settings/settings_entity.dart';
-import '../../../blocs/manage/manage_bloc.dart';
+import '../../../themes/colors.dart';
 
 class EmergencyContactsSection extends StatelessWidget {
   final String deviceId;
   final SettingsEntity settings;
   final bool isUpdating;
+  final void Function(String phoneNum1, String phoneNum2)? onSaveContacts;
 
   const EmergencyContactsSection({
     super.key,
     required this.deviceId,
     required this.settings,
     this.isUpdating = false,
+    this.onSaveContacts,
   });
 
   void _showEditBottomSheet(BuildContext context) {
@@ -25,8 +27,6 @@ class EmergencyContactsSection extends StatelessWidget {
           ? ''
           : settings.phoneNum2,
     );
-
-    final colors = Theme.of(context).colorScheme;
 
     showModalBottomSheet(
       context: context,
@@ -49,9 +49,15 @@ class EmergencyContactsSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Edit Emergency Contacts',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: AppColors.textPrimary(
+                        context,
+                      ).withValues(alpha: 0.8),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
@@ -79,14 +85,13 @@ class EmergencyContactsSection extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: colors.onPrimary,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -94,12 +99,9 @@ class EmergencyContactsSection extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.pop(bottomSheetContext);
-                    context.read<ManageBloc>().add(
-                      ManagePhoneNumbersUpdateRequested(
-                        deviceId: deviceId,
-                        phoneNum1: primaryController.text.trim(),
-                        phoneNum2: secondaryController.text.trim(),
-                      ),
+                    onSaveContacts?.call(
+                      primaryController.text.trim(),
+                      secondaryController.text.trim(),
                     );
                   },
                   child: const Text(
@@ -117,14 +119,14 @@ class EmergencyContactsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outline(context).withValues(alpha: 0.6),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,17 +137,17 @@ class EmergencyContactsSection extends StatelessWidget {
               Text(
                 'EMERGENCY CONTACTS',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                  color: AppColors.textPrimary(context).withValues(alpha: 0.8),
                 ),
               ),
               if (isUpdating)
                 const SizedBox(
                   height: 16,
                   width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(strokeWidth: 2),
                 )
               else
                 IconButton(
@@ -153,7 +155,7 @@ class EmergencyContactsSection extends StatelessWidget {
                   icon: Icon(
                     Icons.edit_rounded,
                     size: 18,
-                    color: colors.primary,
+                    color: AppColors.primary,
                   ),
                   onPressed: () => _showEditBottomSheet(context),
                 ),
@@ -162,7 +164,10 @@ class EmergencyContactsSection extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Called when this device sends SOS · two numbers max',
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
           const SizedBox(height: 14),
           _ContactBox(
@@ -188,7 +193,6 @@ class _ContactBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,7 +201,7 @@ class _ContactBox extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+            color: AppColors.textSecondary(context).withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 6),
@@ -205,7 +209,7 @@ class _ContactBox extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: colors.surfaceContainerHighest.withValues(alpha: 0.4),
+            color: AppColors.surfaceVariant(context).withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(

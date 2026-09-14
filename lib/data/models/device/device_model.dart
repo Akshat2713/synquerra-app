@@ -65,36 +65,37 @@ class DeviceModel {
   });
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
-    final master = json['device_master'] as Map<String, dynamic>;
-    final carrierJson = master['carrier'] as Map<String, dynamic>?;
+    // Use nested 'device_master' if available, otherwise fallback to root json
+    final master = (json['device_master'] as Map<String, dynamic>?) ?? json;
+    final carrierJson = json['carrier'] as Map<String, dynamic>?;
     final ownerJson = json['device_owner'] as Map<String, dynamic>?;
     final associationsJson = json['device_association'] as List<dynamic>? ?? [];
 
     return DeviceModel(
-      id: master['id'] as String,
-      topic: master['topic'] as String,
-      imei: master['imei'] as String,
-      serialNo: master['serial_no'] as String,
-      geoid: master['geoid'] as String?,
-      latitude: master['latitude'] as String?,
-      longitude: master['longitude'] as String?,
-      speed: master['speed'] as String?,
-      temperature: master['temperature'] as String?,
+      id: (master['id'] ?? '') as String,
+      topic: (master['subscription_topic'] ?? master['topic'] ?? '') as String,
+      imei: (master['imei'] ?? '') as String,
+      serialNo: (master['serial_no'] ?? '') as String,
+      geoid: master['geoid']?.toString(),
+      latitude: master['latitude']?.toString(),
+      longitude: master['longitude']?.toString(),
+      speed: master['speed']?.toString(),
+      temperature: master['temperature']?.toString(),
       currentMode: master['current_mode'] as String?,
-      ledStatus: master['led_status'] as String,
+      ledStatus: (master['led_status'] ?? '') as String,
       timestamp: master['timestamp'] as String?,
-      battery: master['battery'] as String?,
-      signal: master['signal'] as String?,
+      battery: master['battery']?.toString(),
+      signal: master['signal']?.toString(),
       gpsStrength: master['gps_strength'] as String?,
-      isActive: master['is_active'] as bool,
-      isSubscribed: master['is_subscribed'] as bool,
+      isActive: (master['is_active'] ?? false) as bool,
+      isSubscribed: (master['is_subscribed'] ?? false) as bool,
       inventoryStatus: master['inventory_status'] as String?,
       associationType: master['association_type'] as String?,
       isOnline: master['is_online'] as bool?,
       isCharging: master['is_charging'] as bool?,
-      createdAt: master['createdAt'] as String,
-      updatedAt: master['updatedAt'] as String,
-      relationship: json['relationship'] as String,
+      createdAt: (master['created_at'] ?? master['createdAt'] ?? '') as String,
+      updatedAt: (master['updated_at'] ?? master['updatedAt'] ?? '') as String,
+      relationship: (json['relationship'] ?? '') as String,
       deviceOwner: ownerJson != null
           ? DeviceOwnerModel.fromJson(ownerJson)
           : null,
@@ -106,7 +107,6 @@ class DeviceModel {
           .toList(),
     );
   }
-
   // Extracts the leading numeric value from strings like "7 km/hr" or "36.27 c"
   static double? _parseLeadingNumber(String? value) {
     if (value == null) return null;

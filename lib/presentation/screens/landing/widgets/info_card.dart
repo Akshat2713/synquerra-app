@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../themes/colors.dart';
+
 class InfoCard extends StatelessWidget {
   final IconData icon;
   final Color iconBg;
@@ -18,14 +20,13 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: AppColors.surface(context),
+        // color: Colors.amber,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.outlineVariant, width: 1),
+        border: Border.all(color: AppColors.outline(context), width: 1),
       ),
       child: Row(
         children: [
@@ -55,7 +56,7 @@ class InfoCard extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 13,
-                    color: colors.onSurfaceVariant,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
               ],

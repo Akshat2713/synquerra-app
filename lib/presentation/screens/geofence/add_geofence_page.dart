@@ -1,3 +1,5 @@
+// lib/presentation/screens/geofence/add_geofence_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
@@ -6,9 +8,9 @@ import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../themes/colors.dart';
 import '../../utils/colour_util.dart' as colour_utils;
 import 'utils/map_bounds_util.dart';
-// import 'widgets/coordinates_list.dart';
 import 'widgets/empty_coordinates_placeholder.dart';
 import 'widgets/geofence_active_toggle.dart';
 import 'widgets/geofence_address_section.dart';
@@ -76,7 +78,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
 
     final result = await Navigator.pushNamed<List<Coordinate>>(
       context,
-      AppRoutes.geofenceMapPicker,
+      '/geofence-map-picker',
       arguments: GeofenceMapPickerArgs(
         initialCenter: center,
         initialPoints: _coordinates,
@@ -89,22 +91,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   }
 
   void _onSave() {
-    AppLogger.d('AddGeofencePage', '_onSave called');
-    AppLogger.d(
-      'AddGeofencePage',
-      'form valid: ${_formKey.currentState?.validate()}',
-    );
-    AppLogger.d('AddGeofencePage', 'coordinates: $_coordinates');
-    AppLogger.d('AddGeofencePage', 'name: ${_nameController.text.trim()}');
-    AppLogger.d('AddGeofencePage', 'isActive: $_isActive');
-    AppLogger.d('AddGeofencePage', 'color: $_selectedColor');
-
     if (!_formKey.currentState!.validate()) {
-      AppLogger.d('AddGeofencePage', 'Form validation failed');
       return;
     }
     if (_coordinates == null) {
-      AppLogger.d('AddGeofencePage', 'Coordinates are null');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please pick geofence area on map.')),
       );
@@ -112,11 +102,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     }
 
     if (_isEditing) {
-      AppLogger.d('AddGeofencePage', 'Dispatching GeofenceEdit event');
       context.read<GeofenceBloc>().add(
         GeofenceEdit(
           deviceId: widget.deviceId,
-          geofenceId: widget.existing!.geofenceId,
+          id: widget.existing!.id,
           name: _nameController.text.trim(),
           isActive: _isActive,
           coordinates: _coordinates!,
@@ -133,7 +122,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
         ),
       );
     } else {
-      AppLogger.d('AddGeofencePage', 'Dispatching GeofenceCreate event');
       context.read<GeofenceBloc>().add(
         GeofenceCreate(
           deviceId: widget.deviceId,
@@ -152,14 +140,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
         ),
       );
     }
-    AppLogger.d('AddGeofencePage', 'event dispatched');
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Geofence' : 'New Geofence'),
@@ -172,7 +156,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} created successfully.',
                 ),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
             Navigator.pop(context);
@@ -182,7 +166,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} updated successfully.',
                 ),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
             Navigator.pop(context);
@@ -190,7 +174,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
               ),
             );
           }
@@ -217,7 +201,14 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                     onColorChanged: (c) => setState(() => _selectedColor = c),
                   ),
                   const SizedBox(height: 24),
-                  Text('Geofence Area', style: textTheme.labelLarge),
+                  Text(
+                    'Geofence Area',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary(context),
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   _coordinates == null
                       ? EmptyCoordinatesPlaceholder(onTap: _openMapPicker)
@@ -239,7 +230,9 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator.adaptive(
+                              strokeWidth: 2,
+                            ),
                           )
                         : Text(
                             _isEditing ? 'Update Geofence' : 'Save Geofence',

@@ -1,11 +1,14 @@
+// lib/presentation/screens/landing/widgets/attention_device_sheet.dart
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../app/app_router.dart';
 import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
-import '../../../app/app_router.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
@@ -19,7 +22,6 @@ class AttentionDeviceSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final deviceState = context.watch<DeviceListBloc>().state;
     final authState = context.watch<AuthBloc>().state;
     final currentUserFullName = authState is AuthAuthenticated
@@ -36,11 +38,10 @@ class AttentionDeviceSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) => Container(
         decoration: BoxDecoration(
-          color: colors.surface,
+          color: AppColors.surface(context),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        clipBehavior:
-            Clip.antiAlias, // keeps ink splashes clipped to rounded corners
+        clipBehavior: Clip.antiAlias,
         child: Material(
           color: Colors.transparent,
           child: Column(
@@ -50,7 +51,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colors.outlineVariant,
+                  color: AppColors.outline(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -61,7 +62,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: colors.onSurface,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -114,13 +115,10 @@ class AttentionDeviceSheet extends StatelessWidget {
                       onTap: () {
                         final deviceListBloc = context.read<DeviceListBloc>();
                         Navigator.pop(context);
-                        Navigator.pushReplacementNamed(
+                        AppRouter.pushDeviceDetail(
                           context,
-                          AppRoutes.deviceDetail,
-                          arguments: DeviceDetailArgs(
-                            device: d,
-                            deviceListBloc: deviceListBloc,
-                          ),
+                          device: d,
+                          deviceListBloc: deviceListBloc,
                         );
                       },
                     );

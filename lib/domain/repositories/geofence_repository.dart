@@ -25,7 +25,7 @@ abstract class GeofenceRepository {
 
   Future<Either<Failure, GeofenceEntity>> editGeofence({
     required String deviceId,
-    required String geofenceId,
+    required String id,
     required String name,
     required bool isActive,
     required List<Coordinate> coordinates,
@@ -43,6 +43,6 @@ abstract class GeofenceRepository {
 
   Future<Either<Failure, Unit>> deleteGeofence({
     required String deviceId,
-    required String geofenceId,
+    required String id,
   });
 }

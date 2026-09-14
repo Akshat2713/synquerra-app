@@ -43,27 +43,44 @@ class SettingsModel {
     this.updatedAt,
   });
 
-  factory SettingsModel.fromJson(Map<String, dynamic> json) => SettingsModel(
-    topic: json['topic'] as String?,
-    imei: json['imei'] as String?,
-    normalSendingInterval: json['normal_sending_interval'] as int?,
-    sosSendingInterval: json['sos_sending_interval'] as int?,
-    normalScanningInterval: json['normal_scanning_interval'] as int?,
-    airplaneInterval: json['airplane_interval'] as int?,
-    temperatureLimit: (json['temperature_limit'] as num?)?.toDouble(),
-    speedLimit: (json['speed_limit'] as num?)?.toDouble(),
-    lowbatLimit: json['lowbat_limit'] as int?,
-    phoneNum1: json['phone_num1'] as String?,
-    phoneNum2: json['phone_num2'] as String?,
-    controlRoomNum: json['control_room_num'] as String?,
-    currentProfile: json['current_profile'] as String?,
-    incomingCallEnabled: json['incoming_call_enabled'] as bool?,
-    outgoingCallEnabled: json['outgoing_call_enabled'] as bool?,
-    ambientListeningStatus: json['ambient_listening_status'] as String?,
-    autoModeSwitch: json['auto_mode_switch'] as bool?,
-    createdAt: json['created_at'] as String?,
-    updatedAt: json['updated_at'] as String?,
-  );
+  factory SettingsModel.fromJson(Map<String, dynamic> json) {
+    int? parseInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      if (value is double) return value.toInt();
+      return null;
+    }
+
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
+    return SettingsModel(
+      topic: json['topic'] as String?,
+      imei: json['imei'] as String?,
+      normalSendingInterval: parseInt(json['normal_sending_interval']),
+      sosSendingInterval: parseInt(json['sos_sending_interval']),
+      normalScanningInterval: parseInt(json['normal_scanning_interval']),
+      airplaneInterval: parseInt(json['airplane_interval']),
+      temperatureLimit: parseDouble(json['temperature_limit']),
+      speedLimit: parseDouble(json['speed_limit']),
+      lowbatLimit: parseInt(json['lowbat_limit']),
+      phoneNum1: json['phone_num1']?.toString(),
+      phoneNum2: json['phone_num2']?.toString(),
+      controlRoomNum: json['control_room_num']?.toString(),
+      currentProfile: json['current_profile'] as String?,
+      incomingCallEnabled: json['incoming_call_enabled'] as bool?,
+      outgoingCallEnabled: json['outgoing_call_enabled'] as bool?,
+      ambientListeningStatus: json['ambient_listening_status'] as String?,
+      autoModeSwitch: json['auto_mode_switch'] as bool?,
+      createdAt: json['created_at'] as String?,
+      updatedAt: json['updated_at'] as String?,
+    );
+  }
 
   SettingsEntity toEntity() => SettingsEntity(
     topic: topic,

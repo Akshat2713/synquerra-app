@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
 
 class ModeListTile extends StatelessWidget {
@@ -18,7 +19,6 @@ class ModeListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
@@ -28,10 +28,12 @@ class ModeListTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? colors.primaryContainer.withValues(alpha: 0.5)
-              : colors.surface,
+              ? AppColors.primaryContainer.withValues(alpha: 0.5)
+              : AppColors.surface(context),
           border: Border.all(
-            color: isSelected ? colors.primary : colors.outlineVariant,
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.outlineVariant(context),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -47,7 +49,9 @@ class ModeListTile extends StatelessWidget {
                     mode.name,
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? colors.primary : colors.onSurface,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textPrimary(context),
                     ),
                   ),
                 ),
@@ -60,11 +64,11 @@ class ModeListTile extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? colors.primary : Colors.transparent,
+                    color: isSelected ? AppColors.primary : Colors.transparent,
                     border: Border.all(
                       color: isSelected
-                          ? colors.primary
-                          : colors.outlineVariant,
+                          ? AppColors.primary
+                          : AppColors.outlineVariant(context),
                       width: 2,
                     ),
                   ),
@@ -84,7 +88,7 @@ class ModeListTile extends StatelessWidget {
               Text(
                 mode.description,
                 style: textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+                  color: AppColors.textSecondary(context),
                 ),
               ),
             ],
@@ -147,32 +151,31 @@ class _StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
-          color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: AppColors.surfaceVariant(context).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 16, color: colors.primary),
+            Icon(icon, size: 16, color: AppColors.primary),
             const SizedBox(height: 4),
             Text(
               value,
               style: textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: colors.onSurface,
+                color: AppColors.textPrimary(context),
               ),
             ),
             Text(
               label,
               style: textTheme.labelSmall?.copyWith(
                 fontSize: 9,
-                color: colors.onSurfaceVariant,
+                color: AppColors.textSecondary(context),
               ),
             ),
           ],

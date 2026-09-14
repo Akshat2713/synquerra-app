@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
@@ -15,8 +16,10 @@ class AddMemberScreen extends StatefulWidget {
 class _AddMemberScreenState extends State<AddMemberScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _addressController = TextEditingController();
@@ -28,6 +31,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   String _selectedGender = 'male';
   String _selectedRelationship = 'child';
   DateTime? _selectedBirthDate;
+  bool _isHead = false;
 
   // Tracks whether the in-flight submission belongs to this screen, so the
   // listener doesn't react to isAdding changes triggered elsewhere.
@@ -37,8 +41,10 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   @override
   void dispose() {
     _firstNameController.dispose();
+    _middleNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     _phoneController.dispose();
     _birthDateController.dispose();
     _addressController.dispose();
@@ -71,9 +77,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     context.read<ManageUsersBloc>().add(
       ManageUsersAddRequested(
         firstName: _firstNameController.text.trim(),
+        middleName: _middleNameController.text.trim().isEmpty
+            ? null
+            : _middleNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+        mobile: _phoneController.text.trim(),
         birthDate: _selectedBirthDate != null
             ? DateTimeFormatter.toIsoString(_selectedBirthDate!)
             : '',
@@ -84,13 +94,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         country: _countryController.text.trim(),
         pincode: _pincodeController.text.trim(),
         relationshipType: _selectedRelationship,
+        isHead: _isHead,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return BlocConsumer<ManageUsersBloc, ManageUsersState>(
       listener: (context, state) {
         if (!_wasSubmitting) return;
@@ -104,7 +114,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -133,7 +143,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             (state is ManageUsersLoading ||
                 (state is ManageUsersLoaded && state.isProcessing));
         return Scaffold(
-          backgroundColor: colors.surface,
           appBar: AppBar(
             title: const Text('Add Family Member'),
             centerTitle: false,
@@ -152,6 +161,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       hint: 'Anik',
                       prefixIcon: Icons.person_outline,
                       validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _middleNameController,
+                      label: 'Middle Name',
+                      hint: 'M',
+                      prefixIcon: Icons.person_outline,
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
@@ -174,6 +190,25 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
+
+                    AppTextField(
+                      controller: _passwordController,
+                      label: 'Set Password *',
+                      hint: '••••••••',
+                      prefixIcon: Icons.lock_outline_rounded,
+                      isPassword: true,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Password is required';
+                        }
+                        if (v.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
                     AppTextField(
                       controller: _phoneController,
                       label: 'Phone *',
@@ -200,7 +235,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -213,11 +248,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colors.outlineVariant),
+                          borderSide: BorderSide(
+                            color: AppColors.outlineVariant(context),
+                          ),
                         ),
                         prefixIcon: Icon(
                           Icons.wc_outlined,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           size: 20,
                         ),
                       ),
@@ -239,7 +276,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -252,23 +289,57 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colors.outlineVariant),
+                          borderSide: BorderSide(
+                            color: AppColors.outlineVariant(context),
+                          ),
                         ),
                         prefixIcon: Icon(
                           Icons.diversity_3_outlined,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                           size: 20,
                         ),
                       ),
                       items: const [
+                        // Static List using String values
                         DropdownMenuItem(value: 'child', child: Text('Child')),
                         DropdownMenuItem(
                           value: 'parent',
                           child: Text('Parent'),
                         ),
+                        DropdownMenuItem(
+                          value: 'teacher',
+                          child: Text('Teacher'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'guardian',
+                          child: Text('Guardian'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'spouse',
+                          child: Text('Spouse'),
+                        ),
+                        DropdownMenuItem(value: 'other', child: Text('Other')),
                       ],
                       onChanged: (val) =>
                           setState(() => _selectedRelationship = val!),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: Text(
+                        'Set as Head of Family',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary(context),
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'This member will have primary account privileges',
+                      ),
+                      value: _isHead,
+                      onChanged: (val) => setState(() => _isHead = val),
+                      activeThumbColor: AppColors.primary,
+                      contentPadding: EdgeInsets.zero,
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
@@ -315,7 +386,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                           onPressed: () => Navigator.pop(context),
                           child: Text(
                             'Cancel',
-                            style: TextStyle(color: colors.onSurfaceVariant),
+                            style: TextStyle(
+                              color: AppColors.textSecondary(context),
+                            ),
                           ),
                         ),
                         SizedBox(

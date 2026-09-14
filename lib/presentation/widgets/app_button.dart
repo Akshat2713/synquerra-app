@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../themes/colors.dart';
+
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -24,17 +26,15 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return SizedBox(
       width: fullWidth ? double.infinity : null,
       height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? colors.primary,
-          foregroundColor: foregroundColor ?? colors.onPrimary,
-          disabledBackgroundColor: (backgroundColor ?? colors.primary)
+          backgroundColor: backgroundColor ?? AppColors.primary,
+          foregroundColor: foregroundColor ?? Colors.white,
+          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
               .withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -47,7 +47,7 @@ class AppButton extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  color: foregroundColor ?? colors.onPrimary,
+                  color: foregroundColor ?? Colors.white,
                 ),
               )
             : Text(

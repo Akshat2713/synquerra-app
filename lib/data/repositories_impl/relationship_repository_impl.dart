@@ -10,6 +10,7 @@ import '../../domain/repositories/relationship_repository.dart';
 import '../datasources/remote/relationship_remote_datasource.dart';
 import '../mappers/failure_mapper.dart';
 import 'repository_helper.dart';
+import '../../domain/entities/signup/person_entity.dart';
 
 class RelationshipRepositoryImpl implements RelationshipRepository {
   final RelationshipRemoteDataSource _remote;
@@ -28,18 +29,76 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   }
 
   @override
+  Future<Either<Failure, PersonEntity>> searchPersonByPhone(
+    String phoneNumber,
+  ) async {
+    try {
+      final person = await _remote.searchPersonByPhone(phoneNumber);
+      return Right(person.toEntity());
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> createRelationship({
-    required String personAId,
-    required String personBId,
+    required String relatedUserId,
     required String relationshipType,
   }) async {
     try {
       await _remote.createRelationship(
-        personAId: personAId,
-        personBId: personBId,
+        relatedUserId: relatedUserId,
         relationshipType: relationshipType,
       );
       return const Right(null);
+    } catch (e) {
+      final cause = (e is DioException && e.error is AppException)
+          ? e.error as AppException
+          : e;
+      return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PersonEntity>> createPersonWithRelationship({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String relationshipType,
+    String? middleName,
+    String? mobile,
+    String? birthDate,
+    String? gender,
+    String? address,
+    String? city,
+    String? state,
+    String? country,
+    String? pincode,
+    bool isHead = false,
+  }) async {
+    try {
+      final model = await _remote.createPersonWithRelationship(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        relationshipType: relationshipType,
+        middleName: middleName,
+        mobile: mobile,
+        birthDate: birthDate,
+        gender: gender,
+        address: address,
+        city: city,
+        state: state,
+        country: country,
+        pincode: pincode,
+        isHead: isHead,
+      );
+      return Right(model.toEntity());
     } catch (e) {
       final cause = (e is DioException && e.error is AppException)
           ? e.error as AppException
@@ -54,27 +113,6 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   ) async {
     try {
       await _remote.unlinkRelationship(relationshipId);
-      return const Right(null);
-    } catch (e) {
-      final cause = (e is DioException && e.error is AppException)
-          ? e.error as AppException
-          : e;
-      return Left(mapExceptionToFailure(cause));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> createRelationshipByPhone({
-    required String personId,
-    required String phoneNumber,
-    required String relationType,
-  }) async {
-    try {
-      await _remote.createRelationshipByPhone(
-        personId: personId,
-        phoneNumber: phoneNumber,
-        relationType: relationType,
-      );
       return const Right(null);
     } catch (e) {
       final cause = (e is DioException && e.error is AppException)

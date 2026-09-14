@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/entities/signup/signup_profile_data.dart';
 import '../../app/app_router.dart';
 import '../../blocs/signup/signup_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
@@ -31,7 +33,6 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
   String _selectedGender = 'male';
   DateTime? _selectedBirthDate; // raw DateTime for API
 
-  @override
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -65,8 +66,10 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    context.read<SignupBloc>().add(
-      SignupProfileSubmitted(
+    Navigator.pushNamed(
+      context,
+      AppRoutes.signupCredentials,
+      arguments: SignupProfileData(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
@@ -86,237 +89,227 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return BlocListener<SignupBloc, SignupState>(
-      listener: (context, state) {
-        // Navigate to screen 2 when step 1 succeeds
-        if (state.status == SignupStatus.stepSuccess && state.step == 2) {
-          Navigator.pushNamed(context, AppRoutes.signupCredentials);
-        }
-
-        // Show error snackbar
-        if (state.status == SignupStatus.error && state.errorMessage != null) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Page Header ──────────────────────────────
+                Center(
+                  child: Text(
+                    'Create Your Account',
+                    style: textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary(context),
+                    ),
+                  ),
                 ),
-              ),
-            );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: colors.surface,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Page Header ──────────────────────────────
-                  Center(
-                    child: Text(
-                      'Create Your Account',
-                      style: textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
-                      ),
+                const SizedBox(height: 6),
+                Center(
+                  child: Text(
+                    'Register your profile, secure your account, and connect your smart device in three simple steps.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Center(
-                    child: Text(
-                      'Register your profile, secure your account, and connect your smart device in three simple steps.',
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
+                ),
+                const SizedBox(height: 28),
+
+                // ── Progress Tracker ─────────────────────────
+                // remove _buildProgressTracker(colors) call, replace with:
+                const SignupProgressTracker(currentStep: SignupStep.profile),
+                const SizedBox(height: 32),
+
+                // ── First Name ────────────────────────────────
+                AppTextField(
+                  controller: _firstNameController,
+                  label: 'First Name *',
+                  hint: 'Anik',
+                  prefixIcon: Icons.person_outline,
+                  validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+
+                // ── Last Name ─────────────────────────────────
+                AppTextField(
+                  controller: _lastNameController,
+                  label: 'Last Name',
+                  hint: 'Kumar',
+                  prefixIcon: Icons.person_outline,
+                ),
+                const SizedBox(height: 16),
+
+                // ── Email ─────────────────────────────────────
+                AppTextField(
+                  controller: _emailController,
+                  label: 'Email *',
+                  hint: 'anik123@gmail.com',
+                  prefixIcon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Required';
+                    if (!v.contains('@')) return 'Invalid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // ── Phone ─────────────────────────────────────
+                AppTextField(
+                  controller: _phoneController,
+                  label: 'Phone *',
+                  hint: '9876543210',
+                  prefixIcon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Phone number is required';
+                    }
+
+                    final phone = v.trim();
+                    final phoneRegExp = RegExp(r'^[6-9]\d{9}$');
+
+                    if (!phoneRegExp.hasMatch(phone)) {
+                      return 'Enter connect phone number';
+                    }
+
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // ── Birth Date ────────────────────────────────
+                GestureDetector(
+                  onTap: () => _selectBirthDate(context),
+                  child: AbsorbPointer(
+                    child: AppTextField(
+                      controller: _birthDateController,
+                      label: 'Birth Date',
+                      hint: '14 Feb, 2000',
+                      prefixIcon: Icons.calendar_today_outlined,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                ),
+                const SizedBox(height: 16),
 
-                  // ── Progress Tracker ─────────────────────────
-                  // remove _buildProgressTracker(colors) call, replace with:
-                  const SignupProgressTracker(currentStep: SignupStep.profile),
-                  const SizedBox(height: 32),
-
-                  // ── First Name ────────────────────────────────
-                  AppTextField(
-                    controller: _firstNameController,
-                    label: 'First Name *',
-                    hint: 'Anik',
-                    prefixIcon: Icons.person_outline,
-                    validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                // ── Gender ────────────────────────────────────
+                Text(
+                  'Gender',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary(context),
                   ),
-                  const SizedBox(height: 16),
-
-                  // ── Last Name ─────────────────────────────────
-                  AppTextField(
-                    controller: _lastNameController,
-                    label: 'Last Name',
-                    hint: 'Kumar',
-                    prefixIcon: Icons.person_outline,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Email ─────────────────────────────────────
-                  AppTextField(
-                    controller: _emailController,
-                    label: 'Email *',
-                    hint: 'anik123@gmail.com',
-                    prefixIcon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Required';
-                      if (!v.contains('@')) return 'Invalid email';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Phone ─────────────────────────────────────
-                  AppTextField(
-                    controller: _phoneController,
-                    label: 'Phone *',
-                    hint: '+917788997788',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Birth Date ────────────────────────────────
-                  GestureDetector(
-                    onTap: () => _selectBirthDate(context),
-                    child: AbsorbPointer(
-                      child: AppTextField(
-                        controller: _birthDateController,
-                        label: 'Birth Date',
-                        hint: '14 Feb, 2000',
-                        prefixIcon: Icons.calendar_today_outlined,
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedGender,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.outlineVariant(context),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Gender ────────────────────────────────────
-                  Text(
-                    'Gender',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
+                    prefixIcon: Icon(
+                      Icons.wc_outlined,
+                      color: AppColors.textSecondary(context),
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedGender,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colors.outlineVariant),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.wc_outlined,
-                        color: colors.onSurfaceVariant,
-                        size: 20,
-                      ),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'male', child: Text('Male')),
-                      DropdownMenuItem(value: 'female', child: Text('Female')),
-                      DropdownMenuItem(value: 'other', child: Text('Other')),
-                    ],
-                    onChanged: (val) => setState(() => _selectedGender = val!),
-                  ),
-                  const SizedBox(height: 16),
+                  items: const [
+                    DropdownMenuItem(value: 'male', child: Text('Male')),
+                    DropdownMenuItem(value: 'female', child: Text('Female')),
+                    DropdownMenuItem(value: 'other', child: Text('Other')),
+                  ],
+                  onChanged: (val) => setState(() => _selectedGender = val!),
+                ),
+                const SizedBox(height: 16),
 
-                  // ── Address ───────────────────────────────────
-                  AppTextField(
-                    controller: _addressController,
-                    label: 'Address',
-                    hint: 'XYZ Colony, ABC Road',
-                    prefixIcon: Icons.home_outlined,
-                  ),
-                  const SizedBox(height: 16),
+                // ── Address ───────────────────────────────────
+                AppTextField(
+                  controller: _addressController,
+                  label: 'Address',
+                  hint: 'XYZ Colony, ABC Road',
+                  prefixIcon: Icons.home_outlined,
+                ),
+                const SizedBox(height: 16),
 
-                  // ── City ──────────────────────────────────────
-                  AppTextField(
-                    controller: _cityController,
-                    label: 'City',
-                    hint: 'Ranchi',
-                    prefixIcon: Icons.location_city_outlined,
-                  ),
-                  const SizedBox(height: 16),
+                // ── City ──────────────────────────────────────
+                AppTextField(
+                  controller: _cityController,
+                  label: 'City',
+                  hint: 'Ranchi',
+                  prefixIcon: Icons.location_city_outlined,
+                ),
+                const SizedBox(height: 16),
 
-                  // ── State ─────────────────────────────────────
-                  AppTextField(
-                    controller: _stateController,
-                    label: 'State',
-                    hint: 'Jharkhand',
-                    prefixIcon: Icons.map_outlined,
-                  ),
-                  const SizedBox(height: 16),
+                // ── State ─────────────────────────────────────
+                AppTextField(
+                  controller: _stateController,
+                  label: 'State',
+                  hint: 'Jharkhand',
+                  prefixIcon: Icons.map_outlined,
+                ),
+                const SizedBox(height: 16),
 
-                  // ── Country ───────────────────────────────────
-                  AppTextField(
-                    controller: _countryController,
-                    label: 'Country',
-                    hint: 'India',
-                    prefixIcon: Icons.flag_outlined,
-                  ),
-                  const SizedBox(height: 16),
+                // ── Country ───────────────────────────────────
+                AppTextField(
+                  controller: _countryController,
+                  label: 'Country',
+                  hint: 'India',
+                  prefixIcon: Icons.flag_outlined,
+                ),
+                const SizedBox(height: 16),
 
-                  // ── Pincode ───────────────────────────────────
-                  AppTextField(
-                    controller: _pincodeController,
-                    label: 'Pincode',
-                    hint: '834003',
-                    prefixIcon: Icons.pin_outlined,
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 32),
+                // ── Pincode ───────────────────────────────────
+                AppTextField(
+                  controller: _pincodeController,
+                  label: 'Pincode',
+                  hint: '834003',
+                  prefixIcon: Icons.pin_outlined,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 32),
 
-                  // ── Footer ────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Back to Login',
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                // ── Footer ────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Back to Login',
+                        style: TextStyle(
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
-                      BlocBuilder<SignupBloc, SignupState>(
-                        builder: (context, state) {
-                          return SizedBox(
-                            width: 200,
-                            child: AppButton(
-                              label: 'Next: Account Setup',
-                              onPressed: _submit,
-                              isLoading: state.status == SignupStatus.loading,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    BlocBuilder<SignupBloc, SignupState>(
+                      builder: (context, state) {
+                        return SizedBox(
+                          width: 200,
+                          child: AppButton(
+                            label: 'Next: Account Setup',
+                            onPressed: _submit,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

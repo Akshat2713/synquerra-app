@@ -114,3 +114,15 @@ class DeviceEntity extends Equatable {
     associations,
   ];
 }
+
+extension DeviceEntityFiltering on List<DeviceEntity> {
+  List<DeviceEntity> get ownedDevices => where(
+    (d) => d.relationship == 'owned' || d.relationship == 'both',
+  ).toList();
+
+  List<DeviceEntity> get unassignedDevices =>
+      ownedDevices.where((d) => d.carrier == null).toList();
+
+  List<DeviceEntity> get assignedDevices =>
+      ownedDevices.where((d) => d.carrier != null).toList();
+}

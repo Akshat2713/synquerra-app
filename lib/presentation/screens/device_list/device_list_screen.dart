@@ -1,17 +1,21 @@
+// lib/presentation/screens/device_list/device_list_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/entities/device/device_entity.dart';
-import '../../blocs/device_list/device_list_bloc.dart';
-import '../../blocs/alerts/alerts_bloc.dart';
-import '../../blocs/auth/auth_bloc.dart';
+import 'package:synquerra/presentation/screens/profile/profile_screen.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
 import '../../app/app_router.dart';
+import '../../blocs/alerts/alerts_bloc.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
+import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
 import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
-import 'widgets/profile_menu_button.dart';
 import 'widgets/notification_bell.dart';
+import 'widgets/profile_menu_button.dart';
 
 class DeviceListScreen extends StatefulWidget {
   const DeviceListScreen({super.key});
@@ -51,9 +55,40 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     return grouped;
   }
 
+  void _onDeviceTap(DeviceEntity device) {
+    AppRouter.pushDeviceDetail(
+      context,
+      device: device,
+      deviceListBloc: context.read<DeviceListBloc>(),
+    ).then((_) {
+      if (mounted) {
+        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+      }
+    });
+  }
+
+  void _onModesTap(DeviceEntity device) {
+    AppRouter.pushModes(
+      context,
+      deviceId: device.id,
+      currentModeName: device.currentMode,
+    ).then((_) {
+      if (mounted) {
+        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+      }
+    });
+  }
+
+  void _onAddDeviceTap() {
+    AppRouter.pushLinkDevice(context).then((_) {
+      if (mounted) {
+        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
 
@@ -73,19 +108,27 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           if (!didPop) await SystemNavigator.pop();
         },
         child: Scaffold(
-          backgroundColor: colors.surface,
           appBar: AppBar(
             title: const Text('My Devices'),
             automaticallyImplyLeading: false,
             centerTitle: false,
             actions: [
               const NotificationBell(),
-              ProfileMenuButton(user: user),
+              ProfileMenuButton(
+                user: user,
+                onProfileTap: () =>
+                    AppRouter.pushProfile(context, user: defaultUser),
+                onLogout: () =>
+                    context.read<AuthBloc>().add(const AuthLogoutRequested()),
+                onManageDevices: () => AppRouter.pushManageDevices(
+                  context,
+                  deviceListBloc: context.read<DeviceListBloc>(),
+                ),
+                onManageUsers: () => AppRouter.pushManageUsers(context),
+              ),
             ],
           ),
-          floatingActionButton: AddDeviceFab(
-            onTap: () => _navigateAndRefresh(AppRoutes.linkDevice),
-          ),
+          floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
           body: BlocBuilder<DeviceListBloc, DeviceListState>(
             builder: (context, state) {
               if (state is DeviceListLoading || state is DeviceListInitial) {
@@ -99,12 +142,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                       Icon(
                         Icons.error_outline_rounded,
                         size: 48,
-                        color: colors.error,
+                        color: AppColors.danger,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         state.message,
-                        style: TextStyle(color: colors.error),
+                        style: TextStyle(color: AppColors.danger),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -124,25 +167,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 final allAlerts = alertsState is AlertsLoaded
                     ? alertsState.alerts
                     : const [];
-                // final criticalCount = alertsState is AlertsLoaded
-                //     ? alertsState.criticalCount
-                //     : 0;
 
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: colors.primary,
+                  color: AppColors.primary,
                   child: CustomScrollView(
                     slivers: [
-                      // SliverToBoxAdapter(
-                      //   child: CriticalAlertBanner(
-                      //     criticalCount: criticalCount,
-                      //     devicesNeedingAttention:
-                      //         state.devicesNeedingAttention,
-                      //     onTap: () {
-                      //       // TODO: navigate to alerts screen
-                      //     },
-                      //   ),
-                      // ),
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -151,7 +181,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: colors.onSurfaceVariant,
+                              color: AppColors.textSecondary(context),
                             ),
                           ),
                         ),
@@ -161,7 +191,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           child: Center(
                             child: Text(
                               'No devices found.',
-                              style: TextStyle(color: colors.onSurfaceVariant),
+                              style: TextStyle(
+                                color: AppColors.textSecondary(context),
+                              ),
                             ),
                           ),
                         )
@@ -170,7 +202,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           if (grouped[entry.key]?.isNotEmpty ?? false)
                             ..._buildSection(
                               context,
-                              colors,
                               title: entry.value,
                               devices: grouped[entry.key]!,
                               user: user,
@@ -190,12 +221,11 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   List<Widget> _buildSection(
-    BuildContext context,
-    ColorScheme colors, {
+    BuildContext context, {
     required String title,
     required List<DeviceEntity> devices,
-    required dynamic user, // UserEntity?
-    required List allAlerts, // List<AlertEntity>
+    required dynamic user,
+    required List allAlerts,
   }) {
     return [
       SliverToBoxAdapter(
@@ -208,13 +238,16 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: colors.primary,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 '(${devices.length})',
-                style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary(context),
+                ),
               ),
             ],
           ),
@@ -229,33 +262,12 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
             isActive: device.isActive,
             currentUserFullName: user?.fullName ?? '—',
             deviceAlerts: deviceAlerts.cast(),
-            // WITH (back to original)
-            onTap: () => _navigateAndRefresh(
-              AppRoutes.deviceDetail,
-              arguments: DeviceDetailArgs(
-                device: device,
-                deviceListBloc: context.read<DeviceListBloc>(),
-              ),
-            ),
-            onViewModesTap: () => _navigateAndRefresh(
-              AppRoutes.modes,
-              arguments: {
-                'deviceId': device.id,
-                'currentModeName': device.currentMode,
-              },
-            ),
-            onSettingsTap: () => {},
+            onTap: () => _onDeviceTap(device),
+            onViewModesTap: () => _onModesTap(device),
+            onSettingsTap: () {},
           );
         }, childCount: devices.length),
       ),
     ];
-  }
-
-  void _navigateAndRefresh(String route, {Object? arguments}) {
-    Navigator.pushNamed(context, route, arguments: arguments).then((_) {
-      if (mounted) {
-        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
-      }
-    });
   }
 }

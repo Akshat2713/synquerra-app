@@ -14,7 +14,6 @@ class BatteryGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final color = batteryColor(batteryLevel);
 
     return SizedBox(
@@ -29,7 +28,7 @@ class BatteryGauge extends StatelessWidget {
             child: CircularProgressIndicator(
               value: (batteryLevel ?? 0) / 100,
               strokeWidth: 3.5,
-              backgroundColor: colors.onSurfaceVariant.withValues(alpha: 0.15),
+              backgroundColor: AppColors.textSecondary(context).withValues(alpha: 0.15),
               valueColor: AlwaysStoppedAnimation(color),
             ),
           ),
@@ -48,11 +47,11 @@ class BatteryGauge extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: colors.surface,
+                  color: AppColors.surface(context),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: colors.shadow.withValues(alpha: 0.15),
+                      color: AppColors.shadow(context).withValues(alpha: 0.15),
                       blurRadius: 2,
                     ),
                   ],
@@ -60,7 +59,7 @@ class BatteryGauge extends StatelessWidget {
                 child: const Icon(
                   Icons.bolt_rounded,
                   size: 11,
-                  color: AppColors.alertWarning,
+                  color: AppColors.warning,
                 ),
               ),
             ),

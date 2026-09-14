@@ -1,22 +1,23 @@
+// lib/presentation/blocs/manage/manage_state.dart
+
 part of 'manage_bloc.dart';
 
-abstract class ManageState extends Equatable {
+abstract class ManageState extends BaseState {
   const ManageState();
-
-  @override
-  List<Object?> get props => [];
 }
 
-class ManageInitial extends ManageState {}
+class ManageInitial extends ManageState {
+  const ManageInitial();
+}
 
-class ManageLoading extends ManageState {}
+class ManageLoading extends ManageState with LoadingState {
+  const ManageLoading();
+}
 
 class ManageLoaded extends ManageState {
   final SettingsEntity settings;
   final List<ModeEntity> modes;
   final String? activeModeId;
-
-  // Specific action flags & errors
   final bool isSwitchingMode;
   final String? modeSwitchError;
   final bool isUpdatingSettings;
@@ -64,7 +65,8 @@ class ManageLoaded extends ManageState {
   ];
 }
 
-class ManageError extends ManageState {
+class ManageError extends ManageState with ErrorState {
+  @override
   final String message;
 
   const ManageError(this.message);

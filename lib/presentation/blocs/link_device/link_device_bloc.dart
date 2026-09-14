@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../domain/usecases/link_device/link_device_usecase.dart';
+import '../base/base_state.dart';
 
 part 'link_device_event.dart';
 part 'link_device_state.dart';

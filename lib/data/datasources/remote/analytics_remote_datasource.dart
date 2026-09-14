@@ -13,7 +13,7 @@ class AnalyticsRemoteDataSource {
   AnalyticsRemoteDataSource(this._dioClient);
 
   Future<List<AnalyticsModel>> getAnalytics({
-    required String deviceId, // ~ renamed from imei
+    required String deviceId,
     int? skip,
     int? limit,
     int? dataInterval,
@@ -28,7 +28,7 @@ class AnalyticsRemoteDataSource {
       '${endDate != null ? ', to: $endDate' : ''}',
     );
     final response = await _dioClient.dio.post(
-      ApiConstants.analytics,
+      ApiConstants.analyticsQuery,
       data: {
         'query': AnalyticsQueries.analyticsByDeviceId(
           deviceId: deviceId,

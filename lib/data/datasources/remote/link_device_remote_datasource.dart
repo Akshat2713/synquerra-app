@@ -17,11 +17,11 @@ class LinkDeviceRemoteDataSource {
     );
 
     final response = await _dioClient.dio.post(
-      ApiConstants.linkDevice,
+      ApiConstants.linkDevice(deviceSerialNo),
       data: {
         'owner_id': ownerId,
         'owner_type': ownerType,
-        'device_serial_no': deviceSerialNo,
+        // 'device_serial_no': deviceSerialNo,
       },
     );
 

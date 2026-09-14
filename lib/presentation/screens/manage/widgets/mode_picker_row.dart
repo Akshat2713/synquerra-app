@@ -1,5 +1,8 @@
+// lib/presentation/screens/manage/widgets/mode_picker_row.dart
+
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
 
 class TrackingModeCard extends StatefulWidget {
@@ -23,19 +26,17 @@ class TrackingModeCard extends StatefulWidget {
 }
 
 class _TrackingModeCardState extends State<TrackingModeCard> {
-  // Defaults to Auto mode selected
   late bool _isAutoMode;
+
   @override
   void initState() {
     super.initState();
-    // 3. Initialize from backend setting
     _isAutoMode = widget.autoModeSwitch;
   }
 
   @override
   void didUpdateWidget(covariant TrackingModeCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 4. Update state if settings reload from backend
     if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
       setState(() {
         _isAutoMode = widget.autoModeSwitch;
@@ -45,9 +46,6 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    // Safe lookup: handles empty list during loading/skeleton states without throwing exception
     ModeEntity? activeMode;
     if (widget.modes.isNotEmpty) {
       activeMode = widget.modes.firstWhere(
@@ -56,7 +54,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
       );
     }
 
-    final modeTitle = activeMode?.name ?? 'Live Tracking';
+    // final modeTitle = activeMode?.name ?? 'Live Tracking';
     final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
         ? activeMode.description
         : 'Fast updates (~10 sec)';
@@ -64,54 +62,55 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outline(context).withValues(alpha: 0.8),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Top Header Row with Auto/Manual on the Right ──────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left column: Section Title & Active Mode Name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TRACKING MODE:',
+                      'TRACKING MODE',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                        color: AppColors.textPrimary(
+                          context,
+                        ).withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      modeTitle,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                    // Text(
+                    //   modeTitle,
+
+                    //   style: TextStyle(
+                    //     color: AppColors.textPrimary(context),
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.w800,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // Right: Compact Auto / Manual Segment Toggle
               SizedBox(
                 width: 150,
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHighest.withValues(
-                      alpha: 0.5,
-                    ),
+                    color: AppColors.surfaceVariant(
+                      context,
+                    ).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -136,10 +135,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
-
-          // ── Horizontal Scrollable Modes List ──────────────────────
           SizedBox(
             height: 72,
             child: widget.modes.isEmpty
@@ -148,7 +144,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                       'No modes available',
                       style: TextStyle(
                         fontSize: 12,
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                   )
@@ -173,16 +169,14 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? colors.primaryContainer.withValues(
+                                    ? AppColors.primaryContainer.withValues(
                                         alpha: 0.3,
                                       )
-                                    : colors.surfaceContainerHighest.withValues(
-                                        alpha: 0.4,
-                                      ),
+                                    : AppColors.surfaceVariant(context),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
-                                      ? colors.primary
+                                      ? AppColors.primary
                                       : Colors.transparent,
                                   width: 1.5,
                                 ),
@@ -191,12 +185,11 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (widget.isSwitching && isSelected)
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(
+                                      child: CircularProgressIndicator.adaptive(
                                         strokeWidth: 2,
-                                        color: colors.primary,
                                       ),
                                     )
                                   else
@@ -204,8 +197,8 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                       ModeIconResolver.resolve(mode),
                                       size: 22,
                                       color: isSelected
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary(context),
                                     ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -216,8 +209,8 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                           ? FontWeight.w700
                                           : FontWeight.w500,
                                       color: isSelected
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary(context),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -233,7 +226,10 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
           const SizedBox(height: 12),
           Text(
             modeDesc,
-            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
         ],
       ),
@@ -254,14 +250,13 @@ class _SegmentTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? colors.surface : Colors.transparent,
+          color: isSelected ? AppColors.surface(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
@@ -279,7 +274,9 @@ class _SegmentTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? colors.onSurface : colors.onSurfaceVariant,
+              color: isSelected
+                  ? AppColors.textPrimary(context)
+                  : AppColors.textSecondary(context),
             ),
           ),
         ),

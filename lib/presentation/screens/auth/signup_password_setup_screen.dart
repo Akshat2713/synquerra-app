@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/entities/signup/signup_profile_data.dart';
 import '../../app/app_router.dart';
 import '../../blocs/signup/signup_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/signup_progress_tracker.dart';
 
 class SignupPasswordSetupScreen extends StatefulWidget {
-  const SignupPasswordSetupScreen({super.key});
+  final SignupProfileData profileData;
+  const SignupPasswordSetupScreen({super.key, required this.profileData});
 
   @override
   State<SignupPasswordSetupScreen> createState() =>
@@ -20,15 +23,10 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _useSameEmail = true;
-  String _profileEmail = ''; // holds email from bloc state
-
   @override
   void initState() {
     super.initState();
-    // Read email from bloc state — no constructor param needed
-    _profileEmail = context.read<SignupBloc>().state.email ?? '';
-    _emailController.text = _profileEmail;
+    _emailController.text = widget.profileData.email;
   }
 
   @override
@@ -39,38 +37,35 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
     super.dispose();
   }
 
-  void _onCheckboxChanged(bool? value) {
-    if (value == null) return;
-    setState(() {
-      _useSameEmail = value;
-      if (_useSameEmail) {
-        _emailController.text = _profileEmail; // restore profile email
-      } else {
-        _emailController.clear(); // let user type new one
-      }
-    });
-  }
-
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
+    final p = widget.profileData;
     context.read<SignupBloc>().add(
-      SignupCredentialsSubmitted(
+      SignupSubmitted(
+        firstName: p.firstName,
+        lastName: p.lastName,
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        passwordConfirmation: _confirmPasswordController.text,
+        phone: p.phone,
+        birthDate: p.birthDate,
+        gender: p.gender,
+        address: p.address,
+        city: p.city,
+        state: p.state,
+        country: p.country,
+        pincode: p.pincode,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return BlocListener<SignupBloc, SignupState>(
       listener: (context, state) {
         // Navigate to screen 3 when step 2 succeeds
-        if (state.status == SignupStatus.stepSuccess) {
+        if (state.status == SignupStatus.done) {
           Navigator.pushNamed(context, AppRoutes.login);
         }
 
@@ -81,7 +76,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -91,7 +86,6 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: colors.surface,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -105,7 +99,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     'Secure Your Account',
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -113,7 +107,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     'Configure your system sign-in credentials.',
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -123,30 +117,15 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                   const SizedBox(height: 36),
 
                   // ── Checkbox ─────────────────────────────────
-                  CheckboxListTile(
-                    title: const Text(
-                      'Use same email as registered in profile details',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    value: _useSameEmail,
-                    onChanged: _onCheckboxChanged,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: colors.primary,
-                  ),
-                  const SizedBox(height: 12),
-
                   // ── Email ─────────────────────────────────────
                   AppTextField(
                     controller: _emailController,
                     label: 'Account Email *',
                     hint: 'you@example.com',
-                    readOnly: _useSameEmail,
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
+                    readOnly: true,
+                    enabled: false,
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return 'Email is required';
@@ -201,14 +180,13 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          context.read<SignupBloc>().add(
-                            const SignupStepBack(),
-                          );
                           Navigator.pop(context);
                         },
                         child: Text(
                           'Back',
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                          ),
                         ),
                       ),
                       BlocBuilder<SignupBloc, SignupState>(

@@ -3,14 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:synquerra/data/models/signup/person_model.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
-import '../../core/utils/app_logger.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
-import '../../domain/usecases/base_usecase.dart';
-import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
+import '../../domain/entities/signup/signup_profile_data.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -32,6 +31,7 @@ import '../screens/geofence/geofence_preview_page.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -73,6 +73,7 @@ class ManageDevicesArgs {
   final DeviceListBloc deviceListBloc;
   const ManageDevicesArgs({required this.deviceListBloc});
 }
+
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -97,6 +98,7 @@ class AppRoutes {
   static const String manageDevices = '/manage-devices';
   static const String manageUsers = '/manage-users';
   static const String addMember = '/add-member';
+  static const String profile = '/profile';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -136,7 +138,6 @@ class AppRouter {
               BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
-              BlocProvider(create: (_) => sl<AlertsBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
             ],
             child: DeviceShellScreen(device: args.device),
@@ -209,14 +210,14 @@ class AppRouter {
 
       case AppRoutes.signupCredentials:
         final bloc = _activeSignupBloc ??= sl<SignupBloc>();
+        final profileData = settings.arguments as SignupProfileData;
         return _fade(
           settings,
           BlocProvider.value(
             value: bloc,
-            child: const SignupPasswordSetupScreen(),
+            child: SignupPasswordSetupScreen(profileData: profileData),
           ),
         );
-
       case AppRoutes.linkDevice:
         return _fade(
           settings,
@@ -225,6 +226,10 @@ class AppRouter {
             child: const LinkDeviceScreen(),
           ),
         );
+
+      case AppRoutes.profile:
+        final user = settings.arguments as PersonModel?;
+        return _slide(settings, ProfileScreen(person: user));
 
       case AppRoutes.manageDevices:
         final args = settings.arguments as ManageDevicesArgs;
@@ -285,34 +290,103 @@ class AppRouter {
 
   static Future<void> navigateToSignup(BuildContext context) async {
     _activeSignupBloc = sl<SignupBloc>();
+    Navigator.pushNamed(context, AppRoutes.signupProfile);
+  }
+  // Add inside class AppRouter in lib/presentation/app/app_router.dart:
 
-    // Fetch progress via the UseCase / Domain layer
-    final getSavedProgressUseCase = sl<GetSavedSignupProgressUseCase>();
+  // ── Centralized Route Navigators ──────────────────────────────────────────
 
-    try {
-      final result = await getSavedProgressUseCase(NoParams());
+  static Future<T?> pushDeviceDetail<T>(
+    BuildContext context, {
+    required DeviceEntity device,
+    required DeviceListBloc deviceListBloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.deviceDetail,
+      arguments: DeviceDetailArgs(
+        device: device,
+        deviceListBloc: deviceListBloc,
+      ),
+    );
+  }
 
-      if (!context.mounted) return;
+  static Future<T?> pushManageDevices<T>(
+    BuildContext context, {
+    required DeviceListBloc deviceListBloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.manageDevices,
+      arguments: ManageDevicesArgs(deviceListBloc: deviceListBloc),
+    );
+  }
 
-      result.fold(
-        (failure) {
-          // Fallback on failure
-          Navigator.pushNamed(context, AppRoutes.signupProfile);
-        },
-        (progress) {
-          if (progress == null || progress.step == 1) {
-            Navigator.pushNamed(context, AppRoutes.signupProfile);
-          } else if (progress.step == 2) {
-            _activeSignupBloc!.add(SignupProgressRestored());
-            Navigator.pushNamed(context, AppRoutes.signupCredentials);
-          }
-        },
-      );
-    } catch (e, stackTrace) {
-      AppLogger.e('AppRouter', 'SIGNUP ROUTING ERROR', e, stackTrace);
-      if (context.mounted) {
-        Navigator.pushNamed(context, AppRoutes.signupProfile);
-      }
-    }
+  static Future<T?> pushManageUsers<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.manageUsers);
+  }
+
+  static Future<T?> pushAddMember<T>(
+    BuildContext context, {
+    required ManageUsersBloc bloc,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.addMember,
+      arguments: bloc,
+    );
+  }
+
+  static Future<T?> pushGeofenceList<T>(
+    BuildContext context, {
+    required String deviceId,
+    required LatLng center,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.geofence,
+      arguments: {'deviceId': deviceId, 'center': center},
+    );
+  }
+
+  // lib/presentation/app/app_router.dart
+
+  static Future<T?> pushProfile<T>(BuildContext context, {dynamic user}) {
+    return Navigator.pushNamed<T>(context, AppRoutes.profile, arguments: user);
+  }
+
+  static Future<T?> pushAddGeofence<T>(
+    BuildContext context, {
+    required GeofenceBloc bloc,
+    required String deviceId,
+    required LatLng initialCenter,
+    GeofenceEntity? existing,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.addGeofence,
+      arguments: AddGeofenceArgs(
+        bloc: bloc,
+        deviceId: deviceId,
+        initialCenter: initialCenter,
+        existing: existing,
+      ),
+    );
+  }
+
+  static Future<T?> pushModes<T>(
+    BuildContext context, {
+    required String deviceId,
+    required String currentModeName,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.modes,
+      arguments: {'deviceId': deviceId, 'currentModeName': currentModeName},
+    );
+  }
+
+  static Future<T?> pushLinkDevice<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.linkDevice);
   }
 }

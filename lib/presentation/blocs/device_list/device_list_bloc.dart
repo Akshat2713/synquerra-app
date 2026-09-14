@@ -5,6 +5,7 @@ import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/usecases/device/get_device_list_usecase.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/usecases/device/invalidate_device_cache_usecase.dart';
+import '../base/base_state.dart';
 
 part 'device_list_event.dart';
 part 'device_list_state.dart';

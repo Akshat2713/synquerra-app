@@ -1,8 +1,12 @@
+// lib/presentation/screens/manage_users/manage_users_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
-import 'widget/link_member_by_phone_screen.dart';
-import 'widget/member_card.dart';
+import '../../themes/colors.dart';
+import '../../widgets/async_state_view.dart';
+import 'widgets/link_member_by_phone_screen.dart';
+import 'widgets/member_card.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -23,7 +27,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     String relationshipId,
     String name,
   ) async {
-    final colors = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -39,7 +42,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Unlink', style: TextStyle(color: colors.primary)),
+            child: Text('Unlink', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
@@ -56,7 +59,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     String personId,
     String name,
   ) async {
-    final colors = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -72,7 +74,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Delete', style: TextStyle(color: colors.error)),
+            child: Text('Delete', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -86,15 +88,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colors.surface,
       appBar: AppBar(title: const Text('Manage Users'), centerTitle: false),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => LinkMemberByPhoneBottomSheet.show(context),
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: const Text(
           'Add Member',
@@ -109,7 +108,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               ..showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage!),
-                  backgroundColor: colors.error,
+                  backgroundColor: AppColors.danger,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -119,109 +118,91 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           }
         },
         builder: (context, state) {
-          if (state is ManageUsersInitial || state is ManageUsersLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          final isLoading =
+              state is ManageUsersInitial || state is ManageUsersLoading;
+          final errorMessage = state is ManageUsersError ? state.message : null;
+          final members = state is ManageUsersLoaded
+              ? state.members
+              : <MemberItem>[];
+          final isProcessing = state is ManageUsersLoaded
+              ? state.isProcessing
+              : false;
 
-          if (state is ManageUsersError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline_rounded,
-                    size: 48,
-                    color: colors.error,
+          return AsyncStateView(
+            isLoading: isLoading,
+            errorMessage: errorMessage,
+            isEmpty: members.isEmpty,
+            onRetry: () => context.read<ManageUsersBloc>().add(
+              const ManageUsersLoadRequested(),
+            ),
+            emptyWidget: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.28),
+                Icon(
+                  Icons.people_outline_rounded,
+                  size: 56,
+                  color: AppColors.textSecondary(
+                    context,
+                  ).withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No members added yet.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary(context),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: colors.onSurfaceVariant),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tap "Add Member" to link or create a family member.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary(
+                      context,
+                    ).withValues(alpha: 0.7),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => context.read<ManageUsersBloc>().add(
-                      const ManageUsersLoadRequested(),
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            builder: () => RefreshIndicator(
+              onRefresh: () async {
+                context.read<ManageUsersBloc>().add(
+                  const ManageUsersLoadRequested(),
+                );
+              },
+              color: AppColors.primary,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 12, bottom: 80),
+                itemCount: members.length,
+                itemBuilder: (context, index) {
+                  final member = members[index];
+                  final fullName = member.person.fullName;
+
+                  return MemberCard(
+                    person: member.person,
+                    onUnlink: isProcessing
+                        ? null
+                        : () => _confirmUnlink(
+                            context,
+                            member.person.id,
+                            fullName,
+                          ),
+                    onDelete: isProcessing
+                        ? null
+                        : () => _confirmDelete(
+                            context,
+                            member.person.id,
+                            fullName,
+                          ),
+                  );
+                },
               ),
-            );
-          }
-
-          final loaded = state as ManageUsersLoaded;
-          final members = loaded.members;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<ManageUsersBloc>().add(
-                const ManageUsersLoadRequested(),
-              );
-            },
-            color: colors.primary,
-            child: members.isEmpty
-                ? ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.28,
-                      ),
-                      Icon(
-                        Icons.people_outline_rounded,
-                        size: 56,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No members added yet.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap "Add Member" to link or create a family member.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(top: 12, bottom: 80),
-                    itemCount: members.length,
-                    itemBuilder: (context, index) {
-                      final member = members[index];
-                      final fullName =
-                          '${member.person.firstName} ${member.person.lastName}'
-                              .trim();
-
-                      return MemberCard(
-                        person: member.person,
-                        onUnlink: loaded.isProcessing
-                            ? null
-                            : () => _confirmUnlink(
-                                context,
-                                member.relationshipId,
-                                fullName,
-                              ),
-                        onDelete: loaded.isProcessing
-                            ? null
-                            : () => _confirmDelete(
-                                context,
-                                member.person.personId,
-                                fullName,
-                              ),
-                      );
-                    },
-                  ),
+            ),
           );
         },
       ),

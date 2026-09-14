@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../themes/colors.dart';
+
 class LandingSkeleton extends StatefulWidget {
   const LandingSkeleton({super.key});
 
@@ -30,14 +32,12 @@ class _LandingSkeletonState extends State<LandingSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return AnimatedBuilder(
       animation: _anim,
       builder: (context, _) {
         final shimmer = Color.lerp(
-          colors.surfaceContainerHighest,
-          colors.surfaceContainerHighest.withValues(alpha: 0.3),
+          AppColors.surfaceVariant(context),
+          AppColors.surfaceVariant(context).withValues(alpha: 0.3),
           _anim.value,
         )!;
 

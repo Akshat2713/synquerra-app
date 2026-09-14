@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/app_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../../core/utils/app_logger.dart';
@@ -37,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return BlocListener<AuthBloc, AuthState>(
@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -66,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: colors.surface,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -90,14 +89,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Welcome!',
                       style: textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Sign in to continue to Synquerra',
                       style: textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                     const SizedBox(height: 36),
@@ -153,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Forgot password?',
                           style: TextStyle(
-                            color: colors.primary,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.w500,
                             fontSize: 13,
                           ),
@@ -181,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(
                           "Don't have an account? ",
                           style: TextStyle(
-                            color: colors.onSurfaceVariant,
+                            color: AppColors.textSecondary(context),
                             fontSize: 14,
                           ),
                         ),
@@ -190,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
-                              color: colors.primary,
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),

@@ -7,60 +7,39 @@ abstract class SignupEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class SignupProfileSubmitted extends SignupEvent {
+class SignupSubmitted extends SignupEvent {
   final String firstName;
-  final String lastName;
-  final String email;
-  final String phone;
-  final String birthDate;
-  final String gender;
-  final String address;
-  final String city;
-  final String state;
-  final String country;
-  final String pincode;
-
-  const SignupProfileSubmitted({
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.phone,
-    required this.birthDate,
-    required this.gender,
-    required this.address,
-    required this.city,
-    required this.state,
-    required this.country,
-    required this.pincode,
-  });
-
-  @override
-  List<Object?> get props => [firstName, lastName, email, phone];
-}
-
-class SignupCredentialsSubmitted extends SignupEvent {
   final String email;
   final String password;
-  final String passwordConfirmation;
+  final String? lastName;
+  final String? phone;
+  final String? birthDate;
+  final String? gender;
+  final String? address;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? pincode;
 
-  const SignupCredentialsSubmitted({
+  const SignupSubmitted({
+    required this.firstName,
     required this.email,
     required this.password,
-    required this.passwordConfirmation,
+    this.lastName,
+    this.phone,
+    this.birthDate,
+    this.gender,
+    this.address,
+    this.city,
+    this.state,
+    this.country,
+    this.pincode,
   });
 
   @override
-  List<Object?> get props => [password, passwordConfirmation];
-}
-
-class SignupStepBack extends SignupEvent {
-  const SignupStepBack();
+  List<Object?> get props => [firstName, email, password];
 }
 
 class SignupReset extends SignupEvent {
   const SignupReset();
-}
-
-class SignupProgressRestored extends SignupEvent {
-  const SignupProgressRestored();
 }

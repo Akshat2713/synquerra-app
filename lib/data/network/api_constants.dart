@@ -6,46 +6,52 @@ class ApiConstants {
       'https://synquerraapi.devnik.in/'; // ⚠️ DEV ONLY
 
   static const String signIn = '/api/v1/auth/sign-in';
-  static const String signUp = '/api/v1/auth/sign-up';
+  static const String signUp = '/api/v1/auth/register-user';
   static const String orgMemberSignIn = '/api/v1/auth/org-member/sign-in';
+  static String deleteUser(String userId) => '/api/v1/users/$userId';
 
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';
-  static const String linkDevice = '/api/v1/device-owners';
-  static const String deviceAssignments = '/api/v1/device-assignments';
+  static String linkDevice(String deviceId) =>
+      '/api/v1/devices/$deviceId/owner';
+  static String deviceAssignments(String personId) =>
+      '/api/v1/devices/$personId/assignments';
 
   // ── Device ────────────────────────────────────────
-  static const String devices = '/api/v1/devices';
+  static const String devices = '/api/v1/users/devices';
   static String deviceById(String deviceId) => '/api/v1/devices/$deviceId';
   static String deviceList(String personId) =>
       '/api/v1/device-assignments/person/$personId/all-devices';
   static String personDevices(String personId) =>
       '/api/v1/device-assignments/person/$personId/devices';
-  static String relationshipList(String personId) =>
-      '/api/v1/persons/$personId/relationships';
+  static String relationshipList = '/api/v1/users/relationships';
 
   // ── Alerts & Errors ───────────────────────────────
-  static const String alerts = '/api/v1/alerts-errors/alerts';
+  static const String alerts = '/api/v1/alerts-errors/user';
   static const String errors = '/api/v1/alerts-errors/errors';
   static String alertsByPerson(String personId) =>
       '/api/v1/alerts-errors/person/$personId';
   static String alertsByDevice(String deviceId) =>
-      '/api/v1/alerts-errors/device?device_id=$deviceId';
+      '/api/v1/alerts-errors/device/alerts?device_id=$deviceId';
   static String acknowledgeAlert(String alertId) =>
       '/api/v1/alerts-errors/$alertId/acknowledge';
 
   // ── Analytics ─────────────────────────────────────
   static const String analytics = '/api/v1/analytics/device-analytics-query';
-  static const String analyticsQuery = '/api/v1/analytics';
+  static const String analyticsQuery = '/api/v1/analytics/graphql';
 
   // ── Relationship ─────────────────────────────────────
-  static const String createRelationshipByPhone =
-      '/api/v1/persons/relationship/by-phone';
+  static const String createRelationshipByPhone = '/api/v1/users/search';
+  static const String createRelation = '/api/v1/users/relationships';
+  static const String createPersonWithRelationship =
+      '/api/v1/users/create-with-relationship';
+  static String removeRelationship(String relatedUserId) =>
+      '/api/v1/users/relationships/$relatedUserId';
 
   // ── Geofences ─────────────────────────────────────
   // RESTful standard endpoints (Recommended)
-  static const String geofences =
-      '/api/v1/geofences'; // GET (list with ?device_id=), POST (create)
+  static String geofences(String deviceId) =>
+      '/api/v1/geofences/$deviceId'; // GET (list with ?device_id=), POST (create)
   static String geofenceById(int geofenceId) =>
       '/api/v1/geofences/$geofenceId'; // PUT (edit), DELETE
   static const String assignGeofence = '/api/v1/geofences/assign';
@@ -53,10 +59,10 @@ class ApiConstants {
       '/api/v1/geofences/device/$deviceId/geofence-history';
 
   // Legacy geofence aliases (also supported by backend)
-  static const String getGeofences = '/api/v1/geofences/list';
-  static const String createGeofence = '/api/v1/geofences/create';
-  static const String editGeofence = '/api/v1/geofences/edit';
-  static const String deleteGeofence = '/api/v1/geofences/delete';
+  // static const String getGeofences = '/api/v1/geofences/list';
+  static const String createGeofence = '/api/v1/geofences';
+  static String editGeofence(String id) => '/api/v1/geofences/$id';
+  static String deleteGeofence(String id) => '/api/v1/geofences/$id';
 
   // ── Modes ─────────────────────────────────────────
   static const String getModes = '/api/v1/modes/manual'; // List manual modes
@@ -65,7 +71,8 @@ class ApiConstants {
 
   // ── Settings ─────────────────────────────────────────
   static const String getSettings = '/api/v1/device-settings/get';
-  static const String updatephone = '/api/v1/device-settings/update-core';
+  static String updatephone(String deviceId) =>
+      '/api/v1/device-settings/$deviceId';
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
 

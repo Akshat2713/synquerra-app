@@ -8,13 +8,11 @@ class CreateRelationshipUseCase {
   CreateRelationshipUseCase(this._repository);
 
   Future<Either<Failure, void>> call({
-    required String personAId,
-    required String personBId,
+    required String relatedUserId,
     required String relationshipType,
   }) {
     return _repository.createRelationship(
-      personAId: personAId,
-      personBId: personBId,
+      relatedUserId: relatedUserId,
       relationshipType: relationshipType,
     );
   }

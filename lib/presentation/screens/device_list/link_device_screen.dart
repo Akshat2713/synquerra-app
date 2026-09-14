@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/link_device/link_device_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 
@@ -34,7 +35,6 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return BlocListener<LinkDeviceBloc, LinkDeviceState>(
@@ -45,7 +45,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
             ..showSnackBar(
               SnackBar(
                 content: const Text('Device linked successfully!'),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -63,7 +63,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -73,7 +73,6 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: colors.surface,
         appBar: AppBar(title: const Text('Link Device')),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -87,7 +86,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                     'Link Your Device',
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -95,20 +94,20 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                     'Connect your Synquerra hardware device to your profile to start monitoring.',
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                   const SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.08),
+                      color: AppColors.primary.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.router_rounded,
                       size: 64,
-                      color: colors.primary,
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -154,7 +153,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                         'You can find the unique serial number printed on the back of your smart card tracker or on its packaging box.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: colors.onSurfaceVariant,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
                     ),

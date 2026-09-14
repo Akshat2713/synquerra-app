@@ -15,9 +15,7 @@ class DeviceRemoteDataSource {
       'DeviceRemoteDataSource',
       'getDeviceList() called for $personId',
     );
-    final response = await _dioClient.dio.get(
-      ApiConstants.deviceList(personId),
-    );
+    final response = await _dioClient.dio.get(ApiConstants.devices);
 
     final body = response.data as Map<String, dynamic>;
 

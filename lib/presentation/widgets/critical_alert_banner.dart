@@ -25,21 +25,21 @@ class CriticalAlertBanner extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.alertCriticalBg,
+          color: AppColors.dangerContainer,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.alertCritical, width: 1.2),
+          border: Border.all(color: AppColors.dangerContainer, width: 1.2),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.alertCritical.withValues(alpha: 0.15),
+                color: AppColors.danger.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.warning_rounded,
-                color: AppColors.alertCritical,
+                color: AppColors.dangerContainer,
                 size: 20,
               ),
             ),
@@ -51,7 +51,7 @@ class CriticalAlertBanner extends StatelessWidget {
                   Text(
                     '$criticalCount device${criticalCount > 1 ? 's' : ''} need${criticalCount == 1 ? 's' : ''} attention',
                     style: const TextStyle(
-                      color: AppColors.alertCriticalText,
+                      color: AppColors.danger,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -60,17 +60,14 @@ class CriticalAlertBanner extends StatelessWidget {
                   Text(
                     '$criticalCount critical alert${criticalCount > 1 ? 's' : ''} unacknowledged',
                     style: TextStyle(
-                      color: AppColors.alertCriticalText.withValues(alpha: 0.75),
+                      color: AppColors.danger.withValues(alpha: 0.75),
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.alertCriticalText,
-            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.danger),
           ],
         ),
       ),

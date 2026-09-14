@@ -2,6 +2,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
 
 // Core & Network
 import '../../data/datasources/remote/analytics_realtime_datasource.dart';
@@ -17,13 +18,14 @@ import '../../domain/repositories/settings_repository.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
-import '../../domain/usecases/relationship/create_relationship_by_phone_usecase.dart';
+import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
+import '../../domain/usecases/signup/signup_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
@@ -35,7 +37,6 @@ import '../../domain/entities/auth/user_entity.dart';
 
 // Data Sources (Local)
 import '../../data/datasources/local/auth_local_datasource.dart';
-import '../../data/datasources/local/signup_local_datasource.dart';
 import '../../data/datasources/local/theme_local_datasource.dart';
 
 // Data Sources (Remote)
@@ -88,10 +89,6 @@ import '../../domain/usecases/link_device/link_device_usecase.dart';
 import '../../domain/usecases/location/get_user_location_usecase.dart';
 import '../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../domain/usecases/modes/switch_mode_usecase.dart';
-import '../../domain/usecases/signup/clear_saved_signup_progress_usecase.dart';
-import '../../domain/usecases/signup/create_credentials_usecase.dart';
-import '../../domain/usecases/signup/create_person_usecase.dart';
-import '../../domain/usecases/signup/get_saved_signup_progress_usecase.dart';
 
 // Blocs & Cubits
 import '../../presentation/blocs/alerts/alerts_bloc.dart';
@@ -163,30 +160,15 @@ Future<void> initDependencies() async {
       logoutUseCase: sl(),
     ),
   );
-
   // ── Signup Feature ──────────────────────────────────────
   sl.registerLazySingleton<SignupRemoteDataSource>(
     () => SignupRemoteDataSource(sl()),
   );
-  sl.registerLazySingleton<SignupLocalDataSource>(
-    () => SignupLocalDataSource(sl()),
-  );
   sl.registerLazySingleton<SignupRepository>(
-    () => SignupRepositoryImpl(remote: sl(), local: sl()),
+    () => SignupRepositoryImpl(remote: sl()),
   );
-  sl.registerLazySingleton(() => CreatePersonUseCase(sl()));
-  sl.registerLazySingleton(() => CreateCredentialsUseCase(sl()));
-  sl.registerLazySingleton(() => GetSavedSignupProgressUseCase(sl()));
-  sl.registerLazySingleton(() => ClearSavedSignupProgressUseCase(sl()));
-  sl.registerFactory<SignupBloc>(
-    () => SignupBloc(
-      createPersonUseCase: sl(),
-      createCredentialsUseCase: sl(),
-      getSavedProgressUseCase: sl(),
-      clearSavedProgressUseCase: sl(),
-    ),
-  );
-
+  sl.registerLazySingleton(() => SignUpUseCase(sl()));
+  sl.registerFactory<SignupBloc>(() => SignupBloc(signUpUseCase: sl()));
   // ── Device List Feature ─────────────────────────────────
   sl.registerLazySingleton<DeviceRemoteDataSource>(
     () => DeviceRemoteDataSource(sl()),
@@ -343,16 +325,17 @@ Future<void> initDependencies() async {
   );
 
   // ── Manage Users Feature ────────────────────────────────
+  sl.registerLazySingleton(() => CreatePersonWithRelationshipUseCase(sl()));
   sl.registerLazySingleton(() => CreateRelationshipUseCase(sl()));
-  sl.registerLazySingleton(() => CreateRelationshipByPhoneUseCase(sl()));
+  sl.registerLazySingleton(() => SearchPersonByPhoneUseCase(sl()));
   sl.registerLazySingleton(() => DeletePersonUseCase(sl()));
   sl.registerLazySingleton(() => UnlinkRelationshipUseCase(sl()));
   sl.registerFactory<ManageUsersBloc>(
     () => ManageUsersBloc(
       getRelationshipListUseCase: sl(),
-      createPersonUseCase: sl(),
+      createPersonWithRelationshipUseCase: sl(),
       createRelationshipUseCase: sl(),
-      createRelationshipByPhoneUseCase: sl(),
+      searchPersonByPhoneUseCase: sl(),
       deletePersonUseCase: sl(),
       unlinkRelationshipUseCase: sl(),
       userHolder: sl(),

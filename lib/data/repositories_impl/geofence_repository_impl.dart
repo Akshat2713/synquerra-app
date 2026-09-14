@@ -60,7 +60,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
-    required String geofenceId,
+    required String id,
     String? locality,
     String? block,
     String? district,
@@ -77,7 +77,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
       coordinates: coordinates,
       color: color,
       geofenceNumber: geofenceNumber,
-      geofenceId: geofenceId,
+      id: id,
       locality: locality,
       block: block,
       district: district,
@@ -93,10 +93,9 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
   @override
   Future<Either<Failure, Unit>> deleteGeofence({
     required String deviceId,
-    required String geofenceId,
+    required String id,
   }) => safeCall(
-    call: () =>
-        _remote.deleteGeofence(deviceId: deviceId, geofenceId: geofenceId),
+    call: () => _remote.deleteGeofence(deviceId: deviceId, id: id),
     toEntity: (_) => unit,
   );
 }

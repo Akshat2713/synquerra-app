@@ -1,9 +1,12 @@
-// presentation/pages/mode/modes_screen.dart
+// lib/presentation/screens/modes/modes_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../blocs/modes/mode_bloc.dart';
+import '../../themes/colors.dart';
+import '../../widgets/async_state_view.dart';
 import 'widgets/mode_list_tile.dart';
 import 'widgets/mode_skeleton.dart';
 
@@ -52,8 +55,6 @@ class _ModesScreenState extends State<ModesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Modes')),
       body: BlocConsumer<ModeBloc, ModeState>(
@@ -62,78 +63,61 @@ class _ModesScreenState extends State<ModesScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Mode switched successfully.'),
-                backgroundColor: colors.primary,
+                backgroundColor: AppColors.primary,
               ),
             );
           } else if (state is ModeSwitchFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: colors.error,
+                backgroundColor: AppColors.danger,
               ),
             );
           }
         },
         builder: (context, state) {
-          // ── Error ────────────────────────────────
-          if (state is ModeError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline, color: colors.error, size: 48),
-                  const SizedBox(height: 12),
-                  Text(state.message, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: () => context.read<ModeBloc>().add(
-                      ModeLoad(widget.currentModeName),
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
           final isLoading = state is ModeLoading || state is ModeInitial;
           final isSwitching = state is ModeSwitching;
           final modes = isLoading ? fakeModeSkeletonItems : _getModes(state);
           final selectedId = _getSelectedId(state);
+          final errorMessage = state is ModeError ? state.message : null;
 
-          return Column(
-            children: [
-              // ── List ──────────────────────────────
-              Expanded(
-                child: Skeletonizer(
-                  enabled: isLoading,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    itemCount: modes.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final mode = modes[index];
-                      return ModeListTile(
-                        mode: mode,
-                        isSelected: selectedId == mode.id,
-                        onTap: (isLoading || isSwitching)
-                            ? () {}
-                            : () => context.read<ModeBloc>().add(
-                                ModeSelect(mode.id),
-                              ),
-                      );
-                    },
+          return AsyncStateView(
+            isLoading: false,
+            errorMessage: errorMessage,
+            onRetry: () =>
+                context.read<ModeBloc>().add(ModeLoad(widget.currentModeName)),
+            builder: () => Column(
+              children: [
+                Expanded(
+                  child: Skeletonizer(
+                    enabled: isLoading,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      itemCount: modes.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final mode = modes[index];
+                        return ModeListTile(
+                          mode: mode,
+                          isSelected: selectedId == mode.id,
+                          onTap: (isLoading || isSwitching)
+                              ? () {}
+                              : () => context.read<ModeBloc>().add(
+                                  ModeSelect(mode.id),
+                                ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-
-              // ── Save bar ──────────────────────────
-              _SaveBar(
-                enabled: selectedId != null && !isSwitching && !isLoading,
-                isLoading: isSwitching,
-                onSave: () => _onSave(context, selectedId),
-              ),
-            ],
+                _SaveBar(
+                  enabled: selectedId != null && !isSwitching && !isLoading,
+                  isLoading: isSwitching,
+                  onSave: () => _onSave(context, selectedId),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -141,7 +125,6 @@ class _ModesScreenState extends State<ModesScreen> {
   }
 }
 
-// ── Save bar ───────────────────────────────────────────────────────────────
 class _SaveBar extends StatelessWidget {
   final bool enabled;
   final bool isLoading;
@@ -155,8 +138,6 @@ class _SaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -165,8 +146,10 @@ class _SaveBar extends StatelessWidget {
         12 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.outlineVariant)),
+        color: AppColors.surface(context),
+        border: Border(
+          top: BorderSide(color: AppColors.outlineVariant(context)),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -187,10 +170,7 @@ class _SaveBar extends StatelessWidget {
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator.adaptive(strokeWidth: 2),
               )
             : const Text(
                 'Apply Mode',

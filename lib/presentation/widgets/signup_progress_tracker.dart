@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import '../themes/colors.dart';
 
 enum SignupStep { profile, security, device }
 
 class SignupProgressTracker extends StatelessWidget {
   final SignupStep currentStep;
-
   const SignupProgressTracker({super.key, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Row(
       children: [
         Expanded(
@@ -24,7 +22,7 @@ class SignupProgressTracker extends StatelessWidget {
           ),
         ),
         _buildDivider(
-          colors,
+          context,
           isCompleted: currentStep.index > SignupStep.profile.index,
         ),
         Expanded(
@@ -41,11 +39,13 @@ class SignupProgressTracker extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider(ColorScheme colors, {required bool isCompleted}) {
+  Widget _buildDivider(BuildContext context, {required bool isCompleted}) {
     return SizedBox(
       width: 20,
       child: Divider(
-        color: isCompleted ? colors.primary : colors.outlineVariant,
+        color: isCompleted
+            ? AppColors.primary
+            : AppColors.outlineVariant(context),
         thickness: 1,
       ),
     );
@@ -59,19 +59,17 @@ class SignupProgressTracker extends StatelessWidget {
     required bool isActive,
     required bool isDone,
   }) {
-    final colors = Theme.of(context).colorScheme;
     final accentColor = isActive || isDone
-        ? colors.primary
-        : colors.onSurfaceVariant.withValues(alpha: 0.4);
-
+        ? AppColors.primary
+        : AppColors.textSecondary(context).withValues(alpha: 0.4);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 18,
           backgroundColor: isActive || isDone
-              ? colors.primary.withValues(alpha: 0.1)
-              : colors.surfaceContainerHighest,
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.surfaceVariant(context),
           child: Icon(
             isDone ? Icons.check_rounded : icon,
             color: accentColor,
@@ -88,8 +86,8 @@ class SignupProgressTracker extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: isActive || isDone
-                ? colors.onSurface
-                : colors.onSurfaceVariant,
+                ? AppColors.textPrimary(context)
+                : AppColors.textSecondary(context),
           ),
         ),
         Text(
@@ -97,7 +95,10 @@ class SignupProgressTracker extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: 11,
+            color: AppColors.textSecondary(context),
+          ),
         ),
       ],
     );

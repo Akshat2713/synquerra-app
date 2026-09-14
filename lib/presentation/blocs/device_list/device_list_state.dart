@@ -1,26 +1,25 @@
+// lib/presentation/blocs/device_list/device_list_state.dart
+
 part of 'device_list_bloc.dart';
 
-abstract class DeviceListState extends Equatable {
+abstract class DeviceListState extends BaseState {
   const DeviceListState();
-
-  @override
-  List<Object?> get props => [];
 }
 
 class DeviceListInitial extends DeviceListState {
   const DeviceListInitial();
 }
 
-class DeviceListLoading extends DeviceListState {
+class DeviceListLoading extends DeviceListState with LoadingState {
   const DeviceListLoading();
 }
 
 class DeviceListLoaded extends DeviceListState {
   final List<DeviceEntity> devices;
   final Set<String> toggledImeis;
+
   const DeviceListLoaded({required this.devices, this.toggledImeis = const {}});
 
-  // remove: criticalAlertCount getter (alerts no longer live here)
   int get devicesNeedingAttention => devices.where((d) => !d.hasData).length;
 
   bool isDeviceActive(DeviceEntity device) {
@@ -40,7 +39,8 @@ class DeviceListLoaded extends DeviceListState {
   List<Object?> get props => [devices, toggledImeis];
 }
 
-class DeviceListError extends DeviceListState {
+class DeviceListError extends DeviceListState with ErrorState {
+  @override
   final String message;
 
   const DeviceListError(this.message);

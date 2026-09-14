@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/analytics/analytics_filter.dart';
+import '../../../themes/colors.dart';
 import '../../../widgets/analytics_filter_sheet.dart'
     show showCustomRangePicker;
 
@@ -27,17 +28,16 @@ class HistoryFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final items = [..._options.entries];
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: AppColors.surface(context),
         border: Border(
           top: BorderSide(
-            color: colors.outlineVariant.withValues(alpha: 0.3),
+            color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
             width: 1.0,
           ),
         ),
@@ -50,7 +50,6 @@ class HistoryFilterChips extends StatelessWidget {
                 context,
                 e.value,
                 e.key == activeFilter,
-                colors,
                 isLoading ? null : () => onFilterSelected(e.key),
               ),
             ),
@@ -61,7 +60,6 @@ class HistoryFilterChips extends StatelessWidget {
               context,
               'Custom',
               activeFilter == AnalyticsFilter.custom,
-              colors,
               isLoading
                   ? null
                   : () => showCustomRangePicker(
@@ -79,18 +77,21 @@ class HistoryFilterChips extends StatelessWidget {
     BuildContext context,
     String label,
     bool active,
-    ColorScheme colors,
     VoidCallback? onTap,
   ) {
     final disabled = onTap == null;
 
-    final activeBg = colors.primary.withValues(alpha: 0.12);
-    final activeBorder = colors.primary;
-    final activeTextColor = colors.primary;
+    final activeBg = AppColors.primary.withValues(alpha: 0.12);
+    final activeBorder = AppColors.primary;
+    final activeTextColor = AppColors.primary;
 
-    final inactiveBg = colors.surface;
-    final inactiveBorder = colors.outlineVariant.withValues(alpha: 0.4);
-    final inactiveTextColor = colors.onSurface.withValues(alpha: 0.8);
+    final inactiveBg = AppColors.surface(context);
+    final inactiveBorder = AppColors.outlineVariant(
+      context,
+    ).withValues(alpha: 0.4);
+    final inactiveTextColor = AppColors.textPrimary(
+      context,
+    ).withValues(alpha: 0.8);
 
     return GestureDetector(
       onTap: onTap,
@@ -115,7 +116,7 @@ class HistoryFilterChips extends StatelessWidget {
             color: active
                 ? activeTextColor
                 : disabled
-                ? colors.onSurfaceVariant.withValues(alpha: 0.4)
+                ? AppColors.textSecondary(context).withValues(alpha: 0.4)
                 : inactiveTextColor,
           ),
         ),

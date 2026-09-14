@@ -8,6 +8,6 @@ class DeleteGeofenceUseCase {
 
   Future<Either<Failure, Unit>> call({
     required String deviceId,
-    required String geofenceId,
-  }) => _repository.deleteGeofence(deviceId: deviceId, geofenceId: geofenceId);
+    required String id,
+  }) => _repository.deleteGeofence(deviceId: deviceId, id: id);
 }

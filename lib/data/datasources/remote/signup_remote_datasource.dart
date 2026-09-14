@@ -11,48 +11,50 @@ class SignupRemoteDataSource {
 
   SignupRemoteDataSource(this._dioClient);
 
-  // ── Step 1: Create Person ─────────────────────────────────
-  Future<PersonModel> createPerson({
+  Future<PersonModel> signUp({
     required String firstName,
-    required String lastName,
     required String email,
-    required String phone,
-    required String birthDate,
-    required String gender,
-    required String address,
-    required String city,
-    required String state,
-    required String country,
-    required String pincode,
+    required String password,
+    String? lastName,
+    String? phone,
+    String? userClass,
+    String? birthDate,
+    String? gender,
+    String? address,
+    String? city,
+    String? state,
+    String? country,
+    String? pincode,
+    String? profilePhoto,
   }) async {
-    AppLogger.d('SignupRemoteDataSource', 'createPerson() called for $email');
+    AppLogger.d('SignupRemoteDataSource', 'signUp() called for $email');
 
     final response = await _dioClient.dio.post(
-      ApiConstants.createPerson,
+      ApiConstants.signUp, // ⚠️ confirm this points to the new merged endpoint
       data: {
         'first_name': firstName,
-        'last_name': lastName,
         'email': email,
-        'phone': phone,
-        'birth_date': birthDate,
-        'gender': gender,
-        'address': address,
-        'city': city,
-        'state': state,
-        'country': country,
-        'pincode': pincode,
-        'is_active': true,
+        'password': password,
+        if (lastName != null && lastName.isNotEmpty) 'last_name': lastName,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (userClass != null) 'user_class': userClass,
+        if (birthDate != null && birthDate.isNotEmpty) 'birth_date': birthDate,
+        if (gender != null && gender.isNotEmpty) 'gender': gender,
+        if (address != null && address.isNotEmpty) 'address': address,
+        if (city != null && city.isNotEmpty) 'city': city,
+        if (state != null && state.isNotEmpty) 'state': state,
+        if (country != null && country.isNotEmpty) 'country': country,
+        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+        if (profilePhoto != null) 'profile_photo': profilePhoto,
       },
     );
 
     final body = response.data as Map<String, dynamic>;
-    debugPrint(
-      '[SignupRemoteDataSource] createPerson status: ${body['status']}',
-    );
+    debugPrint('[SignupRemoteDataSource] signUp status: ${body['status']}');
 
     if (body['status'] != 'success') {
       throw ServerException(
-        message: body['message'] ?? 'Failed to create profile.',
+        message: body['message'] ?? 'Failed to sign up.',
         statusCode: body['code'] as int?,
       );
     }
@@ -66,17 +68,16 @@ class SignupRemoteDataSource {
     }
 
     final person = await Isolate.run(() => PersonModel.fromJson(rawData));
-
-    AppLogger.d('SignupRemoteDataSource', 'Person created: ${person.personId}');
+    AppLogger.d('SignupRemoteDataSource', 'Signed up: ${person.id}');
     return person;
   }
 
-  // ── Delete Person ──────────────────────────────────────────
+  // ── Delete Person (retained) ────────────────────────────────
   Future<void> deletePerson(String personId) async {
     debugPrint('[SignupRemoteDataSource] deletePerson() called for $personId');
 
     final response = await _dioClient.dio.delete(
-      '${ApiConstants.createPerson}/$personId', // Resolves to /api/v1/persons/:id
+      ApiConstants.deleteUser(personId), // ⚠️ confirm this path still exists
     );
 
     final body = response.data as Map<String, dynamic>;
@@ -87,40 +88,6 @@ class SignupRemoteDataSource {
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to delete person.',
-        statusCode: body['code'] as int?,
-      );
-    }
-  }
-
-  // ── Step 2: Create Credentials ────────────────────────────
-  Future<void> createCredentials({
-    required String personId,
-    required String email,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    debugPrint(
-      '[SignupRemoteDataSource] createCredentials() called for $email',
-    );
-
-    final response = await _dioClient.dio.post(
-      ApiConstants.signUp,
-      data: {
-        'person_id': personId,
-        'email': email,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-      },
-    );
-
-    final body = response.data as Map<String, dynamic>;
-    debugPrint(
-      '[SignupRemoteDataSource] createCredentials status: ${body['status']}',
-    );
-
-    if (body['status'] != 'success') {
-      throw ServerException(
-        message: body['message'] ?? 'Failed to create credentials.',
         statusCode: body['code'] as int?,
       );
     }

@@ -12,6 +12,7 @@ import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
+import '../../themes/colors.dart';
 import '../../widgets/geofence_polygon_layer.dart';
 import 'widgets/address_card.dart';
 import 'widgets/empty_data_banner.dart';
@@ -36,6 +37,7 @@ class _LocationScreenState extends State<LocationScreen> {
   late final UserLocationBloc _userLocationBloc;
   late final TileProvider _tileProvider;
   bool _showTimeline = false;
+  bool _isTimelineMinimized = true;
 
   @override
   void initState() {
@@ -59,7 +61,28 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void _onViewChanged(bool history) {
-    setState(() => _showTimeline = history);
+    final wasHistory = _showTimeline;
+    setState(() {
+      _showTimeline = history;
+      _isTimelineMinimized = true;
+    });
+
+    final bloc = context.read<AnalyticsBloc>();
+    if (!wasHistory && history) {
+      bloc.add(
+        AnalyticsFilterChanged(
+          deviceId: widget.device.id,
+          filter: AnalyticsFilter.lastHour, // matches the default chip state
+        ),
+      );
+    } else if (wasHistory && !history) {
+      bloc.add(
+        AnalyticsFilterChanged(
+          deviceId: widget.device.id,
+          filter: AnalyticsFilter.latest,
+        ),
+      );
+    }
   }
 
   void _fitMapToPoints(List<AnalyticsEntity> points) {
@@ -94,7 +117,10 @@ class _LocationScreenState extends State<LocationScreen> {
       canPop: !_showTimeline,
       onPopInvokedWithResult: (didPop, result) async {
         if (_showTimeline) {
-          setState(() => _showTimeline = false);
+          setState(() {
+            _showTimeline = false;
+            _isTimelineMinimized = true;
+          });
           context.read<AnalyticsBloc>().add(
             AnalyticsFilterChanged(
               deviceId: widget.device.id,
@@ -239,22 +265,25 @@ class _LocationScreenState extends State<LocationScreen> {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Use horizontal padding to constrain width safely
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: const EmptyDataBanner(),
-                        ),
-                        const SizedBox(height: 20),
-                        Skeletonizer(
-                          enabled: isLoading,
-                          child: TimelineSlider(
-                            points: loaded?.mappablePoints ?? const [],
-                            currentIndex: loaded?.sliderIndex ?? 0,
-                            onChanged: (i) => context.read<AnalyticsBloc>().add(
-                              AnalyticsSliderChanged(i),
+                        if (!_isTimelineMinimized) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: const EmptyDataBanner(),
+                          ),
+                          const SizedBox(height: 20),
+                          Skeletonizer(
+                            enabled: isLoading,
+                            child: TimelineSlider(
+                              points: loaded?.mappablePoints ?? const [],
+                              currentIndex: loaded?.sliderIndex ?? 0,
+                              onChanged: (i) => context
+                                  .read<AnalyticsBloc>()
+                                  .add(AnalyticsSliderChanged(i)),
+                              onMinimize: () =>
+                                  setState(() => _isTimelineMinimized = true),
                             ),
                           ),
-                        ),
+                        ],
                         HistoryFilterChips(
                           activeFilter: activeFilter,
                           isLoading: isLoading,
@@ -280,6 +309,50 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
             ),
+            if (_showTimeline && _isTimelineMinimized)
+              Positioned(
+                bottom: 88,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () => setState(() => _isTimelineMinimized = false),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant(context),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_circle_fill_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Play',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
