@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:synquerra/data/models/signup/person_model.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
@@ -30,6 +31,7 @@ import '../screens/geofence/geofence_preview_page.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -96,6 +98,7 @@ class AppRoutes {
   static const String manageDevices = '/manage-devices';
   static const String manageUsers = '/manage-users';
   static const String addMember = '/add-member';
+  static const String profile = '/profile';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -224,6 +227,10 @@ class AppRouter {
           ),
         );
 
+      case AppRoutes.profile:
+        final user = settings.arguments as PersonModel?;
+        return _slide(settings, ProfileScreen(person: user));
+
       case AppRoutes.manageDevices:
         final args = settings.arguments as ManageDevicesArgs;
         return _slide(
@@ -340,6 +347,12 @@ class AppRouter {
       AppRoutes.geofence,
       arguments: {'deviceId': deviceId, 'center': center},
     );
+  }
+
+  // lib/presentation/app/app_router.dart
+
+  static Future<T?> pushProfile<T>(BuildContext context, {dynamic user}) {
+    return Navigator.pushNamed<T>(context, AppRoutes.profile, arguments: user);
   }
 
   static Future<T?> pushAddGeofence<T>(

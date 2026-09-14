@@ -67,8 +67,16 @@ class _LocationScreenState extends State<LocationScreen> {
       _isTimelineMinimized = true;
     });
 
-    if (wasHistory && !history) {
-      context.read<AnalyticsBloc>().add(
+    final bloc = context.read<AnalyticsBloc>();
+    if (!wasHistory && history) {
+      bloc.add(
+        AnalyticsFilterChanged(
+          deviceId: widget.device.id,
+          filter: AnalyticsFilter.lastHour, // matches the default chip state
+        ),
+      );
+    } else if (wasHistory && !history) {
+      bloc.add(
         AnalyticsFilterChanged(
           deviceId: widget.device.id,
           filter: AnalyticsFilter.latest,

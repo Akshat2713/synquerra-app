@@ -63,12 +63,20 @@ class SettingsRemoteDataSource {
       'updatePhoneNumbers() called for deviceId: $deviceId',
     );
 
-    final response = await _dioClient.dio.post(
-      ApiConstants.updatephone,
+    int? parsePhone(String? value) {
+      if (value == null) return null;
+      final digits = value.replaceAll(RegExp(r'\D'), '');
+      return int.tryParse(digits);
+    }
+
+    final p1 = parsePhone(phoneNum1);
+    final p2 = parsePhone(phoneNum2);
+
+    final response = await _dioClient.dio.patch(
+      ApiConstants.updatephone(deviceId),
       data: {
-        'device_id': deviceId,
-        if (phoneNum1 != null) 'phonenum1': phoneNum1,
-        if (phoneNum2 != null) 'phonenum2': phoneNum2,
+        if (p1 != null) 'phone_num1': p1,
+        if (p2 != null) 'phone_num2': p2,
       },
     );
 

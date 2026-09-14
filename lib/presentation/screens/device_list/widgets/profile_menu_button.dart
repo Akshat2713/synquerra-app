@@ -11,6 +11,7 @@ class ProfileMenuButton extends StatelessWidget {
   final VoidCallback? onLogout;
   final VoidCallback? onManageUsers;
   final VoidCallback? onManageDevices;
+  final VoidCallback? onProfileTap; // Add this callback
 
   const ProfileMenuButton({
     super.key,
@@ -18,6 +19,7 @@ class ProfileMenuButton extends StatelessWidget {
     this.onLogout,
     this.onManageUsers,
     this.onManageDevices,
+    this.onProfileTap,
   });
 
   @override
@@ -28,28 +30,45 @@ class ProfileMenuButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       itemBuilder: (_) => [
         PopupMenuItem<String>(
-          enabled: false,
+          value: 'profile', // Enable selection by providing a value
           child: Builder(
             builder: (menuCtx) {
               final liveColors = Theme.of(menuCtx).colorScheme;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    user?.fullName ?? '—',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: liveColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    user?.email ?? '—',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: liveColors.onSurfaceVariant,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? '—',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: liveColors.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              user?.email ?? '—',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: liveColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: liveColors.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Divider(height: 1, color: liveColors.outlineVariant),
@@ -149,8 +168,13 @@ class ProfileMenuButton extends StatelessWidget {
           ),
         ),
       ],
+
+      // lib/presentation/screens/device_list/widgets/profile_menu_button.dart
       onSelected: (value) {
         switch (value) {
+          case 'profile':
+            onProfileTap?.call();
+            break;
           case 'logout':
             onLogout?.call();
             break;

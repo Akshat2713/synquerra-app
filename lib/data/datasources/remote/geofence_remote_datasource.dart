@@ -244,7 +244,6 @@ class GeofenceRemoteDataSource {
     try {
       final response = await _dioClient.dio.delete(
         ApiConstants.deleteGeofence(id),
-        // queryParameters: {'device_id': deviceId},
       );
 
       final body = response.data as Map<String, dynamic>;

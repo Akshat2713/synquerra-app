@@ -72,9 +72,8 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   ) {
     if (state is! AnalyticsLoaded) return;
     final current = state as AnalyticsLoaded;
-    if (current.activeFilter != AnalyticsFilter.latest)
-      return; // don't disturb history browsing
-    emit(current.copyWith(points: [event.point, ...current.points]));
+    if (current.activeFilter != AnalyticsFilter.latest) return;
+    emit(current.copyWith(points: [event.point]));
   }
 
   @override

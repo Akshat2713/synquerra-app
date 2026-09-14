@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/entities/device/device_entity.dart';
+import 'package:synquerra/presentation/screens/profile/profile_screen.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
 import '../../app/app_router.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
@@ -115,6 +116,8 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
               const NotificationBell(),
               ProfileMenuButton(
                 user: user,
+                onProfileTap: () =>
+                    AppRouter.pushProfile(context, user: defaultUser),
                 onLogout: () =>
                     context.read<AuthBloc>().add(const AuthLogoutRequested()),
                 onManageDevices: () => AppRouter.pushManageDevices(
