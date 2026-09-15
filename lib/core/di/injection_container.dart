@@ -3,18 +3,22 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
+import 'package:synquerra/presentation/blocs/profile/profile_bloc.dart';
 
 // Core & Network
 import '../../data/datasources/remote/analytics_realtime_datasource.dart';
 import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
@@ -26,6 +30,7 @@ import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../domain/usecases/signup/signup_usecase.dart';
+import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
@@ -340,6 +345,18 @@ Future<void> initDependencies() async {
       unlinkRelationshipUseCase: sl(),
       userHolder: sl(),
     ),
+  );
+
+  // ── User Profile Feature ────────────────────────────────
+  sl.registerLazySingleton<UserRemoteDataSource>(
+    () => UserRemoteDataSourceImpl(sl()),
+  );
+  sl.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
+  sl.registerFactory<ProfileBloc>(
+    () => ProfileBloc(getUserProfileUseCase: sl()),
   );
 }
 

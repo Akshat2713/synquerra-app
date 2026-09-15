@@ -17,6 +17,9 @@ class ApiConstants {
   static String deviceAssignments(String personId) =>
       '/api/v1/devices/$personId/assignments';
 
+  // ── User ────────────────────────────
+
+  static const String fetchUser = '/api/v1/auth/me';
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/users/devices';
   static String deviceById(String deviceId) => '/api/v1/devices/$deviceId';

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:synquerra/data/models/signup/person_model.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
 import '../../core/di/injection_container.dart';
@@ -19,6 +18,7 @@ import '../blocs/manage_devices/manage_devices_bloc.dart';
 import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
+import '../blocs/profile/profile_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
 import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
@@ -35,6 +35,8 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
+import '../screens/user_schedule/create_schedule_screen.dart';
+import '../screens/user_schedule/schedules_list_screen.dart';
 
 class DeviceDetailArgs {
   final DeviceEntity device;
@@ -74,6 +76,13 @@ class ManageDevicesArgs {
   const ManageDevicesArgs({required this.deviceListBloc});
 }
 
+// class CreateScheduleArgs {
+//   final SchedulesBloc bloc;
+//   final String deviceId;
+
+//   const CreateScheduleArgs({required this.bloc, required this.deviceId});
+// }
+
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -99,6 +108,8 @@ class AppRoutes {
   static const String manageUsers = '/manage-users';
   static const String addMember = '/add-member';
   static const String profile = '/profile';
+  static const String schedulesList = '/schedules-list';
+  static const String createSchedule = '/create-schedule';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -228,9 +239,13 @@ class AppRouter {
         );
 
       case AppRoutes.profile:
-        final user = settings.arguments as PersonModel?;
-        return _slide(settings, ProfileScreen(person: user));
-
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) => sl<ProfileBloc>(),
+            child: const ProfileScreen(),
+          ),
+        );
       case AppRoutes.manageDevices:
         final args = settings.arguments as ManageDevicesArgs;
         return _slide(
@@ -262,6 +277,40 @@ class AppRouter {
           settings,
           BlocProvider.value(value: bloc, child: const AddMemberScreen()),
         );
+
+      // case AppRoutes.schedulesList:
+      //   final args = settings.arguments as Map<String, dynamic>;
+      //   final deviceId = args['deviceId'] as String;
+      //   return _slide(
+      //     settings,
+      //     BlocProvider(
+      //       create: (_) =>
+      //           sl<SchedulesBloc>()
+      //             ..add(LoadSchedulesEvent(deviceId: deviceId)),
+      //       child: SchedulesListScreen(deviceId: deviceId),
+      //     ),
+      //   );
+
+      // case AppRoutes.createSchedule:
+      //   final args = settings.arguments as CreateScheduleArgs;
+      //   return _slide(
+      //     settings,
+      //     BlocProvider.value(
+      //       value: args.bloc,
+      //       child: CreateScheduleScreen(deviceId: args.deviceId),
+      //     ),
+      //   );
+
+      case AppRoutes.schedulesList:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final deviceId = args?['deviceId'] as String? ?? '';
+        return _slide(settings, SchedulesListScreen(deviceId: deviceId));
+
+      case AppRoutes.createSchedule:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final deviceId = args?['deviceId'] as String? ?? '';
+        return _slide(settings, CreateScheduleScreen());
+
       default:
         return _fade(
           settings,
@@ -351,8 +400,8 @@ class AppRouter {
 
   // lib/presentation/app/app_router.dart
 
-  static Future<T?> pushProfile<T>(BuildContext context, {dynamic user}) {
-    return Navigator.pushNamed<T>(context, AppRoutes.profile, arguments: user);
+  static Future<T?> pushProfile<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.profile);
   }
 
   static Future<T?> pushAddGeofence<T>(
@@ -388,5 +437,50 @@ class AppRouter {
 
   static Future<T?> pushLinkDevice<T>(BuildContext context) {
     return Navigator.pushNamed<T>(context, AppRoutes.linkDevice);
+  }
+
+  // static Future<T?> pushSchedulesList<T>(
+  //   BuildContext context, {
+  //   required String deviceId,
+  // }) {
+  //   return Navigator.pushNamed<T>(
+  //     context,
+  //     AppRoutes.schedulesList,
+  //     arguments: {'deviceId': deviceId},
+  //   );
+  // }
+
+  // static Future<T?> pushCreateSchedule<T>(
+  //   BuildContext context, {
+  //   required SchedulesBloc bloc,
+  //   required String deviceId,
+  // }) {
+  //   return Navigator.pushNamed<T>(
+  //     context,
+  //     AppRoutes.createSchedule,
+  //     arguments: CreateScheduleArgs(bloc: bloc, deviceId: deviceId),
+  //   );
+  // }
+
+  static Future<T?> pushSchedulesList<T>(
+    BuildContext context, {
+    required String deviceId,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.schedulesList,
+      arguments: {'deviceId': deviceId},
+    );
+  }
+
+  static Future<T?> pushCreateSchedule<T>(
+    BuildContext context, {
+    required String deviceId,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.createSchedule,
+      arguments: {'deviceId': deviceId},
+    );
   }
 }
