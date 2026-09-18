@@ -17,6 +17,9 @@ class ApiConstants {
   static String deviceAssignments(String personId) =>
       '/api/v1/devices/$personId/assignments';
 
+  // ── User ────────────────────────────
+
+  static const String fetchUser = '/api/v1/auth/me';
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/users/devices';
   static String deviceById(String deviceId) => '/api/v1/devices/$deviceId';
@@ -76,6 +79,23 @@ class ApiConstants {
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
 
+  // ── Schedules ─────────────────────────────────────
+  static const String schedules = '/api/v1/schedules';
+  static const String mySchedules = '/api/v1/schedules/me';
+  static String targetUserSchedules(String targetUserId) =>
+      '/api/v1/schedules/user/$targetUserId';
+  static String scheduleById(String scheduleId) =>
+      '/api/v1/schedules/$scheduleId';
+  static String scheduleStatus(String scheduleId) =>
+      '/api/v1/schedules/$scheduleId/status';
+
+  // ── Schedule Overrides & Effective Rules ───────────
+  static String scheduleOverrides(String scheduleId) =>
+      '/api/v1/schedules/$scheduleId/overrides';
+  static String scheduleOverrideById(String scheduleId, String overrideId) =>
+      '/api/v1/schedules/$scheduleId/overrides/$overrideId';
+  static String effectiveSchedule(String scheduleId) =>
+      '/api/v1/schedules/$scheduleId/effective';
   // ── Realtime (Soketi) ─────────────────────────────
   static const String soketiHost = 'websocket.synquerra.com';
   static const int soketiPort = 443;

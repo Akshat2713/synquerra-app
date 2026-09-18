@@ -11,7 +11,8 @@ class ProfileMenuButton extends StatelessWidget {
   final VoidCallback? onLogout;
   final VoidCallback? onManageUsers;
   final VoidCallback? onManageDevices;
-  final VoidCallback? onProfileTap; // Add this callback
+  final VoidCallback? onSchedules; // Added callback
+  final VoidCallback? onProfileTap;
 
   const ProfileMenuButton({
     super.key,
@@ -19,6 +20,7 @@ class ProfileMenuButton extends StatelessWidget {
     this.onLogout,
     this.onManageUsers,
     this.onManageDevices,
+    this.onSchedules, // Added parameter
     this.onProfileTap,
   });
 
@@ -30,7 +32,7 @@ class ProfileMenuButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       itemBuilder: (_) => [
         PopupMenuItem<String>(
-          value: 'profile', // Enable selection by providing a value
+          value: 'profile',
           child: Builder(
             builder: (menuCtx) {
               final liveColors = Theme.of(menuCtx).colorScheme;
@@ -120,6 +122,27 @@ class ProfileMenuButton extends StatelessWidget {
           ),
         ),
         PopupMenuItem<String>(
+          value: 'manage_schedules', // Added PopupMenuItem for Schedules
+          enabled: true,
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_month_outlined,
+                color: AppColors.textSecondary(context),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Schedules',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
           value: 'toggle_theme',
           child: Builder(
             builder: (menuCtx) {
@@ -168,8 +191,6 @@ class ProfileMenuButton extends StatelessWidget {
           ),
         ),
       ],
-
-      // lib/presentation/screens/device_list/widgets/profile_menu_button.dart
       onSelected: (value) {
         switch (value) {
           case 'profile':
@@ -183,6 +204,9 @@ class ProfileMenuButton extends StatelessWidget {
             break;
           case 'manage_users':
             onManageUsers?.call();
+            break;
+          case 'manage_schedules': // Added navigation trigger
+            onSchedules?.call();
             break;
         }
       },

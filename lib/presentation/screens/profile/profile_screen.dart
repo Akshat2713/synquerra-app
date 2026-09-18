@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 
-import '../../../data/models/signup/person_model.dart';
+import '../../../domain/entities/signup/person_entity.dart';
+import '../../app/app_router.dart';
+import '../../blocs/profile/profile_bloc.dart';
 
-class ProfileScreen extends StatelessWidget {
-  final PersonModel? person;
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
-  const ProfileScreen({super.key, this.person});
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfileBloc>().add(const FetchUserProfile());
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Fallback to default/mock user if null
-    final user = person ?? defaultUser;
-
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
@@ -27,19 +36,73 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      body: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading || state is ProfileInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is ProfileError) {
+            return _buildErrorView(context, state.message);
+          }
+
+          final user = (state as ProfileLoaded).user;
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<ProfileBloc>().add(const FetchUserProfile());
+              await context.read<ProfileBloc>().stream.firstWhere(
+                (s) => s is ProfileLoaded || s is ProfileError,
+              );
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                children: [
+                  _buildProfileHeader(context, user),
+                  const SizedBox(height: 24),
+                  _buildPersonalDetailsCard(context, user),
+                  const SizedBox(height: 16),
+                  _buildAddressCard(context, user),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorView(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildProfileHeader(context, user),
-            const SizedBox(height: 24),
-            _buildPersonalDetailsCard(context, user),
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: AppColors.textSecondary(context),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary(context),
+              ),
+            ),
             const SizedBox(height: 16),
-            _buildAddressCard(context, user),
-            const SizedBox(height: 16),
-            _buildScheduleCard(context),
-            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: () =>
+                  context.read<ProfileBloc>().add(const FetchUserProfile()),
+              child: const Text('Retry'),
+            ),
           ],
         ),
       ),
@@ -47,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Header with Avatar, Full Name, Email, and Unique ID Tag
-  Widget _buildProfileHeader(BuildContext context, PersonModel user) {
+  Widget _buildProfileHeader(BuildContext context, PersonEntity user) {
     final String fullName = '${user.firstName} ${user.lastName}'.trim();
 
     return Column(
@@ -117,7 +180,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Personal Information Section
-  Widget _buildPersonalDetailsCard(BuildContext context, PersonModel user) {
+  Widget _buildPersonalDetailsCard(BuildContext context, PersonEntity user) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -139,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
             _buildInfoRow(
               context,
               'Birth Date',
-              user.birthDate ?? 'N/A',
+              _formatDate(user.birthDate),
               isLast: true,
             ),
           ],
@@ -149,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Address Details Section
-  Widget _buildAddressCard(BuildContext context, PersonModel user) {
+  Widget _buildAddressCard(BuildContext context, PersonEntity user) {
     final hasAddress =
         user.address != null ||
         user.city != null ||
@@ -185,56 +248,6 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(color: AppColors.textTertiary(context)),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Schedule Section
-  Widget _buildScheduleCard(BuildContext context) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // TODO: Navigate to Schedule / Calendar page
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.calendar_month_outlined,
-                color: AppColors.primary,
-                size: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Schedule',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'View and manage active schedules',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary(context),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -295,31 +308,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Logout Button
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
 }
-
-// Private mock instance used as fallback
-final defaultUser = PersonModel(
-  id: 'usr_123',
-  uniqueId: 'SYN-8842',
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@synquerra.com',
-  phone: '+1 234 567 890',
-  birthDate: '1990-01-01',
-  gender: 'Male',
-  address: '123 Main St',
-  city: 'Springfield',
-  state: 'OR',
-  country: 'USA',
-  pincode: '97477',
-  profilePhoto: null,
-  role: 'Field Operator',
-  userType: 'Primary',
-  isActive: true,
-  isEmailVerified: true,
-  isMobileVerified: true,
-);
 
 extension StringExtension on String {
   String capitalize() {

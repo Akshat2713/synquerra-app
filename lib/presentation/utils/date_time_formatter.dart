@@ -1,4 +1,5 @@
 // lib/presentation/utils/date_time_formatter.dart
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DateTimeFormatter {
@@ -14,6 +15,21 @@ class DateTimeFormatter {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Format TimeOfDay to 12-hour AM/PM string ("10:30 AM")
+  static String formatTimeOfDay(TimeOfDay? time) {
+    if (time == null) return '--:--';
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('h:mm a').format(dt);
+  }
+
+  /// Format ISO timestamp to 12-hour AM/PM string ("10:30 AM")
+  static String toTimeAmPm(String? isoTimestamp) {
+    final dt = parseUtcToLocal(isoTimestamp);
+    if (dt == null) return '--:--';
+    return DateFormat('h:mm a').format(dt);
   }
 
   /// Format timestamp to "HH:mm:ss"
@@ -85,16 +101,9 @@ class DateTimeFormatter {
     }
   }
 
-  static String toTimeAmPm(String? isoTimestamp) {
-    final dt = parseUtcToLocal(isoTimestamp);
-    if (dt == null) return '--:--';
-    return DateFormat('h:mm a').format(dt);
-  }
-
   static String toFullDateTime(String? isoTimestamp) {
     final dt = parseUtcToLocal(isoTimestamp);
-    if (dt == null) return 'N/A';
-    return DateFormat('d MMM, h:mm a').format(dt);
+    return formatFullDateTime(dt); // Reuses formatFullDateTime directly
   }
 
   static String formatFullDateTime(DateTime? dateTime) {
