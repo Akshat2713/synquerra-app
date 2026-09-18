@@ -68,8 +68,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   _buildAddressCard(context, user),
                   const SizedBox(height: 16),
-                  _buildScheduleCard(context),
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -250,59 +248,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(color: AppColors.textTertiary(context)),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Schedule Section
-  Widget _buildScheduleCard(
-    BuildContext context, {
-    String deviceId = 'dummy-device-123',
-  }) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          AppRouter.pushSchedulesList(context, deviceId: deviceId);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.calendar_month_outlined,
-                color: AppColors.primary,
-                size: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Schedule',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'View and manage active schedules',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary(context),
-              ),
-            ],
-          ),
         ),
       ),
     );

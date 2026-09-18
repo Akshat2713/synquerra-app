@@ -113,6 +113,8 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
             centerTitle: false,
             actions: [
               const NotificationBell(),
+
+              // lib/presentation/screens/device_list/device_list_screen.dart
               ProfileMenuButton(
                 user: user,
                 onProfileTap: () => AppRouter.pushProfile(context),
@@ -123,6 +125,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                   deviceListBloc: context.read<DeviceListBloc>(),
                 ),
                 onManageUsers: () => AppRouter.pushManageUsers(context),
+                onSchedules: () => AppRouter.pushSchedulesList(
+                  context,
+                ), // Added callback binding
               ),
             ],
           ),

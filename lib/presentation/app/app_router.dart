@@ -5,9 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
 import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
+import 'package:synquerra/presentation/screens/user_schedule/schedule_detail_screen.dart';
+import 'package:synquerra/presentation/screens/user_schedule/schedule_exception_screen.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
+import '../../domain/entities/schedule/schedule_entity.dart';
+import '../../domain/entities/schedule/schedule_override_entity.dart';
 import '../../domain/entities/signup/signup_profile_data.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
@@ -19,6 +23,9 @@ import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
+import '../blocs/schedule_form/schedule_form_bloc.dart';
+import '../blocs/schedule_list/schedule_list_bloc.dart';
+import '../blocs/schedule_override/schedule_overrides_bloc.dart';
 import '../blocs/signup/signup_bloc.dart';
 import '../screens/device_list/link_device_screen.dart';
 import '../screens/auth/signup_password_setup_screen.dart';
@@ -35,7 +42,7 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
-import '../screens/user_schedule/create_schedule_screen.dart';
+import '../screens/schedule_form/create_schedule_screen.dart';
 import '../screens/user_schedule/schedules_list_screen.dart';
 
 class DeviceDetailArgs {
@@ -76,12 +83,17 @@ class ManageDevicesArgs {
   const ManageDevicesArgs({required this.deviceListBloc});
 }
 
-// class CreateScheduleArgs {
-//   final SchedulesBloc bloc;
-//   final String deviceId;
+class ScheduleOverrideArgs {
+  final String scheduleId;
+  final ScheduleOverridesBloc bloc;
+  final ScheduleOverrideEntity? existingOverride;
 
-//   const CreateScheduleArgs({required this.bloc, required this.deviceId});
-// }
+  const ScheduleOverrideArgs({
+    required this.scheduleId,
+    required this.bloc,
+    this.existingOverride,
+  });
+}
 
 // ── Route names ───────────────────────────────────────────────────────────────
 
@@ -110,6 +122,8 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String schedulesList = '/schedules-list';
   static const String createSchedule = '/create-schedule';
+  static const String scheduleOverride = '/schedule-override';
+  static const String scheduleView = '/schedule-view';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -278,38 +292,48 @@ class AppRouter {
           BlocProvider.value(value: bloc, child: const AddMemberScreen()),
         );
 
-      // case AppRoutes.schedulesList:
-      //   final args = settings.arguments as Map<String, dynamic>;
-      //   final deviceId = args['deviceId'] as String;
-      //   return _slide(
-      //     settings,
-      //     BlocProvider(
-      //       create: (_) =>
-      //           sl<SchedulesBloc>()
-      //             ..add(LoadSchedulesEvent(deviceId: deviceId)),
-      //       child: SchedulesListScreen(deviceId: deviceId),
-      //     ),
-      //   );
-
-      // case AppRoutes.createSchedule:
-      //   final args = settings.arguments as CreateScheduleArgs;
-      //   return _slide(
-      //     settings,
-      //     BlocProvider.value(
-      //       value: args.bloc,
-      //       child: CreateScheduleScreen(deviceId: args.deviceId),
-      //     ),
-      //   );
-
       case AppRoutes.schedulesList:
-        final args = settings.arguments as Map<String, dynamic>?;
-        final deviceId = args?['deviceId'] as String? ?? '';
-        return _slide(settings, SchedulesListScreen(deviceId: deviceId));
+        return _slide(
+          settings,
+          BlocProvider(
+            create: (_) => sl<ScheduleListBloc>(),
+            child: const SchedulesListScreen(),
+          ),
+        );
 
       case AppRoutes.createSchedule:
-        final args = settings.arguments as Map<String, dynamic>?;
-        final deviceId = args?['deviceId'] as String? ?? '';
-        return _slide(settings, CreateScheduleScreen());
+        // arguments: null for create, String scheduleId for edit
+        final scheduleId = settings.arguments as String?;
+        return _slide(
+          settings,
+          MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) =>
+                    sl<DeviceListBloc>()..add(const DeviceListLoadRequested()),
+              ),
+              BlocProvider(create: (_) => sl<ScheduleFormBloc>()),
+            ],
+            child: CreateScheduleScreen(scheduleId: scheduleId),
+          ),
+        );
+
+      case AppRoutes.scheduleOverride:
+        final args = settings.arguments as ScheduleOverrideArgs;
+        return _slide(
+          settings,
+          BlocProvider.value(
+            value: args.bloc,
+            child: ScheduleExceptionScreen(
+              scheduleId: args.scheduleId,
+              existingOverride: args.existingOverride,
+            ),
+          ),
+        );
+
+      case AppRoutes.scheduleView:
+        final schedule = settings.arguments as ScheduleEntity;
+        return _slide(settings, ScheduleDetailsScreen(schedule: schedule));
 
       default:
         return _fade(
@@ -439,48 +463,50 @@ class AppRouter {
     return Navigator.pushNamed<T>(context, AppRoutes.linkDevice);
   }
 
-  // static Future<T?> pushSchedulesList<T>(
-  //   BuildContext context, {
-  //   required String deviceId,
-  // }) {
-  //   return Navigator.pushNamed<T>(
-  //     context,
-  //     AppRoutes.schedulesList,
-  //     arguments: {'deviceId': deviceId},
-  //   );
-  // }
-
-  // static Future<T?> pushCreateSchedule<T>(
-  //   BuildContext context, {
-  //   required SchedulesBloc bloc,
-  //   required String deviceId,
-  // }) {
-  //   return Navigator.pushNamed<T>(
-  //     context,
-  //     AppRoutes.createSchedule,
-  //     arguments: CreateScheduleArgs(bloc: bloc, deviceId: deviceId),
-  //   );
-  // }
-
-  static Future<T?> pushSchedulesList<T>(
-    BuildContext context, {
-    required String deviceId,
-  }) {
-    return Navigator.pushNamed<T>(
-      context,
-      AppRoutes.schedulesList,
-      arguments: {'deviceId': deviceId},
-    );
+  static Future<T?> pushSchedulesList<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.schedulesList);
   }
 
-  static Future<T?> pushCreateSchedule<T>(
+  static Future<T?> pushCreateSchedule<T>(BuildContext context) {
+    return Navigator.pushNamed<T>(context, AppRoutes.createSchedule);
+  }
+
+  static Future<T?> pushEditSchedule<T>(
     BuildContext context, {
-    required String deviceId,
+    required String scheduleId,
   }) {
     return Navigator.pushNamed<T>(
       context,
       AppRoutes.createSchedule,
-      arguments: {'deviceId': deviceId},
+      arguments: scheduleId,
+    );
+  }
+
+  static Future<T?> pushScheduleOverride<T>(
+    BuildContext context, {
+    required String scheduleId,
+    required ScheduleOverridesBloc bloc,
+    ScheduleOverrideEntity? existingOverride,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.scheduleOverride,
+      arguments: ScheduleOverrideArgs(
+        scheduleId: scheduleId,
+        bloc: bloc,
+        existingOverride: existingOverride,
+      ),
+    );
+  }
+
+  static Future<T?> pushScheduleView<T>(
+    BuildContext context, {
+    required ScheduleEntity schedule,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.scheduleView,
+      arguments: schedule,
     );
   }
 }
