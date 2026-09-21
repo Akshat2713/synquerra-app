@@ -46,3 +46,21 @@ Color alertColor(AlertEntity alert) {
       return AppColors.success;
   }
 }
+
+Color temperatureColor(dynamic temp) {
+  if (temp == null) return Colors.grey;
+
+  final double? parsed = temp is num
+      ? temp.toDouble()
+      : double.tryParse(temp.toString());
+
+  if (parsed == null) return Colors.grey;
+
+  if (parsed >= 45 || parsed <= 0) {
+    return AppColors.danger;
+  }
+  if (parsed >= 38 || parsed <= 10) {
+    return AppColors.warning;
+  }
+  return AppColors.success;
+}

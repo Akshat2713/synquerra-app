@@ -78,51 +78,52 @@ class DeviceCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          PopupMenuButton<String>(
-                            padding: EdgeInsets.zero,
-                            icon: Icon(
-                              Icons.more_vert_rounded,
-                              color: AppColors.textSecondary(context),
-                              size: 20,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            onSelected: (value) {
-                              switch (value) {
-                                case 'modes':
-                                  onViewModesTap?.call();
-                                  break;
-                                case 'settings':
-                                  onSettingsTap?.call();
-                                  break;
-                              }
-                            },
-                            itemBuilder: (_) => [
-                              PopupMenuItem(
-                                value: 'modes',
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('View Modes'),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      currentMode,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.info,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'settings',
-                                child: Text('Device Settings'),
-                              ),
-                            ],
-                          ),
+
+                          // PopupMenuButton<String>(
+                          //   padding: EdgeInsets.zero,
+                          //   icon: Icon(
+                          //     Icons.more_vert_rounded,
+                          //     color: AppColors.textSecondary(context),
+                          //     size: 20,
+                          //   ),
+                          //   shape: RoundedRectangleBorder(
+                          //     borderRadius: BorderRadius.circular(12),
+                          //   ),
+                          //   onSelected: (value) {
+                          //     switch (value) {
+                          //       case 'modes':
+                          //         onViewModesTap?.call();
+                          //         break;
+                          //       case 'settings':
+                          //         onSettingsTap?.call();
+                          //         break;
+                          //     }
+                          //   },
+                          //   itemBuilder: (_) => [
+                          //     PopupMenuItem(
+                          //       value: 'modes',
+                          //       child: Row(
+                          //         mainAxisSize: MainAxisSize.min,
+                          //         children: [
+                          //           const Text('View Modes'),
+                          //           const SizedBox(width: 6),
+                          //           Text(
+                          //             currentMode,
+                          //             style: const TextStyle(
+                          //               fontSize: 12,
+                          //               color: AppColors.info,
+                          //               fontWeight: FontWeight.w600,
+                          //             ),
+                          //           ),
+                          //         ],
+                          //       ),
+                          //     ),
+                          //     const PopupMenuItem(
+                          //       value: 'settings',
+                          //       child: Text('Device Settings'),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -131,9 +132,9 @@ class DeviceCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.textSecondary(context).withValues(
-                            alpha: 0.05,
-                          ),
+                          color: AppColors.textSecondary(
+                            context,
+                          ).withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Row(
@@ -164,7 +165,7 @@ class DeviceCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              'Zone ${device.geoid ?? 'N/A'}',
+                              'Zone : ${device.geoidLocation ?? 'N/A'}',
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 11,
@@ -196,7 +197,9 @@ class DeviceCard extends StatelessWidget {
 
                       Divider(
                         height: 1,
-                        color: AppColors.textSecondary(context).withValues(alpha: 0.12),
+                        color: AppColors.textSecondary(
+                          context,
+                        ).withValues(alpha: 0.12),
                       ),
                       const SizedBox(height: 8),
 

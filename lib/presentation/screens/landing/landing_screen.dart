@@ -56,7 +56,7 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AADYA', style: TextStyle(fontSize: 25)),
+        title: Image.asset('assets/images/app_name_logo.png', height: 35),
         centerTitle: true,
       ),
       body: BlocBuilder<LandingBloc, LandingState>(

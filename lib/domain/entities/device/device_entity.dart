@@ -83,6 +83,13 @@ class DeviceEntity extends Equatable {
     }
   }
 
+  String? get geoidLocation {
+    if (geoid == '10' || geoid == '11') {
+      return 'outside';
+    }
+    return geoid;
+  }
+
   @override
   List<Object?> get props => [
     id,

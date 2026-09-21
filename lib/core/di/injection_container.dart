@@ -23,6 +23,7 @@ import '../../domain/repositories/schedule_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
+import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
 import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
@@ -124,6 +125,8 @@ import '../../presentation/blocs/manage/manage_bloc.dart';
 import '../../presentation/blocs/signup/signup_bloc.dart';
 import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
+import '../services/local_notification_service.dart';
+import '../services/push_notification_service.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -161,6 +164,15 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton<TileProvider>(() => MapConfig.tileProvider);
 
+  // ── Notifications ────────────────────────────────────────
+  sl.registerLazySingleton<LocalNotificationService>(
+    () => LocalNotificationService(),
+  );
+  sl.registerLazySingleton<PushNotificationService>(
+    () => PushNotificationService(sl()),
+  );
+  sl.registerLazySingleton(() => SyncFcmTokenUseCase(sl()));
+
   // ── Auth Feature ────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSource(sl()),
@@ -179,8 +191,11 @@ Future<void> initDependencies() async {
       loginUseCase: sl(),
       checkAuthStatusUseCase: sl(),
       logoutUseCase: sl(),
+      syncFcmTokenUseCase: sl(), // NEW
+      pushNotificationService: sl(), // NEW
     ),
   );
+
   // ── Signup Feature ──────────────────────────────────────
   sl.registerLazySingleton<SignupRemoteDataSource>(
     () => SignupRemoteDataSource(sl()),

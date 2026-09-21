@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
+import 'mode_details_sheet.dart';
 
-class TrackingModeCard extends StatefulWidget {
+class ModePickerRow extends StatefulWidget {
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitching;
   final bool autoModeSwitch;
   final ValueChanged<String> onChanged;
 
-  const TrackingModeCard({
+  const ModePickerRow({
     super.key,
     required this.modes,
     required this.activeModeId,
@@ -22,10 +23,10 @@ class TrackingModeCard extends StatefulWidget {
   });
 
   @override
-  State<TrackingModeCard> createState() => _TrackingModeCardState();
+  State<ModePickerRow> createState() => _ModePickerRowState();
 }
 
-class _TrackingModeCardState extends State<TrackingModeCard> {
+class _ModePickerRowState extends State<ModePickerRow> {
   late bool _isAutoMode;
 
   @override
@@ -35,7 +36,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
   }
 
   @override
-  void didUpdateWidget(covariant TrackingModeCard oldWidget) {
+  void didUpdateWidget(covariant ModePickerRow oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
       setState(() {
@@ -163,6 +164,8 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
 
                           return GestureDetector(
                             onTap: () => widget.onChanged(mode.id),
+                            onLongPress: () =>
+                                showModeDetailsSheet(context, mode),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 72,

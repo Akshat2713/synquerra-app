@@ -64,7 +64,7 @@ class ManageBody extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
-              TrackingModeCard(
+              ModePickerRow(
                 modes: modes,
                 activeModeId: activeModeId,
                 isSwitching: isSwitchingMode,

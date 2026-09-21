@@ -89,21 +89,32 @@ class BottomMetricsBar extends StatelessWidget {
               ],
             ),
           ),
-          const _MetricCell(
-            title: 'REMAINING\nTIME',
-            valueRow: Text(
-              '≈ 3.4h',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
+          // const _MetricCell(
+          //   title: 'REMAINING\nTIME',
+          //   valueRow: Text(
+          //     '≈ 3.4h',
+          //     style: TextStyle(fontWeight: FontWeight.w800),
+          //   ),
+          // ),
           _MetricCell(
             title: 'DEVICE\nTEMP',
-            valueRow: Text(
-              '$temperature ℃',
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                color: AppColors.success,
-              ),
+            valueRow: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.thermostat,
+                  size: 14,
+                  color: temperatureColor(temperature),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$temperature ℃',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: temperatureColor(temperature),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

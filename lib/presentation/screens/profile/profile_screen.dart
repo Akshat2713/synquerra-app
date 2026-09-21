@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 
 import '../../../domain/entities/signup/person_entity.dart';
-import '../../app/app_router.dart';
 import '../../blocs/profile/profile_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {

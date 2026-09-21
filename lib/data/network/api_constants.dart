@@ -20,6 +20,10 @@ class ApiConstants {
   // ── User ────────────────────────────
 
   static const String fetchUser = '/api/v1/auth/me';
+
+  // ── User Profile ────────────────────────────────────
+  static const String updateProfile = '/api/v1/auth/profile';
+
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/users/devices';
   static String deviceById(String deviceId) => '/api/v1/devices/$deviceId';
@@ -74,8 +78,7 @@ class ApiConstants {
 
   // ── Settings ─────────────────────────────────────────
   static const String getSettings = '/api/v1/device-settings/get';
-  static String updatephone(String deviceId) =>
-      '/api/v1/device-settings/$deviceId';
+  static const String updatephone = '/api/v1/device-settings/update-phones';
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
 
@@ -96,6 +99,7 @@ class ApiConstants {
       '/api/v1/schedules/$scheduleId/overrides/$overrideId';
   static String effectiveSchedule(String scheduleId) =>
       '/api/v1/schedules/$scheduleId/effective';
+
   // ── Realtime (Soketi) ─────────────────────────────
   static const String soketiHost = 'websocket.synquerra.com';
   static const int soketiPort = 443;
