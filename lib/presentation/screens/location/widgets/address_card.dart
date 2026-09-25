@@ -21,9 +21,9 @@ class AddressCard extends StatelessWidget {
     final address = point?.userAddress;
     final realAddress = point?.formattedAddress;
     final geofence = point?.geofenceName;
-    AppLogger.d("[Address card]", "The address is $address");
-    AppLogger.d("[Address card]", "The real address is $realAddress");
-    AppLogger.d("[Address card]", "The geofence is $geofence");
+    AppLogger.d("Address card", "The address is $address");
+    AppLogger.d("Address card", "The real address is $realAddress");
+    AppLogger.d("Address card", "The geofence is $geofence");
 
     return Skeletonizer(
       enabled: isLoading,
@@ -42,12 +42,14 @@ class AddressCard extends StatelessWidget {
           ],
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min, // Shrinks the Row to fit short text
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary),
             const SizedBox(width: 8),
 
-            Expanded(
+            Flexible(
+              // Allows text to size naturally up to the max width
               child: Text(
                 address ?? 'Address Unavailable',
                 maxLines: 2,

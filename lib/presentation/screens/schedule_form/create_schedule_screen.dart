@@ -8,10 +8,10 @@ import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/schedule/schedule_entity.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/schedule_form/schedule_form_bloc.dart';
-import 'basic_details_section.dart';
-import 'section_card.dart';
-import 'section_header.dart';
-import 'timing_recurrence_section.dart';
+import 'widgets/basic_details_section.dart';
+import 'widgets/section_card.dart';
+import 'widgets/section_header.dart';
+import 'widgets/timing_recurrence_section.dart';
 
 class CreateScheduleScreen extends StatefulWidget {
   /// Non-null puts this screen in edit mode and preloads the schedule.
@@ -42,11 +42,11 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
   bool _crossesMidnight = false;
 
   String _dateSelectionMode = 'range';
+
   final List<DateTime> _customSelectedDates = [];
-  DateTimeRange _dateRange = DateTimeRange(
-    start: DateTime.now(),
-    end: DateTime.now().add(const Duration(days: 90)),
-  );
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate = DateTime.now().add(const Duration(days: 90));
+  bool _noEndDate = false;
 
   /// Monday = 0 .. Sunday = 6 convention (matches DaySelectorRow and backend API).
   final List<int> _selectedDays = [0, 1, 2, 3, 4];
@@ -80,6 +80,12 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
     super.dispose();
   }
 
+  bool _computeCrossesMidnight(TimeOfDay start, TimeOfDay end) {
+    final startMinutes = start.hour * 60 + start.minute;
+    final endMinutes = end.hour * 60 + end.minute;
+    return endMinutes <= startMinutes;
+  }
+
   TimeOfDay _parseTime(String hhmmss) {
     final parts = hhmmss.split(':');
     return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
@@ -100,7 +106,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
     _selectedPriority = s.priority;
     _startTime = _parseTime(s.startTime);
     _endTime = _parseTime(s.endTime);
-    _crossesMidnight = s.crossesMidnight;
+    _crossesMidnight = _computeCrossesMidnight(_startTime, _endTime);
     _dateSelectionMode = s.customDates.isNotEmpty ? 'custom' : 'range';
     _selectedDays
       ..clear()
@@ -108,13 +114,9 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
     _customSelectedDates
       ..clear()
       ..addAll(s.customDates.map(DateTime.parse));
-    final start = DateTime.parse(s.startDate);
-    _dateRange = DateTimeRange(
-      start: start,
-      end: s.endDate != null
-          ? DateTime.parse(s.endDate!)
-          : start.add(const Duration(days: 90)),
-    );
+    _startDate = DateTime.parse(s.startDate);
+    _endDate = s.endDate != null ? DateTime.parse(s.endDate!) : null;
+    _noEndDate = s.endDate == null;
     _alertAbsence = s.alertOnAbsence;
     _alertLateArrival = s.alertOnLateArrival;
     _alertEarlyDeparture = s.alertOnEarlyDeparture;
@@ -145,13 +147,15 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
           ? <String>[]
           : _customSelectedDates.map(_formatDate).toList(),
       'start_date': isRange
-          ? _formatDate(_dateRange.start)
+          ? _formatDate(_startDate)
           : _formatDate(
               _customSelectedDates.isNotEmpty
                   ? _customSelectedDates.first
                   : DateTime.now(),
             ),
-      'end_date': isRange ? _formatDate(_dateRange.end) : null,
+      'end_date': (isRange && !_noEndDate && _endDate != null)
+          ? _formatDate(_endDate!)
+          : null,
       'crosses_midnight': _crossesMidnight,
       'priority': _selectedPriority,
       'grace_config': {
@@ -260,11 +264,24 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                     crossesMidnight: _crossesMidnight,
                     selectedDays: _selectedDays,
                     dateSelectionMode: _dateSelectionMode,
-                    dateRange: _dateRange,
+                    startDate: _startDate,
+                    endDate: _endDate,
+                    noEndDate: _noEndDate,
                     customSelectedDates: _customSelectedDates,
-                    onStartTimeChanged: (time) =>
-                        setState(() => _startTime = time),
-                    onEndTimeChanged: (time) => setState(() => _endTime = time),
+                    onStartTimeChanged: (time) => setState(() {
+                      _startTime = time;
+                      _crossesMidnight = _computeCrossesMidnight(
+                        _startTime,
+                        _endTime,
+                      );
+                    }),
+                    onEndTimeChanged: (time) => setState(() {
+                      _endTime = time;
+                      _crossesMidnight = _computeCrossesMidnight(
+                        _startTime,
+                        _endTime,
+                      );
+                    }),
                     onCrossesMidnightChanged: (val) =>
                         setState(() => _crossesMidnight = val),
                     onDayToggled: (index) {
@@ -276,8 +293,15 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                     },
                     onDateModeChanged: (mode) =>
                         setState(() => _dateSelectionMode = mode),
-                    onDateRangeChanged: (range) =>
-                        setState(() => _dateRange = range),
+                    onStartDateChanged: (date) => setState(() {
+                      _startDate = date;
+                      if (_endDate != null && _endDate!.isBefore(_startDate)) {
+                        _endDate = _startDate;
+                      }
+                    }),
+                    onEndDateChanged: (date) => setState(() => _endDate = date),
+                    onNoEndDateChanged: (val) =>
+                        setState(() => _noEndDate = val),
                     onCustomDateAdded: (date) {
                       if (!_customSelectedDates.any(
                         (d) => d.isAtSameMomentAs(date),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 
 import '../../../domain/entities/signup/person_entity.dart';
+import '../../app/app_router.dart';
 import '../../blocs/profile/profile_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -30,7 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () {
-              // TODO: Navigate to Edit Profile screen
+              final state = context.read<ProfileBloc>().state;
+              if (state is! ProfileLoaded) return;
+              AppRouter.pushEditProfile(
+                context,
+                bloc: context.read<ProfileBloc>(),
+                person: state
+                    .user, // was: initialData: MemberFormInitialData.fromPerson(state.user)
+              );
             },
           ),
         ],
@@ -136,26 +144,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   : null,
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.surface(context),
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            // Positioned(
+            //   bottom: 0,
+            //   right: 0,
+            //   child: Container(
+            //     padding: const EdgeInsets.all(6),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.primary,
+            //       shape: BoxShape.circle,
+            //       border: Border.all(
+            //         color: AppColors.surface(context),
+            //         width: 2,
+            //       ),
+            //     ),
+            //     child: const Icon(
+            //       Icons.camera_alt,
+            //       size: 16,
+            //       color: Colors.white,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 16),

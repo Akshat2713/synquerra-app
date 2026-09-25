@@ -20,6 +20,7 @@ class AppColors {
   // ==========================================
   // Success (Safe, GPS Restored, Normal battery)
   static const Color success = Color(0xFF22C55E);
+  static const Color activeLocation = Color(0xFF287444);
   static const Color successContainer = Color(0x1F22C55E); // "Safe" badge fill
   static const Color onSuccess = Colors.white;
 

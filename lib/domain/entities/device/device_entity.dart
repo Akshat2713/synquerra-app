@@ -1,12 +1,13 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/utils/app_logger.dart';
 import '../signup/person_entity.dart';
 import 'device_association_entity.dart';
 import 'device_owner_entity.dart';
 
 class DeviceEntity extends Equatable {
   final String id;
-  final String topic;
+  final String? topic;
   final String imei;
   final String serialNo;
   final String? geoid;
@@ -20,8 +21,8 @@ class DeviceEntity extends Equatable {
   final int? battery;
   final int? signal;
   final String? gpsStrength;
-  final bool isActive;
-  final bool isSubscribed;
+  final bool? isActive;
+  final bool? isSubscribed;
   final String? inventoryStatus;
   final String? associationType;
   final bool? isOnline;
@@ -29,13 +30,25 @@ class DeviceEntity extends Equatable {
   final String createdAt;
   final String updatedAt;
   final String relationship;
-  final DeviceOwnerEntity? deviceOwner;
+  final DeviceOwnerEntity? owner;
   final PersonEntity? carrier;
-  final List<DeviceAssociationEntity> associations;
+  final List<DeviceAssociationEntity> assignments;
+
+  // Fields present in the newer API payload that weren't modeled before.
+  final int? schemaVersion;
+  final String? hdop;
+  final String? satsUsed;
+  final String? satsInView;
+  final String? fixType;
+  final String? deviceMode;
+  final String? gnssMode;
+  final String? source;
+  final String? hardwareVersion;
+  final String? firmwareVersion;
 
   const DeviceEntity({
     required this.id,
-    required this.topic,
+    this.topic,
     required this.imei,
     required this.serialNo,
     this.geoid,
@@ -49,8 +62,8 @@ class DeviceEntity extends Equatable {
     this.battery,
     this.signal,
     this.gpsStrength,
-    required this.isActive,
-    required this.isSubscribed,
+    this.isActive,
+    this.isSubscribed,
     this.inventoryStatus,
     this.associationType,
     this.isOnline,
@@ -58,26 +71,43 @@ class DeviceEntity extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     required this.relationship,
-    this.deviceOwner,
+    this.owner,
     this.carrier,
-    this.associations = const [],
+    this.assignments = const [],
+    this.schemaVersion,
+    this.hdop,
+    this.satsUsed,
+    this.satsInView,
+    this.fixType,
+    this.deviceMode,
+    this.gnssMode,
+    this.source,
+    this.hardwareVersion,
+    this.firmwareVersion,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
 
-  /// Shows the carrier's name if the device is assigned to someone;
-  /// otherwise falls back to the current logged-in user (device owner).
   String displayOwnerName(String currentUserFullName) {
-    if (carrier == null) return currentUserFullName;
-    final name = '${carrier!.firstName} ${carrier!.lastName}'.trim();
-    return name.isEmpty ? currentUserFullName : name;
+    AppLogger.d('DeviceEntity', 'New Device');
+    final carrierName = carrier != null
+        ? '${carrier!.firstName} ${carrier!.lastName}'.trim()
+        : '';
+    AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+    if (carrierName.isNotEmpty) return carrierName;
+
+    final ownerName = owner?.name.trim() ?? '';
+    AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
+    if (ownerName.isNotEmpty) return ownerName;
+
+    return currentUserFullName;
   }
 
   DeviceAssociationEntity? associationFor(String roleKey) {
     try {
-      return associations.firstWhere((a) => a.associationType == roleKey);
+      return assignments.firstWhere((a) => a.assignmentType == roleKey);
     } catch (_) {
       return null;
     }
@@ -116,9 +146,19 @@ class DeviceEntity extends Equatable {
     createdAt,
     updatedAt,
     relationship,
-    deviceOwner,
+    owner,
     carrier,
-    associations,
+    assignments,
+    schemaVersion,
+    hdop,
+    satsUsed,
+    satsInView,
+    fixType,
+    deviceMode,
+    gnssMode,
+    source,
+    hardwareVersion,
+    firmwareVersion,
   ];
 }
 

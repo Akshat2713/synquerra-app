@@ -1,6 +1,6 @@
 // lib/presentation/screens/create_schedule/widgets/repeat_days_selector.dart
 import 'package:flutter/material.dart';
-import '../../themes/colors.dart';
+import '../../../themes/colors.dart';
 
 class RepeatDaysSelector extends StatelessWidget {
   final List<int> selectedDays;
@@ -12,7 +12,7 @@ class RepeatDaysSelector extends StatelessWidget {
     required this.onDayToggled,
   });
 
-  static const List<String> _dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  static const List<String> _dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,7 @@
 // lib/features/relationship/data/repositories/relationship_repository_impl.dart
 
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
@@ -79,6 +81,7 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
     String? country,
     String? pincode,
     bool isHead = false,
+    File? profileImage,
   }) async {
     try {
       final model = await _remote.createPersonWithRelationship(
@@ -97,6 +100,7 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
         country: country,
         pincode: pincode,
         isHead: isHead,
+        profileImage: profileImage,
       );
       return Right(model.toEntity());
     } catch (e) {

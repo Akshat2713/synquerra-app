@@ -148,28 +148,6 @@ class _LinkMemberByPhoneBottomSheetState
                 ),
                 const SizedBox(height: 20),
 
-                // Phone search step — locked once a person is found
-                Form(
-                  key: _phoneFormKey,
-                  child: AppTextField(
-                    controller: _phoneController,
-                    label: 'Phone Number *',
-                    hint: '+917878787878',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    enabled: foundPerson == null,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return 'Phone number is required';
-                      }
-                      if (v.trim().length < 10) {
-                        return 'Enter a valid phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-
                 if (errorMessage != null) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -181,6 +159,36 @@ class _LinkMemberByPhoneBottomSheetState
                 const SizedBox(height: 16),
 
                 if (foundPerson == null) ...[
+                  Form(
+                    key: _phoneFormKey,
+                    child: AppTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number *',
+                      hint: '+917878787878',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        if (v.trim().length < 10) {
+                          return 'Enter a valid phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorMessage,
+                      style: const TextStyle(fontSize: 13, color: Colors.red),
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+
                   SizedBox(
                     width: double.infinity,
                     child: AppButton(

@@ -45,6 +45,7 @@ import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../domain/usecases/signup/signup_usecase.dart';
 import '../../domain/usecases/user/get_user_profile_usecase.dart';
+import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
@@ -386,8 +387,12 @@ Future<void> initDependencies() async {
     () => UserRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateUserProfileUseCase(sl()));
   sl.registerFactory<ProfileBloc>(
-    () => ProfileBloc(getUserProfileUseCase: sl()),
+    () => ProfileBloc(
+      getUserProfileUseCase: sl(),
+      updateUserProfileUseCase: sl(),
+    ),
   );
 
   // ── Schedule Feature ─────────────────────────────────────

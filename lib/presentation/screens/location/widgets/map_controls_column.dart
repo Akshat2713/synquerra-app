@@ -48,7 +48,7 @@ class MapControlsColumn extends StatelessWidget {
         const SizedBox(height: 8),
         // Recenter on the device's last known location.
         MapIconButton(
-          icon: Icons.phone_android,
+          icon: Icons.my_location_rounded,
           onTap: () => mapController.move(deviceCenter, 16),
         ),
         const SizedBox(height: 8),
@@ -111,7 +111,7 @@ class _MyLocationButton extends StatelessWidget {
         return MapIconButton(
           icon: isLoading
               ? Icons.hourglass_bottom_rounded
-              : Icons.my_location_rounded,
+              : Icons.phone_android,
           onTap: isLoading
               ? null
               : () => userLocationBloc.add(FetchUserLocation()),

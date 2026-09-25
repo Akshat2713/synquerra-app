@@ -26,6 +26,7 @@ class ManageUsersAddRequested extends ManageUsersEvent {
   final String relationshipType;
   final String? middleName;
   final bool isHead;
+  final File? profileImage;
 
   const ManageUsersAddRequested({
     required this.firstName,
@@ -43,6 +44,7 @@ class ManageUsersAddRequested extends ManageUsersEvent {
     required this.relationshipType,
     this.middleName,
     this.isHead = false,
+    this.profileImage,
   });
 
   @override
@@ -62,6 +64,7 @@ class ManageUsersAddRequested extends ManageUsersEvent {
     relationshipType,
     middleName,
     isHead,
+    profileImage,
   ];
 }
 

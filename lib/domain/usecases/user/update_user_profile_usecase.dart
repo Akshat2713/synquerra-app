@@ -1,16 +1,19 @@
+// lib/domain/usecases/user/update_user_profile_usecase.dart
+
 import 'dart:io';
-
 import 'package:dartz/dartz.dart';
+import 'package:synquerra/domain/entities/signup/person_entity.dart';
 import '../../failures/failure.dart';
-import '../../repositories/relationship_repository.dart';
-import '../../entities/signup/person_entity.dart';
+import '../../repositories/user_repository.dart';
+import '../base_usecase.dart';
 
-class CreatePersonWithRelationshipParams {
+class UpdateUserProfileParams {
   final String firstName;
   final String lastName;
   final String email;
-  final String password;
-  final String relationshipType;
+  final String? password;
+  final String? relationshipType;
+  final bool? isHead;
   final String? middleName;
   final String? mobile;
   final String? birthDate;
@@ -20,15 +23,15 @@ class CreatePersonWithRelationshipParams {
   final String? state;
   final String? country;
   final String? pincode;
-  final bool isHead;
   final File? profileImage;
 
-  const CreatePersonWithRelationshipParams({
+  UpdateUserProfileParams({
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.password,
-    required this.relationshipType,
+    this.password,
+    this.relationshipType,
+    this.isHead,
     this.middleName,
     this.mobile,
     this.birthDate,
@@ -38,25 +41,25 @@ class CreatePersonWithRelationshipParams {
     this.state,
     this.country,
     this.pincode,
-    this.isHead = false,
     this.profileImage,
   });
 }
 
-class CreatePersonWithRelationshipUseCase {
-  final RelationshipRepository _repository;
+class UpdateUserProfileUseCase
+    implements UseCase<PersonEntity, UpdateUserProfileParams> {
+  final UserRepository _repository;
 
-  CreatePersonWithRelationshipUseCase(this._repository);
+  UpdateUserProfileUseCase(this._repository);
 
-  Future<Either<Failure, PersonEntity>> call(
-    CreatePersonWithRelationshipParams params,
-  ) {
-    return _repository.createPersonWithRelationship(
+  @override
+  Future<Either<Failure, PersonEntity>> call(UpdateUserProfileParams params) {
+    return _repository.updateUserProfile(
       firstName: params.firstName,
       lastName: params.lastName,
       email: params.email,
       password: params.password,
       relationshipType: params.relationshipType,
+      isHead: params.isHead,
       middleName: params.middleName,
       mobile: params.mobile,
       birthDate: params.birthDate,
@@ -66,7 +69,6 @@ class CreatePersonWithRelationshipUseCase {
       state: params.state,
       country: params.country,
       pincode: params.pincode,
-      isHead: params.isHead,
       profileImage: params.profileImage,
     );
   }

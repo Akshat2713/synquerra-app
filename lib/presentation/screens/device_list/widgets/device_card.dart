@@ -11,7 +11,6 @@ import 'device_card/status_dot.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
-  final bool isActive;
   final String currentUserFullName;
   final List<AlertEntity> deviceAlerts;
   final VoidCallback onTap;
@@ -21,7 +20,6 @@ class DeviceCard extends StatelessWidget {
   const DeviceCard({
     super.key,
     required this.device,
-    required this.isActive,
     required this.currentUserFullName,
     required this.deviceAlerts,
     required this.onTap,
@@ -236,12 +234,12 @@ class DeviceCard extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          StatusDot(
-                            state: isActive,
-                            onLabel: 'ACTIVE',
-                            offLabel: 'INACTIVE',
-                            onColor: AppColors.success,
-                          ),
+                          // StatusDot(
+                          //   state: isActive,
+                          //   onLabel: 'ACTIVE',
+                          //   offLabel: 'INACTIVE',
+                          //   onColor: AppColors.success,
+                          // ),
                         ],
                       ),
                     ],

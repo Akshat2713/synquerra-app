@@ -76,8 +76,8 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
 
     // Collect IDs of members already associated with this device
     final assignedPersonIds = <String>{
-      for (final a in widget.device.associations)
-        if (a.person != null) a.person!.id,
+      for (final a in widget.device.assignments)
+        if (a.userId.isNotEmpty) a.userId,
     };
 
     _availablePersons = <RelatedUserEntity>[];
@@ -100,6 +100,36 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
       if (user != null && !assignedPersonIds.contains(user.id)) {
         _availablePersons.add(user);
       }
+    }
+  }
+
+  Future<void> _confirmAssignment(RelatedUserEntity person) async {
+    final roleLabel = _availableRoles[_selectedRole] ?? _selectedRole;
+    final personName = person.fullName.isEmpty
+        ? 'Unnamed Member'
+        : person.fullName;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Confirm Assignment'),
+        content: Text('Assign $personName as $roleLabel for this device?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      Navigator.pop(context); // close the bottom sheet
+      widget.onAssign(person.id, _selectedRole);
     }
   }
 
@@ -218,10 +248,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.onAssign(person.id, _selectedRole);
-                        },
+                        onTap: () => _confirmAssignment(person),
                       );
                     },
                   ),

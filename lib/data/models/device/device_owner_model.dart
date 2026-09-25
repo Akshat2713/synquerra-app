@@ -1,42 +1,39 @@
 import '../../../domain/entities/device/device_owner_entity.dart';
 
+/// Represents the device's owner as a plain person record.
+/// NOTE: This replaces the old ownership-record shape (owner_id, owner_type,
+/// person_id, owned_from, owned_to, status) — the API no longer sends that
+/// shape and this is now permanent. Fields are mapped directly from the
+/// `owner` object in the API response (id, name, phone, email, profile).
 class DeviceOwnerModel {
   final String id;
-  final String ownerId;
-  final String ownerType;
-  final String? personId;
-  final String ownedFrom;
-  final String? ownedTo;
-  final String status;
+  final String name;
+  final String? phone;
+  final String? email;
+  final String? profile;
 
   const DeviceOwnerModel({
     required this.id,
-    required this.ownerId,
-    required this.ownerType,
-    this.personId,
-    required this.ownedFrom,
-    this.ownedTo,
-    required this.status,
+    required this.name,
+    this.phone,
+    this.email,
+    this.profile,
   });
 
   factory DeviceOwnerModel.fromJson(Map<String, dynamic> json) =>
       DeviceOwnerModel(
-        id: json['id'] as String,
-        ownerId: json['owner_id'] as String,
-        ownerType: json['owner_type'] as String,
-        personId: json['person_id'] as String?,
-        ownedFrom: json['owned_from'] as String,
-        ownedTo: json['owned_to'] as String?,
-        status: json['status'] as String,
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        phone: json['phone'] as String?,
+        email: json['email'] as String?,
+        profile: json['profile'] as String?,
       );
 
   DeviceOwnerEntity toEntity() => DeviceOwnerEntity(
     id: id,
-    ownerId: ownerId,
-    ownerType: ownerType,
-    personId: personId,
-    ownedFrom: ownedFrom,
-    ownedTo: ownedTo,
-    status: status,
+    name: name,
+    phone: phone,
+    email: email,
+    profile: profile,
   );
 }

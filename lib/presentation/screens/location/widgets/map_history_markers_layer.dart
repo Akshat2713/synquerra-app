@@ -71,7 +71,9 @@ class MapHistoryMarkersLayer extends StatelessWidget {
               point: point,
               bearingDegrees: bearing,
               isSelected: isSelected,
-              color: index == 0 ? AppColors.success : AppColors.primary,
+              color: isSelected
+                  ? AppColors.activeLocation
+                  : (index == 0 ? AppColors.success : AppColors.primary),
             ),
           );
         }
@@ -92,7 +94,7 @@ class MapHistoryMarkersLayer extends StatelessWidget {
       height: size,
       child: Container(
         decoration: BoxDecoration(
-          color: color,
+          color: isSelected ? AppColors.activeLocation : color,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white, width: isSelected ? 2.5 : 2),
         ),

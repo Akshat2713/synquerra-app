@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/manage_users/manage_users_bloc.dart';
+import '../../../domain/entities/signup/person_entity.dart';
+import '../../blocs/profile/profile_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/member_form_controller.dart';
 import '../../widgets/member_form_fields.dart';
 import '../../utils/date_time_formatter.dart';
 
-class AddMemberScreen extends StatefulWidget {
-  const AddMemberScreen({super.key});
+class UpdateProfileScreen extends StatefulWidget {
+  /// Existing values to pre-fill the form with, including
+  /// `profilePhotoUrl` (the S3 URL from the loaded profile).
+  final PersonEntity person;
+
+  const UpdateProfileScreen({super.key, required this.person});
 
   @override
-  State<AddMemberScreen> createState() => _AddMemberScreenState();
+  State<UpdateProfileScreen> createState() => _UpdateProfileScreenState();
 }
 
-class _AddMemberScreenState extends State<AddMemberScreen> {
+class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _controller = MemberFormController();
+  late final _controller = MemberFormController(person: widget.person);
 
-  // Tracks whether the in-flight submission belongs to this screen, so the
-  // listener doesn't react to isAdding changes triggered elsewhere.
   bool _wasSubmitting = false;
-  bool _awaitingReload = false;
 
   @override
   void dispose() {
@@ -32,44 +34,42 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _wasSubmitting = true;
-    _awaitingReload = false;
     final c = _controller;
-    context.read<ManageUsersBloc>().add(
-      ManageUsersAddRequested(
+    context.read<ProfileBloc>().add(
+      UpdateUserProfile(
         firstName: c.firstNameController.text.trim(),
+        lastName: c.lastNameController.text.trim(),
+        email: c.emailController.text.trim(),
+        password: c.passwordController.text.isEmpty
+            ? null
+            : c.passwordController.text,
         middleName: c.middleNameController.text.trim().isEmpty
             ? null
             : c.middleNameController.text.trim(),
-        lastName: c.lastNameController.text.trim(),
-        email: c.emailController.text.trim(),
-        password: c.passwordController.text,
         mobile: c.phoneController.text.trim(),
         birthDate: c.birthDate != null
             ? DateTimeFormatter.toIsoString(c.birthDate!)
-            : '',
+            : null,
         gender: c.gender,
         address: c.addressController.text.trim(),
         city: c.cityController.text.trim(),
         state: c.stateController.text.trim(),
         country: c.countryController.text.trim(),
         pincode: c.pincodeController.text.trim(),
-        relationshipType: c.relationshipType,
-        isHead: c.isHead,
-        profileImage: c.profileImageFile,
+        profileImage: c
+            .profileImageFile, // was: c.profilePhotoChanged ? c.newProfileImage : null
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ManageUsersBloc, ManageUsersState>(
+    return BlocConsumer<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (!_wasSubmitting) return;
 
-        if (state is ManageUsersLoaded && state.errorMessage != null) {
-          // Add or relationship-create failed.
+        if (state is ProfileLoaded && state.errorMessage != null) {
           _wasSubmitting = false;
-          _awaitingReload = false;
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -85,27 +85,19 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
           return;
         }
 
-        if (state is ManageUsersLoading) {
-          // The bloc succeeded and is now re-fetching the list.
-          _awaitingReload = true;
-          return;
-        }
-
-        if (state is ManageUsersLoaded && _awaitingReload) {
-          // Reload after a successful add completed.
+        if (state is ProfileLoaded &&
+            !state.isUpdating &&
+            state.errorMessage == null) {
+          // Save completed successfully.
           _wasSubmitting = false;
-          _awaitingReload = false;
           Navigator.pop(context, true);
         }
       },
       builder: (context, state) {
-        final isAdding =
-            _wasSubmitting &&
-            (state is ManageUsersLoading ||
-                (state is ManageUsersLoaded && state.isProcessing));
+        final isSaving = state is ProfileLoaded && state.isUpdating;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Add Family Member'),
+            title: const Text('Update Profile'),
             centerTitle: false,
           ),
           body: SafeArea(
@@ -118,7 +110,8 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                   children: [
                     MemberFormFields(
                       controller: _controller,
-                      requirePassword: true,
+                      requirePassword: false,
+                      showRelationshipFields: false,
                     ),
                     const SizedBox(height: 32),
                     Row(
@@ -136,9 +129,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                         SizedBox(
                           width: 200,
                           child: AppButton(
-                            label: 'Add Member',
+                            label: 'Save Changes',
                             onPressed: _submit,
-                            isLoading: isAdding,
+                            isLoading: isSaving,
                           ),
                         ),
                       ],

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import 'package:synquerra/presentation/widgets/app_text_field.dart';
 
-import '../../../domain/entities/device/device_entity.dart';
-import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/entities/geofence/geofence_entity.dart';
 import 'section_card.dart';
 import 'section_header.dart';
 

@@ -12,6 +12,7 @@ import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
 import '../../domain/entities/schedule/schedule_entity.dart';
 import '../../domain/entities/schedule/schedule_override_entity.dart';
+import '../../domain/entities/signup/person_entity.dart';
 import '../../domain/entities/signup/signup_profile_data.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
@@ -39,6 +40,7 @@ import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/profile/update_profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/device_list/device_list_screen.dart';
@@ -95,6 +97,11 @@ class ScheduleOverrideArgs {
   });
 }
 
+class EditProfileArgs {
+  final ProfileBloc bloc;
+  final PersonEntity person;
+  const EditProfileArgs({required this.bloc, required this.person});
+}
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -124,6 +131,7 @@ class AppRoutes {
   static const String createSchedule = '/create-schedule';
   static const String scheduleOverride = '/schedule-override';
   static const String scheduleView = '/schedule-view';
+  static const String editProfile = '/edit-profile';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -290,6 +298,16 @@ class AppRouter {
         return _slide(
           settings,
           BlocProvider.value(value: bloc, child: const AddMemberScreen()),
+        );
+
+      case AppRoutes.editProfile:
+        final args = settings.arguments as EditProfileArgs;
+        return _slide(
+          settings,
+          BlocProvider.value(
+            value: args.bloc,
+            child: UpdateProfileScreen(person: args.person),
+          ),
         );
 
       case AppRoutes.schedulesList:
@@ -507,6 +525,18 @@ class AppRouter {
       context,
       AppRoutes.scheduleView,
       arguments: schedule,
+    );
+  }
+
+  static Future<T?> pushEditProfile<T>(
+    BuildContext context, {
+    required ProfileBloc bloc,
+    required PersonEntity person,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.editProfile,
+      arguments: EditProfileArgs(bloc: bloc, person: person),
     );
   }
 }

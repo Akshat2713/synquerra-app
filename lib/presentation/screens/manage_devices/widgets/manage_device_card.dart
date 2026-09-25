@@ -28,6 +28,7 @@ class ManageDeviceCard extends StatelessWidget {
   });
 
   bool get _isAssigned => device.carrier != null;
+  bool get _hasAnyAssignment => device.assignments.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +85,7 @@ class ManageDeviceCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'S/N: ${device.id}',
+                        'S/N: ${device.serialNo}',
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: 'monospace',
@@ -138,7 +139,7 @@ class ManageDeviceCard extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 else ...[
-                  if (_isAssigned) ...[
+                  if (_hasAnyAssignment) ...[
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.danger,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 
-import '../../utils/date_time_formatter.dart';
+import '../../../utils/date_time_formatter.dart';
 import 'day_selector_row.dart';
 import 'section_card.dart';
 import 'section_header.dart';
@@ -13,7 +13,9 @@ class TimingRecurrenceSection extends StatelessWidget {
   final bool crossesMidnight;
   final List<int> selectedDays;
   final String dateSelectionMode;
-  final DateTimeRange dateRange;
+  final DateTime startDate;
+  final DateTime? endDate;
+  final bool noEndDate;
   final List<DateTime> customSelectedDates;
 
   final ValueChanged<TimeOfDay> onStartTimeChanged;
@@ -21,7 +23,9 @@ class TimingRecurrenceSection extends StatelessWidget {
   final ValueChanged<bool> onCrossesMidnightChanged;
   final ValueChanged<int> onDayToggled;
   final ValueChanged<String> onDateModeChanged;
-  final ValueChanged<DateTimeRange> onDateRangeChanged;
+  final ValueChanged<DateTime> onStartDateChanged;
+  final ValueChanged<DateTime?> onEndDateChanged;
+  final ValueChanged<bool> onNoEndDateChanged;
   final ValueChanged<DateTime> onCustomDateAdded;
   final ValueChanged<DateTime> onCustomDateRemoved;
 
@@ -32,14 +36,18 @@ class TimingRecurrenceSection extends StatelessWidget {
     required this.crossesMidnight,
     required this.selectedDays,
     required this.dateSelectionMode,
-    required this.dateRange,
+    required this.startDate,
+    required this.endDate,
+    required this.noEndDate,
     required this.customSelectedDates,
     required this.onStartTimeChanged,
     required this.onEndTimeChanged,
     required this.onCrossesMidnightChanged,
     required this.onDayToggled,
     required this.onDateModeChanged,
-    required this.onDateRangeChanged,
+    required this.onStartDateChanged,
+    required this.onEndDateChanged,
+    required this.onNoEndDateChanged,
     required this.onCustomDateAdded,
     required this.onCustomDateRemoved,
   });
@@ -100,9 +108,16 @@ class TimingRecurrenceSection extends StatelessWidget {
                   color: AppColors.textPrimary(context),
                 ),
               ),
+              subtitle: Text(
+                'Automatically detected from start/end time',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary(context),
+                ),
+              ),
               value: crossesMidnight,
               activeThumbColor: AppColors.primary,
-              onChanged: onCrossesMidnightChanged,
+              onChanged: null,
             ),
             const Divider(),
             const SizedBox(height: 8),
@@ -139,53 +154,127 @@ class TimingRecurrenceSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             if (dateSelectionMode == 'range')
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () async {
-                  final picked = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(2025),
-                    lastDate: DateTime(2030),
-                    initialDateRange: dateRange,
-                  );
-                  if (picked != null) onDateRangeChanged(picked);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant(context),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.outline(context)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.date_range_rounded,
-                        size: 20,
-                        color: AppColors.primary,
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        firstDate: DateTime(2025),
+                        lastDate: DateTime(2030),
+                        initialDate: startDate,
+                      );
+                      if (picked != null) onStartDateChanged(picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant(context),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.outline(context)),
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            'Active Date Range',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary(context),
-                            ),
+                          Icon(
+                            Icons.date_range_rounded,
+                            size: 20,
+                            color: AppColors.primary,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${DateTimeFormatter.formatDate(dateRange.start)}  →  ${DateTimeFormatter.formatDate(dateRange.end)}',
-                            style: inputTextStyle,
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Start Date',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary(context),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                DateTimeFormatter.formatDate(startDate),
+                                style: inputTextStyle,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(
+                      'No End Date',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary(context),
+                      ),
+                    ),
+                    value: noEndDate,
+                    activeThumbColor: AppColors.primary,
+                    onChanged: onNoEndDateChanged,
+                  ),
+                  if (!noEndDate) ...[
+                    const SizedBox(height: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          firstDate: startDate,
+                          lastDate: DateTime(2030),
+                          initialDate: endDate ?? startDate,
+                        );
+                        if (picked != null) onEndDateChanged(picked);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant(context),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.outline(context)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.event_rounded,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'End Date',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondary(context),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  endDate != null
+                                      ? DateTimeFormatter.formatDate(endDate!)
+                                      : 'Select end date',
+                                  style: inputTextStyle,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               )
             else
               Column(

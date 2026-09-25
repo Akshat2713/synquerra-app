@@ -262,7 +262,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           final deviceAlerts = alertsForDevice(device, allAlerts.cast());
           return DeviceCard(
             device: device,
-            isActive: device.isActive,
             currentUserFullName: user?.fullName ?? '—',
             deviceAlerts: deviceAlerts.cast(),
             onTap: () => _onDeviceTap(device),

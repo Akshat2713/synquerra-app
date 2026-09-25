@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
@@ -128,6 +130,7 @@ class ManageUsersBloc extends Bloc<ManageUsersEvent, ManageUsersState> {
         relationshipType: event.relationshipType,
         middleName: event.middleName,
         isHead: event.isHead,
+        profileImage: event.profileImage,
       ),
     );
 
