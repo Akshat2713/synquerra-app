@@ -79,7 +79,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                         .where((a) => a.isCritical)
                         .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
-                    final name = d.displayOwnerName(currentUserFullName);
+                    final name = d.displayOwnerName;
                     final isCurrentDevice = d.imei == currentDeviceId;
                     return ListTile(
                       leading: Container(

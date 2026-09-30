@@ -6,26 +6,32 @@ import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_us
 import 'package:synquerra/presentation/blocs/profile/profile_bloc.dart';
 
 // Core & Network
-import '../../data/datasources/remote/analytics_realtime_datasource.dart';
+import '../../data/datasources/realtime/analytics_realtime_datasource.dart';
+import '../../data/datasources/realtime/device_events_realtime_datasource.dart';
+import '../../data/datasources/realtime/realtime_connection.dart';
 import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
+import '../../data/repositories_impl/realtime_events_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/schedule_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
 import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
+import '../../domain/repositories/realtime_events_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/usecases/analytics/get_live_telemetry_usecase.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/realtime/watch_device_events_usecase.dart';
 import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
@@ -48,6 +54,7 @@ import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
+import '../../presentation/blocs/realtime/device_events_cubit.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';
 import '../../presentation/blocs/schedule_override/schedule_overrides_bloc.dart';
@@ -250,17 +257,19 @@ Future<void> initDependencies() async {
     () => AnalyticsRemoteDataSource(sl()),
   );
   sl.registerLazySingleton<AnalyticsRealtimeDataSource>(
-    () => AnalyticsRealtimeDataSource(),
+    () => AnalyticsRealtimeDataSource(sl()),
   );
   sl.registerLazySingleton<AnalyticsRepository>(
     () => AnalyticsRepositoryImpl(remote: sl(), realtime: sl()),
   );
   sl.registerLazySingleton(() => GetAnalyticsUseCase(sl()));
   sl.registerLazySingleton(() => SubscribeAnalyticsRealtimeUseCase(sl()));
+  sl.registerLazySingleton(() => GetLiveTelemetryUseCase(sl()));
   sl.registerFactory<AnalyticsBloc>(
     () => AnalyticsBloc(
       getAnalyticsUseCase: sl(),
       subscribeRealtimeUseCase: sl(),
+      getLiveTelemetryUseCase: sl(),
     ),
   );
   // ── Geofence Feature ────────────────────────────────────
@@ -440,6 +449,17 @@ Future<void> initDependencies() async {
       deleteScheduleOverrideUseCase: sl(),
     ),
   );
+
+  // ── Realtime (shared socket + device events) ────────────
+  sl.registerLazySingleton<RealtimeConnection>(() => RealtimeConnection());
+  sl.registerLazySingleton<DeviceEventsRealtimeDataSource>(
+    () => DeviceEventsRealtimeDataSource(sl()),
+  );
+  sl.registerLazySingleton<RealtimeEventsRepository>(
+    () => RealtimeEventsRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => WatchDeviceEventsUseCase(sl()));
+  sl.registerFactory<DeviceEventsCubit>(() => DeviceEventsCubit(sl()));
 }
 
 /// Called after successful login to store user globally

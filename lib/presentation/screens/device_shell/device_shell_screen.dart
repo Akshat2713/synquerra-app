@@ -5,9 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../domain/entities/alerts/alert_entity.dart';
 import '../../../domain/entities/device/device_entity.dart';
+import '../../../domain/entities/realtime/device_event.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
+import '../../blocs/realtime/device_events_cubit.dart';
+import '../../widgets/device_event_banner.dart';
 import '../landing/landing_screen.dart';
 import '../landing/widgets/attention_device_sheet.dart';
 import '../location/location_screen.dart';
@@ -42,6 +45,7 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         imei: widget.device.imei,
       ),
     );
+    context.read<DeviceEventsCubit>().start(widget.device.imei);
   }
 
   void _goToTab(int index) {
@@ -78,60 +82,65 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          // Tab 0: Home (Always loaded first)
-          LandingScreen(
-            device: widget.device,
-            onAttentionTap: () => _openAttentionSheet(context),
-          ),
+    return BlocListener<DeviceEventsCubit, DeviceEvent?>(
+      listener: (context, event) {
+        if (event != null) showDeviceEventBanner(context, event);
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            // Tab 0: Home (Always loaded first)
+            LandingScreen(
+              device: widget.device,
+              onAttentionTap: () => _openAttentionSheet(context),
+            ),
 
-          // Tab 1: Map (Mounts & shares AnalyticsBloc when tapped)
-          _activatedTabs.contains(1)
-              ? LocationScreen(device: widget.device)
-              : const SizedBox.shrink(),
+            // Tab 1: Map (Mounts & shares AnalyticsBloc when tapped)
+            _activatedTabs.contains(1)
+                ? LocationScreen(device: widget.device)
+                : const SizedBox.shrink(),
 
-          // Tab 2: Manage (Only makes API calls when tapped for the first time)
-          _activatedTabs.contains(2)
-              ? ManageScreen(device: widget.device)
-              : const SizedBox.shrink(),
+            // Tab 2: Manage (Only makes API calls when tapped for the first time)
+            _activatedTabs.contains(2)
+                ? ManageScreen(device: widget.device)
+                : const SizedBox.shrink(),
 
-          // Tab 3: Settings (Only loads when tapped)
-          _activatedTabs.contains(3)
-              ? SettingsScreen(
-                  device: widget.device,
-                  initialCenter: _defaultCenter,
-                )
-              : const SizedBox.shrink(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _goToTab,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map_rounded),
-            label: 'Map',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Manage',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
-          ),
-        ],
+            // Tab 3: Settings (Only loads when tapped)
+            _activatedTabs.contains(3)
+                ? SettingsScreen(
+                    device: widget.device,
+                    initialCenter: _defaultCenter,
+                  )
+                : const SizedBox.shrink(),
+          ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _goToTab,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.map_outlined),
+              selectedIcon: Icon(Icons.map_rounded),
+              label: 'Map',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Manage',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings_rounded),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }

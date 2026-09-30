@@ -24,7 +24,7 @@ class ScheduleRulesCard extends StatelessWidget {
                 Icon(Icons.tune_outlined, size: 20, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Grace & Alert Rules',
+                  'Grace Rules',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -50,37 +50,6 @@ class ScheduleRulesCard extends StatelessWidget {
                 label: 'Minimum Stay',
                 value: '${schedule.minimumStayMins} mins',
               ),
-            const Divider(height: 24),
-            _buildSwitchTile(
-              context,
-              label: 'Alert on Absence',
-              enabled: schedule.alertOnAbsence,
-            ),
-            _buildSwitchTile(
-              context,
-              label: 'Alert on Late Arrival',
-              enabled: schedule.alertOnLateArrival,
-            ),
-            _buildSwitchTile(
-              context,
-              label: 'Alert on Early Departure',
-              enabled: schedule.alertOnEarlyDeparture,
-            ),
-            _buildSwitchTile(
-              context,
-              label: 'Alert on Early Entry',
-              enabled: schedule.alertOnEarlyEntry,
-            ),
-            _buildSwitchTile(
-              context,
-              label: 'Alert on Re-entry',
-              enabled: schedule.alertOnReentry,
-            ),
-            _buildSwitchTile(
-              context,
-              label: 'Push Notifications',
-              enabled: schedule.sendPushNotification,
-            ),
           ],
         ),
       ),
@@ -111,35 +80,6 @@ class ScheduleRulesCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary(context),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile(
-    BuildContext context, {
-    required String label,
-    required bool enabled,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textPrimary(context),
-            ),
-          ),
-          Icon(
-            enabled ? Icons.check_circle : Icons.cancel,
-            size: 20,
-            color: enabled
-                ? AppColors.success
-                : AppColors.textSecondary(context).withAlpha(100),
           ),
         ],
       ),

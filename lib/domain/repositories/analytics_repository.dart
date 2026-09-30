@@ -11,6 +11,9 @@ abstract class AnalyticsRepository {
     String? startDate,
     String? endDate,
   });
+  Future<Either<Failure, AnalyticsEntity>> getLiveTelemetry({
+    required String deviceId,
+  });
 
   Stream<AnalyticsEntity> subscribeToTelemetry(String imei);
   Stream<String> get telemetryErrors;

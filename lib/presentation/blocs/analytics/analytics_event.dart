@@ -29,6 +29,14 @@ class AnalyticsFilterChanged extends AnalyticsEvent {
   List<Object?> get props => [deviceId, filter];
 }
 
+class AnalyticsLiveQueryRequested extends AnalyticsEvent {
+  final String deviceId;
+  const AnalyticsLiveQueryRequested(this.deviceId);
+
+  @override
+  List<Object?> get props => [deviceId];
+}
+
 class AnalyticsCustomRangeSelected extends AnalyticsEvent {
   final String deviceId; // ~ renamed from imei
   final DateTime startDate;

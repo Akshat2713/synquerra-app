@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -39,6 +41,13 @@ class _LocationScreenState extends State<LocationScreen> {
   bool _showTimeline = false;
   bool _isTimelineMinimized = true;
 
+  static const _liveQueryCooldown = Duration(minutes: 5);
+  DateTime? _cooldownUntil;
+  Timer? _cooldownTimer;
+
+  bool get _inCooldown =>
+      _cooldownUntil != null && DateTime.now().isBefore(_cooldownUntil!);
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +64,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   void dispose() {
+    _cooldownTimer?.cancel();
     _mapController.dispose();
     _userLocationBloc.close();
     super.dispose();
@@ -83,6 +93,28 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
       );
     }
+  }
+
+  void _startCooldown() {
+    _cooldownTimer?.cancel();
+    setState(() => _cooldownUntil = DateTime.now().add(_liveQueryCooldown));
+    _cooldownTimer = Timer(_liveQueryCooldown, () {
+      if (mounted) setState(() => _cooldownUntil = null);
+    });
+  }
+
+  void _onLiveQuery() {
+    if (_inCooldown) return;
+    // Live data belongs to the "latest" view, so leave history mode first
+    if (_showTimeline) {
+      setState(() {
+        _showTimeline = false;
+        _isTimelineMinimized = true;
+      });
+    }
+    context.read<AnalyticsBloc>().add(
+      AnalyticsLiveQueryRequested(widget.device.id),
+    );
   }
 
   void _fitMapToPoints(List<AnalyticsEntity> points) {
@@ -144,6 +176,31 @@ class _LocationScreenState extends State<LocationScreen> {
               }
             },
           ),
+
+          BlocListener<AnalyticsBloc, AnalyticsState>(
+            listenWhen: (prev, curr) =>
+                curr is AnalyticsLoaded &&
+                curr.liveQueryError != null &&
+                (prev is! AnalyticsLoaded ||
+                    prev.liveQueryError != curr.liveQueryError),
+            listener: (context, state) {
+              final msg = (state as AnalyticsLoaded).liveQueryError!;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(msg)));
+            },
+          ),
+
+          BlocListener<AnalyticsBloc, AnalyticsState>(
+            listenWhen: (prev, curr) =>
+                prev is AnalyticsLoaded &&
+                prev.isQuerying &&
+                curr is AnalyticsLoaded &&
+                !curr.isQuerying &&
+                curr.liveQueryError == null,
+            listener: (context, state) => _startCooldown(),
+          ),
+
           BlocListener<UserLocationBloc, UserLocationState>(
             bloc: _userLocationBloc,
             listener: (context, state) {
@@ -212,10 +269,15 @@ class _LocationScreenState extends State<LocationScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  MapControlsColumn(
-                    mapController: _mapController,
-                    userLocationBloc: _userLocationBloc,
-                    deviceCenter: _defaultCenter,
+                  BlocSelector<AnalyticsBloc, AnalyticsState, bool>(
+                    selector: (s) => s is AnalyticsLoaded && s.isQuerying,
+                    builder: (context, isQuerying) => MapControlsColumn(
+                      mapController: _mapController,
+                      userLocationBloc: _userLocationBloc,
+                      deviceCenter: _defaultCenter,
+                      onLiveQuery: _inCooldown ? null : _onLiveQuery,
+                      isQuerying: isQuerying,
+                    ),
                   ),
                 ],
               ),

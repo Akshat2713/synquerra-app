@@ -68,8 +68,7 @@ class NotificationPanel extends StatelessWidget {
               final device = devices
                   .where((d) => d.imei == alert.imei)
                   .firstOrNull;
-              final name =
-                  device?.displayOwnerName(currentUserFullName) ?? alert.imei;
+              final name = device?.displayOwnerName ?? alert.imei;
 
               return ListTile(
                 dense: true,

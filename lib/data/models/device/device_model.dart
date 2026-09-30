@@ -168,7 +168,7 @@ class DeviceModel {
     createdAt: createdAt,
     updatedAt: updatedAt,
     relationship: relationship,
-    owner: owner?.toEntity(),
+    owner: owner!.toEntity(),
     carrier: carrier?.toEntity(),
     assignments: assignments.map((a) => a.toEntity()).toList(),
     schemaVersion: schemaVersion,

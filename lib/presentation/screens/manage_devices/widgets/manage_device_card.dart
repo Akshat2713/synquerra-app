@@ -74,7 +74,7 @@ class ManageDeviceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        device.displayOwnerName(currentUserFullName),
+                        device.displayOwnerName,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

@@ -12,12 +12,16 @@ class MapControlsColumn extends StatelessWidget {
   final MapController mapController;
   final UserLocationBloc userLocationBloc;
   final LatLng deviceCenter;
+  final VoidCallback? onLiveQuery;
+  final bool isQuerying;
 
   const MapControlsColumn({
     super.key,
     required this.mapController,
     required this.userLocationBloc,
     required this.deviceCenter,
+    this.onLiveQuery,
+    this.isQuerying = false,
   });
 
   @override
@@ -43,8 +47,17 @@ class MapControlsColumn extends StatelessWidget {
         const SizedBox(height: 8),
         _CompassButton(mapController: mapController),
         const SizedBox(height: 8),
-        // Reserved for future use — intentionally disabled (onTap: null).
-        const MapIconButton(icon: Icons.location_searching, onTap: null),
+        MapIconButton(
+          icon: Icons.location_searching,
+          onTap: isQuerying ? null : onLiveQuery,
+          child: isQuerying
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : null,
+        ),
         const SizedBox(height: 8),
         // Recenter on the device's last known location.
         MapIconButton(

@@ -20,6 +20,8 @@ class AnalyticsLoaded extends AnalyticsState {
   final DateTime? startDate;
   final DateTime? endDate;
   final int sliderIndex;
+  final bool isQuerying;
+  final String? liveQueryError;
 
   const AnalyticsLoaded({
     required this.points,
@@ -27,6 +29,8 @@ class AnalyticsLoaded extends AnalyticsState {
     this.startDate,
     this.endDate,
     this.sliderIndex = 0,
+    this.isQuerying = false,
+    this.liveQueryError,
   });
 
   List<AnalyticsEntity> get mappablePoints {
@@ -51,6 +55,9 @@ class AnalyticsLoaded extends AnalyticsState {
     DateTime? startDate,
     DateTime? endDate,
     int? sliderIndex,
+    bool? isQuerying,
+    String? liveQueryError,
+    bool clearLiveQueryError = false,
   }) {
     return AnalyticsLoaded(
       points: points ?? this.points,
@@ -58,6 +65,10 @@ class AnalyticsLoaded extends AnalyticsState {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       sliderIndex: sliderIndex ?? this.sliderIndex,
+      isQuerying: isQuerying ?? this.isQuerying,
+      liveQueryError: clearLiveQueryError
+          ? null
+          : (liveQueryError ?? this.liveQueryError),
     );
   }
 
@@ -68,6 +79,8 @@ class AnalyticsLoaded extends AnalyticsState {
     startDate,
     endDate,
     sliderIndex,
+    isQuerying,
+    liveQueryError,
   ];
 }
 

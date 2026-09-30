@@ -67,7 +67,7 @@ class DeviceCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              device.displayOwnerName(currentUserFullName),
+                              device.displayOwnerName,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 15,
@@ -233,7 +233,7 @@ class DeviceCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const Spacer(),
+                          // const Spacer(),
                           // StatusDot(
                           //   state: isActive,
                           //   onLabel: 'ACTIVE',

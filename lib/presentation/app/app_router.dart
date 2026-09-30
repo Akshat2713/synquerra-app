@@ -24,6 +24,7 @@ import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
+import '../blocs/realtime/device_events_cubit.dart';
 import '../blocs/schedule_form/schedule_form_bloc.dart';
 import '../blocs/schedule_list/schedule_list_bloc.dart';
 import '../blocs/schedule_override/schedule_overrides_bloc.dart';
@@ -36,6 +37,7 @@ import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
+import '../screens/main_shell/main_shell_screen.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
@@ -43,7 +45,7 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/profile/update_profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/device_list/device_list_screen.dart';
+// import '../screens/device_list/device_list_screen.dart';
 import '../screens/schedule_form/create_schedule_screen.dart';
 import '../screens/user_schedule/schedules_list_screen.dart';
 
@@ -157,7 +159,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<DeviceListBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
             ],
-            child: const DeviceListScreen(),
+            child: const MainShellScreen(),
           ),
         );
 
@@ -172,6 +174,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
+              BlocProvider(create: (_) => sl<DeviceEventsCubit>()),
             ],
             child: DeviceShellScreen(device: args.device),
           ),

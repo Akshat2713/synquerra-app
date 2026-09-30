@@ -144,26 +144,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   : null,
             ),
-            // Positioned(
-            //   bottom: 0,
-            //   right: 0,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(6),
-            //     decoration: BoxDecoration(
-            //       color: AppColors.primary,
-            //       shape: BoxShape.circle,
-            //       border: Border.all(
-            //         color: AppColors.surface(context),
-            //         width: 2,
-            //       ),
-            //     ),
-            //     child: const Icon(
-            //       Icons.camera_alt,
-            //       size: 16,
-            //       color: Colors.white,
-            //     ),
-            //   ),
-            // ),
           ],
         ),
         const SizedBox(height: 16),

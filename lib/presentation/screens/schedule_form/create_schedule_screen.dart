@@ -51,13 +51,6 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
   /// Monday = 0 .. Sunday = 6 convention (matches DaySelectorRow and backend API).
   final List<int> _selectedDays = [0, 1, 2, 3, 4];
 
-  bool _alertAbsence = true;
-  bool _alertLateArrival = true;
-  bool _alertEarlyDeparture = true;
-  bool _alertEarlyEntry = false;
-  bool _alertReentry = false;
-  bool _sendPush = true;
-
   bool _prefilled = false;
 
   @override
@@ -117,12 +110,6 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
     _startDate = DateTime.parse(s.startDate);
     _endDate = s.endDate != null ? DateTime.parse(s.endDate!) : null;
     _noEndDate = s.endDate == null;
-    _alertAbsence = s.alertOnAbsence;
-    _alertLateArrival = s.alertOnLateArrival;
-    _alertEarlyDeparture = s.alertOnEarlyDeparture;
-    _alertEarlyEntry = s.alertOnEarlyEntry;
-    _alertReentry = s.alertOnReentry;
-    _sendPush = s.sendPushNotification;
   }
 
   Map<String, dynamic> _buildRequestBody({
@@ -163,14 +150,6 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
         'departure_buffer_mins':
             int.tryParse(_departureBufferController.text) ?? 0,
         'minimum_stay_mins': int.tryParse(_minStayController.text),
-      },
-      'alert_settings': {
-        'alert_on_absence': _alertAbsence,
-        'alert_on_late_arrival': _alertLateArrival,
-        'alert_on_early_departure': _alertEarlyDeparture,
-        'alert_on_early_entry': _alertEarlyEntry,
-        'alert_on_reentry': _alertReentry,
-        'send_push_notification': _sendPush,
       },
     };
   }
@@ -343,48 +322,6 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                       ),
                     ],
                   ),
-                  const SectionHeader(title: 'Alert Triggers'),
-                  SectionCard(
-                    children: [
-                      _buildSwitchRow(
-                        'Alert on Absence',
-                        'Notify if student does not arrive',
-                        _alertAbsence,
-                        (v) => setState(() => _alertAbsence = v),
-                      ),
-                      _buildSwitchRow(
-                        'Alert on Late Arrival',
-                        'Notify after grace period ends',
-                        _alertLateArrival,
-                        (v) => setState(() => _alertLateArrival = v),
-                      ),
-                      _buildSwitchRow(
-                        'Alert on Early Departure',
-                        'Notify if leaving before schedule ends',
-                        _alertEarlyDeparture,
-                        (v) => setState(() => _alertEarlyDeparture = v),
-                      ),
-                      _buildSwitchRow(
-                        'Alert on Early Entry',
-                        'Notify if arriving well before start',
-                        _alertEarlyEntry,
-                        (v) => setState(() => _alertEarlyEntry = v),
-                      ),
-                      _buildSwitchRow(
-                        'Alert on Re-entry',
-                        'Notify if student enters zone again',
-                        _alertReentry,
-                        (v) => setState(() => _alertReentry = v),
-                      ),
-                      const Divider(),
-                      _buildSwitchRow(
-                        'Push Notifications',
-                        'Send alert notifications to mobile',
-                        _sendPush,
-                        (v) => setState(() => _sendPush = v),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 16),
                   Container(
                     height: 52,
@@ -476,36 +413,6 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildSwitchRow(
-    String title,
-    String subtitle,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return SwitchListTile.adaptive(
-      contentPadding: EdgeInsets.zero,
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary(context),
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textSecondary(context),
-        ),
-      ),
-      value: value,
-      activeThumbColor: AppColors.primary,
-      onChanged: onChanged,
     );
   }
 }

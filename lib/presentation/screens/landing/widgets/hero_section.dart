@@ -26,7 +26,7 @@ class HeroSection extends StatelessWidget {
     final loggedInName = authState is AuthAuthenticated
         ? authState.user.fullName
         : '—';
-    final displayName = device.displayOwnerName(loggedInName);
+    final displayName = device.displayOwnerName;
     final isOnline = device.isOnline ?? false;
     final mode = device.currentMode;
 

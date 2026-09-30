@@ -21,12 +21,7 @@ class ScheduleEntity extends Equatable {
   final int arrivalGraceMins;
   final int departureBufferMins;
   final int? minimumStayMins;
-  final bool alertOnAbsence;
-  final bool alertOnLateArrival;
-  final bool alertOnEarlyDeparture;
-  final bool alertOnEarlyEntry;
-  final bool alertOnReentry;
-  final bool sendPushNotification;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -51,12 +46,7 @@ class ScheduleEntity extends Equatable {
     required this.arrivalGraceMins,
     required this.departureBufferMins,
     this.minimumStayMins,
-    required this.alertOnAbsence,
-    required this.alertOnLateArrival,
-    required this.alertOnEarlyDeparture,
-    required this.alertOnEarlyEntry,
-    required this.alertOnReentry,
-    required this.sendPushNotification,
+
     this.createdAt,
     this.updatedAt,
   });
@@ -83,12 +73,6 @@ class ScheduleEntity extends Equatable {
     arrivalGraceMins,
     departureBufferMins,
     minimumStayMins,
-    alertOnAbsence,
-    alertOnLateArrival,
-    alertOnEarlyDeparture,
-    alertOnEarlyEntry,
-    alertOnReentry,
-    sendPushNotification,
     createdAt,
     updatedAt,
   ];

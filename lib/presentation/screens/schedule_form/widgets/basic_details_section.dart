@@ -123,7 +123,7 @@ class BasicDetailsSection extends StatelessWidget {
                 return DropdownMenuItem<String?>(
                   value: device.id,
                   child: Text(
-                    '${device.serialNo} · ${device.displayOwnerName(currentUserFullName)}',
+                    '${device.serialNo} · ${device.displayOwnerName}',
                     style: inputTextStyle,
                     overflow: TextOverflow.ellipsis,
                   ),

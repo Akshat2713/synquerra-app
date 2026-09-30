@@ -30,11 +30,9 @@ class DeviceEntity extends Equatable {
   final String createdAt;
   final String updatedAt;
   final String relationship;
-  final DeviceOwnerEntity? owner;
+  final DeviceOwnerEntity owner;
   final PersonEntity? carrier;
   final List<DeviceAssociationEntity> assignments;
-
-  // Fields present in the newer API payload that weren't modeled before.
   final int? schemaVersion;
   final String? hdop;
   final String? satsUsed;
@@ -71,7 +69,7 @@ class DeviceEntity extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     required this.relationship,
-    this.owner,
+    required this.owner,
     this.carrier,
     this.assignments = const [],
     this.schemaVersion,
@@ -90,19 +88,34 @@ class DeviceEntity extends Equatable {
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
 
-  String displayOwnerName(String currentUserFullName) {
+  // String displayOwnerName(String currentUserFullName) {
+  //   AppLogger.d('DeviceEntity', 'New Device');
+  //   final carrierName = carrier != null
+  //       ? '${carrier!.firstName} ${carrier!.lastName}'.trim()
+  //       : '';
+  //   AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+  //   if (carrierName.isNotEmpty) return carrierName;
+
+  //   final ownerName = owner?.name.trim() ?? '';
+  //   AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
+  //   if (ownerName.isNotEmpty) return ownerName;
+
+  //   return currentUserFullName;
+  // }
+
+  String get displayOwnerName => _resolveDisplayOwnerName();
+
+  String _resolveDisplayOwnerName() {
     AppLogger.d('DeviceEntity', 'New Device');
-    final carrierName = carrier != null
-        ? '${carrier!.firstName} ${carrier!.lastName}'.trim()
-        : '';
-    AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
-    if (carrierName.isNotEmpty) return carrierName;
-
-    final ownerName = owner?.name.trim() ?? '';
+    final c = carrier;
+    if (c != null) {
+      final carrierName = '${c.firstName} ${c.lastName}'.trim();
+      AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+      if (carrierName.isNotEmpty) return carrierName;
+    }
+    final ownerName = owner.name.trim();
     AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
-    if (ownerName.isNotEmpty) return ownerName;
-
-    return currentUserFullName;
+    return ownerName;
   }
 
   DeviceAssociationEntity? associationFor(String roleKey) {

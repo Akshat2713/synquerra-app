@@ -109,7 +109,7 @@ class _AvatarStack extends StatelessWidget {
               alerts,
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
-            final name = d.displayOwnerName(currentUserFullName);
+            final name = d.displayOwnerName;
             final parts = name
                 .split(RegExp(r'\s+'))
                 .where((p) => p.isNotEmpty)

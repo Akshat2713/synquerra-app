@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../domain/usecases/analytics/get_analytics_usecase.dart';
+import '../../../domain/usecases/analytics/get_live_telemetry_usecase.dart';
 import '../../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../../domain/utils/analytics_params_computer.dart';
 import '../../../core/utils/app_logger.dart';
@@ -17,21 +18,26 @@ part 'analytics_state.dart';
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final GetAnalyticsUseCase _getAnalyticsUseCase;
   final SubscribeAnalyticsRealtimeUseCase _subscribeRealtimeUseCase;
+  final GetLiveTelemetryUseCase _getLiveTelemetryUseCase;
   StreamSubscription<AnalyticsEntity>? _realtimeSub;
   StreamSubscription<String>? _realtimeErrorSub;
   String? _currentDeviceId;
+  bool _isLiveQuerying = false;
 
   AnalyticsBloc({
     required GetAnalyticsUseCase getAnalyticsUseCase,
     required SubscribeAnalyticsRealtimeUseCase subscribeRealtimeUseCase,
+    required GetLiveTelemetryUseCase getLiveTelemetryUseCase,
   }) : _getAnalyticsUseCase = getAnalyticsUseCase,
        _subscribeRealtimeUseCase = subscribeRealtimeUseCase,
+       _getLiveTelemetryUseCase = getLiveTelemetryUseCase,
        super(AnalyticsInitial()) {
     on<AnalyticsLoadDefault>(_onLoadDefault);
     on<AnalyticsFilterChanged>(_onFilterChanged);
     on<AnalyticsCustomRangeSelected>(_onCustomRange);
     on<AnalyticsSliderChanged>(_onSliderChanged);
     on<AnalyticsRealtimePointReceived>(_onRealtimePoint);
+    on<AnalyticsLiveQueryRequested>(_onLiveQuery);
   }
 
   Future<void> _onLoadDefault(
@@ -123,6 +129,61 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
       startDate: startDate,
       endDate: now,
     );
+  }
+
+  Future<void> _onLiveQuery(
+    AnalyticsLiveQueryRequested event,
+    Emitter<AnalyticsState> emit,
+  ) async {
+    if (_isLiveQuerying) return;
+    _isLiveQuerying = true;
+
+    try {
+      AppLogger.d('AnalyticsBloc', 'LiveQuery → ${event.deviceId}');
+
+      // Show the spinner and clear any previous error
+      final before = state;
+      if (before is AnalyticsLoaded) {
+        emit(before.copyWith(isQuerying: true, clearLiveQueryError: true));
+      }
+
+      final result = await _getLiveTelemetryUseCase(
+        LiveTelemetryParams(deviceId: event.deviceId),
+      );
+
+      result.fold(
+        (failure) {
+          AppLogger.d('AnalyticsBloc', 'LiveQuery failed: ${failure.message}');
+          final now = state; // re-read, state may have changed while waiting
+          if (now is AnalyticsLoaded) {
+            emit(
+              now.copyWith(
+                isQuerying: false,
+                liveQueryError: failure.userMessage,
+              ),
+            );
+          } else {
+            emit(AnalyticsError(failure.userMessage));
+          }
+        },
+        (entity) {
+          AppLogger.d(
+            'AnalyticsBloc',
+            'LiveQuery OK @ ${entity.deviceTimestamp}',
+          );
+          // Override whatever is shown; isQuerying and error reset to defaults
+          emit(
+            AnalyticsLoaded(
+              points: [entity],
+              activeFilter: AnalyticsFilter.latest,
+              sliderIndex: 0,
+            ),
+          );
+        },
+      );
+    } finally {
+      _isLiveQuerying = false;
+    }
   }
 
   Future<void> _onCustomRange(
