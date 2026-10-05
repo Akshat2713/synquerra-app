@@ -112,7 +112,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).scaffoldBackgroundColor,
@@ -327,7 +327,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
             ),
             value: c.isHead,
             onChanged: (val) => setState(() => c.isHead = val),
-            activeThumbColor: AppColors.primary,
+            activeThumbColor: AppColors.primary(context),
             contentPadding: EdgeInsets.zero,
           ),
         ],

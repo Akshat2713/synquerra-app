@@ -49,7 +49,7 @@ class MapHistoryMarkersLayer extends StatelessWidget {
               _circleMarker(
                 point: point,
                 isSelected: isSelected,
-                color: AppColors.primary,
+                color: AppColors.primary(context),
               ),
             );
             continue;
@@ -73,7 +73,7 @@ class MapHistoryMarkersLayer extends StatelessWidget {
               isSelected: isSelected,
               color: isSelected
                   ? AppColors.activeLocation
-                  : (index == 0 ? AppColors.success : AppColors.primary),
+                  : (index == 0 ? AppColors.success : AppColors.primary(context)),
             ),
           );
         }

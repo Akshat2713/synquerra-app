@@ -32,9 +32,9 @@ class AppButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
+          backgroundColor: backgroundColor ?? AppColors.primary(context),
           foregroundColor: foregroundColor ?? Colors.white,
-          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
+          disabledBackgroundColor: (backgroundColor ?? AppColors.primary(context))
               .withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),

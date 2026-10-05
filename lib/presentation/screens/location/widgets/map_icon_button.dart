@@ -32,7 +32,7 @@ class MapIconButton extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           color: highlighted
-              ? AppColors.primary
+              ? AppColors.primary(context)
               : disabled
               ? AppColors.surfaceVariant(context)
               : AppColors.surface(context),

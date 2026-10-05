@@ -183,7 +183,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                     onTap: () => setState(() => _showCustomPicker = false),
                     child: Icon(
                       Icons.arrow_back_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.primary(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -240,13 +240,13 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: AppColors.primary(context).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  ${DateTimeFormatter.formatDateTime(_endDateTime)}',
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
@@ -305,9 +305,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         selectionOverlay: Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+              top: BorderSide(color: AppColors.primary(context).withValues(alpha: 0.4)),
               bottom: BorderSide(
-                color: AppColors.primary.withValues(alpha: 0.4),
+                color: AppColors.primary(context).withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -338,17 +338,17 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
       contentPadding: EdgeInsets.zero,
       leading: Icon(
         icon,
-        color: isActive ? AppColors.primary : AppColors.textSecondary(context),
+        color: isActive ? AppColors.primary(context) : AppColors.textSecondary(context),
       ),
       title: Text(
         label,
         style: TextStyle(
-          color: isActive ? AppColors.primary : AppColors.textPrimary(context),
+          color: isActive ? AppColors.primary(context) : AppColors.textPrimary(context),
           fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
       trailing: isActive
-          ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
+          ? Icon(Icons.check_circle_rounded, color: AppColors.primary(context), size: 20)
           : Icon(
               Icons.chevron_right_rounded,
               color: AppColors.textSecondary(context),
@@ -369,7 +369,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         decoration: BoxDecoration(
           border: Border.all(
             color: date != null
-                ? AppColors.primary
+                ? AppColors.primary(context)
                 : AppColors.outline(context),
             width: date != null ? 1.5 : 1,
           ),
@@ -381,7 +381,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               Icons.calendar_today_rounded,
               size: 18,
               color: date != null
-                  ? AppColors.primary
+                  ? AppColors.primary(context)
                   : AppColors.textSecondary(context),
             ),
             const SizedBox(width: 12),

@@ -142,7 +142,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
 
             return RefreshIndicator(
               onRefresh: _onRefresh,
-              color: AppColors.primary,
+              color: AppColors.primary(context),
               child: CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
@@ -208,7 +208,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               const SizedBox(width: 6),

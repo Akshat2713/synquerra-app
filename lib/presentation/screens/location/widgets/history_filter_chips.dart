@@ -81,9 +81,9 @@ class HistoryFilterChips extends StatelessWidget {
   ) {
     final disabled = onTap == null;
 
-    final activeBg = AppColors.primary.withValues(alpha: 0.12);
-    final activeBorder = AppColors.primary;
-    final activeTextColor = AppColors.primary;
+    final activeBg = AppColors.primary(context).withValues(alpha: 0.12);
+    final activeBorder = AppColors.primary(context);
+    final activeTextColor = AppColors.primary(context);
 
     final inactiveBg = AppColors.surface(context);
     final inactiveBorder = AppColors.outlineVariant(

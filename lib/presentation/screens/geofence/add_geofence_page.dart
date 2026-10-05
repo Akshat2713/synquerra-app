@@ -156,7 +156,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} created successfully.',
                 ),
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary(context),
               ),
             );
             Navigator.pop(context);
@@ -166,7 +166,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                 content: Text(
                   '${state.geofence.geofenceName} updated successfully.',
                 ),
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary(context),
               ),
             );
             Navigator.pop(context);

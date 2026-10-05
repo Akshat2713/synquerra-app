@@ -45,7 +45,7 @@ class AddressCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min, // Shrinks the Row to fit short text
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary),
+            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary(context)),
             const SizedBox(width: 8),
 
             Flexible(

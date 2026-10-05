@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary(context),
         body: Center(
           child: AnimatedBuilder(
             animation: _controller,

@@ -326,7 +326,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                   Container(
                     height: 52,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      gradient: AppColors.primaryGradient(context),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ElevatedButton(

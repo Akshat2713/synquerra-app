@@ -129,7 +129,7 @@ class _AvatarStack extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(1.5),
                 child: CircleAvatar(
-                  backgroundColor: AppColors.primaryContainer,
+                  backgroundColor: AppColors.primaryContainer(context),
                   backgroundImage: d.carrier?.profilePhoto != null
                       ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
                       : null,

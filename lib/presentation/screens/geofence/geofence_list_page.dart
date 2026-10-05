@@ -99,7 +99,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         label: const Text('New Geofence'),
         backgroundColor: Theme.of(
           context,
-        ).colorScheme.primary, // Or AppColors.primary
+        ).colorScheme.primary, // Or AppColors.primary(context)
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 6,
       ),

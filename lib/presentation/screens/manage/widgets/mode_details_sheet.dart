@@ -160,7 +160,7 @@ class ModeDetailsSheet extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
-          color: AppColors.primary,
+          color: AppColors.primary(context),
         ),
       ),
     );

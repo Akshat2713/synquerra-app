@@ -211,7 +211,7 @@ class _LinkMemberByPhoneBottomSheetState
                       children: [
                         CircleAvatar(
                           radius: 22,
-                          backgroundColor: AppColors.primary.withValues(
+                          backgroundColor: AppColors.primary(context).withValues(
                             alpha: 0.15,
                           ),
                           backgroundImage: foundPerson.profilePhoto != null
@@ -222,7 +222,7 @@ class _LinkMemberByPhoneBottomSheetState
                                   foundPerson.firstName.isNotEmpty
                                       ? foundPerson.firstName[0].toUpperCase()
                                       : '?',
-                                  style: TextStyle(color: AppColors.primary),
+                                  style: TextStyle(color: AppColors.primary(context)),
                                 )
                               : null,
                         ),
@@ -325,7 +325,7 @@ class _LinkMemberByPhoneBottomSheetState
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                             decoration: TextDecoration.underline,
                           ),
                           recognizer: TapGestureRecognizer()

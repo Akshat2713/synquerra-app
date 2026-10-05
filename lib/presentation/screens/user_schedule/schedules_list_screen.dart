@@ -98,7 +98,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
 
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: AppColors.primary,
+            color: AppColors.primary(context),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.schedules.length,
@@ -136,7 +136,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary(context),
         foregroundColor: Colors.white,
         elevation: 4,
         onPressed: _onAdd,

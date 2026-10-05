@@ -96,7 +96,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   child: _LoadedBody(
                     device: widget.device,
                     state: state,

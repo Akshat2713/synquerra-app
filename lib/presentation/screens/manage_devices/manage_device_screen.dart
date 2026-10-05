@@ -64,7 +64,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
       appBar: AppBar(title: const Text('Manage Devices'), centerTitle: false),
       body: RefreshIndicator(
         onRefresh: widget.onRefresh ?? () async {},
-        color: AppColors.primary,
+        color: AppColors.primary(context),
         child: _ownedDevices.isEmpty
             ? Center(
                 child: Text(
@@ -114,7 +114,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                     context,
                     title: 'Assigned Devices',
                     count: _assignedDevices.length,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                   ),
                   if (_assignedDevices.isEmpty)
                     _buildEmptyPlaceholder('No assigned devices')

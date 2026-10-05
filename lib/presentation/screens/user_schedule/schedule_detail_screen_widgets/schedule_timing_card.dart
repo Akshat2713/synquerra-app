@@ -24,7 +24,7 @@ class ScheduleTimingCard extends StatelessWidget {
                 Icon(
                   Icons.schedule_outlined,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -79,7 +79,7 @@ class ScheduleTimingCard extends StatelessWidget {
         return CircleAvatar(
           radius: 18,
           backgroundColor: isSelected
-              ? AppColors.primary
+              ? AppColors.primary(context)
               : AppColors.background(context),
           child: Text(
             days[index],
@@ -120,7 +120,7 @@ class ScheduleTimingCard extends StatelessWidget {
               fontSize: isHighlight ? 16 : 14,
               fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
               color: isHighlight
-                  ? AppColors.primary
+                  ? AppColors.primary(context)
                   : AppColors.textPrimary(context),
             ),
           ),

@@ -26,12 +26,12 @@ class MapUserLocationLayer extends StatelessWidget {
               height: 32,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
+                      color: AppColors.primary(context).withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 4,
                     ),

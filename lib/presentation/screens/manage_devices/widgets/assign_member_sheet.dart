@@ -229,7 +229,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           vertical: 2,
                         ),
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.primaryContainer
+                          backgroundColor: AppColors.primaryContainer(context)
                               .withValues(alpha: 0.5),
                           backgroundImage: hasPhoto
                               ? NetworkImage(person.profilePhoto!)
@@ -237,7 +237,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           child: !hasPhoto
                               ? Icon(
                                   Icons.person_outline_rounded,
-                                  color: AppColors.primary,
+                                  color: AppColors.primary(context),
                                 )
                               : null,
                         ),

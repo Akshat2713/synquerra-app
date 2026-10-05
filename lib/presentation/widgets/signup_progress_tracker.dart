@@ -44,7 +44,7 @@ class SignupProgressTracker extends StatelessWidget {
       width: 20,
       child: Divider(
         color: isCompleted
-            ? AppColors.primary
+            ? AppColors.primary(context)
             : AppColors.outlineVariant(context),
         thickness: 1,
       ),
@@ -60,7 +60,7 @@ class SignupProgressTracker extends StatelessWidget {
     required bool isDone,
   }) {
     final accentColor = isActive || isDone
-        ? AppColors.primary
+        ? AppColors.primary(context)
         : AppColors.textSecondary(context).withValues(alpha: 0.4);
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -68,7 +68,7 @@ class SignupProgressTracker extends StatelessWidget {
         CircleAvatar(
           radius: 18,
           backgroundColor: isActive || isDone
-              ? AppColors.primary.withValues(alpha: 0.1)
+              ? AppColors.primary(context).withValues(alpha: 0.1)
               : AppColors.surfaceVariant(context),
           child: Icon(
             isDone ? Icons.check_rounded : icon,

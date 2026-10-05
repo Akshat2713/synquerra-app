@@ -172,14 +172,14 @@ class _ModePickerRowState extends State<ModePickerRow> {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.primaryContainer.withValues(
+                                    ? AppColors.primaryContainer(context).withValues(
                                         alpha: 0.3,
                                       )
                                     : AppColors.surfaceVariant(context),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? AppColors.primary(context)
                                       : Colors.transparent,
                                   width: 1.5,
                                 ),
@@ -200,7 +200,7 @@ class _ModePickerRowState extends State<ModePickerRow> {
                                       ModeIconResolver.resolve(mode),
                                       size: 22,
                                       color: isSelected
-                                          ? AppColors.primary
+                                          ? AppColors.primary(context)
                                           : AppColors.textSecondary(context),
                                     ),
                                   const SizedBox(height: 4),
@@ -212,7 +212,7 @@ class _ModePickerRowState extends State<ModePickerRow> {
                                           ? FontWeight.w700
                                           : FontWeight.w500,
                                       color: isSelected
-                                          ? AppColors.primary
+                                          ? AppColors.primary(context)
                                           : AppColors.textSecondary(context),
                                     ),
                                     overflow: TextOverflow.ellipsis,

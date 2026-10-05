@@ -63,7 +63,7 @@ class _ModesScreenState extends State<ModesScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Mode switched successfully.'),
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary(context),
               ),
             );
           } else if (state is ModeSwitchFailure) {

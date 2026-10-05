@@ -21,7 +21,7 @@ class ScheduleRulesCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.tune_outlined, size: 20, color: AppColors.primary),
+                Icon(Icons.tune_outlined, size: 20, color: AppColors.primary(context)),
                 const SizedBox(width: 8),
                 Text(
                   'Grace Rules',

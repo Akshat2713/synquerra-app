@@ -84,7 +84,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                           ),
                         ),
                       ),

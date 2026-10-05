@@ -80,7 +80,7 @@ class HeroSection extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 36,
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: AppColors.primaryContainer(context),
                       backgroundImage: device.carrier?.profilePhoto != null
                           ? CachedNetworkImageProvider(
                               device.carrier!.profilePhoto!,
@@ -145,7 +145,7 @@ class HeroSection extends StatelessWidget {
                                 Icons.speed_rounded,
                                 size: 16,
                                 color: isOnline
-                                    ? AppColors.primary
+                                    ? AppColors.primary(context)
                                     : AppColors.textSecondary(context),
                               ),
                               const SizedBox(width: 4),
@@ -175,7 +175,7 @@ class HeroSection extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: isOnline
-                                    ? AppColors.primary
+                                    ? AppColors.primary(context)
                                     : AppColors.textSecondary(context),
                               ),
                               overflow: TextOverflow.ellipsis,

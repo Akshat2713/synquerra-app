@@ -228,7 +228,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           : Icons.play_circle_fill_rounded,
                     ),
                     iconSize: 36,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                     onPressed: hasPoints ? _togglePlayback : null,
                   ),
                   const SizedBox(width: 16),
@@ -268,7 +268,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                               color: _selectedSpeed == speed
-                                  ? AppColors.primary
+                                  ? AppColors.primary(context)
                                   : AppColors.textPrimary(context),
                             ),
                           ),
@@ -277,7 +277,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                             Icon(
                               Icons.check_rounded,
                               size: 16,
-                              color: AppColors.primary,
+                              color: AppColors.primary(context),
                             ),
                           ],
                         ],
@@ -306,13 +306,13 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                           ),
                         ),
                         Icon(
                           Icons.arrow_drop_down_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.primary(context),
                         ),
                       ],
                     ),
@@ -326,7 +326,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-              activeTrackColor: AppColors.primary,
+              activeTrackColor: AppColors.primary(context),
               inactiveTrackColor: AppColors.outlineVariant(
                 context,
               ).withValues(alpha: 0.4),
@@ -399,7 +399,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
     if (signal == null) return AppColors.textSecondary(context);
     if (signal <= 25) return AppColors.danger;
     if (signal <= 50) return AppColors.warning;
-    return AppColors.primary;
+    return AppColors.primary(context);
   }
 
   IconData _getSignalIcon(int? signal) {

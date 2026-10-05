@@ -42,7 +42,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Unlink', style: TextStyle(color: AppColors.primary)),
+            child: Text('Unlink', style: TextStyle(color: AppColors.primary(context))),
           ),
         ],
       ),
@@ -92,7 +92,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       appBar: AppBar(title: const Text('Manage Users'), centerTitle: false),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => LinkMemberByPhoneBottomSheet.show(context),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary(context),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: const Text(
@@ -175,7 +175,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   const ManageUsersLoadRequested(),
                 );
               },
-              color: AppColors.primary,
+              color: AppColors.primary(context),
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 12, bottom: 80),
                 itemCount: members.length,

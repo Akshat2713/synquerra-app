@@ -398,7 +398,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       children: [
                         Icon(
                           Icons.play_circle_fill_rounded,
-                          color: AppColors.primary,
+                          color: AppColors.primary(context),
                           size: 22,
                         ),
                         const SizedBox(width: 6),

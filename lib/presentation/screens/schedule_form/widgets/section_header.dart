@@ -15,7 +15,7 @@ class SectionHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: AppColors.primary,
+          color: AppColors.primary(context),
         ),
       ),
     );

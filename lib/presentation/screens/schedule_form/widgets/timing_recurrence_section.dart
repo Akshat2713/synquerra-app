@@ -116,7 +116,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                 ),
               ),
               value: crossesMidnight,
-              activeThumbColor: AppColors.primary,
+              activeThumbColor: AppColors.primary(context),
               onChanged: null,
             ),
             const Divider(),
@@ -180,7 +180,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                           Icon(
                             Icons.date_range_rounded,
                             size: 20,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -218,7 +218,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                       ),
                     ),
                     value: noEndDate,
-                    activeThumbColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary(context),
                     onChanged: onNoEndDateChanged,
                   ),
                   if (!noEndDate) ...[
@@ -246,7 +246,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                             Icon(
                               Icons.event_rounded,
                               size: 20,
-                              color: AppColors.primary,
+                              color: AppColors.primary(context),
                             ),
                             const SizedBox(width: 12),
                             Column(
@@ -307,7 +307,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                           Icon(
                             Icons.add_task_rounded,
                             size: 20,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                           ),
                           const SizedBox(width: 12),
                           Text(
@@ -315,7 +315,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
+                              color: AppColors.primary(context),
                             ),
                           ),
                         ],

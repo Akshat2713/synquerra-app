@@ -45,7 +45,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
             ..showSnackBar(
               SnackBar(
                 content: const Text('Device linked successfully!'),
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary(context),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -101,13 +101,13 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
+                      color: AppColors.primary(context).withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.router_rounded,
                       size: 64,
-                      color: AppColors.primary,
+                      color: AppColors.primary(context),
                     ),
                   ),
                   const SizedBox(height: 32),

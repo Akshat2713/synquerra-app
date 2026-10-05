@@ -90,7 +90,7 @@ class EmergencyContactsSection extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.primary(context),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -155,7 +155,7 @@ class EmergencyContactsSection extends StatelessWidget {
                   icon: Icon(
                     Icons.edit_rounded,
                     size: 18,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                   ),
                   onPressed: () => _showEditBottomSheet(context),
                 ),

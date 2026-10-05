@@ -40,7 +40,7 @@ class ViewTabs extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? AppColors.primary : Colors.transparent,
+          color: active ? AppColors.primary(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

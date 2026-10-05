@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
+// lib/domain/repositories/theme_repository.dart
+// Stores the theme as a plain String so domain/data stay free of presentation types.
 abstract class ThemeRepository {
-  Future<ThemeMode> getSavedThemeMode();
-  Future<void> saveThemeMode(ThemeMode mode);
+  Future<String?> getSavedTheme();
+  Future<void> saveTheme(String name);
 }

@@ -1,3 +1,4 @@
+import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../signup/person_model.dart';
 import 'device_association_model.dart';
@@ -143,6 +144,21 @@ class DeviceModel {
     return match != null ? double.tryParse(match.group(0)!) : null;
   }
 
+  String get displayOwnerName => _resolveDisplayOwnerName();
+
+  String _resolveDisplayOwnerName() {
+    AppLogger.d('DeviceEntity', 'New Device');
+    final c = carrier;
+    if (c != null) {
+      final carrierName = '${c.firstName} ${c.lastName}'.trim();
+      AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+      if (carrierName.isNotEmpty) return carrierName;
+    }
+    final ownerName = owner!.name.trim();
+    AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
+    return ownerName;
+  }
+
   DeviceEntity toEntity() => DeviceEntity(
     id: id,
     topic: topic,
@@ -171,6 +187,7 @@ class DeviceModel {
     owner: owner!.toEntity(),
     carrier: carrier?.toEntity(),
     assignments: assignments.map((a) => a.toEntity()).toList(),
+    displayOwnerName: displayOwnerName,
     schemaVersion: schemaVersion,
     hdop: hdop,
     satsUsed: satsUsed,

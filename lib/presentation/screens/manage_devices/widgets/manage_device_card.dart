@@ -59,12 +59,12 @@ class ManageDeviceCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer.withValues(alpha: 0.4),
+                    color: AppColors.primaryContainer(context).withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.devices_rounded,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                     size: 22,
                   ),
                 ),
@@ -172,7 +172,7 @@ class ManageDeviceCard extends StatelessWidget {
                   ],
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primary(context),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -214,7 +214,7 @@ class ManageDeviceCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: _isAssigned
-            ? AppColors.primary.withValues(alpha: 0.1)
+            ? AppColors.primary(context).withValues(alpha: 0.1)
             : AppColors.surfaceVariant(context),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -224,7 +224,7 @@ class ManageDeviceCard extends StatelessWidget {
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: _isAssigned
-              ? AppColors.primary
+              ? AppColors.primary(context)
               : AppColors.textSecondary(context),
         ),
       ),

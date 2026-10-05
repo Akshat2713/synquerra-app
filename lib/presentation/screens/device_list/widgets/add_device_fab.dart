@@ -10,7 +10,7 @@ class AddDeviceFab extends StatelessWidget {
   Widget build(BuildContext context) {
     return FloatingActionButton(
       onPressed: onTap,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.primary(context),
       foregroundColor: Colors.white,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

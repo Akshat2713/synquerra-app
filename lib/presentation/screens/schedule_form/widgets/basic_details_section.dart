@@ -88,7 +88,7 @@ class BasicDetailsSection extends StatelessWidget {
                 prefixIcon: Icon(
                   Icons.person_outline_rounded,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               items: [
@@ -116,7 +116,7 @@ class BasicDetailsSection extends StatelessWidget {
                 prefixIcon: Icon(
                   Icons.devices_rounded,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               items: devices.map((device) {
@@ -185,7 +185,7 @@ class BasicDetailsSection extends StatelessWidget {
                   prefixIcon: Icon(
                     Icons.shield_outlined,
                     size: 20,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                   ),
                 ),
                 items: geofences.map((zone) {
@@ -212,7 +212,7 @@ class BasicDetailsSection extends StatelessWidget {
                 prefixIcon: Icon(
                   Icons.flag_rounded,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) {

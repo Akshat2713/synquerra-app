@@ -121,16 +121,7 @@ class AppTextStyles {
   static TextStyle captionWithColor(BuildContext context, {Color? color}) =>
       caption.copyWith(color: color ?? _tertiary(context));
 
-  static Color _primary(BuildContext c) =>
-      Theme.of(c).brightness == Brightness.dark
-      ? AppColors.darkTextPrimary
-      : AppColors.lightTextPrimary;
-  static Color _secondary(BuildContext c) =>
-      Theme.of(c).brightness == Brightness.dark
-      ? AppColors.darkTextSecondary
-      : AppColors.lightTextSecondary;
-  static Color _tertiary(BuildContext c) =>
-      Theme.of(c).brightness == Brightness.dark
-      ? AppColors.darkTextTertiary
-      : AppColors.lightTextTertiary;
+  static Color _primary(BuildContext c) => AppColors.textPrimary(c);
+  static Color _secondary(BuildContext c) => AppColors.textSecondary(c);
+  static Color _tertiary(BuildContext c) => AppColors.textTertiary(c);
 }

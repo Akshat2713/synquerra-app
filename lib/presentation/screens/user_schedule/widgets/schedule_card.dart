@@ -78,7 +78,7 @@ class ScheduleCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Switch.adaptive(
                           value: schedule.isActive,
-                          activeThumbColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary(context),
                           onChanged: onToggle,
                         ),
                         PopupMenuButton<String>(
@@ -154,7 +154,7 @@ class ScheduleCard extends StatelessWidget {
                         Icon(
                           Icons.access_time_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.primary(context),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -201,7 +201,7 @@ class ScheduleCard extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: selected
-                                ? AppColors.primary
+                                ? AppColors.primary(context)
                                 : AppColors.surfaceVariant(context),
                             shape: BoxShape.circle,
                           ),

@@ -40,7 +40,7 @@ class CoordinatesList extends StatelessWidget {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
+                          color: AppColors.primaryContainer(context),
                           shape: BoxShape.circle,
                         ),
                         child: Center(

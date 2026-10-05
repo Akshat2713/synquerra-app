@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../core/utils/app_logger.dart';
 import '../signup/person_entity.dart';
 import 'device_association_entity.dart';
 import 'device_owner_entity.dart';
@@ -33,6 +32,7 @@ class DeviceEntity extends Equatable {
   final DeviceOwnerEntity owner;
   final PersonEntity? carrier;
   final List<DeviceAssociationEntity> assignments;
+  final String displayOwnerName;
   final int? schemaVersion;
   final String? hdop;
   final String? satsUsed;
@@ -72,6 +72,7 @@ class DeviceEntity extends Equatable {
     required this.owner,
     this.carrier,
     this.assignments = const [],
+    required this.displayOwnerName,
     this.schemaVersion,
     this.hdop,
     this.satsUsed,
@@ -103,20 +104,20 @@ class DeviceEntity extends Equatable {
   //   return currentUserFullName;
   // }
 
-  String get displayOwnerName => _resolveDisplayOwnerName();
+  // String get displayOwnerName => _resolveDisplayOwnerName();
 
-  String _resolveDisplayOwnerName() {
-    AppLogger.d('DeviceEntity', 'New Device');
-    final c = carrier;
-    if (c != null) {
-      final carrierName = '${c.firstName} ${c.lastName}'.trim();
-      AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
-      if (carrierName.isNotEmpty) return carrierName;
-    }
-    final ownerName = owner.name.trim();
-    AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
-    return ownerName;
-  }
+  // String _resolveDisplayOwnerName() {
+  //   AppLogger.d('DeviceEntity', 'New Device');
+  //   final c = carrier;
+  //   if (c != null) {
+  //     final carrierName = '${c.firstName} ${c.lastName}'.trim();
+  //     AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+  //     if (carrierName.isNotEmpty) return carrierName;
+  //   }
+  //   final ownerName = owner.name.trim();
+  //   AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
+  //   return ownerName;
+  // }
 
   DeviceAssociationEntity? associationFor(String roleKey) {
     try {

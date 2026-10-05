@@ -30,12 +30,12 @@ class DaySelectorRow extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary
+                  ? AppColors.primary(context)
                   : AppColors.surfaceVariant(context),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isSelected
-                    ? AppColors.primary
+                    ? AppColors.primary(context)
                     : AppColors.outline(context),
               ),
             ),

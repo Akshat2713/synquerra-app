@@ -126,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: AppColors.primaryContainer,
+              backgroundColor: AppColors.primaryContainer(context),
               backgroundImage:
                   user.profilePhoto != null && user.profilePhoto!.isNotEmpty
                   ? NetworkImage(user.profilePhoto!)
@@ -248,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Icon(icon, size: 20, color: AppColors.primary(context)),
         const SizedBox(width: 8),
         Text(
           title,

@@ -35,7 +35,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
                 Icon(
                   Icons.event_busy_outlined,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -49,7 +49,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.add, color: AppColors.primary),
+                  icon: Icon(Icons.add, color: AppColors.primary(context)),
                   onPressed: onAddException,
                 ),
               ],
@@ -118,7 +118,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isCancel
                           ? AppColors.danger.withAlpha(30)
-                          : AppColors.primary.withAlpha(30),
+                          : AppColors.primary(context).withAlpha(30),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -126,7 +126,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isCancel ? AppColors.danger : AppColors.primary,
+                        color: isCancel ? AppColors.danger : AppColors.primary(context),
                       ),
                     ),
                   ),

@@ -217,7 +217,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 16,
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primary(context),
                       child: const Icon(
                         Icons.camera_alt,
                         size: 16,
@@ -394,7 +394,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
               ),
               value: _isHead,
               onChanged: (val) => setState(() => _isHead = val),
-              activeThumbColor: AppColors.primary,
+              activeThumbColor: AppColors.primary(context),
               contentPadding: EdgeInsets.zero,
             ),
           ],

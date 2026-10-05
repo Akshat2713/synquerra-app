@@ -108,7 +108,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: AppColors.primary(context),
               onPrimary: Colors.white,
               surface: AppColors.surface(context),
               onSurface: AppColors.textPrimary(context),
@@ -137,7 +137,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
+              primary: AppColors.primary(context),
               onPrimary: Colors.white,
               surface: AppColors.surface(context),
               onSurface: AppColors.textPrimary(context),
@@ -379,7 +379,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
                     ElevatedButton(
                       onPressed: state.isSubmitting ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.primary(context),
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

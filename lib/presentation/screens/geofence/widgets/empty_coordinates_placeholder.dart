@@ -16,20 +16,20 @@ class EmptyCoordinatesPlaceholder extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 28),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.4),
+            color: AppColors.primary(context).withValues(alpha: 0.4),
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: AppColors.primaryContainer.withValues(alpha: 0.15),
+          color: AppColors.primaryContainer(context).withValues(alpha: 0.15),
         ),
         child: Column(
           children: [
-            Icon(Icons.map_outlined, size: 36, color: AppColors.primary),
+            Icon(Icons.map_outlined, size: 36, color: AppColors.primary(context)),
             const SizedBox(height: 8),
             Text(
               'Tap to draw on map',
               style: TextStyle(
-                color: AppColors.primary,
+                color: AppColors.primary(context),
                 fontWeight: FontWeight.w600,
               ),
             ),

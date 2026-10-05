@@ -65,7 +65,7 @@ class GeofenceListTile extends StatelessWidget {
               icon: Icon(
                 Icons.edit_outlined,
                 size: 20,
-                color: AppColors.darkIconSecondary,
+                color: AppColors.iconSecondary(context),
               ),
               visualDensity: VisualDensity.compact,
               tooltip: 'Edit',

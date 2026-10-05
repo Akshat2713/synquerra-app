@@ -1,23 +1,20 @@
-#!/bin/bash
-# Run from project root. Scans the ENTIRE lib/ folder (not just screens/),
-# which is what was missed last time.
-TARGET="lib"
+#!/usr/bin/env bash
+set -euo pipefail
+[ -d lib ] || { echo "Run this from the project root (where lib/ is)"; exit 1; }
 
-echo "=== 1) 'colors: colors' or 'colors,' passed as bare arg ==="
-grep -rn "colors: colors\|(colors,\| colors,$" --include="*.dart" "$TARGET"
+find lib -name '*.dart' \
+  ! -path '*/themes/colors.dart' \
+  ! -path '*/themes/app_palette.dart' \
+  ! -path '*/themes/app_theme.dart' \
+  -exec perl -pi -e '
+    # 1. brand/accent consts -> context functions
+    s/\bAppColors\.(primary|primaryHover|primarySubtle|primaryContainer|onPrimaryContainer|onPrimary|primaryBorder|primaryGradient|accent|accentContainer)\b(?!\()/AppColors.$1(context)/g;
 
-echo ""
-echo "=== 2) Method/constructor params or fields still typed ColorScheme ==="
-grep -rn "ColorScheme colors" --include="*.dart" "$TARGET"
+    # 2. lightXxx / darkXxx -> brightness-aware helpers
+    s/\bAppColors\.(?:light|dark)(TextPrimary|TextSecondary|TextTertiary|SurfaceVariant|Surface|Background|OutlineVariant|Outline|IconPrimary|IconSecondary|Shadow|Scrim)\b(?!\()/"AppColors.".lcfirst($1)."(context)"/ge;
 
-echo ""
-echo "=== 3) Any bare 'colors.' member access left ==="
-grep -rn "colors\.[a-zA-Z]" --include="*.dart" "$TARGET" | grep -v "AppColors\."
+    # 3. drop `const` on a widget that now contains a (context) call (same line only)
+    s/\bconst\s+(?=[A-Z]\w*\([^;]*AppColors\.\w+\(context\))//;
+  ' {} +
 
-echo ""
-echo "=== 4) Any remaining Theme.of(context).colorScheme (not yet migrated) ==="
-grep -rn "colorScheme" --include="*.dart" "$TARGET"
-
-echo ""
-echo "=== 5) Files with 'colors' as identifier where surrounding method has no BuildContext param ==="
-echo "(manual check needed for any hits above — same fix pattern: swap ColorScheme colors -> BuildContext context, remove colors: colors call args)"
+echo "Done. Now run: flutter analyze"

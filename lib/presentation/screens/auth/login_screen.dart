@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Forgot password?',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                             fontWeight: FontWeight.w500,
                             fontSize: 13,
                           ),
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.primary(context),
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),

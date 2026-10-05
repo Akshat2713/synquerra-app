@@ -29,7 +29,7 @@ class MapHistoryPolylineLayer extends StatelessWidget {
               points: loaded.mappablePoints
                   .map((p) => LatLng(p.latitude!, p.longitude!))
                   .toList(),
-              color: AppColors.primarySubtle,
+              color: AppColors.primarySubtle(context),
               strokeWidth: 3,
               borderStrokeWidth: 1,
               borderColor: AppColors.darkMapPath,

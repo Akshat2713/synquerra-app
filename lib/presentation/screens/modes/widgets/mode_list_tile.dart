@@ -28,11 +28,11 @@ class ModeListTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryContainer.withValues(alpha: 0.5)
+              ? AppColors.primaryContainer(context).withValues(alpha: 0.5)
               : AppColors.surface(context),
           border: Border.all(
             color: isSelected
-                ? AppColors.primary
+                ? AppColors.primary(context)
                 : AppColors.outlineVariant(context),
             width: isSelected ? 2 : 1,
           ),
@@ -50,7 +50,7 @@ class ModeListTile extends StatelessWidget {
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppColors.primary
+                          ? AppColors.primary(context)
                           : AppColors.textPrimary(context),
                     ),
                   ),
@@ -64,10 +64,10 @@ class ModeListTile extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    color: isSelected ? AppColors.primary(context) : Colors.transparent,
                     border: Border.all(
                       color: isSelected
-                          ? AppColors.primary
+                          ? AppColors.primary(context)
                           : AppColors.outlineVariant(context),
                       width: 2,
                     ),
@@ -162,7 +162,7 @@ class _StatChip extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 16, color: AppColors.primary),
+            Icon(icon, size: 16, color: AppColors.primary(context)),
             const SizedBox(height: 4),
             Text(
               value,

@@ -42,7 +42,7 @@ class TimePickerTile extends StatelessWidget {
                 Icon(
                   Icons.access_time_rounded,
                   size: 18,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
                 const SizedBox(width: 8),
                 Text(

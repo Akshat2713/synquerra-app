@@ -39,11 +39,14 @@ class AnalyticsEntity extends Equatable {
     this.formattedAddress,
   });
 
-  bool get hasLocation =>
-      latitude != null &&
-      longitude != null &&
-      latitude != 0.0 &&
-      longitude != 0.0;
+  bool get hasLocation {
+    final lat = latitude, lng = longitude;
+    if (lat == null || lng == null || !lat.isFinite || !lng.isFinite) {
+      return false;
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
+    return !(lat == 0.0 && lng == 0.0);
+  }
 
   String? get userAddress {
     if (geofenceName != null &&

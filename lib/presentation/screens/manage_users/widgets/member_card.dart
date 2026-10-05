@@ -61,7 +61,7 @@ class MemberCard extends StatelessWidget {
               // Avatar
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppColors.primaryContainer,
+                backgroundColor: AppColors.primaryContainer(context),
                 backgroundImage: hasPhoto
                     ? NetworkImage(person.profilePhoto!)
                     : null,
