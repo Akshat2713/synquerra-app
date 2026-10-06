@@ -4,6 +4,7 @@ import '../../blocs/link_device/link_device_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LinkDeviceScreen extends StatefulWidget {
   const LinkDeviceScreen({super.key});
@@ -48,7 +49,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                 backgroundColor: AppColors.primary(context),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );
@@ -66,7 +67,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );
@@ -89,7 +90,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                       color: AppColors.textPrimary(context),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Connect your Synquerra hardware device to your profile to start monitoring.',
                     textAlign: TextAlign.center,
@@ -99,9 +100,9 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                   ),
                   const SizedBox(height: 40),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.primary(context).withValues(alpha: 0.08),
+                      color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -129,7 +130,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                       if (val != null) setState(() => _ownerType = val);
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.lg),
                   AppTextField(
                     controller: _serialNumberController,
                     label: 'Device Serial Number *',

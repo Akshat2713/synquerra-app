@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import '../../../themes/colors.dart';
 import 'map_icon_button.dart';
 import 'map_zoom_slider.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapControlsColumn extends StatelessWidget {
   final MapController mapController;
@@ -46,7 +47,7 @@ class _CompassButton extends StatelessWidget {
               Icons.explore_rounded,
               size: 20,
               color: isNorthUp
-                  ? AppColors.textSecondary(context).withValues(alpha: 0.4)
+                  ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
                   : AppColors.textPrimary(context),
             ),
           ),

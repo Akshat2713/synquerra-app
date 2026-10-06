@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import 'app_palette.dart';
 import 'app_text_styles.dart';
+import 'app_tokens.dart';
 
 /// Builds ThemeData for ANY AppThemeType from its AppPalette.
 /// One builder instead of separate light/dark copies.
@@ -15,7 +16,7 @@ class AppTheme {
   static ThemeData _build(AppPalette p) {
     final isDark = p.brightness == Brightness.dark;
     final shape12 = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppRadius.mdAll,
     );
 
     final scheme = ColorScheme(
@@ -65,43 +66,42 @@ class AppTheme {
       splashColor: p.primary.withValues(alpha: isDark ? 0.24 : 0.12),
       disabledColor: p.textDisabled,
       appBarTheme: AppBarTheme(
-        backgroundColor: p.surfaceVariant,
+        backgroundColor: p.background,
         foregroundColor: p.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 2,
         centerTitle: true,
         iconTheme: IconThemeData(color: p.textPrimary),
         actionsIconTheme: IconThemeData(color: p.textPrimary),
-        titleTextStyle: AppTextStyles.heading4.copyWith(color: p.textPrimary),
-        shape: Border(bottom: BorderSide(color: p.outline, width: 1)),
+        titleTextStyle: AppTextStyles.title.copyWith(color: p.textPrimary),
       ),
       cardTheme: CardThemeData(
         color: p.surface,
-        elevation: 0,
-        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 2,
+        shadowColor: p.shadow,
+        margin: EdgeInsets.only(bottom: AppSpacing.md),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: p.outline, width: 1),
+          borderRadius: AppRadius.mdAll,
         ),
         clipBehavior: Clip.antiAlias,
       ),
-      // "Primary Button" in the design sheet
+      // Elevated button (for secondary actions)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: p.primary,
-          foregroundColor: p.onPrimary,
+          backgroundColor: p.surface,
+          foregroundColor: p.primary,
           minimumSize: const Size(88, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
           shape: shape12,
           elevation: 0,
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
-      // "Secondary Button" in the design sheet = accent color
-      // (use FilledButton for secondary actions)
+      // FilledButton for primary actions (uses primary color)
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: p.accent,
-          foregroundColor: isDark ? p.background : Colors.white,
+          backgroundColor: p.primary,
+          foregroundColor: p.onPrimary,
           minimumSize: const Size(88, 48),
           shape: shape12,
           textStyle: AppTextStyles.buttonMedium,
@@ -110,7 +110,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: p.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
@@ -118,7 +118,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: p.primary,
           side: BorderSide(color: p.primary),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           shape: shape12,
           textStyle: AppTextStyles.buttonMedium,
         ),
@@ -140,12 +140,12 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: p.surfaceVariant,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.smAll,
           borderSide: BorderSide.none,
         ),
         enabledBorder: _inputBorder(p.outline, 1),
@@ -153,22 +153,22 @@ class AppTheme {
         errorBorder: _inputBorder(AppColors.danger, 1),
         focusedErrorBorder: _inputBorder(AppColors.danger, 2),
         labelStyle: AppTextStyles.label,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: p.textTertiary),
-        errorStyle: AppTextStyles.caption.copyWith(color: AppColors.danger),
+        hintStyle: AppTextStyles.body.copyWith(color: p.textTertiary),
+        errorStyle: AppTextStyles.meta.copyWith(color: AppColors.danger),
       ),
       textTheme: TextTheme(
-        displayLarge: AppTextStyles.heading1.copyWith(color: p.textPrimary),
-        displayMedium: AppTextStyles.heading2.copyWith(color: p.textPrimary),
-        displaySmall: AppTextStyles.heading3.copyWith(color: p.textPrimary),
-        headlineMedium: AppTextStyles.heading4.copyWith(color: p.textPrimary),
-        headlineSmall: AppTextStyles.heading5.copyWith(color: p.textPrimary),
-        titleLarge: AppTextStyles.heading6.copyWith(color: p.textPrimary),
-        bodyLarge: AppTextStyles.bodyLarge.copyWith(color: p.textPrimary),
-        bodyMedium: AppTextStyles.bodyMedium.copyWith(color: p.textSecondary),
-        bodySmall: AppTextStyles.bodySmall.copyWith(color: p.textTertiary),
-        labelLarge: AppTextStyles.buttonLarge.copyWith(color: p.primary),
-        labelMedium: AppTextStyles.buttonMedium.copyWith(color: p.primary),
-        labelSmall: AppTextStyles.buttonSmall.copyWith(color: p.primary),
+        displayLarge: AppTextStyles.display.copyWith(color: p.textPrimary),
+        displayMedium: AppTextStyles.display.copyWith(fontSize: 28, color: p.textPrimary),
+        displaySmall: AppTextStyles.title.copyWith(fontSize: 24, color: p.textPrimary),
+        headlineMedium: AppTextStyles.title.copyWith(color: p.textPrimary),
+        headlineSmall: AppTextStyles.section.copyWith(fontSize: 18, color: p.textPrimary),
+        titleLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
+        bodyLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
+        bodyMedium: AppTextStyles.body.copyWith(color: p.textSecondary),
+        bodySmall: AppTextStyles.meta.copyWith(color: p.textTertiary),
+        labelLarge: AppTextStyles.section.copyWith(color: p.primary, fontWeight: FontWeight.w600),
+        labelMedium: AppTextStyles.body.copyWith(color: p.primary, fontWeight: FontWeight.w600),
+        labelSmall: AppTextStyles.meta.copyWith(color: p.primary, fontWeight: FontWeight.w600),
       ),
       iconTheme: IconThemeData(color: p.iconPrimary, size: 24),
       primaryIconTheme: IconThemeData(color: p.primary, size: 24),

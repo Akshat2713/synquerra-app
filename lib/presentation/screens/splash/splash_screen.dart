@@ -4,6 +4,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../app/app_router.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -129,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                   height: 120,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.lg),
 
                 // ── Company name ───────────────────────
                 Text(
@@ -141,11 +142,11 @@ class _SplashScreenState extends State<SplashScreen>
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   'Track. Monitor. Protect.',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: Colors.white.withValues(alpha: AppAlpha.overlay),
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 0.3,

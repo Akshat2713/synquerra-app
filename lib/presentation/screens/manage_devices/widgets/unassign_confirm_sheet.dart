@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_association_entity.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class UnassignConfirmSheet extends StatelessWidget {
   final DeviceEntity device;
@@ -76,7 +77,7 @@ class UnassignConfirmSheet extends StatelessWidget {
           Flexible(
             child: assignments.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     child: Center(
                       child: Text(
                         'No one is currently assigned to this device.',
@@ -115,7 +116,7 @@ class UnassignConfirmSheet extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       leading: CircleAvatar(
-        backgroundColor: AppColors.dangerContainer.withValues(alpha: 0.4),
+        backgroundColor: AppColors.dangerContainer.withValues(alpha: AppAlpha.border),
         backgroundImage: hasPhoto ? NetworkImage(assignment.profile!) : null,
         child: !hasPhoto
             ? Icon(Icons.person_outline_rounded, color: AppColors.danger)

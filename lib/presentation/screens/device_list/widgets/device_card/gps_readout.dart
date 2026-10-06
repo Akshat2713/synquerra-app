@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GpsReadout extends StatelessWidget {
   final String? gpsStrength;
@@ -19,7 +20,7 @@ class GpsReadout extends StatelessWidget {
             size: 16,
             color: AppColors.textSecondary(context),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             gpsStrength ?? '–',
             style: TextStyle(

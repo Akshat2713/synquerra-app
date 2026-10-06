@@ -20,6 +20,7 @@ import 'widgets/hero_section.dart';
 import 'widgets/info_card.dart';
 import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LandingScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -186,7 +187,7 @@ class _LoadedBody extends StatelessWidget {
               const SizedBox(height: 16),
               InfoCard(
                 icon: Icons.location_on_rounded,
-                iconBg: kBlue.withValues(alpha: 0.15),
+                iconBg: kBlue.withValues(alpha: AppAlpha.tint),
                 iconColor: kBlue,
                 title: latest?.userAddress ?? 'Address Unavailable',
                 subtitle: latest?.deviceTimestamp != null

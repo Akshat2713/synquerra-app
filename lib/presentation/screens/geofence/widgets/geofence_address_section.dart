@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Holds controllers + null-safe getters for optional geofence address fields.
 /// Reusable wherever a geofence address needs to be collected/edited.
@@ -69,7 +70,7 @@ class GeofenceAddressSection extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.outline(context)),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
         ),
         clipBehavior: Clip.antiAlias,
         child: ExpansionTile(
@@ -122,7 +123,7 @@ class GeofenceAddressSection extends StatelessWidget {
     decoration: InputDecoration(
       labelText: label,
       isDense: true,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
     ),
   );
 }

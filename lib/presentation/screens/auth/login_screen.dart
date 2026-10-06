@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/app_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../themes/colors.dart';
+import '../../themes/app_tokens.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../../core/utils/app_logger.dart';
@@ -59,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 32),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -92,14 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: AppColors.textPrimary(context),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Sign in to continue to Synquerra',
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary(context),
                       ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: AppSpacing.xl),
 
                     // ── Email ──────────────────────────────────
                     AppTextField(
@@ -135,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.sm),
 
                     // ── Forgot password ────────────────────────
                     Align(
@@ -159,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
                     // ── Sign in button ─────────────────────────
                     BlocBuilder<AuthBloc, AuthState>(
@@ -171,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
                     // ── Sign up link ───────────────────────────
                     Row(

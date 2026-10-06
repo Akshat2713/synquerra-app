@@ -148,12 +148,17 @@ class DeviceModel {
 
   String _resolveDisplayOwnerName() {
     AppLogger.d('DeviceEntity', 'New Device');
+
+    // 1. Check carrier first (carrier_user)
     final c = carrier;
     if (c != null) {
+      // Safely combine firstName and optional lastName
       final carrierName = '${c.firstName} ${c.lastName}'.trim();
       AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
       if (carrierName.isNotEmpty) return carrierName;
     }
+
+    // 2. Fall back to non-null owner
     final ownerName = owner!.name.trim();
     AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
     return ownerName;

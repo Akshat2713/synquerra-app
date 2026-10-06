@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../../blocs/user_location/user_location_bloc.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapUserLocationLayer extends StatelessWidget {
   final UserLocationBloc userLocationBloc;
@@ -31,7 +32,7 @@ class MapUserLocationLayer extends StatelessWidget {
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary(context).withValues(alpha: 0.4),
+                      color: AppColors.primary(context).withValues(alpha: AppAlpha.border),
                       blurRadius: 8,
                       spreadRadius: 4,
                     ),

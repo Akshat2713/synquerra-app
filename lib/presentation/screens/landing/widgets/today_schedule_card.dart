@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class TodayScheduleCard extends StatefulWidget {
   final List<ScheduleEntry> schedule;
@@ -19,7 +20,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(
           color: AppColors.outline(context).withValues(alpha: 1),
         ),
@@ -30,7 +31,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
           // ── Dropdown Header ──────────────────────────────────────
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: AppRadius.lgAll,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -41,7 +42,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                         : Icons.keyboard_arrow_down_rounded,
                     color: AppColors.textSecondary(context),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +54,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppSpacing.xs),
                       ],
                     ),
                   ),
@@ -66,7 +67,7 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
           if (_isExpanded) ...[
             Divider(
               height: 1,
-              color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+              color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
             ),
             if (widget.schedule.isNotEmpty)
               ...widget.schedule.map(
@@ -115,12 +116,12 @@ class _TodayScheduleCardState extends State<TodayScheduleCard> {
                         style: OutlinedButton.styleFrom(
                           visualDensity: VisualDensity.compact,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: AppRadius.lgAll,
                           ),
                           side: BorderSide(
                             color: AppColors.outlineVariant(
                               context,
-                            ).withValues(alpha: 0.5),
+                            ).withValues(alpha: AppAlpha.border),
                           ),
                         ),
                         child: const Text(

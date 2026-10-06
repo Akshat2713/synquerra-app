@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class CoordinatesList extends StatelessWidget {
   final List<Coordinate> coordinates;
@@ -22,7 +23,7 @@ class CoordinatesList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.outlineVariant(context)),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdAll,
       ),
       child: Column(
         children: [

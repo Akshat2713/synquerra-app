@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class StatusDot extends StatelessWidget {
   final bool state;
@@ -20,7 +21,7 @@ class StatusDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = state
         ? onColor
-        : AppColors.textSecondary(context).withValues(alpha: 0.6);
+        : AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -30,7 +31,7 @@ class StatusDot extends StatelessWidget {
           height: 6,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: AppSpacing.xs),
         Text(
           state ? onLabel : offLabel,
           style: TextStyle(

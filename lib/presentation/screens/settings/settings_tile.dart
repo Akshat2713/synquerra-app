@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 // NEW
 class SettingsTile extends StatelessWidget {
@@ -22,13 +23,13 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppRadius.mdAll,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface(context),
           border: Border.all(color: AppColors.outlineVariant(context)),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
         ),
         child: Row(
           children: [
@@ -37,7 +38,7 @@ class SettingsTile extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer(context),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.mdAll,
               ),
               child: Icon(icon, color: AppColors.onPrimaryContainer(context)),
             ),
@@ -52,7 +53,7 @@ class SettingsTile extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

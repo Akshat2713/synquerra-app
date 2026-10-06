@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class DaySelectorRow extends StatelessWidget {
   final List<int> selectedDays;
@@ -21,7 +22,7 @@ class DaySelectorRow extends StatelessWidget {
         // index directly corresponds to 0 (Sun) -> 6 (Sat)
         final isSelected = selectedDays.contains(index);
         return InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadius.lgAll,
           onTap: () => onDayToggled(index),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),

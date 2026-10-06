@@ -1,5 +1,125 @@
 // lib/presentation/themes/app_palette.dart
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:synquerra/core/utils/app_logger.dart';
+
+/// Helper to calculate contrast ratio between two colors (WCAG 2.1).
+/// Returns ratio, with 4.5:1 being the minimum for normal text.
+double _contrastRatio(Color foreground, Color background) {
+  final double luminance1 = _relativeLuminance(foreground);
+  final double luminance2 = _relativeLuminance(background);
+  final double lighter = max(luminance1, luminance2);
+  final double darker = min(luminance1, luminance2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/// Calculate relative luminance (WCAG 2.1).
+double _relativeLuminance(Color color) {
+  final double r = (color.r * 255.0).round().clamp(0, 255) / 255.0;
+  final double g = (color.g * 255.0).round().clamp(0, 255) / 255.0;
+  final double b = (color.b * 255.0).round().clamp(0, 255) / 255.0;
+
+  final double rs = (r <= 0.03928)
+      ? r / 12.92
+      : pow((r + 0.055) / 1.055, 2.4).toDouble();
+  final double gs = (g <= 0.03928)
+      ? g / 12.92
+      : pow((g + 0.055) / 1.055, 2.4).toDouble();
+  final double bs = (b <= 0.03928)
+      ? b / 12.92
+      : pow((b + 0.055) / 1.055, 2.4).toDouble();
+
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+/// Validate contrast ratios for a palette and print results.
+void _validatePalette(String name, AppPalette palette) {
+  AppLogger.d('AppPalette', '\n===== CONTRAST VALIDATION: $name =====');
+
+  // Text-on-background pairs
+  final textPairs = [
+    ['textPrimary', palette.textPrimary, 'background', palette.background],
+    ['textSecondary', palette.textSecondary, 'background', palette.background],
+    ['textTertiary', palette.textTertiary, 'background', palette.background],
+    ['textPrimary', palette.textPrimary, 'surface', palette.surface],
+    ['textSecondary', palette.textSecondary, 'surface', palette.surface],
+    ['textTertiary', palette.textTertiary, 'surface', palette.surface],
+    [
+      'textPrimary',
+      palette.textPrimary,
+      'surfaceVariant',
+      palette.surfaceVariant,
+    ],
+    [
+      'textSecondary',
+      palette.textSecondary,
+      'surfaceVariant',
+      palette.surfaceVariant,
+    ],
+    ['onPrimary', palette.onPrimary, 'primary', palette.primary],
+    [
+      'onPrimaryContainer',
+      palette.onPrimaryContainer,
+      'primaryContainer',
+      palette.primaryContainer,
+    ],
+  ];
+
+  bool allValid = true;
+
+  for (final pair in textPairs) {
+    final ratio = _contrastRatio(pair[1] as Color, pair[3] as Color);
+    final minRequired = 4.5; // WCAG AA for normal text
+    final valid = ratio >= minRequired;
+
+    AppLogger.d(
+      'AppPalette',
+      '${pair[0]} on ${pair[2]}: ${ratio.toStringAsFixed(2)}:1 ${valid ? "✅ PASS" : "❌ FAIL"} (needs ≥$minRequired:1)',
+    );
+
+    if (!valid) {
+      allValid = false;
+    }
+  }
+
+  // UI component pairs (minimum 3:1)
+  final uiPairs = [
+    ['outline', palette.outline, 'surface', palette.surface],
+    ['outline', palette.outline, 'background', palette.background],
+    ['outlineVariant', palette.outlineVariant, 'surface', palette.surface],
+    [
+      'outlineVariant',
+      palette.outlineVariant,
+      'background',
+      palette.background,
+    ],
+  ];
+
+  AppLogger.d('AppPalette', '\nUI Component Contrast:');
+  for (final pair in uiPairs) {
+    final ratio = _contrastRatio(pair[1] as Color, pair[3] as Color);
+    final minRequired = 3.0; // WCAG for UI components
+    final valid = ratio >= minRequired;
+
+    AppLogger.d(
+      'AppPalette',
+      '${pair[0]} on ${pair[2]}: ${ratio.toStringAsFixed(2)}:1 ${valid ? "✅ PASS" : "❌ FAIL"} (needs ≥$minRequired:1)',
+    );
+
+    if (!valid) {
+      allValid = false;
+    }
+  }
+
+  if (allValid) {
+    AppLogger.d(
+      'AppPalette',
+      '\n✅ All contrast ratios meet WCAG AA requirements!',
+    );
+  } else {
+    AppLogger.d('AppPalette', '\n❌ Some contrast ratios need adjustment!');
+  }
+}
 
 /// The 4 selectable themes. Dark is just another option in the dropdown.
 enum AppThemeType {
@@ -73,6 +193,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     accentContainer: Color(0xFFE0F2FE),
     background: Color(0xFFF7F7F8),
     surface: Color(0xFFFFFFFF),
+    textTertiary: Color(0xFF6B6C75),
+    outline: Color(0xFFD9DAE0),
   );
 
   // ---------- 2. AADYA Brand ----------
@@ -87,6 +209,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     accentContainer: Color(0xFFEDE9FE), // derived
     background: Color(0xFFF8F7FF),
     surface: Color(0xFFFFFFFF),
+    textTertiary: Color(0xFF6B6C75),
+    outline: Color(0xFFD9DAE0),
   );
 
   // ---------- 3. Nature Calm (emerald) ----------
@@ -101,6 +225,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     accentContainer: Color(0xFFD1FAE5),
     background: Color(0xFFF6FBF9),
     surface: Color(0xFFFFFFFF),
+    textTertiary: Color(0xFF6B6C75),
+    outline: Color(0xFFD9DAE0),
   );
 
   // ---------- 4. Dark (NOT in the design sheet: values are my proposal) ----------
@@ -118,11 +244,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
     background: Color(0xFF0C0A12),
     surface: Color(0xFF1A1424),
     surfaceVariant: Color(0xFF1D1C2B),
-    outline: Color(0xFF272538),
+    outline: Color(0xFF34324A),
     outlineVariant: Color(0xFF1E1D2D),
     textPrimary: Color(0xFFF8FAFC),
     textSecondary: Color(0xFFCBD5E1),
-    textTertiary: Color(0xFF64748B),
+    textTertiary: Color(0xFF94A3B8),
     textDisabled: Color(0xFF475569),
     iconPrimary: Color(0xFFF8FAFC),
     iconSecondary: Color(0xFF64748B),
@@ -147,4 +273,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
   @override
   AppPalette lerp(ThemeExtension<AppPalette>? other, double t) =>
       other is AppPalette && t >= 0.5 ? other : this;
+
+  // Validation method that can be called during development
+  static void validateAllPalettes() {
+    _validatePalette('Clean Calm', cleanCalm);
+    _validatePalette('AADYA Brand', aadyaBrand);
+    _validatePalette('Nature Calm', natureCalm);
+    _validatePalette('Dark', dark);
+  }
 }

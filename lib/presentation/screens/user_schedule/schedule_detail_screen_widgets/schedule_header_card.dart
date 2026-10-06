@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/schedule/schedule_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ScheduleHeaderCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -17,7 +18,7 @@ class ScheduleHeaderCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -47,8 +48,8 @@ class ScheduleHeaderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: activeColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    color: activeColor.withValues(alpha: AppAlpha.tint),
+                    borderRadius: AppRadius.mdAll,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -61,7 +62,7 @@ class ScheduleHeaderCard extends StatelessWidget {
                           color: activeColor,
                         ),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
                         schedule.isActive ? 'Active' : 'Inactive',
                         style: TextStyle(
@@ -79,7 +80,7 @@ class ScheduleHeaderCard extends StatelessWidget {
             // Description (placed directly under title)
             if (schedule.description != null &&
                 schedule.description!.trim().isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 schedule.description!,
                 style: TextStyle(
@@ -90,7 +91,7 @@ class ScheduleHeaderCard extends StatelessWidget {
               ),
             ],
 
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.md),
 
             // Footer Row: Priority metadata anchored at bottom-left
             Row(
@@ -103,7 +104,7 @@ class ScheduleHeaderCard extends StatelessWidget {
                     color: AppColors.textSecondary(context),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppSpacing.xs),
                 _PriorityBadge(priority: schedule.priority),
               ],
             ),
@@ -126,9 +127,9 @@ class _PriorityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1),
+        color: color.withValues(alpha: AppAlpha.tint),
+        borderRadius: AppRadius.smAll,
+        border: Border.all(color: color.withValues(alpha: AppAlpha.border), width: 1),
       ),
       child: Text(
         priority.toUpperCase(),

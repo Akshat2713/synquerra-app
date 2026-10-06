@@ -8,6 +8,7 @@ import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
 import '../../widgets/signup_progress_tracker.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SignupProfileScreen extends StatefulWidget {
   const SignupProfileScreen({super.key});
@@ -110,7 +111,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
                 Center(
                   child: Text(
                     'Register your profile, secure your account, and connect your smart device in three simple steps.',
@@ -120,7 +121,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Progress Tracker ─────────────────────────
                 // remove _buildProgressTracker(colors) call, replace with:
@@ -208,7 +209,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                     color: AppColors.textPrimary(context),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedGender,
                   decoration: InputDecoration(
@@ -217,7 +218,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       vertical: 12,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                       borderSide: BorderSide(
                         color: AppColors.outlineVariant(context),
                       ),

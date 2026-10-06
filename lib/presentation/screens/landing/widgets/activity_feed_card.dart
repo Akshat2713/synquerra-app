@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ActivityFeedEntry {
   final String title;
@@ -70,7 +71,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary(context).withValues(alpha: 0.7),
+          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
           letterSpacing: 0.5,
         ),
       ),
@@ -93,7 +94,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
             ),
           ),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: AppSpacing.xs),
         Text(
           item.time,
           style: TextStyle(
@@ -110,7 +111,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(
           color: AppColors.outline(context).withValues(alpha: 1),
         ),
@@ -120,7 +121,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
           // ── Collapsible Header ─────────────────────────────────────
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: AppRadius.lgAll,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -131,7 +132,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
                         : Icons.keyboard_arrow_down_rounded,
                     color: AppColors.textSecondary(context),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +157,7 @@ class _ActivityFeedCardState extends State<ActivityFeedCard> {
           if (_isExpanded) ...[
             Divider(
               height: 1,
-              color: AppColors.outline(context).withValues(alpha: 0.3),
+              color: AppColors.outline(context).withValues(alpha: AppAlpha.border),
             ),
             ..._buildGroupedItems(),
           ],

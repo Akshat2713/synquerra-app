@@ -8,6 +8,7 @@ import 'device_card/battery_gauge.dart';
 import 'device_card/gps_readout.dart';
 import 'device_card/signal_meter.dart';
 import 'device_card/status_dot.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -40,10 +41,10 @@ class DeviceCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           color: AppColors.surface(context),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: AppRadius.lgAll,
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow(context).withValues(alpha: 0.06),
+              color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
@@ -94,8 +95,8 @@ class DeviceCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.textSecondary(
                             context,
-                          ).withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(14),
+                          ).withValues(alpha: AppAlpha.tint),
+                          borderRadius: AppRadius.mdAll,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -112,7 +113,7 @@ class DeviceCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppSpacing.sm),
 
                       // -------------------------------------------------------
                       // Location, Temp & Mode Row with Dynamic Spacers
@@ -159,7 +160,7 @@ class DeviceCard extends StatelessWidget {
                                   size: 13,
                                   color: AppColors.textSecondary(context),
                                 ),
-                                const SizedBox(width: 2),
+                                const SizedBox(width: AppSpacing.xs),
                                 Text(
                                   device.temperature!,
                                   style: TextStyle(
@@ -184,10 +185,10 @@ class DeviceCard extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.info.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(20),
+                                color: AppColors.info.withValues(alpha: AppAlpha.tint),
+                                borderRadius: AppRadius.lgAll,
                                 border: Border.all(
-                                  color: AppColors.info.withValues(alpha: 0.35),
+                                  color: AppColors.info.withValues(alpha: AppAlpha.border),
                                   width: 1,
                                 ),
                               ),
@@ -226,7 +227,7 @@ class PanelDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 34,
-      color: AppColors.textSecondary(context).withValues(alpha: 0.15),
+      color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
     );
   }
 }

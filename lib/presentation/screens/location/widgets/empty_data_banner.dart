@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../blocs/analytics/analytics_bloc.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class EmptyDataBanner extends StatelessWidget {
   const EmptyDataBanner({super.key});
@@ -25,11 +26,11 @@ class EmptyDataBanner extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.dangerContainer.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.dangerContainer.withValues(alpha: AppAlpha.overlay),
+            borderRadius: AppRadius.mdAll,
             boxShadow: [
               BoxShadow(
-                color: AppColors.shadow(context).withValues(alpha: 0.1),
+                color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

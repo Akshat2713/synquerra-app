@@ -6,6 +6,7 @@ import '../../../../domain/entities/auth/user_entity.dart';
 import '../../../blocs/theme/theme_cubit.dart';
 import '../../../themes/app_palette.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Account menu: user header, theme dropdown and logout.
 ///
@@ -21,7 +22,7 @@ class ProfileMenuButton extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.person_outline_rounded),
       offset: const Offset(0, 48),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       itemBuilder: (_) => [
         PopupMenuItem<String>(
           value: 'header',
@@ -40,7 +41,7 @@ class ProfileMenuButton extends StatelessWidget {
                       color: colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     user?.email ?? '—',
                     style: TextStyle(
@@ -87,7 +88,7 @@ class ProfileMenuButton extends StatelessWidget {
                         value: current,
                         isExpanded: true,
                         isDense: true,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                         dropdownColor: AppColors.surface(menuCtx),
                         icon: Icon(
                           Icons.keyboard_arrow_down_rounded,
@@ -110,7 +111,7 @@ class ProfileMenuButton extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: AppSpacing.sm),
                                     Text(
                                       t.label,
                                       style: TextStyle(
@@ -146,7 +147,7 @@ class ProfileMenuButton extends StatelessWidget {
                 color: AppColors.danger,
                 size: 18,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               const Text(
                 'Logout',
                 style: TextStyle(

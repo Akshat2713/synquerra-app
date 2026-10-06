@@ -9,6 +9,7 @@ import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/mode_list_tile.dart';
 import 'widgets/mode_skeleton.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ModesScreen extends StatefulWidget {
   final String deviceId;
@@ -98,6 +99,7 @@ class _ModesScreenState extends State<ModesScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final mode = modes[index];
+
                         return ModeListTile(
                           mode: mode,
                           isSelected: selectedId == mode.id,
@@ -110,11 +112,6 @@ class _ModesScreenState extends State<ModesScreen> {
                       },
                     ),
                   ),
-                ),
-                _SaveBar(
-                  enabled: selectedId != null && !isSwitching && !isLoading,
-                  isLoading: isSwitching,
-                  onSave: () => _onSave(context, selectedId),
                 ),
               ],
             ),
@@ -152,7 +149,7 @@ class _SaveBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: AppAlpha.tint),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -162,9 +159,7 @@ class _SaveBar extends StatelessWidget {
         onPressed: enabled ? onSave : null,
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
         ),
         child: isLoading
             ? const SizedBox(

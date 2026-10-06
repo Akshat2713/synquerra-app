@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Small pill badge showing "x ago" for the current analytics point's
 /// device timestamp.
@@ -80,8 +81,8 @@ class _LastUpdatedBadgeState extends State<LastUpdatedBadge>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.overlay),
+        borderRadius: AppRadius.lgAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/schedule/schedule_override_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ScheduleExceptionsCard extends StatelessWidget {
   final List<ScheduleOverrideEntity> overrides;
@@ -24,7 +25,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -92,7 +93,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.background(context),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdAll,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +120,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
                       color: isCancel
                           ? AppColors.danger.withAlpha(30)
                           : AppColors.primary(context).withAlpha(30),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: AppRadius.smAll,
                     ),
                     child: Text(
                       isCancel ? 'Cancelled' : 'Modified Hours',
@@ -167,7 +168,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
           if (!isCancel &&
               override.startTime != null &&
               override.endTime != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.xs),
             Row(
               children: [
                 Icon(
@@ -187,7 +188,7 @@ class ScheduleExceptionsCard extends StatelessWidget {
             ),
           ],
           if (override.reason != null && override.reason!.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               'Reason: ${override.reason}',
               style: TextStyle(

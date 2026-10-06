@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../themes/colors.dart';
-import '../../../widgets/analytics_filter_sheet.dart'
-    show showCustomRangePicker;
+import '../../../widgets/analytics_filter_sheet.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class HistoryFilterChips extends StatelessWidget {
   final AnalyticsFilter activeFilter;
@@ -37,7 +37,7 @@ class HistoryFilterChips extends StatelessWidget {
         color: AppColors.surface(context),
         border: Border(
           top: BorderSide(
-            color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+            color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
             width: 1.0,
           ),
         ),
@@ -81,17 +81,17 @@ class HistoryFilterChips extends StatelessWidget {
   ) {
     final disabled = onTap == null;
 
-    final activeBg = AppColors.primary(context).withValues(alpha: 0.12);
+    final activeBg = AppColors.primary(context).withValues(alpha: AppAlpha.tint);
     final activeBorder = AppColors.primary(context);
     final activeTextColor = AppColors.primary(context);
 
     final inactiveBg = AppColors.surface(context);
     final inactiveBorder = AppColors.outlineVariant(
       context,
-    ).withValues(alpha: 0.4);
+    ).withValues(alpha: AppAlpha.border);
     final inactiveTextColor = AppColors.textPrimary(
       context,
-    ).withValues(alpha: 0.8);
+    ).withValues(alpha: AppAlpha.overlay);
 
     return GestureDetector(
       onTap: onTap,
@@ -101,7 +101,7 @@ class HistoryFilterChips extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: active ? activeBg : inactiveBg,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadius.mdAll,
           border: Border.all(
             color: active ? activeBorder : inactiveBorder,
             width: active ? 1.5 : 1.0,
@@ -116,7 +116,7 @@ class HistoryFilterChips extends StatelessWidget {
             color: active
                 ? activeTextColor
                 : disabled
-                ? AppColors.textSecondary(context).withValues(alpha: 0.4)
+                ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
                 : inactiveTextColor,
           ),
         ),

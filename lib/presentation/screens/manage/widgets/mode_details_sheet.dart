@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 void showModeDetailsSheet(BuildContext context, ModeEntity mode) {
   showModalBottomSheet(
@@ -24,7 +25,7 @@ class ModeDetailsSheet extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.75,
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -168,7 +169,7 @@ class ModeDetailsSheet extends StatelessWidget {
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

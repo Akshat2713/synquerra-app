@@ -6,6 +6,7 @@ import '../../../blocs/manage_users/manage_users_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LinkMemberByPhoneBottomSheet extends StatefulWidget {
   const LinkMemberByPhoneBottomSheet({super.key});
@@ -110,12 +111,12 @@ class _LinkMemberByPhoneBottomSheetState
                   child: Container(
                     width: 40,
                     height: 4,
-                    margin: const EdgeInsets.only(bottom: 20),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                     decoration: BoxDecoration(
                       color: AppColors.textSecondary(
                         context,
-                      ).withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
+                      ).withValues(alpha: AppAlpha.border),
+                      borderRadius: AppRadius.smAll,
                     ),
                   ),
                 ),
@@ -146,7 +147,7 @@ class _LinkMemberByPhoneBottomSheetState
                     color: AppColors.textSecondary(context),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.lg),
 
                 if (errorMessage != null) ...[
                   const SizedBox(height: 8),
@@ -205,7 +206,7 @@ class _LinkMemberByPhoneBottomSheetState
                       border: Border.all(
                         color: AppColors.outlineVariant(context),
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                     ),
                     child: Row(
                       children: [
@@ -267,7 +268,7 @@ class _LinkMemberByPhoneBottomSheetState
                       color: AppColors.textPrimary(context),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedRelationship,
                     decoration: InputDecoration(
@@ -276,7 +277,7 @@ class _LinkMemberByPhoneBottomSheetState
                         vertical: 12,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                         borderSide: BorderSide(
                           color: AppColors.outlineVariant(context),
                         ),

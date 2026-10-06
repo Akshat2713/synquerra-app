@@ -9,6 +9,7 @@ import '../../blocs/geofence/geofence_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/geofence_list_tile.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceListPage extends StatefulWidget {
   final String deviceId;
@@ -150,9 +151,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                               },
                             )
                           : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                   ),
@@ -183,9 +182,10 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                           itemCount: filtered.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
+                              const SizedBox(height: AppSpacing.sm),
                           itemBuilder: (context, index) {
                             final g = filtered[index];
+
                             return GeofenceListTile(
                               geofence: g,
                               onTap: () => _onTileTab(g),
@@ -228,7 +228,9 @@ class _EmptyState extends StatelessWidget {
           Icon(
             isSearching ? Icons.search_off_rounded : Icons.fence_rounded,
             size: 56,
-            color: AppColors.textSecondary(context).withValues(alpha: 0.4),
+            color: AppColors.textSecondary(
+              context,
+            ).withValues(alpha: AppAlpha.border),
           ),
           const SizedBox(height: 12),
           Text(
