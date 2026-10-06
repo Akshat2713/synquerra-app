@@ -24,15 +24,26 @@ final List<MainTab> mainTabs = [
     // DeviceListBloc + AlertsBloc are provided above the shell (router).
     builder: (_) => const DeviceListScreen(),
   ),
+
+  // MainTab(
+  //   label: 'Schedules',
+  //   icon: Icons.calendar_month_outlined,
+  //   selectedIcon: Icons.calendar_month_rounded,
+  //   builder: (_) => BlocProvider(
+  //     create: (_) => sl<ScheduleListBloc>(),
+  //     child: const SchedulesListScreen(),
+  //   ),
+  // ),
   MainTab(
-    label: 'Schedules',
-    icon: Icons.calendar_month_outlined,
-    selectedIcon: Icons.calendar_month_rounded,
+    label: 'Users',
+    icon: Icons.people_alt_outlined,
+    selectedIcon: Icons.people_alt_rounded,
     builder: (_) => BlocProvider(
-      create: (_) => sl<ScheduleListBloc>(),
-      child: const SchedulesListScreen(),
+      create: (_) => sl<ManageUsersBloc>(),
+      child: const ManageUsersScreen(),
     ),
   ),
+
   MainTab(
     label: 'Mappings',
     icon: Icons.developer_board_outlined,
@@ -43,15 +54,7 @@ final List<MainTab> mainTabs = [
       child: const ManageDevicesPage(),
     ),
   ),
-  MainTab(
-    label: 'Members',
-    icon: Icons.people_alt_outlined,
-    selectedIcon: Icons.people_alt_rounded,
-    builder: (_) => BlocProvider(
-      create: (_) => sl<ManageUsersBloc>(),
-      child: const ManageUsersScreen(),
-    ),
-  ),
+
   MainTab(
     label: 'Profile',
     icon: Icons.person_outline_rounded,

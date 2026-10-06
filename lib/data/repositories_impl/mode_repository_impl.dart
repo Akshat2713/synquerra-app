@@ -24,4 +24,11 @@ class ModeRepositoryImpl implements ModeRepository {
     call: () => _remote.switchMode(deviceId: deviceId, modeId: modeId),
     toEntity: (_) => unit,
   );
+  @override
+  Future<Either<Failure, Unit>> toggleAutoModeSwitch({
+    required String deviceId,
+  }) => safeCall(
+    call: () => _remote.toggleAutoModeSwitch(deviceId: deviceId),
+    toEntity: (_) => unit,
+  );
 }

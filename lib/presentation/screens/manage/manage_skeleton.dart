@@ -4,7 +4,8 @@ import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/settings/settings_entity.dart';
 import '../../themes/colors.dart';
-import 'widgets/manage_body.dart';
+import 'widgets/emergency_contacts_section.dart';
+import 'widgets/mode_picker_row.dart';
 
 // ── Dummy Settings Entity for Skeletonizer Placeholders ──────────────────
 final fakeSettingsEntity = SettingsEntity(
@@ -60,13 +61,26 @@ class ManageSkeleton extends StatelessWidget {
         baseColor: AppColors.surfaceVariant(context),
         highlightColor: AppColors.surface(context),
       ),
-      child: ManageBody(
-        device: device,
-        settings: fakeSettingsEntity,
-        modes: fakeModes,
-        activeModeId: 'fake_0',
-        isSwitchingMode: false,
-        isUpdatingSettings: false,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          ModePickerRow(
+            modes: fakeModes,
+            activeModeId: 'fake_0',
+            isSwitching: false,
+            autoModeSwitch: true,
+            onAutoModeToggle: () {},
+            onChanged: (_) {},
+          ),
+          const SizedBox(height: 16),
+          EmergencyContactsSection(
+            deviceId: device.id,
+            settings: fakeSettingsEntity,
+            isUpdating: false,
+            onSaveContacts: (_, __) {},
+          ),
+        ],
       ),
     );
   }

@@ -47,4 +47,23 @@ class ModeRemoteDataSource {
       );
     }
   }
+
+  Future<void> toggleAutoModeSwitch({required String deviceId}) async {
+    final response = await _dioClient.dio.post(
+      ApiConstants.toggleAutoModeSwitch,
+      data: {'device_id': deviceId},
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message:
+            body['error_description'] ??
+            body['message'] ??
+            'Failed to toggle auto mode switch.',
+        statusCode: response.statusCode,
+      );
+    }
+  }
 }

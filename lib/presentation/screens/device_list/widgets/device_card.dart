@@ -12,7 +12,7 @@ import 'device_card/status_dot.dart';
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
   final String currentUserFullName;
-  final List<AlertEntity> deviceAlerts;
+  final List deviceAlerts;
   final VoidCallback onTap;
   final VoidCallback? onSettingsTap;
   final VoidCallback? onViewModesTap;
@@ -63,11 +63,12 @@ class DeviceCard extends StatelessWidget {
                     children: [
                       // Header Row
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Text(
                               device.displayOwnerName,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 15,
@@ -76,52 +77,13 @@ class DeviceCard extends StatelessWidget {
                               ),
                             ),
                           ),
-
-                          // PopupMenuButton<String>(
-                          //   padding: EdgeInsets.zero,
-                          //   icon: Icon(
-                          //     Icons.more_vert_rounded,
-                          //     color: AppColors.textSecondary(context),
-                          //     size: 20,
-                          //   ),
-                          //   shape: RoundedRectangleBorder(
-                          //     borderRadius: BorderRadius.circular(12),
-                          //   ),
-                          //   onSelected: (value) {
-                          //     switch (value) {
-                          //       case 'modes':
-                          //         onViewModesTap?.call();
-                          //         break;
-                          //       case 'settings':
-                          //         onSettingsTap?.call();
-                          //         break;
-                          //     }
-                          //   },
-                          //   itemBuilder: (_) => [
-                          //     PopupMenuItem(
-                          //       value: 'modes',
-                          //       child: Row(
-                          //         mainAxisSize: MainAxisSize.min,
-                          //         children: [
-                          //           const Text('View Modes'),
-                          //           const SizedBox(width: 6),
-                          //           Text(
-                          //             currentMode,
-                          //             style: const TextStyle(
-                          //               fontSize: 12,
-                          //               color: AppColors.info,
-                          //               fontWeight: FontWeight.w600,
-                          //             ),
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     const PopupMenuItem(
-                          //       value: 'settings',
-                          //       child: Text('Device Settings'),
-                          //     ),
-                          //   ],
-                          // ),
+                          const SizedBox(width: 8),
+                          StatusDot(
+                            state: _isOnline,
+                            onLabel: 'ONLINE',
+                            offLabel: 'OFFLINE',
+                            onColor: AppColors.success,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -152,94 +114,96 @@ class DeviceCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
 
-                      // Location & Temperature
+                      // -------------------------------------------------------
+                      // Location, Temp & Mode Row with Dynamic Spacers
+                      // -------------------------------------------------------
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 13,
-                            color: AppColors.textSecondary(context),
-                          ),
-                          const SizedBox(width: 4),
+                          // Zone Location (Flexible multi-line text)
                           Flexible(
-                            child: Text(
-                              'Zone : ${device.geoidLocation ?? 'N/A'}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontFamily: 'monospace',
-                                color: AppColors.textSecondary(context),
-                              ),
+                            flex: 3,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  size: 13,
+                                  color: AppColors.textSecondary(context),
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Zone : ${device.geoidLocation ?? 'N/A'}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontFamily: 'monospace',
+                                      color: AppColors.textSecondary(context),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+
+                          // Spacer before Temperature
                           if (device.temperature != null) ...[
-                            const SizedBox(width: 12),
-                            Icon(
-                              Icons.thermostat_rounded,
-                              size: 13,
-                              color: AppColors.textSecondary(context),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              device.temperature!,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontFamily: 'monospace',
-                                color: AppColors.textSecondary(context),
-                              ),
+                            const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.thermostat_rounded,
+                                  size: 13,
+                                  color: AppColors.textSecondary(context),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  device.temperature!,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontFamily: 'monospace',
+                                    color: AppColors.textSecondary(context),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 10),
 
-                      Divider(
-                        height: 1,
-                        color: AppColors.textSecondary(
-                          context,
-                        ).withValues(alpha: 0.12),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Status Footer
-                      Row(
-                        children: [
-                          StatusDot(
-                            state: _isOnline,
-                            onLabel: 'ONLINE',
-                            offLabel: 'OFFLINE',
-                            onColor: AppColors.success,
-                          ),
+                          // Spacer after Temperature / before Mode Badge
                           const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.info.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: AppColors.info.withValues(alpha: 0.35),
-                                width: 1,
+
+                          // Mode Badge (Flexible multi-line text)
+                          Flexible(
+                            flex: 2,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 3,
                               ),
-                            ),
-                            child: Text(
-                              currentMode,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.info,
+                              decoration: BoxDecoration(
+                                color: AppColors.info.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.info.withValues(alpha: 0.35),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                currentMode,
+                                maxLines: 2,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.info,
+                                ),
                               ),
                             ),
                           ),
-                          // const Spacer(),
-                          // StatusDot(
-                          //   state: isActive,
-                          //   onLabel: 'ACTIVE',
-                          //   offLabel: 'INACTIVE',
-                          //   onColor: AppColors.success,
-                          // ),
                         ],
                       ),
                     ],

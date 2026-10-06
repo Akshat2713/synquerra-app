@@ -10,4 +10,7 @@ abstract class ModeRepository {
     required String deviceId,
     required String modeId,
   });
+  Future<Either<Failure, Unit>> toggleAutoModeSwitch({
+    required String deviceId,
+  });
 }

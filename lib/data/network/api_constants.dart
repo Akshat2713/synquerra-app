@@ -75,6 +75,8 @@ class ApiConstants {
   static const String getModes = '/api/v1/modes/manual'; // List manual modes
   static const String allModes = '/api/v1/modes';
   static const String switchMode = '/api/v1/devices/switch-mode';
+  static const String toggleAutoModeSwitch =
+      '/api/v1/device-settings/toggle-auto-mode-switch';
 
   // ── Settings ─────────────────────────────────────────
   static const String getSettings = '/api/v1/device-settings/get';

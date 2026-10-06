@@ -1,3 +1,4 @@
+// presentation/screens/device_detail/location_screen.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ import 'widgets/last_updated_badge.dart';
 import 'widgets/map_controls_column.dart';
 import 'widgets/map_history_markers_layer.dart';
 import 'widgets/map_history_polyline_layer.dart';
+import 'widgets/map_icon_button.dart';
 import 'widgets/map_user_location_layer.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/view_tabs.dart';
@@ -82,7 +84,7 @@ class _LocationScreenState extends State<LocationScreen> {
       bloc.add(
         AnalyticsFilterChanged(
           deviceId: widget.device.id,
-          filter: AnalyticsFilter.lastHour, // matches the default chip state
+          filter: AnalyticsFilter.lastHour,
         ),
       );
     } else if (wasHistory && !history) {
@@ -105,7 +107,6 @@ class _LocationScreenState extends State<LocationScreen> {
 
   void _onLiveQuery() {
     if (_inCooldown) return;
-    // Live data belongs to the "latest" view, so leave history mode first
     if (_showTimeline) {
       setState(() {
         _showTimeline = false;
@@ -140,11 +141,12 @@ class _LocationScreenState extends State<LocationScreen> {
     _mapController.fitCamera(
       CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48)),
     );
-    AppLogger.d('LocationScreen', 'fit map to ${mappable.length} points');
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isPlayVisible = _showTimeline && _isTimelineMinimized;
+
     return PopScope(
       canPop: !_showTimeline,
       onPopInvokedWithResult: (didPop, result) async {
@@ -176,7 +178,6 @@ class _LocationScreenState extends State<LocationScreen> {
               }
             },
           ),
-
           BlocListener<AnalyticsBloc, AnalyticsState>(
             listenWhen: (prev, curr) =>
                 curr is AnalyticsLoaded &&
@@ -190,7 +191,6 @@ class _LocationScreenState extends State<LocationScreen> {
                 ..showSnackBar(SnackBar(content: Text(msg)));
             },
           ),
-
           BlocListener<AnalyticsBloc, AnalyticsState>(
             listenWhen: (prev, curr) =>
                 prev is AnalyticsLoaded &&
@@ -200,7 +200,6 @@ class _LocationScreenState extends State<LocationScreen> {
                 curr.liveQueryError == null,
             listener: (context, state) => _startCooldown(),
           ),
-
           BlocListener<UserLocationBloc, UserLocationState>(
             bloc: _userLocationBloc,
             listener: (context, state) {
@@ -217,6 +216,7 @@ class _LocationScreenState extends State<LocationScreen> {
         ],
         child: Stack(
           children: [
+            // MAP LAYER
             RepaintBoundary(
               child: FlutterMap(
                 mapController: _mapController,
@@ -237,6 +237,8 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
             ),
+
+            // TOP LEFT: VIEW TABS
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 12,
@@ -245,6 +247,8 @@ class _LocationScreenState extends State<LocationScreen> {
                 onChanged: _onViewChanged,
               ),
             ),
+
+            // TOP RIGHT: LAST UPDATED & MAP CONTROLS (ZOOM SLIDER + COMPASS)
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               right: 12,
@@ -269,20 +273,12 @@ class _LocationScreenState extends State<LocationScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  BlocSelector<AnalyticsBloc, AnalyticsState, bool>(
-                    selector: (s) => s is AnalyticsLoaded && s.isQuerying,
-                    builder: (context, isQuerying) => MapControlsColumn(
-                      mapController: _mapController,
-                      userLocationBloc: _userLocationBloc,
-                      deviceCenter: _defaultCenter,
-                      onLiveQuery: _inCooldown ? null : _onLiveQuery,
-                      isQuerying: isQuerying,
-                    ),
-                  ),
+                  MapControlsColumn(mapController: _mapController),
                 ],
               ),
             ),
 
+            // ADDRESS CARD
             Positioned(
               top: MediaQuery.of(context).padding.top + 8 + 54,
               left: 12,
@@ -307,6 +303,65 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ),
 
+            // BOTTOM LEFT: LIVE QUERY SEARCH BUTTON (Only visible in LATEST mode)
+            if (!_showTimeline)
+              Positioned(
+                bottom: 24,
+                left: 12,
+                child: BlocSelector<AnalyticsBloc, AnalyticsState, bool>(
+                  selector: (s) => s is AnalyticsLoaded && s.isQuerying,
+                  builder: (context, isQuerying) {
+                    return MapIconButton(
+                      icon: Icons.location_searching,
+                      onTap: (_inCooldown || isQuerying) ? null : _onLiveQuery,
+                      child: isQuerying
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                    );
+                  },
+                ),
+              ),
+
+            // BOTTOM RIGHT: RECENTER & GPS BUTTONS / PLAY BUTTON OFFSET
+            Positioned(
+              bottom: isPlayVisible ? 144 : 24,
+              right: 12,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Recenter on device last known position
+                  MapIconButton(
+                    icon: Icons.my_location_rounded,
+                    onTap: () => _mapController.move(_defaultCenter, 16),
+                  ),
+                  // Recenter on User GPS location (hidden during Play mode)
+                  if (!isPlayVisible) ...[
+                    const SizedBox(height: 8),
+                    BlocBuilder<UserLocationBloc, UserLocationState>(
+                      bloc: _userLocationBloc,
+                      builder: (context, state) {
+                        final isLoading = state is UserLocationLoading;
+                        return MapIconButton(
+                          icon: isLoading
+                              ? Icons.hourglass_bottom_rounded
+                              : Icons.phone_android,
+                          onTap: isLoading
+                              ? null
+                              : () =>
+                                    _userLocationBloc.add(FetchUserLocation()),
+                        );
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // BOTTOM PANEL: TIMELINE SLIDER & HISTORY CHIPS
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -371,7 +426,9 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
             ),
-            if (_showTimeline && _isTimelineMinimized)
+
+            // PLAY BUTTON (FLOATING OVERLAY WHEN MINIMIZED IN HISTORY MODE)
+            if (isPlayVisible)
               Positioned(
                 bottom: 88,
                 right: 12,

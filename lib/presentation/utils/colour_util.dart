@@ -21,7 +21,7 @@ Color colorFromHex(String hex) {
   return value == null ? Colors.blue : Color(0xFF000000 | value);
 }
 
-Color deviceSeverityColor(List<AlertEntity> deviceAlerts) {
+Color deviceSeverityColor(List<dynamic> deviceAlerts) {
   final hasCritical = deviceAlerts.any(
     (a) => a.severity == AlertSeverity.critical && !a.isAcknowledged,
   );

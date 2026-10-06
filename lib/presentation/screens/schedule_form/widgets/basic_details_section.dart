@@ -104,6 +104,7 @@ class BasicDetailsSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String?>(
+              key: ValueKey(deviceValue),
               initialValue: deviceValue,
               style: inputTextStyle,
               dropdownColor: AppColors.surface(context),
@@ -129,7 +130,7 @@ class BasicDetailsSection extends StatelessWidget {
                   ),
                 );
               }).toList(),
-              onChanged: onDeviceChanged,
+              onChanged: null,
               validator: (val) => val == null ? 'Please select a device' : null,
             ),
             const SizedBox(height: 12),

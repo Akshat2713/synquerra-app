@@ -31,6 +31,7 @@ import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dar
 import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/modes/toggle_auto_mode_switch_usecase.dart';
 import '../../domain/usecases/realtime/watch_device_events_usecase.dart';
 import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
@@ -301,6 +302,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetModesUseCase(sl()));
   sl.registerLazySingleton(() => SwitchModeUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleAutoModeSwitchUseCase(sl()));
   sl.registerFactory<ModeBloc>(
     () => ModeBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
   );
@@ -310,6 +312,7 @@ Future<void> initDependencies() async {
       getModesUseCase: sl(),
       switchModeUseCase: sl(),
       getSettingsUseCase: sl(),
+      toggleAutoModeSwitchUseCase: sl(),
       updatePhoneNumbersUseCase: sl(),
     ),
   );

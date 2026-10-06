@@ -6,11 +6,12 @@ import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
 import 'mode_details_sheet.dart';
 
-class ModePickerRow extends StatefulWidget {
+class ModePickerRow extends StatelessWidget {
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitching;
   final bool autoModeSwitch;
+  final VoidCallback onAutoModeToggle;
   final ValueChanged<String> onChanged;
 
   const ModePickerRow({
@@ -19,43 +20,25 @@ class ModePickerRow extends StatefulWidget {
     required this.activeModeId,
     required this.isSwitching,
     required this.autoModeSwitch,
+    required this.onAutoModeToggle,
     required this.onChanged,
   });
 
-  @override
-  State<ModePickerRow> createState() => _ModePickerRowState();
-}
-
-class _ModePickerRowState extends State<ModePickerRow> {
-  late bool _isAutoMode;
-
-  @override
-  void initState() {
-    super.initState();
-    _isAutoMode = widget.autoModeSwitch;
-  }
-
-  @override
-  void didUpdateWidget(covariant ModePickerRow oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
-      setState(() {
-        _isAutoMode = widget.autoModeSwitch;
-      });
-    }
+  void _setAuto(bool value) {
+    if (value == autoModeSwitch || isSwitching) return;
+    onAutoModeToggle();
   }
 
   @override
   Widget build(BuildContext context) {
     ModeEntity? activeMode;
-    if (widget.modes.isNotEmpty) {
-      activeMode = widget.modes.firstWhere(
-        (m) => m.id == widget.activeModeId,
-        orElse: () => widget.modes.first,
+    if (modes.isNotEmpty) {
+      activeMode = modes.firstWhere(
+        (m) => m.id == activeModeId,
+        orElse: () => modes.first,
       );
     }
 
-    // final modeTitle = activeMode?.name ?? 'Live Tracking';
     final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
         ? activeMode.description
         : 'Fast updates (~10 sec)';
@@ -76,31 +59,16 @@ class _ModePickerRowState extends State<ModePickerRow> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TRACKING MODE',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppColors.textPrimary(
-                          context,
-                        ).withValues(alpha: 0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Text(
-                    //   modeTitle,
-
-                    //   style: TextStyle(
-                    //     color: AppColors.textPrimary(context),
-                    //     fontSize: 20,
-                    //     fontWeight: FontWeight.w800,
-                    //   ),
-                    // ),
-                  ],
+                child: Text(
+                  'TRACKING MODE',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppColors.textPrimary(
+                      context,
+                    ).withValues(alpha: 0.8),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -119,15 +87,15 @@ class _ModePickerRowState extends State<ModePickerRow> {
                       Expanded(
                         child: _SegmentTab(
                           label: 'Auto',
-                          isSelected: _isAutoMode,
-                          onTap: () => setState(() => _isAutoMode = true),
+                          isSelected: autoModeSwitch,
+                          onTap: () => _setAuto(true),
                         ),
                       ),
                       Expanded(
                         child: _SegmentTab(
                           label: 'Manual',
-                          isSelected: !_isAutoMode,
-                          onTap: () => setState(() => _isAutoMode = false),
+                          isSelected: !autoModeSwitch,
+                          onTap: () => _setAuto(false),
                         ),
                       ),
                     ],
@@ -138,8 +106,8 @@ class _ModePickerRowState extends State<ModePickerRow> {
           ),
           const SizedBox(height: 14),
           SizedBox(
-            height: 72,
-            child: widget.modes.isEmpty
+            height: 90,
+            child: modes.isEmpty
                 ? Center(
                     child: Text(
                       'No modes available',
@@ -150,31 +118,34 @@ class _ModePickerRowState extends State<ModePickerRow> {
                     ),
                   )
                 : IgnorePointer(
-                    ignoring: _isAutoMode || widget.isSwitching,
+                    ignoring: autoModeSwitch || isSwitching,
                     child: Opacity(
-                      opacity: _isAutoMode ? 0.4 : 1.0,
+                      opacity: autoModeSwitch ? 0.4 : 1.0,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
-                        itemCount: widget.modes.length,
+                        itemCount: modes.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (context, index) {
-                          final mode = widget.modes[index];
-                          final isSelected = mode.id == widget.activeModeId;
+                          final mode = modes[index];
+                          final isSelected = mode.id == activeModeId;
 
                           return GestureDetector(
-                            onTap: () => widget.onChanged(mode.id),
+                            onTap: () => onChanged(mode.id),
                             onLongPress: () =>
                                 showModeDetailsSheet(context, mode),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 72,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.primaryContainer(context).withValues(
-                                        alpha: 0.3,
-                                      )
+                                    ? AppColors.primaryContainer(
+                                        context,
+                                      ).withValues(alpha: 0.3)
                                     : AppColors.surfaceVariant(context),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
@@ -187,7 +158,7 @@ class _ModePickerRowState extends State<ModePickerRow> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  if (widget.isSwitching && isSelected)
+                                  if (isSwitching && isSelected)
                                     const SizedBox(
                                       width: 20,
                                       height: 20,
@@ -206,6 +177,7 @@ class _ModePickerRowState extends State<ModePickerRow> {
                                   const SizedBox(height: 4),
                                   Text(
                                     mode.name,
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: isSelected
@@ -215,7 +187,6 @@ class _ModePickerRowState extends State<ModePickerRow> {
                                           ? AppColors.primary(context)
                                           : AppColors.textSecondary(context),
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),

@@ -72,12 +72,12 @@ class SettingsRemoteDataSource {
     final p1 = parsePhone(phoneNum1);
     final p2 = parsePhone(phoneNum2);
 
-    final response = await _dioClient.dio.patch(
+    final response = await _dioClient.dio.post(
       ApiConstants.updatephone,
       data: {
         'device_id': deviceId,
-        if (p1 != null) 'phonenum1': p1,
-        if (p2 != null) 'phonenum2': p2,
+        if (p1 != null) 'phonenum1': p1.toString(),
+        if (p2 != null) 'phonenum2': p2.toString(),
       },
     );
 

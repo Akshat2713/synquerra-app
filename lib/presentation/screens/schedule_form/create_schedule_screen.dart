@@ -1,3 +1,5 @@
+// lib/presentation/screens/user_schedule/create_schedule_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/core/di/injection_container.dart';
@@ -14,10 +16,10 @@ import 'widgets/section_header.dart';
 import 'widgets/timing_recurrence_section.dart';
 
 class CreateScheduleScreen extends StatefulWidget {
-  /// Non-null puts this screen in edit mode and preloads the schedule.
   final String? scheduleId;
+  final DeviceEntity? initialDevice;
 
-  const CreateScheduleScreen({super.key, this.scheduleId});
+  const CreateScheduleScreen({super.key, this.scheduleId, this.initialDevice});
 
   bool get isEdit => scheduleId != null;
 
@@ -48,18 +50,31 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
   DateTime? _endDate = DateTime.now().add(const Duration(days: 90));
   bool _noEndDate = false;
 
-  /// Monday = 0 .. Sunday = 6 convention (matches DaySelectorRow and backend API).
   final List<int> _selectedDays = [0, 1, 2, 3, 4];
 
   bool _prefilled = false;
 
+  // lib/presentation/screens/user_schedule/create_schedule_screen.dart
+
   @override
   void initState() {
     super.initState();
+    final formBloc = context.read<ScheduleFormBloc>();
+
     if (widget.isEdit) {
-      context.read<ScheduleFormBloc>().add(
-        ScheduleFormEditRequested(widget.scheduleId!),
-      );
+      formBloc.add(ScheduleFormEditRequested(widget.scheduleId!));
+      return;
+    }
+
+    String? deviceId = widget.initialDevice?.id;
+    if (deviceId == null) {
+      final s = context.read<DeviceListBloc>().state;
+      if (s is DeviceListLoaded && s.devices.isNotEmpty) {
+        deviceId = s.devices.first.id;
+      }
+    }
+    if (deviceId != null) {
+      formBloc.add(ScheduleFormDeviceChanged(deviceId));
     }
   }
 
@@ -160,257 +175,272 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
     final personId = user?.personId;
     final currentUserFullName = user?.fullName ?? 'Myself';
 
-    return BlocListener<ScheduleFormBloc, ScheduleFormState>(
-      listenWhen: (p, c) =>
-          p.loadStatus != c.loadStatus || p.submitStatus != c.submitStatus,
-      listener: (context, state) {
-        if (state.loadStatus == ScheduleFormLoadStatus.loaded &&
-            !_prefilled &&
-            state.schedule != null) {
-          _prefilled = true;
-          setState(() => _prefillFrom(state.schedule!));
-        }
-        if (state.loadStatus == ScheduleFormLoadStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? 'Failed to load schedule'),
-            ),
-          );
-        }
-        if (state.submitStatus == ScheduleFormSubmitStatus.success) {
-          Navigator.pop(context, true);
-        }
-        if (state.submitStatus == ScheduleFormSubmitStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.submitError ?? 'Failed to save schedule'),
-            ),
-          );
+    return BlocListener<DeviceListBloc, DeviceListState>(
+      listener: (context, deviceState) {
+        if (widget.isEdit || widget.initialDevice != null) return;
+        if (deviceState is! DeviceListLoaded || deviceState.devices.isEmpty)
+          return;
+
+        final formBloc = context.read<ScheduleFormBloc>();
+        if (formBloc.state.selectedDeviceId == null) {
+          setState(() => _selectedGeofenceId = null);
+          formBloc.add(ScheduleFormDeviceChanged(deviceState.devices.first.id));
         }
       },
-      child: Scaffold(
-        backgroundColor: AppColors.background(context),
-        appBar: AppBar(
-          title: Text(widget.isEdit ? 'Edit Schedule' : 'Create Schedule'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: BlocBuilder<ScheduleFormBloc, ScheduleFormState>(
-          builder: (context, formState) {
-            if (widget.isEdit && formState.isLoadingSchedule) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  BlocBuilder<DeviceListBloc, DeviceListState>(
-                    builder: (context, deviceState) {
-                      final List<DeviceEntity> devices =
-                          deviceState is DeviceListLoaded
-                          ? deviceState.devices
-                          : const [];
-                      return BasicDetailsSection(
-                        titleController: _titleController,
-                        descController: _descController,
-                        devices: devices,
-                        currentUserFullName: currentUserFullName,
-                        selectedDeviceId: formState.selectedDeviceId,
-                        onDeviceChanged: (deviceId) {
-                          setState(() => _selectedGeofenceId = null);
-                          context.read<ScheduleFormBloc>().add(
-                            ScheduleFormDeviceChanged(deviceId),
-                          );
-                        },
-                        geofences: formState.geofences,
-                        geofenceLoading: formState.isLoadingGeofences,
-                        geofenceError: formState.geofenceError,
-                        selectedGeofenceId: _selectedGeofenceId,
-                        onGeofenceChanged: (val) =>
-                            setState(() => _selectedGeofenceId = val),
-                        selectedPriority: _selectedPriority,
-                        onPriorityChanged: (val) =>
-                            setState(() => _selectedPriority = val),
-                      );
-                    },
-                  ),
-                  TimingRecurrenceSection(
-                    startTime: _startTime,
-                    endTime: _endTime,
-                    crossesMidnight: _crossesMidnight,
-                    selectedDays: _selectedDays,
-                    dateSelectionMode: _dateSelectionMode,
-                    startDate: _startDate,
-                    endDate: _endDate,
-                    noEndDate: _noEndDate,
-                    customSelectedDates: _customSelectedDates,
-                    onStartTimeChanged: (time) => setState(() {
-                      _startTime = time;
-                      _crossesMidnight = _computeCrossesMidnight(
-                        _startTime,
-                        _endTime,
-                      );
-                    }),
-                    onEndTimeChanged: (time) => setState(() {
-                      _endTime = time;
-                      _crossesMidnight = _computeCrossesMidnight(
-                        _startTime,
-                        _endTime,
-                      );
-                    }),
-                    onCrossesMidnightChanged: (val) =>
-                        setState(() => _crossesMidnight = val),
-                    onDayToggled: (index) {
-                      setState(() {
-                        _selectedDays.contains(index)
-                            ? _selectedDays.remove(index)
-                            : _selectedDays.add(index);
-                      });
-                    },
-                    onDateModeChanged: (mode) =>
-                        setState(() => _dateSelectionMode = mode),
-                    onStartDateChanged: (date) => setState(() {
-                      _startDate = date;
-                      if (_endDate != null && _endDate!.isBefore(_startDate)) {
-                        _endDate = _startDate;
-                      }
-                    }),
-                    onEndDateChanged: (date) => setState(() => _endDate = date),
-                    onNoEndDateChanged: (val) =>
-                        setState(() => _noEndDate = val),
-                    onCustomDateAdded: (date) {
-                      if (!_customSelectedDates.any(
-                        (d) => d.isAtSameMomentAs(date),
-                      )) {
-                        setState(() => _customSelectedDates.add(date));
-                      }
-                    },
-                    onCustomDateRemoved: (date) =>
-                        setState(() => _customSelectedDates.remove(date)),
-                  ),
-                  const SectionHeader(title: 'Grace & Buffer Rules'),
-                  SectionCard(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppTextField(
-                              controller: _arrivalGraceController,
-                              label: 'Arrival Grace',
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: AppTextField(
-                              controller: _departureBufferController,
-                              label: 'Departure Buffer',
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      AppTextField(
-                        controller: _minStayController,
-                        label: 'Minimum Stay Duration',
-                        prefixIcon: Icons.timer_outlined,
-                        keyboardType: TextInputType.number,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient(context),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: formState.isSubmitting
-                          ? null
-                          : () {
-                              if (!_formKey.currentState!.validate()) return;
-                              final deviceId = formState.selectedDeviceId;
-                              if (deviceId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Please select a device'),
-                                  ),
-                                );
-                                return;
-                              }
-                              if (_selectedGeofenceId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Please select a geofence'),
-                                  ),
-                                );
-                                return;
-                              }
-                              if (personId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'User not found. Please log in again.',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-                              final body = _buildRequestBody(
-                                deviceId: deviceId,
-                                targetUserId: personId,
-                              );
-                              if (widget.isEdit) {
-                                context.read<ScheduleFormBloc>().add(
-                                  ScheduleFormUpdateSubmitted(
-                                    scheduleId: widget.scheduleId!,
-                                    body: body,
-                                  ),
-                                );
-                              } else {
-                                context.read<ScheduleFormBloc>().add(
-                                  ScheduleFormCreateSubmitted(body),
-                                );
-                              }
-                            },
-                      child: formState.isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              widget.isEdit
-                                  ? 'Update Schedule Rule'
-                                  : 'Save Schedule Rule',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
+      child: BlocListener<ScheduleFormBloc, ScheduleFormState>(
+        listenWhen: (p, c) =>
+            p.loadStatus != c.loadStatus || p.submitStatus != c.submitStatus,
+        listener: (context, state) {
+          if (state.loadStatus == ScheduleFormLoadStatus.loaded &&
+              !_prefilled &&
+              state.schedule != null) {
+            _prefilled = true;
+            setState(() => _prefillFrom(state.schedule!));
+          }
+          if (state.loadStatus == ScheduleFormLoadStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage ?? 'Failed to load schedule'),
               ),
             );
-          },
+          }
+          if (state.submitStatus == ScheduleFormSubmitStatus.success) {
+            Navigator.pop(context, true);
+          }
+          if (state.submitStatus == ScheduleFormSubmitStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.submitError ?? 'Failed to save schedule'),
+              ),
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background(context),
+          appBar: AppBar(
+            title: Text(widget.isEdit ? 'Edit Schedule' : 'Create Schedule'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: BlocBuilder<ScheduleFormBloc, ScheduleFormState>(
+            builder: (context, formState) {
+              if (widget.isEdit && formState.isLoadingSchedule) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    BlocBuilder<DeviceListBloc, DeviceListState>(
+                      builder: (context, deviceState) {
+                        final List<DeviceEntity> devices =
+                            deviceState is DeviceListLoaded
+                            ? deviceState.devices
+                            : const [];
+                        return BasicDetailsSection(
+                          titleController: _titleController,
+                          descController: _descController,
+                          devices: devices,
+                          currentUserFullName: currentUserFullName,
+                          selectedDeviceId: formState.selectedDeviceId,
+                          onDeviceChanged: (deviceId) {
+                            setState(() => _selectedGeofenceId = null);
+                            context.read<ScheduleFormBloc>().add(
+                              ScheduleFormDeviceChanged(deviceId),
+                            );
+                          },
+                          geofences: formState.geofences,
+                          geofenceLoading: formState.isLoadingGeofences,
+                          geofenceError: formState.geofenceError,
+                          selectedGeofenceId: _selectedGeofenceId,
+                          onGeofenceChanged: (val) =>
+                              setState(() => _selectedGeofenceId = val),
+                          selectedPriority: _selectedPriority,
+                          onPriorityChanged: (val) =>
+                              setState(() => _selectedPriority = val),
+                        );
+                      },
+                    ),
+                    TimingRecurrenceSection(
+                      startTime: _startTime,
+                      endTime: _endTime,
+                      crossesMidnight: _crossesMidnight,
+                      selectedDays: _selectedDays,
+                      dateSelectionMode: _dateSelectionMode,
+                      startDate: _startDate,
+                      endDate: _endDate,
+                      noEndDate: _noEndDate,
+                      customSelectedDates: _customSelectedDates,
+                      onStartTimeChanged: (time) => setState(() {
+                        _startTime = time;
+                        _crossesMidnight = _computeCrossesMidnight(
+                          _startTime,
+                          _endTime,
+                        );
+                      }),
+                      onEndTimeChanged: (time) => setState(() {
+                        _endTime = time;
+                        _crossesMidnight = _computeCrossesMidnight(
+                          _startTime,
+                          _endTime,
+                        );
+                      }),
+                      onCrossesMidnightChanged: (val) =>
+                          setState(() => _crossesMidnight = val),
+                      onDayToggled: (index) {
+                        setState(() {
+                          _selectedDays.contains(index)
+                              ? _selectedDays.remove(index)
+                              : _selectedDays.add(index);
+                        });
+                      },
+                      onDateModeChanged: (mode) =>
+                          setState(() => _dateSelectionMode = mode),
+                      onStartDateChanged: (date) => setState(() {
+                        _startDate = date;
+                        if (_endDate != null &&
+                            _endDate!.isBefore(_startDate)) {
+                          _endDate = _startDate;
+                        }
+                      }),
+                      onEndDateChanged: (date) =>
+                          setState(() => _endDate = date),
+                      onNoEndDateChanged: (val) =>
+                          setState(() => _noEndDate = val),
+                      onCustomDateAdded: (date) {
+                        if (!_customSelectedDates.any(
+                          (d) => d.isAtSameMomentAs(date),
+                        )) {
+                          setState(() => _customSelectedDates.add(date));
+                        }
+                      },
+                      onCustomDateRemoved: (date) =>
+                          setState(() => _customSelectedDates.remove(date)),
+                    ),
+                    const SectionHeader(title: 'Grace & Buffer Rules'),
+                    SectionCard(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppTextField(
+                                controller: _arrivalGraceController,
+                                label: 'Arrival Grace',
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: AppTextField(
+                                controller: _departureBufferController,
+                                label: 'Departure Buffer',
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        AppTextField(
+                          controller: _minStayController,
+                          label: 'Minimum Stay Duration',
+                          prefixIcon: Icons.timer_outlined,
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient(context),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: formState.isSubmitting
+                            ? null
+                            : () {
+                                if (!_formKey.currentState!.validate()) return;
+                                final deviceId = formState.selectedDeviceId;
+                                if (deviceId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please select a device'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (_selectedGeofenceId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please select a geofence'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (personId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'User not found. Please log in again.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                final body = _buildRequestBody(
+                                  deviceId: deviceId,
+                                  targetUserId: personId,
+                                );
+                                if (widget.isEdit) {
+                                  context.read<ScheduleFormBloc>().add(
+                                    ScheduleFormUpdateSubmitted(
+                                      scheduleId: widget.scheduleId!,
+                                      body: body,
+                                    ),
+                                  );
+                                } else {
+                                  context.read<ScheduleFormBloc>().add(
+                                    ScheduleFormCreateSubmitted(body),
+                                  );
+                                }
+                              },
+                        child: formState.isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                widget.isEdit
+                                    ? 'Update Schedule Rule'
+                                    : 'Save Schedule Rule',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
