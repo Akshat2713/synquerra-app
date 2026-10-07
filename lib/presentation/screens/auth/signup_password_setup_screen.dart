@@ -7,6 +7,7 @@ import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/signup_progress_tracker.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SignupPasswordSetupScreen extends StatefulWidget {
   final SignupProfileData profileData;
@@ -79,7 +80,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );
@@ -102,7 +103,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                       color: AppColors.textPrimary(context),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Configure your system sign-in credentials.',
                     textAlign: TextAlign.center,
@@ -110,11 +111,11 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                       color: AppColors.textSecondary(context),
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ── Progress Tracker ─────────────────────────
                   const SignupProgressTracker(currentStep: SignupStep.security),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ── Checkbox ─────────────────────────────────
                   // ── Email ─────────────────────────────────────
@@ -172,7 +173,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ── Footer ────────────────────────────────────
                   Row(

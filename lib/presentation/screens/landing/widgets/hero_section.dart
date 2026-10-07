@@ -6,6 +6,7 @@ import '../../../../domain/entities/analytics/analytics_entity.dart';
 // import '../../../blocs/auth/auth_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class HeroSection extends StatelessWidget {
   final DeviceEntity device;
@@ -38,7 +39,7 @@ class HeroSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface(context),
           // color: Colors.blue,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadius.lgAll,
           border: Border.all(color: AppColors.outline(context), width: 1),
         ),
         child: Column(
@@ -55,7 +56,7 @@ class HeroSection extends StatelessWidget {
                       ? successColor
                       : AppColors.textSecondary(context),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: AppSpacing.xs),
                 Text(
                   isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
@@ -68,7 +69,7 @@ class HeroSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: AppSpacing.xs),
 
             // ── Avatar + info grid ──────────────────────────────────
             Row(
@@ -117,7 +118,7 @@ class HeroSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: AppSpacing.md),
 
                 // ── Info grid: name/speed, mode/updated, alert/travel ─
                 Expanded(
@@ -162,7 +163,7 @@ class HeroSection extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: AppSpacing.xs),
 
                       // Row 2: Mode (left) — Updated at (right)
                       Row(
@@ -189,12 +190,12 @@ class HeroSection extends StatelessWidget {
                               fontSize: 11,
                               color: AppColors.textSecondary(
                                 context,
-                              ).withValues(alpha: 0.7),
+                              ).withValues(alpha: AppAlpha.overlay),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: AppSpacing.xs),
 
                       // Row 3: Recent alert (left) — Travelling/Stationary (right)
                       Row(
@@ -207,7 +208,7 @@ class HeroSection extends StatelessWidget {
                                 ? AppColors.warning
                                 : AppColors.textSecondary(context),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: AppSpacing.xs),
                           Expanded(
                             child: Text(
                               (latest?.alert != null &&

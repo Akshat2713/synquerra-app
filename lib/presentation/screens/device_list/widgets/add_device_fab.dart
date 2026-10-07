@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AddDeviceFab extends StatelessWidget {
   final VoidCallback onTap;
@@ -13,7 +14,7 @@ class AddDeviceFab extends StatelessWidget {
       backgroundColor: AppColors.primary(context),
       foregroundColor: Colors.white,
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       tooltip: 'Add New Device',
       child: const Icon(Icons.add_rounded, size: 28),
     );

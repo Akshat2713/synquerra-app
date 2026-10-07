@@ -14,6 +14,7 @@ import 'widgets/basic_details_section.dart';
 import 'widgets/section_card.dart';
 import 'widgets/section_header.dart';
 import 'widgets/timing_recurrence_section.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class CreateScheduleScreen extends StatefulWidget {
   final String? scheduleId;
@@ -356,14 +357,14 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                       height: 52,
                       decoration: BoxDecoration(
                         gradient: AppColors.primaryGradient(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                       ),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.mdAll,
                           ),
                         ),
                         onPressed: formState.isSubmitting

@@ -1,7 +1,8 @@
-// lib/presentation/screens/manage/widgets/mode_picker_row.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
 import 'mode_details_sheet.dart';
@@ -32,6 +33,7 @@ class ModePickerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ModeEntity? activeMode;
+
     if (modes.isNotEmpty) {
       activeMode = modes.firstWhere(
         (m) => m.id == activeModeId,
@@ -47,9 +49,9 @@ class ModePickerRow extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 0.8),
+          color: AppColors.outline(context).withValues(alpha: AppAlpha.overlay),
         ),
       ),
       child: Column(
@@ -67,7 +69,7 @@ class ModePickerRow extends StatelessWidget {
                     letterSpacing: 0.8,
                     color: AppColors.textPrimary(
                       context,
-                    ).withValues(alpha: 0.8),
+                    ).withValues(alpha: AppAlpha.overlay),
                   ),
                 ),
               ),
@@ -75,12 +77,12 @@ class ModePickerRow extends StatelessWidget {
               SizedBox(
                 width: 150,
                 child: Container(
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(AppSpacing.xs),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant(
                       context,
-                    ).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(16),
+                    ).withValues(alpha: AppAlpha.border),
+                    borderRadius: AppRadius.lgAll,
                   ),
                   child: Row(
                     children: [
@@ -104,7 +106,7 @@ class ModePickerRow extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 90,
             child: modes.isEmpty
@@ -145,9 +147,9 @@ class ModePickerRow extends StatelessWidget {
                                 color: isSelected
                                     ? AppColors.primaryContainer(
                                         context,
-                                      ).withValues(alpha: 0.3)
+                                      ).withValues(alpha: AppAlpha.border)
                                     : AppColors.surfaceVariant(context),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.lgAll,
                                 border: Border.all(
                                   color: isSelected
                                       ? AppColors.primary(context)
@@ -228,14 +230,14 @@ class _SegmentTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.surface(context) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: AppAlpha.tint),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

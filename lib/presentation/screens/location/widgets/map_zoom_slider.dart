@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapZoomSlider extends StatelessWidget {
   final MapController mapController;
@@ -28,10 +29,10 @@ class MapZoomSlider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant(context),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: AppRadius.lgAll,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
+                color: Colors.black.withValues(alpha: AppAlpha.tint),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -59,7 +60,7 @@ class MapZoomSlider extends StatelessWidget {
                       activeTrackColor: AppColors.primary(context),
                       inactiveTrackColor: AppColors.textSecondary(
                         context,
-                      ).withValues(alpha: 0.2),
+                      ).withValues(alpha: AppAlpha.border),
                       thumbColor: AppColors.primary(context),
                     ),
                     child: Slider(

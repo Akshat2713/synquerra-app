@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LandingSkeleton extends StatefulWidget {
   const LandingSkeleton({super.key});
@@ -37,7 +38,7 @@ class _LandingSkeletonState extends State<LandingSkeleton>
       builder: (context, _) {
         final shimmer = Color.lerp(
           AppColors.surfaceVariant(context),
-          AppColors.surfaceVariant(context).withValues(alpha: 0.3),
+          AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.border),
           _anim.value,
         )!;
 
@@ -76,12 +77,12 @@ class _LandingSkeletonState extends State<LandingSkeleton>
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               // Name + status
               Center(child: box(110, 20)),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               Center(child: box(160, 14)),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
               Center(child: box(120, 28, r: 20)),
               const SizedBox(height: 24),
               // Info cards

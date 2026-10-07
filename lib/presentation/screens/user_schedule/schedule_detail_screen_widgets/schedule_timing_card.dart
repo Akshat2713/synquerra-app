@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/schedule/schedule_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ScheduleTimingCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -13,7 +14,7 @@ class ScheduleTimingCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

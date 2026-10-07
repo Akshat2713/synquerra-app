@@ -7,6 +7,7 @@ import '../../../../domain/utils/alert_device_matcher.dart';
 // import '../../../blocs/auth/auth_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -33,14 +34,14 @@ class AttentionBanner extends StatelessWidget {
     return Material(
       color: AppColors.surface(context),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: AppRadius.lgAll,
         side: BorderSide(color: AppColors.outline(context), width: 1),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: AppRadius.lgAll,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
           child: Row(
             children: [
               Expanded(
@@ -65,7 +66,7 @@ class AttentionBanner extends StatelessWidget {
                 ),
               ),
               _AvatarStack(devices: devices, alerts: alerts),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.textSecondary(context),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../domain/entities/alerts/alert_entity.dart';
 import '../../domain/entities/realtime/device_event.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 OverlayEntry? _current;
 
@@ -124,11 +125,11 @@ class _EventBannerState extends State<_EventBanner>
                 child: Material(
                   elevation: 6,
                   color: cs.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.mdAll,
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                       border: Border.all(color: widget.color.withOpacity(0.6)),
                     ),
                     child: Row(

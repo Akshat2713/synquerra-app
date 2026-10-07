@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class TimePickerTile extends StatelessWidget {
   final String label;
@@ -16,13 +17,13 @@ class TimePickerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppRadius.mdAll,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surfaceVariant(context),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
           border: Border.all(color: AppColors.outline(context)),
         ),
         child: Column(

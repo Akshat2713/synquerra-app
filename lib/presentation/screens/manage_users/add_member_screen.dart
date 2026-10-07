@@ -6,6 +6,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/member_form_controller.dart';
 import '../../widgets/member_form_fields.dart';
 import '../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AddMemberScreen extends StatefulWidget {
   const AddMemberScreen({super.key});
@@ -78,7 +79,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );

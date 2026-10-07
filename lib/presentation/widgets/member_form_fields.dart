@@ -4,6 +4,7 @@ import '../themes/colors.dart';
 import '../utils/date_time_formatter.dart';
 import 'app_text_field.dart';
 import 'member_form_controller.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MemberFormFields extends StatefulWidget {
   final MemberFormController controller;
@@ -110,7 +111,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
             child: GestureDetector(
               onTap: _showPhotoSourceSheet,
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: AppColors.primary(context),
                   shape: BoxShape.circle,
@@ -247,7 +248,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
             color: AppColors.textPrimary(context),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xs),
         DropdownButtonFormField<String>(
           initialValue: c.gender,
           decoration: InputDecoration(
@@ -256,7 +257,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
               vertical: 12,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.mdAll,
               borderSide: BorderSide(color: AppColors.outlineVariant(context)),
             ),
             prefixIcon: Icon(
@@ -281,7 +282,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
             color: AppColors.textPrimary(context),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xs),
         if (widget.showRelationshipFields) ...[
           DropdownButtonFormField<String>(
             initialValue: c.relationshipType,
@@ -291,7 +292,7 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
                 vertical: 12,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.mdAll,
                 borderSide: BorderSide(
                   color: AppColors.outlineVariant(context),
                 ),

@@ -7,6 +7,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/member_form_controller.dart';
 import '../../widgets/member_form_fields.dart';
 import '../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   /// Existing values to pre-fill the form with, including
@@ -78,7 +79,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );

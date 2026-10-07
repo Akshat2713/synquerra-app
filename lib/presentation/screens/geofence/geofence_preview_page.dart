@@ -12,6 +12,7 @@ import 'utils/map_bounds_util.dart';
 import 'widgets/geofence_status_chip.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofencePreviewPage extends StatefulWidget {
   final GeofenceEntity geofence;
@@ -74,7 +75,7 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
                 polygons: [
                   Polygon(
                     points: points,
-                    color: borderColor.withValues(alpha: 0.2),
+                    color: borderColor.withValues(alpha: AppAlpha.border),
                     borderColor: borderColor,
                     borderStrokeWidth: 2.5,
                   ),
@@ -117,10 +118,10 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface(context),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: AppRadius.lgAll,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadow(context).withValues(alpha: 0.08),
+                    color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -136,7 +137,7 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       geofence.geofenceName,

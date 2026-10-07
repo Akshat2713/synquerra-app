@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 enum SignupStep { profile, security, device }
 
@@ -61,14 +62,14 @@ class SignupProgressTracker extends StatelessWidget {
   }) {
     final accentColor = isActive || isDone
         ? AppColors.primary(context)
-        : AppColors.textSecondary(context).withValues(alpha: 0.4);
+        : AppColors.textSecondary(context).withValues(alpha: AppAlpha.border);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 18,
           backgroundColor: isActive || isDone
-              ? AppColors.primary(context).withValues(alpha: 0.1)
+              ? AppColors.primary(context).withValues(alpha: AppAlpha.tint)
               : AppColors.surfaceVariant(context),
           child: Icon(
             isDone ? Icons.check_rounded : icon,

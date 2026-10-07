@@ -28,6 +28,7 @@ import 'widgets/map_icon_button.dart';
 import 'widgets/map_user_location_layer.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/view_tabs.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LocationScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -387,7 +388,7 @@ class _LocationScreenState extends State<LocationScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: const EmptyDataBanner(),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: AppSpacing.lg),
                           Skeletonizer(
                             enabled: isLoading,
                             child: TimelineSlider(
@@ -441,10 +442,10 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceVariant(context),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: AppRadius.lgAll,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: Colors.black.withValues(alpha: AppAlpha.tint),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -458,7 +459,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           color: AppColors.primary(context),
                           size: 22,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
                           'Play',
                           style: TextStyle(

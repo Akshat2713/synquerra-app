@@ -17,6 +17,7 @@ import 'widgets/geofence_address_section.dart';
 import 'widgets/geofence_color_picker.dart';
 import 'widgets/geofence_map_preview.dart';
 import 'widgets/geofence_name_input.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AddGeofencePage extends StatefulWidget {
   final String deviceId;
@@ -185,7 +186,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
             return Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
                   GeofenceNameInput(controller: _nameController),
                   const SizedBox(height: 24),
@@ -223,7 +224,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                       ),
                     ),
                     child: isLoading

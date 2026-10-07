@@ -14,6 +14,7 @@ import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Hosted as the "Devices" tab inside MainShellScreen.
 /// Back handling and auth redirect are owned by the shell.
@@ -211,7 +212,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                   color: AppColors.primary(context),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 '(${devices.length})',
                 style: TextStyle(

@@ -5,6 +5,7 @@ import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AssignMemberSheet extends StatefulWidget {
   final DeviceEntity device;
@@ -170,12 +171,12 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                 vertical: 10,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.mdAll,
               ),
               filled: true,
               fillColor: AppColors.surfaceVariant(
                 context,
-              ).withValues(alpha: 0.3),
+              ).withValues(alpha: AppAlpha.border),
             ),
             items: _availableRoles.entries.map((entry) {
               return DropdownMenuItem<String>(
@@ -202,7 +203,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
           Flexible(
             child: _availablePersons.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     child: Center(
                       child: Text(
                         'All available contacts are already assigned.',
@@ -230,7 +231,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                         ),
                         leading: CircleAvatar(
                           backgroundColor: AppColors.primaryContainer(context)
-                              .withValues(alpha: 0.5),
+                              .withValues(alpha: AppAlpha.border),
                           backgroundImage: hasPhoto
                               ? NetworkImage(person.profilePhoto!)
                               : null,

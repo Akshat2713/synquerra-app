@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 // Simple model to hold the live status logs
 class StatusLogEntry {
@@ -39,7 +40,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(color: AppColors.outline(context), width: 1),
       ),
       child: Column(
@@ -47,7 +48,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
         children: [
           // Header Row
           InkWell(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: AppRadius.lgAll,
             onTap: () => setState(() => _expanded = !_expanded),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -87,7 +88,7 @@ class _TodayStatusCardState extends State<TodayStatusCard> {
                     top: BorderSide(
                       color: AppColors.outlineVariant(
                         context,
-                      ).withValues(alpha: 0.2),
+                      ).withValues(alpha: AppAlpha.border),
                       width: 1,
                     ),
                   ),

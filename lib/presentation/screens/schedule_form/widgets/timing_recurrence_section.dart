@@ -6,6 +6,7 @@ import 'day_selector_row.dart';
 import 'section_card.dart';
 import 'section_header.dart';
 import 'time_picker_tile.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class TimingRecurrenceSection extends StatelessWidget {
   final TimeOfDay startTime;
@@ -158,7 +159,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.mdAll,
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
@@ -172,7 +173,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                         border: Border.all(color: AppColors.outline(context)),
                       ),
                       child: Row(
@@ -194,7 +195,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                                   color: AppColors.textSecondary(context),
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 DateTimeFormatter.formatDate(startDate),
                                 style: inputTextStyle,
@@ -224,7 +225,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                   if (!noEndDate) ...[
                     const SizedBox(height: 8),
                     InkWell(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
@@ -238,7 +239,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceVariant(context),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.mdAll,
                           border: Border.all(color: AppColors.outline(context)),
                         ),
                         child: Row(
@@ -260,7 +261,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                                     color: AppColors.textSecondary(context),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: AppSpacing.xs),
                                 Text(
                                   endDate != null
                                       ? DateTimeFormatter.formatDate(endDate!)
@@ -281,7 +282,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.mdAll,
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
@@ -299,7 +300,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                         border: Border.all(color: AppColors.outline(context)),
                       ),
                       child: Row(

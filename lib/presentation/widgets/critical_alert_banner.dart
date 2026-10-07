@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../themes/colors.dart'; // Adjust path if needed
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class CriticalAlertBanner extends StatelessWidget {
   final int criticalCount;
@@ -26,7 +27,7 @@ class CriticalAlertBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.dangerContainer,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadius.mdAll,
           border: Border.all(color: AppColors.dangerContainer, width: 1.2),
         ),
         child: Row(
@@ -34,7 +35,7 @@ class CriticalAlertBanner extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.danger.withValues(alpha: 0.15),
+                color: AppColors.danger.withValues(alpha: AppAlpha.tint),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -56,11 +57,11 @@ class CriticalAlertBanner extends StatelessWidget {
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     '$criticalCount critical alert${criticalCount > 1 ? 's' : ''} unacknowledged',
                     style: TextStyle(
-                      color: AppColors.danger.withValues(alpha: 0.75),
+                      color: AppColors.danger.withValues(alpha: AppAlpha.overlay),
                       fontSize: 12,
                     ),
                   ),

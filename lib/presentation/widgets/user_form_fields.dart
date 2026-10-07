@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../themes/colors.dart';
 import '../utils/date_time_formatter.dart';
 import 'app_text_field.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class UserFormData {
   String firstName;
@@ -312,7 +313,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
               color: AppColors.textPrimary(context),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.xs),
           DropdownButtonFormField<String>(
             initialValue: _selectedGender,
             decoration: InputDecoration(
@@ -321,7 +322,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
                 vertical: 12,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.mdAll,
                 borderSide: BorderSide(
                   color: AppColors.outlineVariant(context),
                 ),
@@ -349,7 +350,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
                 color: AppColors.textPrimary(context),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.xs),
             DropdownButtonFormField<String>(
               initialValue: _selectedRelationship,
               decoration: InputDecoration(
@@ -358,7 +359,7 @@ class _UserFormFieldsState extends State<UserFormFields> {
                   vertical: 12,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.mdAll,
                   borderSide: BorderSide(
                     color: AppColors.outlineVariant(context),
                   ),

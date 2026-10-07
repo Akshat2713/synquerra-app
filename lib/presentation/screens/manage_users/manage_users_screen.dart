@@ -7,6 +7,7 @@ import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/link_member_by_phone_screen.dart';
 import 'widgets/member_card.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -111,7 +112,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   backgroundColor: AppColors.danger,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadius.mdAll,
                   ),
                 ),
               );
@@ -144,7 +145,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   size: 56,
                   color: AppColors.textSecondary(
                     context,
-                  ).withValues(alpha: 0.5),
+                  ).withValues(alpha: AppAlpha.border),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -164,7 +165,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     fontSize: 13,
                     color: AppColors.textSecondary(
                       context,
-                    ).withValues(alpha: 0.7),
+                    ).withValues(alpha: AppAlpha.overlay),
                   ),
                 ),
               ],

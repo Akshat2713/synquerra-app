@@ -6,6 +6,7 @@ import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../themes/colors.dart';
 import 'assign_member_sheet.dart';
 import 'unassign_confirm_sheet.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ManageDeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -36,16 +37,16 @@ class ManageDeviceCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.lgAll,
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow(context).withValues(alpha: 0.05),
+            color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
         border: Border.all(
-          color: AppColors.textSecondary(context).withValues(alpha: 0.12),
+          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
         ),
       ),
       child: Padding(
@@ -57,9 +58,9 @@ class ManageDeviceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer(context).withValues(alpha: 0.4),
+                    color: AppColors.primaryContainer(context).withValues(alpha: AppAlpha.border),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -83,7 +84,7 @@ class ManageDeviceCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         'S/N: ${device.serialNo}',
                         style: TextStyle(
@@ -98,7 +99,7 @@ class ManageDeviceCard extends StatelessWidget {
                 _buildStatusChip(context),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.md),
             const Divider(height: 1),
             const SizedBox(height: 12),
             Row(
@@ -115,7 +116,7 @@ class ManageDeviceCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         _isAssigned
                             ? '${device.carrier!.firstName} ${device.carrier!.lastName}'
@@ -144,10 +145,10 @@ class ManageDeviceCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.danger,
                         side: BorderSide(
-                          color: AppColors.danger.withValues(alpha: 0.5),
+                          color: AppColors.danger.withValues(alpha: AppAlpha.border),
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: AppRadius.mdAll,
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -176,7 +177,7 @@ class ManageDeviceCard extends StatelessWidget {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppRadius.mdAll,
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -211,12 +212,12 @@ class ManageDeviceCard extends StatelessWidget {
 
   Widget _buildStatusChip(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
       decoration: BoxDecoration(
         color: _isAssigned
-            ? AppColors.primary(context).withValues(alpha: 0.1)
+            ? AppColors.primary(context).withValues(alpha: AppAlpha.tint)
             : AppColors.surfaceVariant(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
       ),
       child: Text(
         _isAssigned ? 'ASSIGNED' : 'UNASSIGNED',

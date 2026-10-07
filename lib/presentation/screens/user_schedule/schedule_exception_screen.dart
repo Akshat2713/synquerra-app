@@ -6,6 +6,7 @@ import '../../../domain/entities/schedule/schedule_override_entity.dart';
 import '../../blocs/schedule_override/schedule_overrides_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 enum ExceptionType { cancel, modify }
 
@@ -292,7 +293,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
                         }
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.lg),
 
                     GestureDetector(
                       onTap: () => _pickDate(context),
@@ -309,7 +310,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.lg),
 
                     if (_selectedType == ExceptionType.modify) ...[
                       Row(
@@ -359,7 +360,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppSpacing.lg),
                     ],
 
                     AppTextField(
@@ -382,7 +383,7 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
                         backgroundColor: AppColors.primary(context),
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.mdAll,
                         ),
                       ),
                       child: state.isSubmitting

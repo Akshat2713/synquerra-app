@@ -1,6 +1,7 @@
 // presentation/widgets/map_icon_button.dart
 import 'package:flutter/material.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapIconButton extends StatelessWidget {
   final IconData icon;
@@ -22,7 +23,7 @@ class MapIconButton extends StatelessWidget {
     final iconColor = highlighted
         ? Colors.white
         : disabled
-        ? AppColors.textSecondary(context).withValues(alpha: 0.4)
+        ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
         : AppColors.textPrimary(context);
 
     return GestureDetector(
@@ -36,12 +37,12 @@ class MapIconButton extends StatelessWidget {
               : disabled
               ? AppColors.surfaceVariant(context)
               : AppColors.surface(context),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.mdAll,
           boxShadow: disabled
               ? null
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withValues(alpha: AppAlpha.tint),
                     blurRadius: 8,
                   ),
                 ],

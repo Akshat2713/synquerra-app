@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../themes/colors.dart';
 import '../../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class BatteryGauge extends StatelessWidget {
   final int? batteryLevel;
@@ -28,7 +29,7 @@ class BatteryGauge extends StatelessWidget {
             child: CircularProgressIndicator(
               value: (batteryLevel ?? 0) / 100,
               strokeWidth: 3.5,
-              backgroundColor: AppColors.textSecondary(context).withValues(alpha: 0.15),
+              backgroundColor: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
               valueColor: AlwaysStoppedAnimation(color),
             ),
           ),
@@ -45,13 +46,13 @@ class BatteryGauge extends StatelessWidget {
               top: -2,
               right: -2,
               child: Container(
-                padding: const EdgeInsets.all(2),
+                padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: AppColors.surface(context),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadow(context).withValues(alpha: 0.15),
+                      color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
                       blurRadius: 2,
                     ),
                   ],

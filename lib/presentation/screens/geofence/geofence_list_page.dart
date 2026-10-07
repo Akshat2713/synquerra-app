@@ -1,8 +1,7 @@
-// lib/presentation/screens/geofence/geofence_list_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../../../data/datasources/graphql/mode_conditions_query.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../domain/entities/geofence_mode/mode_condition_entity.dart';
@@ -13,6 +12,7 @@ import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/configure_trigger_mode_dialog.dart';
 import 'widgets/geofence_list_tile.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceListPage extends StatefulWidget {
   final String deviceId;
@@ -51,6 +51,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
 
   List<GeofenceEntity> _filtered(List<GeofenceEntity> all) {
     if (_query.isEmpty) return all;
+
     return all
         .where(
           (g) => g.geofenceName.toLowerCase().contains(_query.toLowerCase()),
@@ -58,15 +59,19 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         .toList();
   }
 
-  /// Finds the mode condition attached to this geofence (or null).
+  /// Finds the mode condition attached to this geofence.
   /// Synced to device -> device_geofence, otherwise -> geofence.
   ModeConditionEntity? _conditionFor(GeofenceEntity g) {
     final type = g.isSyncToDevice
         ? ModeConditionType.deviceGeofence
         : ModeConditionType.geofence;
+
     for (final c in _conditions) {
-      if (c.conditionType == type && c.geofenceId == g.id) return c;
+      if (c.conditionType == type && c.geofenceId == g.id) {
+        return c;
+      }
     }
+
     return null;
   }
 
@@ -103,6 +108,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             ),
             onPressed: () {
               Navigator.pop(context);
+
               context.read<GeofenceBloc>().add(
                 GeofenceDelete(deviceId: widget.deviceId, id: geofence.id),
               );
@@ -152,9 +158,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
           onPressed: _openAddPage,
           icon: const Icon(Icons.add_rounded),
           label: const Text('New Geofence'),
-          backgroundColor: Theme.of(
-            context,
-          ).colorScheme.primary, // Or AppColors.primary(context)
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           elevation: 6,
         ),
@@ -175,14 +179,19 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
           },
           builder: (context, state) {
             final isLoading = state is GeofenceLoading;
+
             final errorMessage = state is GeofenceError ? state.message : null;
+
             final geofences = state is GeofenceLoaded
                 ? state.geofences
                 : <GeofenceEntity>[];
+
             final filtered = _filtered(geofences);
+
             final deviceSynced = filtered
                 .where((g) => g.isSyncToDevice)
                 .toList();
+
             final cloudSynced = filtered
                 .where((g) => !g.isSyncToDevice)
                 .toList();
@@ -190,9 +199,9 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             return AsyncStateView(
               isLoading: isLoading,
               errorMessage: errorMessage,
-              onRetry: () => context.read<GeofenceBloc>().add(
-                GeofenceLoad(widget.deviceId),
-              ),
+              onRetry: () {
+                context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId));
+              },
               builder: () => Column(
                 children: [
                   Padding(
@@ -213,12 +222,13 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                               )
                             : null,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.mdAll,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
                     ),
                   ),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -236,6 +246,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                       ],
                     ),
                   ),
+
                   Expanded(
                     child: filtered.isEmpty
                         ? _EmptyState(
@@ -251,6 +262,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                                   title: 'Synced to device',
                                   items: deviceSynced,
                                 ),
+
                               if (cloudSynced.isNotEmpty)
                                 ..._buildSection(
                                   context,
@@ -276,6 +288,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   }) {
     return [
       _SectionHeader(title: title, count: items.length),
+
       for (final g in items)
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -288,12 +301,14 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onMode: () => _openModeDialog(g),
           ),
         ),
+
       const SizedBox(height: 6),
     ];
   }
 
   void _onTileTab(GeofenceEntity geofence) {
     if (geofence.coordinates.isEmpty) return;
+
     Navigator.pushNamed(
       context,
       AppRoutes.geofencePreview,
@@ -338,17 +353,23 @@ class _EmptyState extends StatelessWidget {
           Icon(
             isSearching ? Icons.search_off_rounded : Icons.fence_rounded,
             size: 56,
-            color: AppColors.textSecondary(context).withValues(alpha: 0.4),
+            color: AppColors.textSecondary(
+              context,
+            ).withValues(alpha: AppAlpha.border),
           ),
+
           const SizedBox(height: 12),
+
           Text(
             isSearching
                 ? 'No geofences match your search.'
                 : 'No geofences yet.',
             style: TextStyle(color: AppColors.textSecondary(context)),
           ),
+
           if (!isSearching) ...[
             const SizedBox(height: 16),
+
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded),

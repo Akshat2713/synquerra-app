@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
 import '../../location/widgets/map_icon_button.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapTopHeaderBar extends StatelessWidget {
   final String title;
@@ -29,11 +30,11 @@ class MapTopHeaderBar extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surface(context).withValues(alpha: 0.95),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.surface(context).withValues(alpha: AppAlpha.overlay),
+                  borderRadius: AppRadius.mdAll,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadow(context).withValues(alpha: 0.08),
+                      color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
