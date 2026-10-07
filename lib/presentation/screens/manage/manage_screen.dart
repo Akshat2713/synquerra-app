@@ -9,7 +9,8 @@ import '../../blocs/manage/manage_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'manage_skeleton.dart';
-import 'widgets/manage_body.dart';
+import 'widgets/emergency_contacts_section.dart';
+import 'widgets/mode_picker_row.dart';
 
 class ManageScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -35,6 +36,12 @@ class _ManageScreenState extends State<ManageScreen> {
     super.dispose();
   }
 
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.danger),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
@@ -46,21 +53,10 @@ class _ManageScreenState extends State<ManageScreen> {
             if (state is! ManageLoaded) return;
 
             if (state.modeSwitchError != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.modeSwitchError!),
-                  backgroundColor: AppColors.danger,
-                ),
-              );
+              _showError(context, state.modeSwitchError!);
             }
-
             if (state.settingsUpdateError != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.settingsUpdateError!),
-                  backgroundColor: AppColors.danger,
-                ),
-              );
+              _showError(context, state.settingsUpdateError!);
             }
           },
           builder: (context, state) {
@@ -79,13 +75,39 @@ class _ManageScreenState extends State<ManageScreen> {
               },
               builder: () {
                 if (state is ManageLoaded) {
-                  return ManageBody(
-                    device: widget.device,
-                    settings: state.settings,
-                    modes: state.modes,
-                    activeModeId: state.activeModeId,
-                    isSwitchingMode: state.isSwitchingMode,
-                    isUpdatingSettings: state.isUpdatingSettings,
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      ModePickerRow(
+                        modes: state.modes,
+                        activeModeId: state.activeModeId,
+                        isSwitching: state.isSwitchingMode,
+                        autoModeSwitch: state.settings.autoModeSwitch,
+                        onAutoModeToggle: () => _manageBloc.add(
+                          ManageAutoModeToggleRequested(widget.device.id),
+                        ),
+                        onChanged: (modeId) => _manageBloc.add(
+                          ManageModeSwitchRequested(
+                            deviceId: widget.device.id,
+                            modeId: modeId,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      EmergencyContactsSection(
+                        deviceId: widget.device.id,
+                        settings: state.settings,
+                        isUpdating: state.isUpdatingSettings,
+                        onSaveContacts: (phoneNum1, phoneNum2) =>
+                            _manageBloc.add(
+                              ManagePhoneNumbersUpdateRequested(
+                                deviceId: widget.device.id,
+                                phoneNum1: phoneNum1,
+                                phoneNum2: phoneNum2,
+                              ),
+                            ),
+                      ),
+                    ],
                   );
                 }
                 return const SizedBox.shrink();

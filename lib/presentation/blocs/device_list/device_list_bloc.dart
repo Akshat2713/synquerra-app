@@ -78,10 +78,10 @@ class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
       toggled.add(event.imei);
     }
 
-    AppLogger.d(
-      'DeviceListBloc',
-      'Device ${event.imei} toggled → active: ${current.isDeviceActive(current.devices.firstWhere((d) => d.imei == event.imei))}',
-    );
+    // AppLogger.d(
+    //   'DeviceListBloc',
+    //   // 'Device ${event.imei} toggled → active: ${current.isDeviceActive(current.devices.firstWhere((d) => d.imei == event.imei))}',
+    // );
 
     emit(current.copyWith(toggledImeis: toggled));
   }

@@ -6,6 +6,7 @@ import '../../../blocs/manage_users/manage_users_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LinkMemberByPhoneBottomSheet extends StatefulWidget {
   const LinkMemberByPhoneBottomSheet({super.key});
@@ -110,12 +111,12 @@ class _LinkMemberByPhoneBottomSheetState
                   child: Container(
                     width: 40,
                     height: 4,
-                    margin: const EdgeInsets.only(bottom: 20),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                     decoration: BoxDecoration(
                       color: AppColors.textSecondary(
                         context,
-                      ).withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
+                      ).withValues(alpha: AppAlpha.border),
+                      borderRadius: AppRadius.smAll,
                     ),
                   ),
                 ),
@@ -146,29 +147,7 @@ class _LinkMemberByPhoneBottomSheetState
                     color: AppColors.textSecondary(context),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Phone search step — locked once a person is found
-                Form(
-                  key: _phoneFormKey,
-                  child: AppTextField(
-                    controller: _phoneController,
-                    label: 'Phone Number *',
-                    hint: '+917878787878',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    enabled: foundPerson == null,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return 'Phone number is required';
-                      }
-                      if (v.trim().length < 10) {
-                        return 'Enter a valid phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
+                const SizedBox(height: AppSpacing.lg),
 
                 if (errorMessage != null) ...[
                   const SizedBox(height: 8),
@@ -181,6 +160,36 @@ class _LinkMemberByPhoneBottomSheetState
                 const SizedBox(height: 16),
 
                 if (foundPerson == null) ...[
+                  Form(
+                    key: _phoneFormKey,
+                    child: AppTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number *',
+                      hint: '+917878787878',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        if (v.trim().length < 10) {
+                          return 'Enter a valid phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorMessage,
+                      style: const TextStyle(fontSize: 13, color: Colors.red),
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+
                   SizedBox(
                     width: double.infinity,
                     child: AppButton(
@@ -197,13 +206,13 @@ class _LinkMemberByPhoneBottomSheetState
                       border: Border.all(
                         color: AppColors.outlineVariant(context),
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                     ),
                     child: Row(
                       children: [
                         CircleAvatar(
                           radius: 22,
-                          backgroundColor: AppColors.primary.withValues(
+                          backgroundColor: AppColors.primary(context).withValues(
                             alpha: 0.15,
                           ),
                           backgroundImage: foundPerson.profilePhoto != null
@@ -214,7 +223,7 @@ class _LinkMemberByPhoneBottomSheetState
                                   foundPerson.firstName.isNotEmpty
                                       ? foundPerson.firstName[0].toUpperCase()
                                       : '?',
-                                  style: TextStyle(color: AppColors.primary),
+                                  style: TextStyle(color: AppColors.primary(context)),
                                 )
                               : null,
                         ),
@@ -259,7 +268,7 @@ class _LinkMemberByPhoneBottomSheetState
                       color: AppColors.textPrimary(context),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedRelationship,
                     decoration: InputDecoration(
@@ -268,7 +277,7 @@ class _LinkMemberByPhoneBottomSheetState
                         vertical: 12,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.mdAll,
                         borderSide: BorderSide(
                           color: AppColors.outlineVariant(context),
                         ),
@@ -317,7 +326,7 @@ class _LinkMemberByPhoneBottomSheetState
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                             decoration: TextDecoration.underline,
                           ),
                           recognizer: TapGestureRecognizer()

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
 import '../../themes/colors.dart';
-import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/member_form_controller.dart';
+import '../../widgets/member_form_fields.dart';
 import '../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AddMemberScreen extends StatefulWidget {
   const AddMemberScreen({super.key});
@@ -15,23 +17,7 @@ class AddMemberScreen extends StatefulWidget {
 
 class _AddMemberScreenState extends State<AddMemberScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _middleNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _birthDateController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _countryController = TextEditingController();
-  final _pincodeController = TextEditingController();
-
-  String _selectedGender = 'male';
-  String _selectedRelationship = 'child';
-  DateTime? _selectedBirthDate;
-  bool _isHead = false;
+  late final _controller = MemberFormController();
 
   // Tracks whether the in-flight submission belongs to this screen, so the
   // listener doesn't react to isAdding changes triggered elsewhere.
@@ -40,61 +26,37 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _middleNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _phoneController.dispose();
-    _birthDateController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _stateController.dispose();
-    _countryController.dispose();
-    _pincodeController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectBirthDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedBirthDate = picked;
-        _birthDateController.text = DateTimeFormatter.formatDate(picked);
-      });
-    }
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _wasSubmitting = true;
     _awaitingReload = false;
+    final c = _controller;
     context.read<ManageUsersBloc>().add(
       ManageUsersAddRequested(
-        firstName: _firstNameController.text.trim(),
-        middleName: _middleNameController.text.trim().isEmpty
+        firstName: c.firstNameController.text.trim(),
+        middleName: c.middleNameController.text.trim().isEmpty
             ? null
-            : _middleNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        mobile: _phoneController.text.trim(),
-        birthDate: _selectedBirthDate != null
-            ? DateTimeFormatter.toIsoString(_selectedBirthDate!)
+            : c.middleNameController.text.trim(),
+        lastName: c.lastNameController.text.trim(),
+        email: c.emailController.text.trim(),
+        password: c.passwordController.text,
+        mobile: c.phoneController.text.trim(),
+        birthDate: c.birthDate != null
+            ? DateTimeFormatter.toIsoString(c.birthDate!)
             : '',
-        gender: _selectedGender,
-        address: _addressController.text.trim(),
-        city: _cityController.text.trim(),
-        state: _stateController.text.trim(),
-        country: _countryController.text.trim(),
-        pincode: _pincodeController.text.trim(),
-        relationshipType: _selectedRelationship,
-        isHead: _isHead,
+        gender: c.gender,
+        address: c.addressController.text.trim(),
+        city: c.cityController.text.trim(),
+        state: c.stateController.text.trim(),
+        country: c.countryController.text.trim(),
+        pincode: c.pincodeController.text.trim(),
+        relationshipType: c.relationshipType,
+        isHead: c.isHead,
+        profileImage: c.profileImageFile,
       ),
     );
   }
@@ -117,7 +79,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.mdAll,
                 ),
               ),
             );
@@ -155,230 +117,11 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppTextField(
-                      controller: _firstNameController,
-                      label: 'First Name *',
-                      hint: 'Anik',
-                      prefixIcon: Icons.person_outline,
-                      validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _middleNameController,
-                      label: 'Middle Name',
-                      hint: 'M',
-                      prefixIcon: Icons.person_outline,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _lastNameController,
-                      label: 'Last Name',
-                      hint: 'Kumar',
-                      prefixIcon: Icons.person_outline,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _emailController,
-                      label: 'Email *',
-                      hint: 'anik123@gmail.com',
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Required';
-                        if (!v.contains('@')) return 'Invalid email';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    AppTextField(
-                      controller: _passwordController,
-                      label: 'Set Password *',
-                      hint: '••••••••',
-                      prefixIcon: Icons.lock_outline_rounded,
-                      isPassword: true,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Password is required';
-                        }
-                        if (v.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    AppTextField(
-                      controller: _phoneController,
-                      label: 'Phone *',
-                      hint: '+917788997788',
-                      prefixIcon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () => _selectBirthDate(context),
-                      child: AbsorbPointer(
-                        child: AppTextField(
-                          controller: _birthDateController,
-                          label: 'Birth Date',
-                          hint: '14 Feb, 2000',
-                          prefixIcon: Icons.calendar_today_outlined,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Gender',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedGender,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.outlineVariant(context),
-                          ),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.wc_outlined,
-                          color: AppColors.textSecondary(context),
-                          size: 20,
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'male', child: Text('Male')),
-                        DropdownMenuItem(
-                          value: 'female',
-                          child: Text('Female'),
-                        ),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
-                      ],
-                      onChanged: (val) =>
-                          setState(() => _selectedGender = val!),
-                    ),
-                    const SizedBox(height: 16),
-                    // ── Relationship ──────────────────────────────
-                    Text(
-                      'Relationship *',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedRelationship,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.outlineVariant(context),
-                          ),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.diversity_3_outlined,
-                          color: AppColors.textSecondary(context),
-                          size: 20,
-                        ),
-                      ),
-                      items: const [
-                        // Static List using String values
-                        DropdownMenuItem(value: 'child', child: Text('Child')),
-                        DropdownMenuItem(
-                          value: 'parent',
-                          child: Text('Parent'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'teacher',
-                          child: Text('Teacher'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'guardian',
-                          child: Text('Guardian'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'spouse',
-                          child: Text('Spouse'),
-                        ),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
-                      ],
-                      onChanged: (val) =>
-                          setState(() => _selectedRelationship = val!),
-                    ),
-                    const SizedBox(height: 16),
-                    SwitchListTile(
-                      title: Text(
-                        'Set as Head of Family',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary(context),
-                        ),
-                      ),
-                      subtitle: const Text(
-                        'This member will have primary account privileges',
-                      ),
-                      value: _isHead,
-                      onChanged: (val) => setState(() => _isHead = val),
-                      activeThumbColor: AppColors.primary,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _addressController,
-                      label: 'Address',
-                      hint: 'XYZ Colony, ABC Road',
-                      prefixIcon: Icons.home_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _cityController,
-                      label: 'City',
-                      hint: 'Ranchi',
-                      prefixIcon: Icons.location_city_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _stateController,
-                      label: 'State',
-                      hint: 'Jharkhand',
-                      prefixIcon: Icons.map_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _countryController,
-                      label: 'Country',
-                      hint: 'India',
-                      prefixIcon: Icons.flag_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _pincodeController,
-                      label: 'Pincode',
-                      hint: '834003',
-                      prefixIcon: Icons.pin_outlined,
-                      keyboardType: TextInputType.number,
+                    MemberFormFields(
+                      controller: _controller,
+                      requirePassword: true,
                     ),
                     const SizedBox(height: 32),
-                    // ── Footer ────────────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

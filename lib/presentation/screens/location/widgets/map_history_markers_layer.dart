@@ -1,18 +1,15 @@
-// lib/presentation/screens/location/widgets/map_history_markers_layer.dart
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 import '../../../../domain/entities/analytics/analytics_entity.dart';
-import '../../../../domain/utils/bearing_calculator.dart';
 import '../../../blocs/analytics/analytics_bloc.dart';
 import '../../../themes/colors.dart';
+import 'utils/curve_geometry.dart';
 
 class MapHistoryMarkersLayer extends StatelessWidget {
   const MapHistoryMarkersLayer({super.key});
-
-  // map_history_markers_layer.dart — only the relevant part changes
 
   bool _isNegligibleMove(AnalyticsEntity a, AnalyticsEntity b) {
     const threshold = 0.00005; // ~5 meters in lat/lng degrees, rough
@@ -37,9 +34,20 @@ class MapHistoryMarkersLayer extends StatelessWidget {
         final points = loaded.mappablePoints;
         if (points.isEmpty) return const SizedBox.shrink();
 
-        final lastIndex = points.length - 1;
+        // Same screen-space points the polyline uses, so angles match the line
+        // (and include any map rotation).
+        final camera = MapCamera.of(context);
+        final offsets = points
+            .map(
+              (p) => camera.latLngToScreenOffset(
+                LatLng(p.latitude!, p.longitude!),
+              ),
+            )
+            .toList();
 
+        final lastIndex = points.length - 1;
         final markers = <Marker>[];
+
         for (var index = 0; index <= lastIndex; index++) {
           final point = points[index];
           final isSelected = index == loaded.sliderIndex;
@@ -49,29 +57,41 @@ class MapHistoryMarkersLayer extends StatelessWidget {
               _circleMarker(
                 point: point,
                 isSelected: isSelected,
-                color: AppColors.primary,
+                color: AppColors.primary(context),
               ),
             );
             continue;
           }
 
           final next = points[index + 1];
-          if (_isNegligibleMove(point, next)) {
-            continue;
-          } // just skip — no marker for this jittery point
+          if (_isNegligibleMove(point, next)) continue;
 
-          final bearing = BearingCalculator.calculate(
-            startLat: point.latitude!,
-            startLng: point.longitude!,
-            endLat: next.latitude!,
-            endLng: next.longitude!,
-          );
+          final dir = CurveGeometry.tangentAt(offsets, index);
+          if (dir == null) {
+            // Overlapping on screen: no meaningful direction, show a dot.
+            markers.add(
+              _circleMarker(
+                point: point,
+                isSelected: isSelected,
+                color: AppColors.primary(context),
+              ),
+            );
+            continue;
+          }
+
+          // Icon points up; rotate clockwise from up to the screen direction.
+          final angle = math.atan2(dir.dx, -dir.dy);
+
           markers.add(
             _arrowMarker(
               point: point,
-              bearingDegrees: bearing,
+              angleRadians: angle,
               isSelected: isSelected,
-              color: index == 0 ? AppColors.success : AppColors.primary,
+              color: isSelected
+                  ? AppColors.activeLocation
+                  : (index == 0
+                        ? AppColors.success
+                        : AppColors.primary(context)),
             ),
           );
         }
@@ -92,7 +112,7 @@ class MapHistoryMarkersLayer extends StatelessWidget {
       height: size,
       child: Container(
         decoration: BoxDecoration(
-          color: color,
+          color: isSelected ? AppColors.activeLocation : color,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white, width: isSelected ? 2.5 : 2),
         ),
@@ -102,18 +122,28 @@ class MapHistoryMarkersLayer extends StatelessWidget {
 
   Marker _arrowMarker({
     required AnalyticsEntity point,
-    required double bearingDegrees,
+    required double angleRadians,
     required bool isSelected,
     required Color color,
   }) {
     final size = isSelected ? 26.0 : 20.0;
+
     return Marker(
       point: LatLng(point.latitude!, point.longitude!),
-      width: size,
-      height: size,
+      width: size + 6,
+      height: size + 6,
       child: Transform.rotate(
-        angle: bearingDegrees * (math.pi / 180),
-        child: Icon(Icons.navigation_rounded, size: size, color: color),
+        angle: angleRadians,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // White border
+            Icon(Icons.navigation_rounded, size: size + 5, color: Colors.white),
+
+            // Colored arrow
+            Icon(Icons.navigation_rounded, size: size, color: color),
+          ],
+        ),
       ),
     );
   }

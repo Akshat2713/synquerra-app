@@ -1,12 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';
-import '../../../blocs/auth/auth_bloc.dart';
+// import '../../../blocs/auth/auth_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -33,14 +34,14 @@ class AttentionBanner extends StatelessWidget {
     return Material(
       color: AppColors.surface(context),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: AppRadius.lgAll,
         side: BorderSide(color: AppColors.outline(context), width: 1),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: AppRadius.lgAll,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
           child: Row(
             children: [
               Expanded(
@@ -65,7 +66,7 @@ class AttentionBanner extends StatelessWidget {
                 ),
               ),
               _AvatarStack(devices: devices, alerts: alerts),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.textSecondary(context),
@@ -86,10 +87,10 @@ class _AvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    final currentUserFullName = authState is AuthAuthenticated
-        ? authState.user.fullName
-        : '—';
+    // final authState = context.watch<AuthBloc>().state;
+    // final currentUserFullName = authState is AuthAuthenticated
+    //     ? authState.user.fullName
+    //     : '—';
 
     const size = 28.0;
     const overlap = 10.0;
@@ -109,7 +110,7 @@ class _AvatarStack extends StatelessWidget {
               alerts,
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
-            final name = d.displayOwnerName(currentUserFullName);
+            final name = d.displayOwnerName;
             final parts = name
                 .split(RegExp(r'\s+'))
                 .where((p) => p.isNotEmpty)
@@ -129,7 +130,7 @@ class _AvatarStack extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(1.5),
                 child: CircleAvatar(
-                  backgroundColor: AppColors.primaryContainer,
+                  backgroundColor: AppColors.primaryContainer(context),
                   backgroundImage: d.carrier?.profilePhoto != null
                       ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
                       : null,

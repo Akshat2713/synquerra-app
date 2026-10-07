@@ -5,6 +5,7 @@ import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../domain/entities/analytics/analytics_filter.dart';
 import '../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 void showAnalyticsFilterSheet({
   required BuildContext context,
@@ -129,12 +130,12 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSecondary(context).withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
+                color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.border),
+                borderRadius: AppRadius.smAll,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.lg),
           if (!_showCustomPicker) ...[
             Text(
               'Filter by Time',
@@ -183,7 +184,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                     onTap: () => setState(() => _showCustomPicker = false),
                     child: Icon(
                       Icons.arrow_back_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.primary(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -204,9 +205,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                 color: AppColors.textSecondary(context),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             _dateTile(label: 'Date', date: _selectedDate, onTap: _pickDate),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               'Start Time',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -221,7 +222,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               labelBuilder: UnitFormatter.hourLabel,
               onChanged: (i) => setState(() => _selectedHour = i),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               'Duration',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -240,19 +241,19 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
+                borderRadius: AppRadius.mdAll,
               ),
               child: Text(
                 '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  ${DateTimeFormatter.formatDateTime(_endDateTime)}',
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Expanded(
@@ -296,7 +297,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
       height: 120,
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.outline(context)),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdAll,
       ),
       child: CupertinoPicker(
         scrollController: controller,
@@ -305,9 +306,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         selectionOverlay: Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+              top: BorderSide(color: AppColors.primary(context).withValues(alpha: AppAlpha.border)),
               bottom: BorderSide(
-                color: AppColors.primary.withValues(alpha: 0.4),
+                color: AppColors.primary(context).withValues(alpha: AppAlpha.border),
               ),
             ),
           ),
@@ -338,17 +339,17 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
       contentPadding: EdgeInsets.zero,
       leading: Icon(
         icon,
-        color: isActive ? AppColors.primary : AppColors.textSecondary(context),
+        color: isActive ? AppColors.primary(context) : AppColors.textSecondary(context),
       ),
       title: Text(
         label,
         style: TextStyle(
-          color: isActive ? AppColors.primary : AppColors.textPrimary(context),
+          color: isActive ? AppColors.primary(context) : AppColors.textPrimary(context),
           fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
       trailing: isActive
-          ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
+          ? Icon(Icons.check_circle_rounded, color: AppColors.primary(context), size: 20)
           : Icon(
               Icons.chevron_right_rounded,
               color: AppColors.textSecondary(context),
@@ -369,11 +370,11 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
         decoration: BoxDecoration(
           border: Border.all(
             color: date != null
-                ? AppColors.primary
+                ? AppColors.primary(context)
                 : AppColors.outline(context),
             width: date != null ? 1.5 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
         ),
         child: Row(
           children: [
@@ -381,7 +382,7 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
               Icons.calendar_today_rounded,
               size: 18,
               color: date != null
-                  ? AppColors.primary
+                  ? AppColors.primary(context)
                   : AppColors.textSecondary(context),
             ),
             const SizedBox(width: 12),

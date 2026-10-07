@@ -1,225 +1,90 @@
+// lib/presentation/themes/colors.dart
 import 'package:flutter/material.dart';
+import 'app_palette.dart';
 
+/// Two kinds of colors:
+///  1. static const  -> semantic/safety colors, identical in ALL themes
+///  2. static fn(c)  -> theme-dependent colors, read from the active AppPalette
+///
+/// BREAKING CHANGE: `AppColors.primary` (const) is now `AppColors.primary(context)`.
+/// All lightXxx / darkXxx tokens moved into AppPalette.
 class AppColors {
-  AppColors._(); // Prevent instantiation
+  AppColors._();
 
   // ==========================================
-  // ===== BRAND / ACCENT (SEMANTIC) ==========
+  // ===== SEMANTIC / SAFETY (same in all themes)
   // ==========================================
-  // Primary CTA buttons, active tab indicators, selected chip borders ("Live", "Sync", "+ Device")
-  static const Color primary = Color(0xFFA855F7);
-  static const Color primaryHover = Color(0xFF9333EA);
-  static const Color primarySubtle = Color(0xFFC084FC);
-
-  // Soft container background for active icons & subtle badges
-  static const Color primaryContainer = Color(0x1FA855F7);
-  static const Color primaryBorder = Color(0x66A855F7);
-
-  // ==========================================
-  // ===== STATUS / FEEDBACK ==================
-  // ==========================================
-  // Success (Safe, GPS Restored, Normal battery)
-  static const Color success = Color(0xFF22C55E);
-  static const Color successContainer = Color(0x1F22C55E); // "Safe" badge fill
+  // Containers stay as 12% tints (not the solid hexes in the design sheet)
+  // so they look right on both light and dark surfaces.
+  static const Color success = Color(0xFF16A34A);
+  static const Color activeLocation = Color(0xFF287444);
+  static const Color successContainer = Color(0x1F16A34A); // sheet: #ECFDF3
   static const Color onSuccess = Colors.white;
 
-  // Warning (Needs attention, Fair signal, GPS Lost)
   static const Color warning = Color(0xFFF59E0B);
-  static const Color warningContainer = Color(
-    0x1FF59E0B,
-  ); // "Needs attention" badge fill
+  static const Color warningContainer = Color(0x1FF59E0B); // sheet: #FFF7E6
   static const Color onWarning = Colors.white;
 
-  // Danger / Error (SOS alert pressed, battery critical)
-  static const Color danger = Color(0xFFEF4444);
-  static const Color dangerContainer = Color(0x1FEF4444); // SOS item fill
+  static const Color danger = Color(0xFFDC2626);
+  static const Color dangerContainer = Color(0x1FDC2626); // sheet: #FEF2F2
   static const Color onDanger = Colors.white;
 
-  // Info / Live tracking indicator
-  static const Color info = Color(0xFF38BDF8);
-  static const Color infoContainer = Color(0x1F38BDF8);
+  static const Color info = Color(0xFF0EA5E9);
+  static const Color infoContainer = Color(0x1F0EA5E9); // sheet: #EFF8FF
+
+  // NEW: "Offline" state from the design sheet
+  static const Color offline = Color(0xFF64748B);
+  static const Color offlineContainer = Color(0x1F64748B); // sheet: #F1F5F9
 
   // ==========================================
-  // ===== LIGHT THEME TOKENS =================
+  // ===== MAP / SPECIAL ENVIRONMENT (unchanged)
   // ==========================================
-  // Surfaces & Backgrounds
-  static const Color lightBackground = Color(
-    0xFFF6F4F8,
-  ); // Main page/scaffold background
-  static const Color lightSurface = Color(
-    0xFFFFFFFF,
-  ); // Cards, bottom navigation, modals
-  static const Color lightSurfaceVariant = Color(
-    0xFFF3F3F8,
-  ); // Input fields, unselected chips, inner rows
+  static const Color environmentCategory1 = Color(0xFFF59E0B);
+  static const Color environmentCategory2 = Color(0xFFA855F7);
+  static const Color environmentCategory3 = Color(0xFF10B981);
 
-  // Borders & Dividers
-  static const Color lightOutline = Color(
-    0xFFEBE9ED,
-  ); // Card borders, textfield strokes
-  static const Color lightOutlineVariant = Color(
-    0xFFF0F0F4,
-  ); // Inner item dividers, subtle separators
-
-  // Typography
-  static const Color lightTextPrimary = Color(
-    0xFF0F172A,
-  ); // Main titles, bold values, card headings
-  static const Color lightTextSecondary = Color(
-    0xFF64748B,
-  ); // Subtitles, descriptions, active chip text
-  static const Color lightTextTertiary = Color(
-    0xFF94A3B8,
-  ); // Timestamps, inactive labels, metrics captions
-  static const Color lightTextDisabled = Color(
-    0xFFCBD5E1,
-  ); // Disabled button/text state
-
-  // Icons
-  static const Color lightIconPrimary = Color(
-    0xFF1E293B,
-  ); // Standalone action icons
-  static const Color lightIconSecondary = Color(
-    0xFF94A3B8,
-  ); // Chevrons, unselected nav icons
-
-  // ==========================================
-  // ===== DARK THEME TOKENS ==================
-  // ==========================================
-  // Surfaces & Backgrounds
-  static const Color darkBackground = Color(
-    0xFF0C0A12,
-  ); // Main page/scaffold background
-  static const Color darkSurface = Color(
-    0xFF1A1424,
-  ); // Cards, bottom navigation, modals
-  static const Color darkSurfaceVariant = Color(
-    0xFF1D1C2B,
-  ); // Input fields, dropdowns, unselected chips
-
-  // Borders & Dividers
-  static const Color darkOutline = Color(
-    0xFF272538,
-  ); // Card borders, textfield strokes
-  static const Color darkOutlineVariant = Color(
-    0xFF1E1D2D,
-  ); // Inner item dividers, subtle separators
-
-  // Typography
-  static const Color darkTextPrimary = Color(
-    0xFFF8FAFC,
-  ); // Main titles, bold values, card headings
-  static const Color darkTextSecondary = Color(
-    0xFFCBD5E1,
-  ); // Subtitles, descriptions, active chip text
-  static const Color darkTextTertiary = Color(
-    0xFF64748B,
-  ); // Timestamps, inactive labels, metrics captions
-  static const Color darkTextDisabled = Color(
-    0xFF475569,
-  ); // Disabled button/text state
-
-  // Icons
-  static const Color darkIconPrimary = Color(
-    0xFFF8FAFC,
-  ); // Standalone action icons
-  static const Color darkIconSecondary = Color(
-    0xFF64748B,
-  ); // Chevrons, unselected nav icons
-
-  // ==========================================
-  // ===== MAP / SPECIAL ENVIRONMENT TOKENS ===
-  // ==========================================
-  // Custom tag/zone categories
-  static const Color environmentCategory1 = Color(
-    0xFFF59E0B,
-  ); // "Home" geofence ring & badge
-  static const Color environmentCategory2 = Color(
-    0xFFA855F7,
-  ); // "Work" geofence ring & badge
-  static const Color environmentCategory3 = Color(
-    0xFF10B981,
-  ); // "Safe" geofence ring & badge
-
-  // Map elements (Light Mode)
   static const Color lightMapPath = Color(0xFFFFFFFF);
   static const Color lightMapZonePrimary = Color(0xFFD1FAE5);
   static const Color lightMapZoneSecondary = Color(0xFFDBEAFE);
 
-  // Map elements (Dark Mode)
   static const Color darkMapPath = Color(0xFF1E1D2D);
   static const Color darkMapZonePrimary = Color(0xFF064E3B);
   static const Color darkMapZoneSecondary = Color(0xFF1E3A8A);
 
   // ==========================================
-  // ===== GRADIENTS ==========================
+  // ===== THEME-AWARE (read from AppPalette)
   // ==========================================
-  // Primary CTA buttons ("+ Device", "Sync", "Add")
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFFC026D3), Color(0xFF7C3AED)],
+  static AppPalette _p(BuildContext c) => AppPalette.of(c);
+
+  // Brand
+  static Color primary(BuildContext c) => _p(c).primary;
+  static Color onPrimary(BuildContext c) => _p(c).onPrimary;
+  static Color primaryHover(BuildContext c) => _p(c).primaryHover;
+  static Color primarySubtle(BuildContext c) => _p(c).primarySubtle;
+  static Color primaryContainer(BuildContext c) => _p(c).primaryContainer;
+  static Color onPrimaryContainer(BuildContext c) => _p(c).onPrimaryContainer;
+  static Color primaryBorder(BuildContext c) =>
+      _p(c).primary.withValues(alpha: 0.4);
+  static Color accent(BuildContext c) => _p(c).accent;
+  static Color accentContainer(BuildContext c) => _p(c).accentContainer;
+
+  static LinearGradient primaryGradient(BuildContext c) => LinearGradient(
+    colors: [_p(c).primary, _p(c).primaryHover],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ==========================================
-  // ===== SHADOWS (missing, theme.dart needs these) =====
-  // ==========================================
-  static const Color lightShadow = Color(
-    0x14000000,
-  ); // 8% black — card elevation
-  static const Color lightScrim = Color(
-    0x52000000,
-  ); // 32% black — modal/dialog backdrop
-  static const Color darkShadow = Color(
-    0x33000000,
-  ); // 20% black — card elevation
-  static const Color darkScrim = Color(
-    0x80000000,
-  ); // 50% black — modal/dialog backdrop
-
-  // ADD THIS BLOCK to your existing colors.dart (paste before the closing brace).
-  // Everything else in your file stays exactly as-is — it's already good.
-
-  // ==========================================
-  // ===== SHADOWS (missing, theme.dart needs these) =====
-  // ==========================================
-  // static const Color lightShadow = Color(0x14000000);
-  // static const Color lightScrim = Color(0x52000000);
-  // static const Color darkShadow = Color(0x33000000);
-  // static const Color darkScrim = Color(0x80000000);
-
-  // ==========================================
-  // ===== BRIGHTNESS-AWARE HELPERS ===========
-  // ==========================================
-  // Use these everywhere instead of Theme.of(context).colorScheme.
-  // Every value still comes from AppColors above — this is just the
-  // light/dark switch, not a second color source.
-  static bool _isDark(BuildContext c) =>
-      Theme.of(c).brightness == Brightness.dark;
-
-  static Color surface(BuildContext c) =>
-      _isDark(c) ? darkSurface : lightSurface;
-  static Color surfaceVariant(BuildContext c) =>
-      _isDark(c) ? darkSurfaceVariant : lightSurfaceVariant;
-  static Color background(BuildContext c) =>
-      _isDark(c) ? darkBackground : lightBackground;
-  static Color outline(BuildContext c) =>
-      _isDark(c) ? darkOutline : lightOutline;
-  static Color outlineVariant(BuildContext c) =>
-      _isDark(c) ? darkOutlineVariant : lightOutlineVariant;
-  static Color textPrimary(BuildContext c) =>
-      _isDark(c) ? darkTextPrimary : lightTextPrimary;
-  static Color textSecondary(BuildContext c) =>
-      _isDark(c) ? darkTextSecondary : lightTextSecondary;
-  static Color textTertiary(BuildContext c) =>
-      _isDark(c) ? darkTextTertiary : lightTextTertiary;
-  static Color iconPrimary(BuildContext c) =>
-      _isDark(c) ? darkIconPrimary : lightIconPrimary;
-  static Color iconSecondary(BuildContext c) =>
-      _isDark(c) ? darkIconSecondary : lightIconSecondary;
-  static Color shadow(BuildContext c) => _isDark(c) ? darkShadow : lightShadow;
-  static Color scrim(BuildContext c) => _isDark(c) ? darkScrim : lightScrim;
-  // primaryContainer's "on" color is asymmetric by design (see app_theme.dart)
-  static Color onPrimaryContainer(BuildContext c) =>
-      _isDark(c) ? primarySubtle : primaryHover;
+  // Surfaces / borders / text / icons
+  static Color background(BuildContext c) => _p(c).background;
+  static Color surface(BuildContext c) => _p(c).surface;
+  static Color surfaceVariant(BuildContext c) => _p(c).surfaceVariant;
+  static Color outline(BuildContext c) => _p(c).outline;
+  static Color outlineVariant(BuildContext c) => _p(c).outlineVariant;
+  static Color textPrimary(BuildContext c) => _p(c).textPrimary;
+  static Color textSecondary(BuildContext c) => _p(c).textSecondary;
+  static Color textTertiary(BuildContext c) => _p(c).textTertiary;
+  static Color iconPrimary(BuildContext c) => _p(c).iconPrimary;
+  static Color iconSecondary(BuildContext c) => _p(c).iconSecondary;
+  static Color shadow(BuildContext c) => _p(c).shadow;
+  static Color scrim(BuildContext c) => _p(c).scrim;
 }

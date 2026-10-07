@@ -20,6 +20,7 @@ import 'widgets/hero_section.dart';
 import 'widgets/info_card.dart';
 import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LandingScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -56,7 +57,7 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AADYA', style: TextStyle(fontSize: 25)),
+        title: Image.asset('assets/images/app_name_logo.png', height: 35),
         centerTitle: true,
       ),
       body: BlocBuilder<LandingBloc, LandingState>(
@@ -96,7 +97,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
                 return RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                   child: _LoadedBody(
                     device: widget.device,
                     state: state,
@@ -186,7 +187,7 @@ class _LoadedBody extends StatelessWidget {
               const SizedBox(height: 16),
               InfoCard(
                 icon: Icons.location_on_rounded,
-                iconBg: kBlue.withValues(alpha: 0.15),
+                iconBg: kBlue.withValues(alpha: AppAlpha.tint),
                 iconColor: kBlue,
                 title: latest?.userAddress ?? 'Address Unavailable',
                 subtitle: latest?.deviceTimestamp != null

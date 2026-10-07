@@ -154,12 +154,6 @@ class ScheduleListBloc extends Bloc<ScheduleListEvent, ScheduleListState> {
                 arrivalGraceMins: s.arrivalGraceMins,
                 departureBufferMins: s.departureBufferMins,
                 minimumStayMins: s.minimumStayMins,
-                alertOnAbsence: s.alertOnAbsence,
-                alertOnLateArrival: s.alertOnLateArrival,
-                alertOnEarlyDeparture: s.alertOnEarlyDeparture,
-                alertOnEarlyEntry: s.alertOnEarlyEntry,
-                alertOnReentry: s.alertOnReentry,
-                sendPushNotification: s.sendPushNotification,
                 createdAt: s.createdAt,
                 updatedAt: s.updatedAt,
               );

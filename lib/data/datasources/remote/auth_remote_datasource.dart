@@ -42,4 +42,25 @@ class AuthRemoteDataSource {
 
     return user;
   }
+
+  Future<void> updateFcmToken({
+    required String fcmToken,
+    required String platform,
+  }) async {
+    AppLogger.d('AuthRemoteDataSource', 'updateFcmToken() called');
+
+    final response = await _dioClient.dio.patch(
+      ApiConstants.updateProfile,
+      data: {'fcm_token': fcmToken, 'platform': platform},
+    );
+
+    final body = response.data as Map<String, dynamic>;
+
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Failed to update FCM token.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
 }

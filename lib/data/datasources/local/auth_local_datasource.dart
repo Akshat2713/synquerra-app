@@ -9,6 +9,7 @@ class AuthLocalDataSource {
   static const _keyAccessToken = 'access_token';
   static const _keyRefreshToken = 'refresh_token';
   static const _keyPersonId = 'person_id';
+  static const _keyLastSentFcmToken = 'last_sent_fcm_token';
 
   AuthLocalDataSource(this._storage);
 
@@ -35,6 +36,12 @@ class AuthLocalDataSource {
     }
   }
 
+  Future<String?> getLastSentFcmToken() =>
+      _storage.read(key: _keyLastSentFcmToken);
+
+  Future<void> saveLastSentFcmToken(String token) =>
+      _storage.write(key: _keyLastSentFcmToken, value: token);
+
   Future<String?> getPersonId() async {
     return _storage.read(key: _keyPersonId);
   }
@@ -45,6 +52,7 @@ class AuthLocalDataSource {
       _storage.delete(key: _keyAccessToken),
       _storage.delete(key: _keyRefreshToken),
       _storage.delete(key: _keyPersonId),
+      _storage.delete(key: _keyLastSentFcmToken),
     ]);
   }
 }

@@ -7,6 +7,7 @@ import '../../../../domain/entities/device/device_entity.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import '../../../widgets/async_state_view.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class NotificationPanel extends StatelessWidget {
   final List<AlertEntity> alerts;
@@ -47,7 +48,7 @@ class NotificationPanel extends StatelessWidget {
 
     return Material(
       elevation: 8,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.lgAll,
       clipBehavior: Clip.antiAlias,
       color: AppColors.surface(context),
       child: ConstrainedBox(
@@ -68,8 +69,7 @@ class NotificationPanel extends StatelessWidget {
               final device = devices
                   .where((d) => d.imei == alert.imei)
                   .firstOrNull;
-              final name =
-                  device?.displayOwnerName(currentUserFullName) ?? alert.imei;
+              final name = device?.displayOwnerName ?? alert.imei;
 
               return ListTile(
                 dense: true,

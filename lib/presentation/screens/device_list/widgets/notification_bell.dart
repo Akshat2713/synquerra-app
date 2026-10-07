@@ -11,6 +11,7 @@ import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../themes/colors.dart';
 import 'notification_panel.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class NotificationBell extends StatefulWidget {
   const NotificationBell({super.key});
@@ -180,7 +181,7 @@ class _NotificationBellState extends State<NotificationBell>
               right: 6,
               top: 6,
               child: Container(
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: const BoxDecoration(
                   color: AppColors.danger,
                   shape: BoxShape.circle,

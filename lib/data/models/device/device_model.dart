@@ -1,3 +1,4 @@
+import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../signup/person_model.dart';
 import 'device_association_model.dart';
@@ -5,7 +6,7 @@ import 'device_owner_model.dart';
 
 class DeviceModel {
   final String id;
-  final String topic;
+  final String? topic;
   final String imei;
   final String serialNo;
   final String? geoid;
@@ -19,8 +20,8 @@ class DeviceModel {
   final String? battery;
   final String? signal;
   final String? gpsStrength;
-  final bool isActive;
-  final bool isSubscribed;
+  final bool? isActive;
+  final bool? isSubscribed;
   final String? inventoryStatus;
   final String? associationType;
   final bool? isOnline;
@@ -28,14 +29,25 @@ class DeviceModel {
   final String createdAt;
   final String updatedAt;
   final String relationship;
-  final DeviceOwnerModel? deviceOwner;
-  // final List<dynamic> deviceAssociation;
+  final DeviceOwnerModel? owner;
   final PersonModel? carrier;
-  final List<DeviceAssociationModel> deviceAssociation;
+  final List<DeviceAssociationModel> assignments;
+
+  // Fields present in the newer API payload that weren't modeled before.
+  final int? schemaVersion;
+  final String? hdop;
+  final String? satsUsed;
+  final String? satsInView;
+  final String? fixType;
+  final String? deviceMode;
+  final String? gnssMode;
+  final String? source;
+  final String? hardwareVersion;
+  final String? firmwareVersion;
 
   const DeviceModel({
     required this.id,
-    required this.topic,
+    this.topic,
     required this.imei,
     required this.serialNo,
     this.geoid,
@@ -49,8 +61,8 @@ class DeviceModel {
     this.battery,
     this.signal,
     this.gpsStrength,
-    required this.isActive,
-    required this.isSubscribed,
+    this.isActive,
+    this.isSubscribed,
     this.inventoryStatus,
     this.associationType,
     this.isOnline,
@@ -58,22 +70,31 @@ class DeviceModel {
     required this.createdAt,
     required this.updatedAt,
     required this.relationship,
-    this.deviceOwner,
-    // this.deviceAssociation = const [],
+    this.owner,
     this.carrier,
-    this.deviceAssociation = const [],
+    this.assignments = const [],
+    this.schemaVersion,
+    this.hdop,
+    this.satsUsed,
+    this.satsInView,
+    this.fixType,
+    this.deviceMode,
+    this.gnssMode,
+    this.source,
+    this.hardwareVersion,
+    this.firmwareVersion,
   });
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
     // Use nested 'device_master' if available, otherwise fallback to root json
     final master = (json['device_master'] as Map<String, dynamic>?) ?? json;
-    final carrierJson = json['carrier'] as Map<String, dynamic>?;
-    final ownerJson = json['device_owner'] as Map<String, dynamic>?;
-    final associationsJson = json['device_association'] as List<dynamic>? ?? [];
+    final carrierJson = json['carrier_user'] as Map<String, dynamic>?;
+    final ownerJson = json['owner'] as Map<String, dynamic>?;
+    final assignmentsJson = json['assignments'] as List<dynamic>? ?? [];
 
     return DeviceModel(
       id: (master['id'] ?? '') as String,
-      topic: (master['subscription_topic'] ?? master['topic'] ?? '') as String,
+      topic: (master['subscription_topic'] ?? master['topic'])?.toString(),
       imei: (master['imei'] ?? '') as String,
       serialNo: (master['serial_no'] ?? '') as String,
       geoid: master['geoid']?.toString(),
@@ -86,9 +107,9 @@ class DeviceModel {
       timestamp: master['timestamp'] as String?,
       battery: master['battery']?.toString(),
       signal: master['signal']?.toString(),
-      gpsStrength: master['gps_strength'] as String?,
-      isActive: (master['is_active'] ?? false) as bool,
-      isSubscribed: (master['is_subscribed'] ?? false) as bool,
+      gpsStrength: master['gps_strength']?.toString(),
+      isActive: master['is_active'] as bool?,
+      isSubscribed: master['is_subscribed'] as bool?,
       inventoryStatus: master['inventory_status'] as String?,
       associationType: master['association_type'] as String?,
       isOnline: master['is_online'] as bool?,
@@ -96,22 +117,51 @@ class DeviceModel {
       createdAt: (master['created_at'] ?? master['createdAt'] ?? '') as String,
       updatedAt: (master['updated_at'] ?? master['updatedAt'] ?? '') as String,
       relationship: (json['relationship'] ?? '') as String,
-      deviceOwner: ownerJson != null
-          ? DeviceOwnerModel.fromJson(ownerJson)
-          : null,
+      owner: ownerJson != null ? DeviceOwnerModel.fromJson(ownerJson) : null,
       carrier: carrierJson != null ? PersonModel.fromJson(carrierJson) : null,
-      deviceAssociation: associationsJson
+      assignments: assignmentsJson
           .map(
             (a) => DeviceAssociationModel.fromJson(a as Map<String, dynamic>),
           )
           .toList(),
+      schemaVersion: master['schema_version'] as int?,
+      hdop: master['hdop']?.toString(),
+      satsUsed: master['sats_used']?.toString(),
+      satsInView: master['sats_in_view']?.toString(),
+      fixType: master['fix_type'] as String?,
+      deviceMode: master['device_mode'] as String?,
+      gnssMode: master['gnss_mode'] as String?,
+      source: master['source'] as String?,
+      hardwareVersion: master['hardware_version'] as String?,
+      firmwareVersion: master['firmware_version'] as String?,
     );
   }
+
   // Extracts the leading numeric value from strings like "7 km/hr" or "36.27 c"
   static double? _parseLeadingNumber(String? value) {
     if (value == null) return null;
     final match = RegExp(r'-?\d+(\.\d+)?').firstMatch(value);
     return match != null ? double.tryParse(match.group(0)!) : null;
+  }
+
+  String get displayOwnerName => _resolveDisplayOwnerName();
+
+  String _resolveDisplayOwnerName() {
+    AppLogger.d('DeviceEntity', 'New Device');
+
+    // 1. Check carrier first (carrier_user)
+    final c = carrier;
+    if (c != null) {
+      // Safely combine firstName and optional lastName
+      final carrierName = '${c.firstName} ${c.lastName}'.trim();
+      AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
+      if (carrierName.isNotEmpty) return carrierName;
+    }
+
+    // 2. Fall back to non-null owner
+    final ownerName = owner!.name.trim();
+    AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
+    return ownerName;
   }
 
   DeviceEntity toEntity() => DeviceEntity(
@@ -139,8 +189,19 @@ class DeviceModel {
     createdAt: createdAt,
     updatedAt: updatedAt,
     relationship: relationship,
-    deviceOwner: deviceOwner?.toEntity(),
+    owner: owner!.toEntity(),
     carrier: carrier?.toEntity(),
-    associations: deviceAssociation.map((a) => a.toEntity()).toList(),
+    assignments: assignments.map((a) => a.toEntity()).toList(),
+    displayOwnerName: displayOwnerName,
+    schemaVersion: schemaVersion,
+    hdop: hdop,
+    satsUsed: satsUsed,
+    satsInView: satsInView,
+    fixType: fixType,
+    deviceMode: deviceMode,
+    gnssMode: gnssMode,
+    source: source,
+    hardwareVersion: hardwareVersion,
+    firmwareVersion: firmwareVersion,
   );
 }

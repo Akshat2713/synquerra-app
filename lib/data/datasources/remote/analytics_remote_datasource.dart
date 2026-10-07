@@ -1,6 +1,7 @@
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../models/analytics/analytics_query_model.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../models/analytics/analytics_model.dart';
@@ -65,5 +66,51 @@ class AnalyticsRemoteDataSource {
     );
 
     return analytics;
+  }
+
+  /// Queries the device's latest NormalPacket (live telemetry).
+  Future<AnalyticsQueryModel> getLiveTelemetry({
+    required String deviceId,
+  }) async {
+    debugPrint(
+      '[AnalyticsRemoteDataSource] sendQueryCommand() → deviceId: $deviceId',
+    );
+
+    final response = await _dioClient.dio.post(
+      ApiConstants.sendQueryCommand, // your constant
+      data: {'device_id': deviceId},
+    );
+
+    final body = response.data;
+    if (body is! Map<String, dynamic>) {
+      throw ServerException(message: 'Unexpected response format.');
+    }
+
+    // The API can return HTTP 200 with a non-success status in the body
+    final status = body['status']?.toString().toLowerCase();
+    final innerStatus = (body['data'] as Map<String, dynamic>?)?['status']
+        ?.toString()
+        .toLowerCase();
+
+    if (status != 'success' || innerStatus != 'success') {
+      throw ServerException(
+        message:
+            body['message']?.toString() ?? 'Failed to fetch live telemetry.',
+      );
+    }
+
+    final packet = (body['data'] as Map<String, dynamic>?)?['packet'];
+    if (packet is! Map<String, dynamic>) {
+      throw ServerException(
+        message: 'No telemetry packet received from device.',
+      );
+    }
+
+    final model = AnalyticsQueryModel.fromApiResponse(body);
+    AppLogger.d(
+      'AnalyticsRemoteDataSource',
+      'Live telemetry: ${model.latitude}, ${model.longitude} @ ${model.deviceTimestamp}',
+    );
+    return model;
   }
 }

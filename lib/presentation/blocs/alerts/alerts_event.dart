@@ -16,6 +16,3 @@ class AlertsLoadRequested extends AlertsEvent {
 class AlertsRefreshRequested extends AlertsEvent {
   const AlertsRefreshRequested();
 }
-
-// When you move to websocket: add AlertsPushed(AlertEntity alert) here,
-// handled by inserting/updating into the current AlertsLoaded list.

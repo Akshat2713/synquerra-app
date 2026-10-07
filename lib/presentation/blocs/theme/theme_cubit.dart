@@ -1,30 +1,31 @@
-import 'package:flutter/material.dart';
+// lib/presentation/blocs/theme/theme_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/repositories/theme_repository.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../themes/app_palette.dart';
 
-class ThemeCubit extends Cubit<ThemeMode> {
+class ThemeCubit extends Cubit<AppThemeType> {
   final ThemeRepository _themeRepository;
 
-  ThemeCubit(this._themeRepository) : super(ThemeMode.system) {
+  ThemeCubit(this._themeRepository) : super(AppThemeType.cleanCalm) {
     _init();
   }
 
   Future<void> _init() async {
-    final savedThemeMode = await _themeRepository.getSavedThemeMode();
-    emit(savedThemeMode);
-    AppLogger.d('ThemeCubit', 'init → Start: $savedThemeMode');
+    final saved = await _themeRepository.getSavedTheme();
+    final type = AppThemeType.fromName(
+      saved,
+    ); // old 'light'/'system' -> cleanCalm
+    emit(type);
+    AppLogger.d('ThemeCubit', 'init → $type');
   }
 
-  void toggle() async {
-    AppLogger.d('ThemeCubit', 'toggle → current: $state');
-    final newMode = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-
-    emit(newMode);
-
-    await _themeRepository.saveThemeMode(newMode);
-    AppLogger.d('ThemeCubit', 'toggled → new: $state');
+  Future<void> select(AppThemeType type) async {
+    if (type == state) return;
+    emit(type);
+    await _themeRepository.saveTheme(type.name);
+    AppLogger.d('ThemeCubit', 'selected → $type');
   }
 
-  bool get isDark => state == ThemeMode.dark;
+  bool get isDark => state == AppThemeType.dark;
 }

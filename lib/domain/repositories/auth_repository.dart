@@ -9,6 +9,7 @@ abstract class AuthRepository {
   });
 
   Future<Either<Failure, UserEntity?>> getLoggedInUser();
+  Future<Either<Failure, void>> syncFcmToken(String fcmToken);
 
   Future<Either<Failure, void>> logout();
 }

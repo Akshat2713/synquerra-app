@@ -22,10 +22,10 @@ class DeviceListLoaded extends DeviceListState {
 
   int get devicesNeedingAttention => devices.where((d) => !d.hasData).length;
 
-  bool isDeviceActive(DeviceEntity device) {
-    final isToggled = toggledImeis.contains(device.imei);
-    return isToggled ? !device.isActive : device.isActive;
-  }
+  // bool isDeviceActive(DeviceEntity device) {
+  //   final isToggled = toggledImeis.contains(device.imei);
+  //   // return isToggled ? !device.isActive : device.isActive;
+  // }
 
   DeviceListLoaded copyWith({
     List<DeviceEntity>? devices,

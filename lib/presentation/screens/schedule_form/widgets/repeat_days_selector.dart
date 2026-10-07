@@ -1,0 +1,58 @@
+// lib/presentation/screens/create_schedule/widgets/repeat_days_selector.dart
+import 'package:flutter/material.dart';
+import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
+
+class RepeatDaysSelector extends StatelessWidget {
+  final List<int> selectedDays;
+  final ValueChanged<int> onDayToggled;
+
+  const RepeatDaysSelector({
+    super.key,
+    required this.selectedDays,
+    required this.onDayToggled,
+  });
+
+  static const List<String> _dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(7, (index) {
+        final isSelected = selectedDays.contains(index);
+        return InkWell(
+          borderRadius: AppRadius.lgAll,
+          onTap: () => onDayToggled(index),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary(context)
+                  : AppColors.surfaceVariant(context),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary(context)
+                    : AppColors.outline(context),
+              ),
+            ),
+            child: Text(
+              _dayNames[index],
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? Colors.white
+                    : AppColors.textSecondary(context),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}

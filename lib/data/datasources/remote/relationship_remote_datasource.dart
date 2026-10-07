@@ -1,6 +1,9 @@
 // lib/features/relationship/data/datasources/remote/relationship_remote_datasource.dart
 
+import 'dart:io';
 import 'dart:isolate';
+import 'package:dio/dio.dart';
+
 import '../../models/signup/person_model.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
@@ -117,32 +120,47 @@ class RelationshipRemoteDataSource {
     String? country,
     String? pincode,
     bool isHead = false,
+    File? profileImage,
   }) async {
     AppLogger.d(
       'RelationshipRemoteDataSource',
       'createPersonWithRelationship() called for $email',
     );
 
+    final Map<String, dynamic> data = {
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'password': password,
+      'relationship_type': relationshipType,
+      'is_head': isHead,
+      if (middleName != null && middleName.isNotEmpty)
+        'middle_name': middleName,
+      if (mobile != null && mobile.isNotEmpty) 'mobile': mobile,
+      if (birthDate != null && birthDate.isNotEmpty) 'birth_date': birthDate,
+      if (gender != null && gender.isNotEmpty) 'gender': gender,
+      if (address != null && address.isNotEmpty) 'address': address,
+      if (city != null && city.isNotEmpty) 'city': city,
+      if (state != null && state.isNotEmpty) 'state': state,
+      if (country != null && country.isNotEmpty) 'country': country,
+      if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
+    };
+
+    dynamic payload = data;
+
+    if (profileImage != null) {
+      payload = FormData.fromMap({
+        ...data,
+        'profile_photo': await MultipartFile.fromFile(
+          profileImage.path,
+          filename: profileImage.path.split('/').last,
+        ),
+      });
+    }
+
     final response = await _dioClient.dio.post(
       ApiConstants.createPersonWithRelationship,
-      data: {
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-        'password': password,
-        'relationship_type': relationshipType,
-        'is_head': isHead,
-        if (middleName != null && middleName.isNotEmpty)
-          'middle_name': middleName,
-        if (mobile != null && mobile.isNotEmpty) 'mobile': mobile,
-        if (birthDate != null && birthDate.isNotEmpty) 'birth_date': birthDate,
-        if (gender != null && gender.isNotEmpty) 'gender': gender,
-        if (address != null && address.isNotEmpty) 'address': address,
-        if (city != null && city.isNotEmpty) 'city': city,
-        if (state != null && state.isNotEmpty) 'state': state,
-        if (country != null && country.isNotEmpty) 'country': country,
-        if (pincode != null && pincode.isNotEmpty) 'pincode': pincode,
-      },
+      data: payload,
     );
 
     final body = response.data as Map<String, dynamic>;

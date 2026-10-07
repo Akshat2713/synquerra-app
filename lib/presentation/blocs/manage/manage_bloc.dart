@@ -7,6 +7,7 @@ import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/settings/settings_entity.dart';
 import '../../../domain/usecases/modes/get_modes_usecase.dart';
 import '../../../domain/usecases/modes/switch_mode_usecase.dart';
+import '../../../domain/usecases/modes/toggle_auto_mode_switch_usecase.dart';
 import '../../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../base/base_state.dart';
@@ -18,20 +19,24 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
   final GetModesUseCase _getModesUseCase;
   final SwitchModeUseCase _switchModeUseCase;
   final GetSettingsUseCase _getSettingsUseCase;
+  final ToggleAutoModeSwitchUseCase _toggleAutoModeSwitchUseCase;
   final UpdatePhoneNumbersUseCase _updatePhoneNumbersUseCase;
 
   ManageBloc({
     required GetModesUseCase getModesUseCase,
     required SwitchModeUseCase switchModeUseCase,
     required GetSettingsUseCase getSettingsUseCase,
+    required ToggleAutoModeSwitchUseCase toggleAutoModeSwitchUseCase,
     required UpdatePhoneNumbersUseCase updatePhoneNumbersUseCase,
   }) : _getModesUseCase = getModesUseCase,
        _switchModeUseCase = switchModeUseCase,
        _getSettingsUseCase = getSettingsUseCase,
+       _toggleAutoModeSwitchUseCase = toggleAutoModeSwitchUseCase,
        _updatePhoneNumbersUseCase = updatePhoneNumbersUseCase,
        super(ManageInitial()) {
     on<ManageLoadRequested>(_onLoad);
     on<ManageModeSwitchRequested>(_onModeSwitch);
+    on<ManageAutoModeToggleRequested>(_onAutoModeToggle);
     on<ManagePhoneNumbersUpdateRequested>(_onUpdatePhoneNumbers);
   }
 
@@ -133,7 +138,39 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     );
   }
 
-  // ── Phone Numbers Update Handler ─────────────────────────
+  Future<void> _onAutoModeToggle(
+    ManageAutoModeToggleRequested event,
+    Emitter<ManageState> emit,
+  ) async {
+    if (state is! ManageLoaded) return;
+    final current = state as ManageLoaded;
+
+    emit(current.copyWith(isSwitchingMode: true, modeSwitchError: null));
+
+    final result = await _toggleAutoModeSwitchUseCase(deviceId: event.deviceId);
+
+    if (emit.isDone || isClosed) return;
+    final latest = state;
+    if (latest is! ManageLoaded) return;
+
+    result.fold(
+      (failure) => emit(
+        latest.copyWith(
+          isSwitchingMode: false,
+          modeSwitchError: failure.userMessage,
+        ),
+      ),
+      (_) => emit(
+        latest.copyWith(
+          isSwitchingMode: false,
+          settings: latest.settings.copyWith(
+            autoModeSwitch: !latest.settings.autoModeSwitch,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _onUpdatePhoneNumbers(
     ManagePhoneNumbersUpdateRequested event,
     Emitter<ManageState> emit,
@@ -141,38 +178,53 @@ class ManageBloc extends Bloc<ManageEvent, ManageState> {
     if (state is! ManageLoaded) return;
     final current = state as ManageLoaded;
 
-    AppLogger.d('ManageBloc', 'Updating Phone Numbers for: ${event.deviceId}');
-    emit(current.copyWith(isUpdatingSettings: true, settingsUpdateError: null));
+    // Empty input keeps the existing number
+    final phone1 = _resolveNumber(event.phoneNum1, current.settings.phoneNum1);
+    final phone2 = _resolveNumber(event.phoneNum2, current.settings.phoneNum2);
+
+    emit(current.copyWith(isUpdatingSettings: true));
 
     final result = await _updatePhoneNumbersUseCase(
       deviceId: event.deviceId,
-      phoneNum1: event.phoneNum1,
-      phoneNum2: event.phoneNum2,
+      phoneNum1: phone1,
+      phoneNum2: phone2,
     );
+
+    if (emit.isDone || isClosed) return;
+
+    // Re-read state in case something changed during the API call
+    final latest = state;
+    if (latest is! ManageLoaded) return;
 
     result.fold(
       (failure) {
-        AppLogger.d(
-          'ManageBloc',
-          'Update phone numbers failed: ${failure.message}',
-        );
+        AppLogger.d('ManageBloc', 'Update failed: ${failure.message}');
         emit(
-          current.copyWith(
+          latest.copyWith(
             isUpdatingSettings: false,
             settingsUpdateError: failure.userMessage,
           ),
         );
       },
-      (updatedSettings) {
-        AppLogger.d('ManageBloc', 'Phone numbers updated successfully');
+      (_) {
+        // Ignore the returned entity and use the values we sent
         emit(
-          current.copyWith(
-            settings: updatedSettings,
+          latest.copyWith(
+            settings: latest.settings.copyWith(
+              phoneNum1: phone1.isEmpty ? null : phone1,
+              phoneNum2: phone2.isEmpty ? null : phone2,
+            ),
             isUpdatingSettings: false,
-            settingsUpdateError: null,
           ),
         );
       },
     );
+  }
+
+  String _resolveNumber(String? input, String? existing) {
+    final v = input?.trim() ?? '';
+    if (v.isNotEmpty) return v;
+    final e = existing ?? '';
+    return (e == 'No Primary Number' || e == 'No Secondary Number') ? '' : e;
   }
 }

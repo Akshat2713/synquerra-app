@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceNameInput extends StatelessWidget {
   final TextEditingController controller;
@@ -27,7 +28,7 @@ class GeofenceNameInput extends StatelessWidget {
           textCapitalization: TextCapitalization.words,
           decoration: InputDecoration(
             hintText: 'e.g. School Zone',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
           ),
           validator: (v) =>
               (v == null || v.trim().isEmpty) ? 'Name is required' : null,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class BottomMetricsBar extends StatelessWidget {
   final int battery;
@@ -23,7 +24,7 @@ class BottomMetricsBar extends StatelessWidget {
         color: AppColors.surface(context),
         border: Border(
           top: BorderSide(
-            color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+            color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
           ),
         ),
       ),
@@ -89,21 +90,32 @@ class BottomMetricsBar extends StatelessWidget {
               ],
             ),
           ),
-          const _MetricCell(
-            title: 'REMAINING\nTIME',
-            valueRow: Text(
-              '≈ 3.4h',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
+          // const _MetricCell(
+          //   title: 'REMAINING\nTIME',
+          //   valueRow: Text(
+          //     '≈ 3.4h',
+          //     style: TextStyle(fontWeight: FontWeight.w800),
+          //   ),
+          // ),
           _MetricCell(
             title: 'DEVICE\nTEMP',
-            valueRow: Text(
-              '$temperature ℃',
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                color: AppColors.success,
-              ),
+            valueRow: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.thermostat,
+                  size: 14,
+                  color: temperatureColor(temperature),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$temperature ℃',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: temperatureColor(temperature),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -129,7 +141,7 @@ class _MetricCell extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary(context).withValues(alpha: 0.7),
+            color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
           ),
         ),
         const SizedBox(height: 4),

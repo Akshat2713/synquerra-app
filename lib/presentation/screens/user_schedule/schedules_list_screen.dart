@@ -9,6 +9,7 @@ import 'widgets/schedule_card.dart';
 import 'widgets/schedule_delete_dialog.dart';
 import 'widgets/schedule_empty_view.dart';
 import 'widgets/schedule_error_view.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SchedulesListScreen extends StatefulWidget {
   const SchedulesListScreen({super.key});
@@ -73,7 +74,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
               content: Text(state.actionError!),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.mdAll,
               ),
             ),
           );
@@ -98,7 +99,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
 
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: AppColors.primary,
+            color: AppColors.primary(context),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.schedules.length,
@@ -136,7 +137,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary(context),
         foregroundColor: Colors.white,
         elevation: 4,
         onPressed: _onAdd,

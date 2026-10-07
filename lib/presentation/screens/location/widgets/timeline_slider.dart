@@ -6,6 +6,8 @@ import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class TimelineSlider extends StatefulWidget {
   final List<AnalyticsEntity> points;
@@ -109,10 +111,10 @@ class _TimelineSliderState extends State<TimelineSlider> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant(context),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.lgAll,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withValues(alpha: AppAlpha.tint),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -129,7 +131,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   size: 16,
                   color: AppColors.iconSecondary(context),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: Text(
                     DateTimeFormatter.formatFullDateTime(
@@ -143,6 +145,22 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                // Speed + Battery inline, before the minimize button
+                const SizedBox(width: 8),
+                _InlineMetric(
+                  icon: Icons.speed_rounded,
+                  label: UnitFormatter.formatSpeed(current.speed),
+                  color: AppColors.iconSecondary(context),
+                ),
+                const SizedBox(width: 8),
+                _InlineMetric(
+                  icon: _getBatteryIcon(current.battery),
+                  label: current.battery != null
+                      ? '${current.battery}%'
+                      : 'N/A',
+                  color: batteryColor(current.battery),
+                ),
+                const SizedBox(width: 4),
                 IconButton(
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
@@ -167,41 +185,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                 onPressed: widget.onMinimize,
               ),
             ),
-          if (current != null) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _MetricBadge(
-                    icon: Icons.speed_rounded,
-                    label: UnitFormatter.formatSpeed(current.speed),
-                    color: AppColors.iconSecondary(context),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _MetricBadge(
-                    icon: _getBatteryIcon(current.battery),
-                    label: current.battery != null
-                        ? '${current.battery}%'
-                        : 'N/A',
-                    color: _getBatteryColor(current.battery),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _MetricBadge(
-                    icon: _getSignalIcon(current.signal),
-                    label: current.signal != null
-                        ? '${current.signal}%'
-                        : 'N/A',
-                    color: _getSignalColor(current.signal),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-          ],
+          if (current != null) const SizedBox(height: 8),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -228,7 +212,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           : Icons.play_circle_fill_rounded,
                     ),
                     iconSize: 36,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                     onPressed: hasPoints ? _togglePlayback : null,
                   ),
                   const SizedBox(width: 16),
@@ -251,7 +235,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   initialValue: _selectedSpeed,
                   onSelected: _updateSpeed,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.mdAll,
                   ),
                   itemBuilder: (context) => _speedOptions.map((speed) {
                     final label =
@@ -268,7 +252,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                               color: _selectedSpeed == speed
-                                  ? AppColors.primary
+                                  ? AppColors.primary(context)
                                   : AppColors.textPrimary(context),
                             ),
                           ),
@@ -277,7 +261,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                             Icon(
                               Icons.check_rounded,
                               size: 16,
-                              color: AppColors.primary,
+                              color: AppColors.primary(context),
                             ),
                           ],
                         ],
@@ -291,11 +275,11 @@ class _TimelineSliderState extends State<TimelineSlider> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.surface(context),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                       border: Border.all(
                         color: AppColors.outlineVariant(
                           context,
-                        ).withValues(alpha: 0.3),
+                        ).withValues(alpha: AppAlpha.border),
                       ),
                     ),
                     child: Row(
@@ -306,13 +290,13 @@ class _TimelineSliderState extends State<TimelineSlider> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: AppColors.primary(context),
                           ),
                         ),
                         Icon(
                           Icons.arrow_drop_down_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.primary(context),
                         ),
                       ],
                     ),
@@ -321,71 +305,78 @@ class _TimelineSliderState extends State<TimelineSlider> {
               ),
             ],
           ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-              activeTrackColor: AppColors.primary,
-              inactiveTrackColor: AppColors.outlineVariant(
-                context,
-              ).withValues(alpha: 0.4),
-            ),
-            child: Slider(
-              value: safeIndex.toDouble(),
-              min: 0,
-              max: hasPoints ? (sortedPoints.length - 1).toDouble() : 1,
-              divisions: hasPoints && sortedPoints.length > 1
-                  ? sortedPoints.length - 1
-                  : 1,
-              onChanged: hasPoints
-                  ? (v) {
-                      if (_isPlaying) _stopPlayback();
-                      widget.onChanged(v.round());
-                    }
-                  : null,
-            ),
-          ),
+          // Timeline: date before + slider + date after, all inline
           if (hasPoints)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    DateTimeFormatter.formatCompactDate(
-                      sortedPoints.first.deviceTimestamp,
+            Row(
+              children: [
+                Text(
+                  DateTimeFormatter.formatCompactDate(
+                    sortedPoints.first.deviceTimestamp,
+                  ),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary(context),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 4,
+                      thumbShape: const _ArrowThumbShape(
+                        icon: Icons.navigation_rounded,
+                        size: 22,
+                      ),
+                      thumbColor: AppColors.primary(context),
+                      overlayShape: const RoundSliderOverlayShape(
+                        overlayRadius: 14,
+                      ),
+                      activeTrackColor: AppColors.primary(context),
+                      inactiveTrackColor: AppColors.outlineVariant(
+                        context,
+                      ).withValues(alpha: AppAlpha.border),
                     ),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary(context),
+                    child: Slider(
+                      value: safeIndex.toDouble(),
+                      min: 0,
+                      max: hasPoints ? (sortedPoints.length - 1).toDouble() : 1,
+                      divisions: hasPoints && sortedPoints.length > 1
+                          ? sortedPoints.length - 1
+                          : 1,
+                      onChanged: hasPoints
+                          ? (v) {
+                              if (_isPlaying) _stopPlayback();
+                              widget.onChanged(v.round());
+                            }
+                          : null,
                     ),
                   ),
-                  Text(
-                    DateTimeFormatter.formatCompactDate(
-                      sortedPoints.last.deviceTimestamp,
-                    ),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary(context),
-                    ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  DateTimeFormatter.formatCompactDate(
+                    sortedPoints.last.deviceTimestamp,
                   ),
-                ],
-              ),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary(context),
+                  ),
+                ),
+              ],
             ),
         ],
       ),
     );
   }
 
-  Color _getBatteryColor(int? battery) {
-    if (battery == null) return AppColors.textSecondary(context);
-    if (battery <= 15) return AppColors.danger;
-    if (battery <= 30) return AppColors.warning;
-    return AppColors.success;
-  }
+  // Color _getBatteryColor(int? battery) {
+  //   if (battery == null) return AppColors.textSecondary(context);
+  //   if (battery <= 15) return AppColors.danger;
+  //   if (battery <= 30) return AppColors.warning;
+  //   return AppColors.success;
+  // }
 
   IconData _getBatteryIcon(int? battery) {
     if (battery == null) return Icons.battery_unknown_rounded;
@@ -394,29 +385,15 @@ class _TimelineSliderState extends State<TimelineSlider> {
     if (battery <= 70) return Icons.battery_5_bar_rounded;
     return Icons.battery_full_rounded;
   }
-
-  Color _getSignalColor(int? signal) {
-    if (signal == null) return AppColors.textSecondary(context);
-    if (signal <= 25) return AppColors.danger;
-    if (signal <= 50) return AppColors.warning;
-    return AppColors.primary;
-  }
-
-  IconData _getSignalIcon(int? signal) {
-    if (signal == null) return Icons.signal_cellular_nodata_rounded;
-    if (signal <= 25) return Icons.signal_cellular_alt_1_bar_rounded;
-    if (signal <= 50) return Icons.signal_cellular_alt_2_bar_rounded;
-    if (signal <= 75) return Icons.signal_cellular_4_bar_rounded;
-    return Icons.signal_cellular_4_bar_rounded;
-  }
 }
 
-class _MetricBadge extends StatelessWidget {
+/// Small inline metric with icon + label, no card/background.
+class _InlineMetric extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
 
-  const _MetricBadge({
+  const _InlineMetric({
     required this.icon,
     required this.label,
     required this.color,
@@ -424,34 +401,82 @@ class _MetricBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.outlineVariant(context).withValues(alpha: 0.3),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary(context),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Custom slider thumb rendered as an arrow (triangle) pointing up.
+/// Slider thumb that renders a Material arrow icon.
+/// Slider thumb that renders a Material arrow icon.
+class _ArrowThumbShape extends SliderComponentShape {
+  final IconData icon;
+  final double size;
+  final Color? color;
+  final double rotation;
+
+  const _ArrowThumbShape({
+    this.icon = Icons.navigation_rounded,
+    this.size = 22,
+    this.color,
+    this.rotation = 1.5708, // π/2 — points right by default
+  });
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size(size, size);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final effectiveColor =
+        color ?? sliderTheme.thumbColor ?? const Color(0xFF000000);
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: size,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          color: effectiveColor,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary(context),
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-        ],
-      ),
-    );
+      textDirection: textDirection,
+    )..layout();
+
+    final canvas = context.canvas;
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(rotation);
+    canvas.translate(-textPainter.width / 2, -textPainter.height / 2);
+    textPainter.paint(canvas, Offset.zero);
+    canvas.restore();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MemberCard extends StatelessWidget {
   final RelatedUserEntity person;
@@ -42,18 +43,18 @@ class MemberCard extends StatelessWidget {
         borderRadius: _circularBorder(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow(context).withValues(alpha: 0.05),
+            color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
         border: Border.all(
-          color: AppColors.textSecondary(context).withValues(alpha: 0.12),
+          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.lgAll,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -61,7 +62,7 @@ class MemberCard extends StatelessWidget {
               // Avatar
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppColors.primaryContainer,
+                backgroundColor: AppColors.primaryContainer(context),
                 backgroundImage: hasPhoto
                     ? NetworkImage(person.profilePhoto!)
                     : null,
@@ -76,7 +77,7 @@ class MemberCard extends StatelessWidget {
                       )
                     : null,
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppSpacing.md),
 
               // Details
               Expanded(
@@ -93,7 +94,7 @@ class MemberCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.xs),
                     Row(
                       children: [
                         Icon(
@@ -101,7 +102,7 @@ class MemberCard extends StatelessWidget {
                           size: 14,
                           color: AppColors.textSecondary(context),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
                             person.mobile != null && person.mobile!.isNotEmpty
@@ -125,7 +126,7 @@ class MemberCard extends StatelessWidget {
                           size: 14,
                           color: AppColors.textSecondary(context),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
                             person.email != null && person.email!.isNotEmpty
@@ -155,7 +156,7 @@ class MemberCard extends StatelessWidget {
                     color: AppColors.textSecondary(context),
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.mdAll,
                   ),
                   onSelected: (value) {
                     if (value == 'unlink') onUnlink?.call();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ViewTabs extends StatelessWidget {
   final bool isHistory;
@@ -13,9 +14,9 @@ class ViewTabs extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.lgAll,
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8),
+          BoxShadow(color: Colors.black.withValues(alpha: AppAlpha.tint), blurRadius: 8),
         ],
       ),
       child: Row(
@@ -40,8 +41,8 @@ class ViewTabs extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: active ? AppColors.primary(context) : Colors.transparent,
+          borderRadius: AppRadius.lgAll,
         ),
         child: Text(
           label,

@@ -31,7 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () {
-              // TODO: Navigate to Edit Profile screen
+              final state = context.read<ProfileBloc>().state;
+              if (state is! ProfileLoaded) return;
+              AppRouter.pushEditProfile(
+                context,
+                bloc: context.read<ProfileBloc>(),
+                person: state
+                    .user, // was: initialData: MemberFormInitialData.fromPerson(state.user)
+              );
             },
           ),
         ],
@@ -119,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: AppColors.primaryContainer,
+              backgroundColor: AppColors.primaryContainer(context),
               backgroundImage:
                   user.profilePhoto != null && user.profilePhoto!.isNotEmpty
                   ? NetworkImage(user.profilePhoto!)
@@ -136,26 +143,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     )
                   : null,
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.surface(context),
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ),
             ),
           ],
         ),
@@ -261,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Icon(icon, size: 20, color: AppColors.primary(context)),
         const SizedBox(width: 8),
         Text(
           title,

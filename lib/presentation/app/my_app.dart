@@ -1,11 +1,12 @@
+// lib/presentation/app/my_app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
 import '../../core/di/injection_container.dart';
 import 'app_router.dart';
 import '../blocs/auth/auth_bloc.dart';
+import '../themes/app_palette.dart';
 import '../themes/app_theme.dart';
-// import '../blocs/theme/theme_cubit.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -15,16 +16,15 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ThemeCubit>(create: (_) => sl<ThemeCubit>()),
-        BlocProvider<AuthBloc>(create: (_) => sl<AuthBloc>()), // 👈 add this
+        BlocProvider<AuthBloc>(create: (_) => sl<AuthBloc>()),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeMode>(
-        builder: (context, themeMode) {
+      child: BlocBuilder<ThemeCubit, AppThemeType>(
+        builder: (context, type) {
           return MaterialApp(
             title: 'Synquerra',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
+            theme: AppTheme.fromType(type), // dark is just another type
+            themeMode: ThemeMode.light,
             initialRoute: AppRoutes.splash,
             onGenerateRoute: AppRouter.onGenerateRoute,
           );

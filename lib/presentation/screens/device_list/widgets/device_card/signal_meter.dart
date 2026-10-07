@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SignalMeter extends StatelessWidget {
   final int? signal;
@@ -32,7 +33,7 @@ class SignalMeter extends StatelessWidget {
                   color: isFilled
                       ? AppColors.info
                       : AppColors.textSecondary(context).withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(1.5),
+                  borderRadius: AppRadius.smAll,
                 ),
               );
             }),

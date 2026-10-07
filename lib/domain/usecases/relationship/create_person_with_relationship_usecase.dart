@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import '../../failures/failure.dart';
 import '../../repositories/relationship_repository.dart';
@@ -19,6 +21,7 @@ class CreatePersonWithRelationshipParams {
   final String? country;
   final String? pincode;
   final bool isHead;
+  final File? profileImage;
 
   const CreatePersonWithRelationshipParams({
     required this.firstName,
@@ -36,6 +39,7 @@ class CreatePersonWithRelationshipParams {
     this.country,
     this.pincode,
     this.isHead = false,
+    this.profileImage,
   });
 }
 
@@ -63,6 +67,7 @@ class CreatePersonWithRelationshipUseCase {
       country: params.country,
       pincode: params.pincode,
       isHead: params.isHead,
+      profileImage: params.profileImage,
     );
   }
 }

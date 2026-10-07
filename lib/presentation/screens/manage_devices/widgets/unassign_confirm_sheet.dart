@@ -1,9 +1,10 @@
 // lib/presentation/screens/manage_devices/widgets/unassign_confirm_sheet.dart
 
 import 'package:flutter/material.dart';
+import '../../../../../domain/entities/device/device_association_entity.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
-import '../../../../../domain/entities/signup/person_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class UnassignConfirmSheet extends StatelessWidget {
   final DeviceEntity device;
@@ -31,11 +32,21 @@ class UnassignConfirmSheet extends StatelessWidget {
     );
   }
 
+  static const Map<String, String> _roleLabels = {
+    'carrier': 'Carrier',
+    'manager': 'Manager',
+    'viewer': 'Viewer',
+  };
+
+  String _roleLabelFor(String roleKey) =>
+      _roleLabels[roleKey] ??
+      (roleKey.isEmpty
+          ? 'Unknown Role'
+          : roleKey[0].toUpperCase() + roleKey.substring(1));
+
   @override
   Widget build(BuildContext context) {
-    final carrierAssoc = device.associationFor('carrier');
-    final managerAssoc = device.associationFor('manager');
-    final viewerAssoc = device.associationFor('viewer');
+    final assignments = device.assignments;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -49,14 +60,14 @@ class UnassignConfirmSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Unassign Role',
+            'Unassign Member',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
-            'Select an assigned person or role to remove.',
+            'Select an assigned person to remove from this device.',
             style: TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary(context),
@@ -64,116 +75,72 @@ class UnassignConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                _buildRoleSection(
-                  context: context,
-                  roleTitle: 'Carrier',
-                  roleKey: 'carrier',
-                  person: carrierAssoc?.person,
-                  icon: Icons.directions_walk_rounded,
-                ),
-                const Divider(height: 16),
-                _buildRoleSection(
-                  context: context,
-                  roleTitle: 'Manager',
-                  roleKey: 'manager',
-                  person: managerAssoc?.person,
-                  icon: Icons.admin_panel_settings_outlined,
-                ),
-                const Divider(height: 16),
-                _buildRoleSection(
-                  context: context,
-                  roleTitle: 'Viewer',
-                  roleKey: 'viewer',
-                  person: viewerAssoc?.person,
-                  icon: Icons.visibility_outlined,
-                ),
-              ],
-            ),
+            child: assignments.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    child: Center(
+                      child: Text(
+                        'No one is currently assigned to this device.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary(context),
+                        ),
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: assignments.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final assignment = assignments[index];
+                      return _buildAssignmentTile(context, assignment);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRoleSection({
-    required BuildContext context,
-    required String roleTitle,
-    required String roleKey,
-    required PersonEntity? person,
-    required IconData icon,
-  }) {
-    final isAssignedToRole = person != null;
-    final personName = isAssignedToRole
-        ? '${person.firstName} ${person.lastName}'.trim()
-        : null;
+  Widget _buildAssignmentTile(
+    BuildContext context,
+    DeviceAssociationEntity assignment,
+  ) {
+    final hasPhoto =
+        assignment.profile != null && assignment.profile!.isNotEmpty;
+    final displayName = assignment.name.trim().isEmpty
+        ? 'Unnamed Member'
+        : assignment.name.trim();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: AppColors.primary),
-            const SizedBox(width: 6),
-            Text(
-              roleTitle,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primary,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-          leading: CircleAvatar(
-            backgroundColor: isAssignedToRole
-                ? AppColors.dangerContainer.withValues(alpha: 0.4)
-                : AppColors.surfaceVariant(context),
-            child: Icon(
-              Icons.person_outline_rounded,
-              color: isAssignedToRole
-                  ? AppColors.danger
-                  : AppColors.textSecondary(context),
-            ),
-          ),
-          title: Text(
-            personName ?? 'No $roleTitle Assigned',
-            style: TextStyle(
-              fontWeight: isAssignedToRole
-                  ? FontWeight.w600
-                  : FontWeight.normal,
-              color: isAssignedToRole
-                  ? AppColors.textPrimary(context)
-                  : AppColors.textSecondary(context),
-              fontSize: 14,
-            ),
-          ),
-          trailing: isAssignedToRole
-              ? IconButton(
-                  icon: Icon(
-                    Icons.remove_circle_outline,
-                    color: AppColors.danger,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    onUnassign(person.id, roleKey);
-                  },
-                )
-              : null,
-          onTap: isAssignedToRole
-              ? () {
-                  Navigator.pop(context);
-                  onUnassign(person.id, roleKey);
-                }
-              : null,
-        ),
-      ],
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      leading: CircleAvatar(
+        backgroundColor: AppColors.dangerContainer.withValues(alpha: AppAlpha.border),
+        backgroundImage: hasPhoto ? NetworkImage(assignment.profile!) : null,
+        child: !hasPhoto
+            ? Icon(Icons.person_outline_rounded, color: AppColors.danger)
+            : null,
+      ),
+      title: Text(
+        displayName,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      ),
+      subtitle: Text(
+        _roleLabelFor(assignment.assignmentType),
+        style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context)),
+      ),
+      trailing: IconButton(
+        icon: Icon(Icons.remove_circle_outline, color: AppColors.danger),
+        onPressed: () {
+          Navigator.pop(context);
+          onUnassign(assignment.userId, assignment.assignmentType);
+        },
+      ),
+      onTap: () {
+        Navigator.pop(context);
+        onUnassign(assignment.userId, assignment.assignmentType);
+      },
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceColorPickerTile extends StatelessWidget {
   final Color selectedColor;
@@ -53,13 +54,13 @@ class GeofenceColorPickerTile extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
           onTap: () => _showColorPickerDialog(context),
           child: Container(
             height: 48,
             decoration: BoxDecoration(
               color: selectedColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.mdAll,
               border: Border.all(color: AppColors.outlineVariant(context)),
             ),
           ),

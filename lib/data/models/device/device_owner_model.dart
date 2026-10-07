@@ -1,42 +1,54 @@
 import '../../../domain/entities/device/device_owner_entity.dart';
 
+/// Represents the device's owner as a plain person record.
+///
+/// Mapped from the `owner` object in the API payload:
+/// (`user_id`, `first_name`, `last_name`, `phone`, `email`, `profile_photo`).
 class DeviceOwnerModel {
   final String id;
-  final String ownerId;
-  final String ownerType;
-  final String? personId;
-  final String ownedFrom;
-  final String? ownedTo;
-  final String status;
+  final String firstName;
+  final String? lastName;
+  final String? phone;
+  final String? email;
+  final String? profile;
 
   const DeviceOwnerModel({
     required this.id,
-    required this.ownerId,
-    required this.ownerType,
-    this.personId,
-    required this.ownedFrom,
-    this.ownedTo,
-    required this.status,
+    required this.firstName,
+    this.lastName,
+    this.phone,
+    this.email,
+    this.profile,
   });
 
-  factory DeviceOwnerModel.fromJson(Map<String, dynamic> json) =>
-      DeviceOwnerModel(
-        id: json['id'] as String,
-        ownerId: json['owner_id'] as String,
-        ownerType: json['owner_type'] as String,
-        personId: json['person_id'] as String?,
-        ownedFrom: json['owned_from'] as String,
-        ownedTo: json['owned_to'] as String?,
-        status: json['status'] as String,
-      );
+  factory DeviceOwnerModel.fromJson(Map<String, dynamic> json) {
+    return DeviceOwnerModel(
+      id: (json['user_id'] ?? json['id'] ?? '').toString(),
+      firstName: json['first_name']?.toString().trim() ?? '',
+      lastName: json['last_name']?.toString().trim(),
+      phone: json['phone']?.toString(),
+      email: json['email']?.toString(),
+      profile: (json['profile_photo'] ?? json['profile'])?.toString(),
+    );
+  }
+
+  /// Dynamically computes the full name without extra spaces.
+  String get name {
+    final names = [
+      firstName,
+      lastName,
+    ].where((value) => value != null && value.isNotEmpty);
+
+    final fullName = names.join(' ');
+
+    return fullName.isNotEmpty ? fullName : 'Unknown Owner';
+  }
 
   DeviceOwnerEntity toEntity() => DeviceOwnerEntity(
     id: id,
-    ownerId: ownerId,
-    ownerType: ownerType,
-    personId: personId,
-    ownedFrom: ownedFrom,
-    ownedTo: ownedTo,
-    status: status,
+    name: name,
+    phone: phone,
+    email: email,
+    profile: profile,
   );
 }

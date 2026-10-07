@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/schedule/schedule_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ScheduleTimingCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -13,7 +14,7 @@ class ScheduleTimingCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -24,7 +25,7 @@ class ScheduleTimingCard extends StatelessWidget {
                 Icon(
                   Icons.schedule_outlined,
                   size: 20,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -79,7 +80,7 @@ class ScheduleTimingCard extends StatelessWidget {
         return CircleAvatar(
           radius: 18,
           backgroundColor: isSelected
-              ? AppColors.primary
+              ? AppColors.primary(context)
               : AppColors.background(context),
           child: Text(
             days[index],
@@ -120,7 +121,7 @@ class ScheduleTimingCard extends StatelessWidget {
               fontSize: isHighlight ? 16 : 14,
               fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
               color: isHighlight
-                  ? AppColors.primary
+                  ? AppColors.primary(context)
                   : AppColors.textPrimary(context),
             ),
           ),

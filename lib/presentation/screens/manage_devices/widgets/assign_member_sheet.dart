@@ -5,6 +5,7 @@ import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AssignMemberSheet extends StatefulWidget {
   final DeviceEntity device;
@@ -76,8 +77,8 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
 
     // Collect IDs of members already associated with this device
     final assignedPersonIds = <String>{
-      for (final a in widget.device.associations)
-        if (a.person != null) a.person!.id,
+      for (final a in widget.device.assignments)
+        if (a.userId.isNotEmpty) a.userId,
     };
 
     _availablePersons = <RelatedUserEntity>[];
@@ -100,6 +101,36 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
       if (user != null && !assignedPersonIds.contains(user.id)) {
         _availablePersons.add(user);
       }
+    }
+  }
+
+  Future<void> _confirmAssignment(RelatedUserEntity person) async {
+    final roleLabel = _availableRoles[_selectedRole] ?? _selectedRole;
+    final personName = person.fullName.isEmpty
+        ? 'Unnamed Member'
+        : person.fullName;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Confirm Assignment'),
+        content: Text('Assign $personName as $roleLabel for this device?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      Navigator.pop(context); // close the bottom sheet
+      widget.onAssign(person.id, _selectedRole);
     }
   }
 
@@ -140,12 +171,12 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                 vertical: 10,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.mdAll,
               ),
               filled: true,
               fillColor: AppColors.surfaceVariant(
                 context,
-              ).withValues(alpha: 0.3),
+              ).withValues(alpha: AppAlpha.border),
             ),
             items: _availableRoles.entries.map((entry) {
               return DropdownMenuItem<String>(
@@ -172,7 +203,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
           Flexible(
             child: _availablePersons.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     child: Center(
                       child: Text(
                         'All available contacts are already assigned.',
@@ -199,15 +230,15 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           vertical: 2,
                         ),
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.primaryContainer
-                              .withValues(alpha: 0.5),
+                          backgroundColor: AppColors.primaryContainer(context)
+                              .withValues(alpha: AppAlpha.border),
                           backgroundImage: hasPhoto
                               ? NetworkImage(person.profilePhoto!)
                               : null,
                           child: !hasPhoto
                               ? Icon(
                                   Icons.person_outline_rounded,
-                                  color: AppColors.primary,
+                                  color: AppColors.primary(context),
                                 )
                               : null,
                         ),
@@ -218,10 +249,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          Navigator.pop(context);
-                          widget.onAssign(person.id, _selectedRole);
-                        },
+                        onTap: () => _confirmAssignment(person),
                       );
                     },
                   ),

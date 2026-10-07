@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import '../../domain/entities/analytics/analytics_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/analytics_repository.dart';
-import '../datasources/remote/analytics_realtime_datasource.dart';
+import '../datasources/realtime/analytics_realtime_datasource.dart';
 import '../datasources/remote/analytics_remote_datasource.dart';
 import 'repository_helper.dart'; // Added import for the shared helper
 
@@ -21,6 +21,19 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   Stream<AnalyticsEntity> subscribeToTelemetry(String imei) {
     unawaited(_realtime.subscribeTelemetry(imei));
     return _realtime.telemetryStream.map((m) => m.toEntity());
+  }
+
+  @override
+  Future<Either<Failure, AnalyticsEntity>> getLiveTelemetry({
+    required String deviceId,
+  }) {
+    return safeCall(
+      call: () => _remote
+          .getLiveTelemetry(deviceId: deviceId)
+          // The device may be offline or slow to respond to the query command
+          .timeout(const Duration(seconds: 30)),
+      toEntity: (m) => m.toEntity(),
+    );
   }
 
   @override

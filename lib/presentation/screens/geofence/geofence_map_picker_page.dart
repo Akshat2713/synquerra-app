@@ -12,6 +12,7 @@ import '../location/widgets/map_icon_button.dart';
 import 'utils/map_bounds_util.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceMapPickerPage extends StatefulWidget {
   final LatLng initialCenter;
@@ -122,8 +123,8 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     polygons: [
                       Polygon(
                         points: isDone ? [..._points, _points.first] : _points,
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderColor: AppColors.primary,
+                        color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
+                        borderColor: AppColors.primary(context),
                         borderStrokeWidth: 2,
                       ),
                     ],
@@ -133,7 +134,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     polylines: [
                       Polyline(
                         points: _points,
-                        color: AppColors.primary,
+                        color: AppColors.primary(context),
                         strokeWidth: 2,
                       ),
                     ],
@@ -146,7 +147,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                       height: 28,
                       child: MapNumberedMarker(
                         number: e.key + 1,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.primary(context),
                         size: 28,
                       ),
                     );
@@ -180,7 +181,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                             height: 32,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: AppColors.primary(context),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white,
@@ -188,7 +189,7 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withValues(
+                                    color: AppColors.primary(context).withValues(
                                       alpha: 0.4,
                                     ),
                                     blurRadius: 8,

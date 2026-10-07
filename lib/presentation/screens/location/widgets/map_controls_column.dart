@@ -1,62 +1,26 @@
 // presentation/screens/device_detail/widgets/map_controls_column.dart
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import '../../../blocs/user_location/user_location_bloc.dart';
 import '../../../themes/colors.dart';
 import 'map_icon_button.dart';
+import 'map_zoom_slider.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapControlsColumn extends StatelessWidget {
   final MapController mapController;
-  final UserLocationBloc userLocationBloc;
-  final LatLng deviceCenter;
 
-  const MapControlsColumn({
-    super.key,
-    required this.mapController,
-    required this.userLocationBloc,
-    required this.deviceCenter,
-  });
+  const MapControlsColumn({super.key, required this.mapController});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        MapIconButton(
-          icon: Icons.add_rounded,
-          onTap: () => mapController.move(
-            mapController.camera.center,
-            mapController.camera.zoom + 1,
-          ),
-        ),
-        const SizedBox(height: 8),
-        MapIconButton(
-          icon: Icons.remove_rounded,
-          onTap: () => mapController.move(
-            mapController.camera.center,
-            mapController.camera.zoom - 1,
-          ),
-        ),
+        MapZoomSlider(mapController: mapController),
         const SizedBox(height: 8),
         _CompassButton(mapController: mapController),
-        const SizedBox(height: 8),
-        // Reserved for future use — intentionally disabled (onTap: null).
-        const MapIconButton(icon: Icons.location_searching, onTap: null),
-        const SizedBox(height: 8),
-        // Recenter on the device's last known location.
-        MapIconButton(
-          icon: Icons.phone_android,
-          onTap: () => mapController.move(deviceCenter, 16),
-        ),
-        const SizedBox(height: 8),
-        // Recenter on the user's real GPS location.
-        _MyLocationButton(
-          mapController: mapController,
-          userLocationBloc: userLocationBloc,
-        ),
       ],
     );
   }
@@ -83,38 +47,10 @@ class _CompassButton extends StatelessWidget {
               Icons.explore_rounded,
               size: 20,
               color: isNorthUp
-                  ? AppColors.textSecondary(context).withValues(alpha: 0.4)
+                  ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
                   : AppColors.textPrimary(context),
             ),
           ),
-        );
-      },
-    );
-  }
-}
-
-class _MyLocationButton extends StatelessWidget {
-  final MapController mapController;
-  final UserLocationBloc userLocationBloc;
-
-  const _MyLocationButton({
-    required this.mapController,
-    required this.userLocationBloc,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserLocationBloc, UserLocationState>(
-      bloc: userLocationBloc,
-      builder: (context, state) {
-        final isLoading = state is UserLocationLoading;
-        return MapIconButton(
-          icon: isLoading
-              ? Icons.hourglass_bottom_rounded
-              : Icons.my_location_rounded,
-          onTap: isLoading
-              ? null
-              : () => userLocationBloc.add(FetchUserLocation()),
         );
       },
     );

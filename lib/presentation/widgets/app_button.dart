@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AppButton extends StatelessWidget {
   final String label;
@@ -32,10 +33,9 @@ class AppButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
+          backgroundColor: (backgroundColor ?? AppColors.primary(context))
+              .withValues(alpha: AppAlpha.overlay),
           foregroundColor: foregroundColor ?? Colors.white,
-          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
-              .withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
@@ -52,10 +52,11 @@ class AppButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3,
+                  color: foregroundColor ?? Colors.white,
                 ),
               ),
       ),

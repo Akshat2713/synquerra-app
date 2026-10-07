@@ -21,12 +21,7 @@ class ScheduleModel {
   final int arrivalGraceMins;
   final int departureBufferMins;
   final int? minimumStayMins;
-  final bool alertOnAbsence;
-  final bool alertOnLateArrival;
-  final bool alertOnEarlyDeparture;
-  final bool alertOnEarlyEntry;
-  final bool alertOnReentry;
-  final bool sendPushNotification;
+
   final String? createdAt;
   final String? updatedAt;
 
@@ -51,19 +46,13 @@ class ScheduleModel {
     required this.arrivalGraceMins,
     required this.departureBufferMins,
     this.minimumStayMins,
-    required this.alertOnAbsence,
-    required this.alertOnLateArrival,
-    required this.alertOnEarlyDeparture,
-    required this.alertOnEarlyEntry,
-    required this.alertOnReentry,
-    required this.sendPushNotification,
+
     this.createdAt,
     this.updatedAt,
   });
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
     final graceConfig = json['grace_config'] as Map<String, dynamic>? ?? {};
-    final alertSettings = json['alert_settings'] as Map<String, dynamic>? ?? {};
     final targetUser = json['target_user'] as Map<String, dynamic>? ?? {};
     final device = json['device'] as Map<String, dynamic>? ?? {};
     final geofence = json['geofence'] as Map<String, dynamic>? ?? {};
@@ -102,16 +91,7 @@ class ScheduleModel {
       departureBufferMins:
           (graceConfig['departure_buffer_mins'] as num?)?.toInt() ?? 5,
       minimumStayMins: (graceConfig['minimum_stay_mins'] as num?)?.toInt(),
-      alertOnAbsence: alertSettings['alert_on_absence'] as bool? ?? true,
-      alertOnLateArrival:
-          alertSettings['alert_on_late_arrival'] as bool? ?? true,
-      alertOnEarlyDeparture:
-          alertSettings['alert_on_early_departure'] as bool? ?? true,
-      alertOnEarlyEntry:
-          alertSettings['alert_on_early_entry'] as bool? ?? false,
-      alertOnReentry: alertSettings['alert_on_reentry'] as bool? ?? false,
-      sendPushNotification:
-          alertSettings['send_push_notification'] as bool? ?? true,
+
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
@@ -138,12 +118,7 @@ class ScheduleModel {
     arrivalGraceMins: arrivalGraceMins,
     departureBufferMins: departureBufferMins,
     minimumStayMins: minimumStayMins,
-    alertOnAbsence: alertOnAbsence,
-    alertOnLateArrival: alertOnLateArrival,
-    alertOnEarlyDeparture: alertOnEarlyDeparture,
-    alertOnEarlyEntry: alertOnEarlyEntry,
-    alertOnReentry: alertOnReentry,
-    sendPushNotification: sendPushNotification,
+
     createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
     updatedAt: updatedAt != null ? DateTime.tryParse(updatedAt!) : null,
   );

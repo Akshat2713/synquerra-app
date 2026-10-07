@@ -31,6 +31,14 @@ class ManageModeSwitchRequested extends ManageEvent {
   List<Object?> get props => [deviceId, modeId];
 }
 
+class ManageAutoModeToggleRequested extends ManageEvent {
+  final String deviceId;
+  const ManageAutoModeToggleRequested(this.deviceId);
+
+  @override
+  List<Object?> get props => [deviceId];
+}
+
 /// Request to update emergency phone numbers.
 class ManagePhoneNumbersUpdateRequested extends ManageEvent {
   final String deviceId;

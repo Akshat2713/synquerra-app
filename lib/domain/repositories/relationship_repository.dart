@@ -1,5 +1,7 @@
 // lib/features/relationship/domain/repositories/relationship_repository.dart
 
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import '../entities/relationship/relationship_entity.dart';
 import '../entities/signup/person_entity.dart';
@@ -31,6 +33,7 @@ abstract class RelationshipRepository {
     String? country,
     String? pincode,
     bool isHead = false,
+    File? profileImage,
   });
   Future<Either<Failure, void>> unlinkRelationship(String relationshipId);
 }

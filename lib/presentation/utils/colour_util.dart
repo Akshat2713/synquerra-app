@@ -21,7 +21,7 @@ Color colorFromHex(String hex) {
   return value == null ? Colors.blue : Color(0xFF000000 | value);
 }
 
-Color deviceSeverityColor(List<AlertEntity> deviceAlerts) {
+Color deviceSeverityColor(List<dynamic> deviceAlerts) {
   final hasCritical = deviceAlerts.any(
     (a) => a.severity == AlertSeverity.critical && !a.isAcknowledged,
   );
@@ -45,4 +45,22 @@ Color alertColor(AlertEntity alert) {
     case AlertSeverity.advisory:
       return AppColors.success;
   }
+}
+
+Color temperatureColor(dynamic temp) {
+  if (temp == null) return Colors.grey;
+
+  final double? parsed = temp is num
+      ? temp.toDouble()
+      : double.tryParse(temp.toString());
+
+  if (parsed == null) return Colors.grey;
+
+  if (parsed >= 45 || parsed <= 0) {
+    return AppColors.danger;
+  }
+  if (parsed >= 38 || parsed <= 10) {
+    return AppColors.warning;
+  }
+  return AppColors.success;
 }

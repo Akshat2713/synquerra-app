@@ -1,60 +1,46 @@
-// lib/presentation/screens/manage/widgets/mode_picker_row.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
+import 'mode_details_sheet.dart';
 
-class TrackingModeCard extends StatefulWidget {
+class ModePickerRow extends StatelessWidget {
   final List<ModeEntity> modes;
   final String? activeModeId;
   final bool isSwitching;
   final bool autoModeSwitch;
+  final VoidCallback onAutoModeToggle;
   final ValueChanged<String> onChanged;
 
-  const TrackingModeCard({
+  const ModePickerRow({
     super.key,
     required this.modes,
     required this.activeModeId,
     required this.isSwitching,
     required this.autoModeSwitch,
+    required this.onAutoModeToggle,
     required this.onChanged,
   });
 
-  @override
-  State<TrackingModeCard> createState() => _TrackingModeCardState();
-}
-
-class _TrackingModeCardState extends State<TrackingModeCard> {
-  late bool _isAutoMode;
-
-  @override
-  void initState() {
-    super.initState();
-    _isAutoMode = widget.autoModeSwitch;
-  }
-
-  @override
-  void didUpdateWidget(covariant TrackingModeCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.autoModeSwitch != widget.autoModeSwitch) {
-      setState(() {
-        _isAutoMode = widget.autoModeSwitch;
-      });
-    }
+  void _setAuto(bool value) {
+    if (value == autoModeSwitch || isSwitching) return;
+    onAutoModeToggle();
   }
 
   @override
   Widget build(BuildContext context) {
     ModeEntity? activeMode;
-    if (widget.modes.isNotEmpty) {
-      activeMode = widget.modes.firstWhere(
-        (m) => m.id == widget.activeModeId,
-        orElse: () => widget.modes.first,
+
+    if (modes.isNotEmpty) {
+      activeMode = modes.firstWhere(
+        (m) => m.id == activeModeId,
+        orElse: () => modes.first,
       );
     }
 
-    // final modeTitle = activeMode?.name ?? 'Live Tracking';
     final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
         ? activeMode.description
         : 'Fast updates (~10 sec)';
@@ -63,9 +49,9 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 0.8),
+          color: AppColors.outline(context).withValues(alpha: AppAlpha.overlay),
         ),
       ),
       child: Column(
@@ -75,58 +61,43 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TRACKING MODE',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppColors.textPrimary(
-                          context,
-                        ).withValues(alpha: 0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Text(
-                    //   modeTitle,
-
-                    //   style: TextStyle(
-                    //     color: AppColors.textPrimary(context),
-                    //     fontSize: 20,
-                    //     fontWeight: FontWeight.w800,
-                    //   ),
-                    // ),
-                  ],
+                child: Text(
+                  'TRACKING MODE',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppColors.textPrimary(
+                      context,
+                    ).withValues(alpha: AppAlpha.overlay),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               SizedBox(
                 width: 150,
                 child: Container(
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(AppSpacing.xs),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceVariant(
                       context,
-                    ).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(16),
+                    ).withValues(alpha: AppAlpha.border),
+                    borderRadius: AppRadius.lgAll,
                   ),
                   child: Row(
                     children: [
                       Expanded(
                         child: _SegmentTab(
                           label: 'Auto',
-                          isSelected: _isAutoMode,
-                          onTap: () => setState(() => _isAutoMode = true),
+                          isSelected: autoModeSwitch,
+                          onTap: () => _setAuto(true),
                         ),
                       ),
                       Expanded(
                         child: _SegmentTab(
                           label: 'Manual',
-                          isSelected: !_isAutoMode,
-                          onTap: () => setState(() => _isAutoMode = false),
+                          isSelected: !autoModeSwitch,
+                          onTap: () => _setAuto(false),
                         ),
                       ),
                     ],
@@ -135,10 +106,10 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           SizedBox(
-            height: 72,
-            child: widget.modes.isEmpty
+            height: 90,
+            child: modes.isEmpty
                 ? Center(
                     child: Text(
                       'No modes available',
@@ -149,34 +120,39 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                     ),
                   )
                 : IgnorePointer(
-                    ignoring: _isAutoMode || widget.isSwitching,
+                    ignoring: autoModeSwitch || isSwitching,
                     child: Opacity(
-                      opacity: _isAutoMode ? 0.4 : 1.0,
+                      opacity: autoModeSwitch ? 0.4 : 1.0,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
-                        itemCount: widget.modes.length,
+                        itemCount: modes.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (context, index) {
-                          final mode = widget.modes[index];
-                          final isSelected = mode.id == widget.activeModeId;
+                          final mode = modes[index];
+                          final isSelected = mode.id == activeModeId;
 
                           return GestureDetector(
-                            onTap: () => widget.onChanged(mode.id),
+                            onTap: () => onChanged(mode.id),
+                            onLongPress: () =>
+                                showModeDetailsSheet(context, mode),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 72,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.primaryContainer.withValues(
-                                        alpha: 0.3,
-                                      )
+                                    ? AppColors.primaryContainer(
+                                        context,
+                                      ).withValues(alpha: AppAlpha.border)
                                     : AppColors.surfaceVariant(context),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.lgAll,
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? AppColors.primary(context)
                                       : Colors.transparent,
                                   width: 1.5,
                                 ),
@@ -184,7 +160,7 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  if (widget.isSwitching && isSelected)
+                                  if (isSwitching && isSelected)
                                     const SizedBox(
                                       width: 20,
                                       height: 20,
@@ -197,22 +173,22 @@ class _TrackingModeCardState extends State<TrackingModeCard> {
                                       ModeIconResolver.resolve(mode),
                                       size: 22,
                                       color: isSelected
-                                          ? AppColors.primary
+                                          ? AppColors.primary(context)
                                           : AppColors.textSecondary(context),
                                     ),
                                   const SizedBox(height: 4),
                                   Text(
                                     mode.name,
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: isSelected
                                           ? FontWeight.w700
                                           : FontWeight.w500,
                                       color: isSelected
-                                          ? AppColors.primary
+                                          ? AppColors.primary(context)
                                           : AppColors.textSecondary(context),
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -254,14 +230,14 @@ class _SegmentTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.surface(context) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.mdAll,
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: AppAlpha.tint),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

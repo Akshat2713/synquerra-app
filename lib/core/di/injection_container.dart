@@ -6,25 +6,41 @@ import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_us
 import 'package:synquerra/presentation/blocs/profile/profile_bloc.dart';
 
 // Core & Network
-import '../../data/datasources/remote/analytics_realtime_datasource.dart';
+import '../../data/datasources/realtime/analytics_realtime_datasource.dart';
+import '../../data/datasources/realtime/device_events_realtime_datasource.dart';
+import '../../data/datasources/realtime/realtime_connection.dart';
 import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
+import '../../data/datasources/remote/mode_conditions_remote_data_source.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
+import '../../data/repositories_impl/mode_conditions_repository_impl.dart';
+import '../../data/repositories_impl/realtime_events_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/schedule_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
 import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
+import '../../domain/repositories/mode_conditions_repository.dart';
+import '../../domain/repositories/realtime_events_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/usecases/analytics/get_live_telemetry_usecase.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
+import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/mode_conditions/create_mode_condition_usecase.dart';
+import '../../domain/usecases/mode_conditions/delete_mode_condition_usecase.dart';
+import '../../domain/usecases/mode_conditions/get_geofence_modes_usecase.dart';
+import '../../domain/usecases/mode_conditions/get_mode_conditions_usecase.dart';
+import '../../domain/usecases/mode_conditions/update_mode_condition_usecase.dart';
+import '../../domain/usecases/modes/toggle_auto_mode_switch_usecase.dart';
+import '../../domain/usecases/realtime/watch_device_events_usecase.dart';
 import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
@@ -44,8 +60,11 @@ import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../domain/usecases/signup/signup_usecase.dart';
 import '../../domain/usecases/user/get_user_profile_usecase.dart';
+import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
+import '../../presentation/blocs/mode_condition/mode_condition_bloc.dart';
+import '../../presentation/blocs/realtime/device_events_cubit.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';
 import '../../presentation/blocs/schedule_override/schedule_overrides_bloc.dart';
@@ -124,6 +143,8 @@ import '../../presentation/blocs/manage/manage_bloc.dart';
 import '../../presentation/blocs/signup/signup_bloc.dart';
 import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
+import '../services/local_notification_service.dart';
+import '../services/push_notification_service.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -161,6 +182,15 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton<TileProvider>(() => MapConfig.tileProvider);
 
+  // ── Notifications ────────────────────────────────────────
+  sl.registerLazySingleton<LocalNotificationService>(
+    () => LocalNotificationService(),
+  );
+  sl.registerLazySingleton<PushNotificationService>(
+    () => PushNotificationService(sl()),
+  );
+  sl.registerLazySingleton(() => SyncFcmTokenUseCase(sl()));
+
   // ── Auth Feature ────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSource(sl()),
@@ -179,8 +209,11 @@ Future<void> initDependencies() async {
       loginUseCase: sl(),
       checkAuthStatusUseCase: sl(),
       logoutUseCase: sl(),
+      syncFcmTokenUseCase: sl(), // NEW
+      pushNotificationService: sl(), // NEW
     ),
   );
+
   // ── Signup Feature ──────────────────────────────────────
   sl.registerLazySingleton<SignupRemoteDataSource>(
     () => SignupRemoteDataSource(sl()),
@@ -234,17 +267,19 @@ Future<void> initDependencies() async {
     () => AnalyticsRemoteDataSource(sl()),
   );
   sl.registerLazySingleton<AnalyticsRealtimeDataSource>(
-    () => AnalyticsRealtimeDataSource(),
+    () => AnalyticsRealtimeDataSource(sl()),
   );
   sl.registerLazySingleton<AnalyticsRepository>(
     () => AnalyticsRepositoryImpl(remote: sl(), realtime: sl()),
   );
   sl.registerLazySingleton(() => GetAnalyticsUseCase(sl()));
   sl.registerLazySingleton(() => SubscribeAnalyticsRealtimeUseCase(sl()));
+  sl.registerLazySingleton(() => GetLiveTelemetryUseCase(sl()));
   sl.registerFactory<AnalyticsBloc>(
     () => AnalyticsBloc(
       getAnalyticsUseCase: sl(),
       subscribeRealtimeUseCase: sl(),
+      getLiveTelemetryUseCase: sl(),
     ),
   );
   // ── Geofence Feature ────────────────────────────────────
@@ -276,6 +311,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetModesUseCase(sl()));
   sl.registerLazySingleton(() => SwitchModeUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleAutoModeSwitchUseCase(sl()));
   sl.registerFactory<ModeBloc>(
     () => ModeBloc(getModesUseCase: sl(), switchModeUseCase: sl()),
   );
@@ -285,6 +321,7 @@ Future<void> initDependencies() async {
       getModesUseCase: sl(),
       switchModeUseCase: sl(),
       getSettingsUseCase: sl(),
+      toggleAutoModeSwitchUseCase: sl(),
       updatePhoneNumbersUseCase: sl(),
     ),
   );
@@ -371,8 +408,12 @@ Future<void> initDependencies() async {
     () => UserRepositoryImpl(remote: sl()),
   );
   sl.registerLazySingleton(() => GetUserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateUserProfileUseCase(sl()));
   sl.registerFactory<ProfileBloc>(
-    () => ProfileBloc(getUserProfileUseCase: sl()),
+    () => ProfileBloc(
+      getUserProfileUseCase: sl(),
+      updateUserProfileUseCase: sl(),
+    ),
   );
 
   // ── Schedule Feature ─────────────────────────────────────
@@ -420,6 +461,61 @@ Future<void> initDependencies() async {
       deleteScheduleOverrideUseCase: sl(),
     ),
   );
+
+  // ── Mode Conditions Feature ──────────────────────────────
+
+  // Remote data source
+  sl.registerLazySingleton<ModeConditionsRemoteDataSource>(
+    () => ModeConditionsRemoteDataSource(sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ModeConditionsRepository>(
+    () => ModeConditionsRepositoryImpl(remote: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton<GetModeConditionsUseCase>(
+    () => GetModeConditionsUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<CreateModeConditionUseCase>(
+    () => CreateModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<UpdateModeConditionUseCase>(
+    () => UpdateModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<DeleteModeConditionUseCase>(
+    () => DeleteModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<GetGeofenceModesUseCase>(
+    () => GetGeofenceModesUseCase(sl()),
+  );
+
+  // Bloc
+  sl.registerFactory<ModeConditionBloc>(
+    () => ModeConditionBloc(
+      getModeConditionsUseCase: sl(),
+      createModeConditionUseCase: sl(),
+      updateModeConditionUseCase: sl(),
+      deleteModeConditionUseCase: sl(),
+      getGeofenceModesUseCase: sl(),
+    ),
+  );
+
+  // ── Realtime (shared socket + device events) ────────────
+  sl.registerLazySingleton<RealtimeConnection>(() => RealtimeConnection());
+  sl.registerLazySingleton<DeviceEventsRealtimeDataSource>(
+    () => DeviceEventsRealtimeDataSource(sl()),
+  );
+  sl.registerLazySingleton<RealtimeEventsRepository>(
+    () => RealtimeEventsRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => WatchDeviceEventsUseCase(sl()));
+  sl.registerFactory<DeviceEventsCubit>(() => DeviceEventsCubit(sl()));
 }
 
 /// Called after successful login to store user globally

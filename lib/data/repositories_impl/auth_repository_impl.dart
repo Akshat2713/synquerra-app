@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../../domain/entities/auth/user_entity.dart';
@@ -52,6 +54,22 @@ class AuthRepositoryImpl implements AuthRepository {
       // Local/cache operations don't go through Dio, no unwrapping needed
       final cause = e is CacheException ? e : e;
       return Left(mapExceptionToFailure(cause));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> syncFcmToken(String fcmToken) async {
+    try {
+      final lastSent = await _local.getLastSentFcmToken();
+      if (lastSent == fcmToken) {
+        return const Right(null); // already registered, skip network call
+      }
+      final platform = Platform.isIOS ? 'ios' : 'android';
+      await _remote.updateFcmToken(fcmToken: fcmToken, platform: platform);
+      await _local.saveLastSentFcmToken(fcmToken);
+      return const Right(null);
+    } catch (e) {
+      return Left(mapExceptionToFailure(e));
     }
   }
 

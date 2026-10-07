@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofencePolygonLayer extends StatelessWidget {
   /// Optional — if provided, tapping a geofence calls this.
@@ -60,7 +61,7 @@ class GeofencePolygonLayer extends StatelessWidget {
       final borderColor = _hexToColor(g.geofenceColor);
       return Polygon(
         points: g.coordinates.map((c) => LatLng(c.lat, c.lng)).toList(),
-        color: borderColor.withValues(alpha: 0.2),
+        color: borderColor.withValues(alpha: AppAlpha.border),
         borderColor: borderColor,
         borderStrokeWidth: 2,
       );

@@ -5,6 +5,7 @@ import '../../../../core/config/map_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../utils/map_bounds_util.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Compact, non-interactive square map thumbnail rendering a geofence polygon.
 /// Tapping it fires [onTap] (e.g. reopen the picker to redraw).
@@ -75,7 +76,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
     return AspectRatio(
       aspectRatio: 1,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdAll,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -101,7 +102,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
                     polygons: [
                       Polygon(
                         points: _points,
-                        color: widget.color.withValues(alpha: 0.2),
+                        color: widget.color.withValues(alpha: AppAlpha.border),
                         borderColor: widget.color,
                         borderStrokeWidth: 2,
                       ),
@@ -130,8 +131,8 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.55),
-                      Colors.black.withValues(alpha: 0.0),
+                      Colors.black.withValues(alpha: AppAlpha.overlay),
+                      Colors.black.withValues(alpha: AppAlpha.tint),
                     ],
                   ),
                 ),
@@ -142,7 +143,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
                       size: 15,
                       color: Colors.white,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs),
                     const Text(
                       'Tap to adjust geofence boundary',
                       style: TextStyle(
@@ -155,7 +156,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
                     Icon(
                       Icons.chevron_right_rounded,
                       size: 16,
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: Colors.white.withValues(alpha: AppAlpha.overlay),
                     ),
                   ],
                 ),

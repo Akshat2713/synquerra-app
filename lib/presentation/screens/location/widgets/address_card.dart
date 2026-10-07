@@ -3,6 +3,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Card showing the address of the currently active analytics point
 /// (works for both live and history/timeline modes).
@@ -21,33 +22,35 @@ class AddressCard extends StatelessWidget {
     final address = point?.userAddress;
     final realAddress = point?.formattedAddress;
     final geofence = point?.geofenceName;
-    AppLogger.d("[Address card]", "The address is $address");
-    AppLogger.d("[Address card]", "The real address is $realAddress");
-    AppLogger.d("[Address card]", "The geofence is $geofence");
+    AppLogger.d("Address card", "The address is $address");
+    AppLogger.d("Address card", "The real address is $realAddress");
+    AppLogger.d("Address card", "The geofence is $geofence");
 
     return Skeletonizer(
       enabled: isLoading,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 320),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: AppColors.surface(context),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.lgAll,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withValues(alpha: AppAlpha.tint),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min, // Shrinks the Row to fit short text
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary),
+            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary(context)),
             const SizedBox(width: 8),
 
-            Expanded(
+            Flexible(
+              // Allows text to size naturally up to the max width
               child: Text(
                 address ?? 'Address Unavailable',
                 maxLines: 2,

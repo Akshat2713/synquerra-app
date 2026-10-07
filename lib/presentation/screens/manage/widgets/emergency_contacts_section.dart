@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/settings/settings_entity.dart';
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class EmergencyContactsSection extends StatelessWidget {
   final String deviceId;
@@ -54,7 +55,7 @@ class EmergencyContactsSection extends StatelessWidget {
                     style: TextStyle(
                       color: AppColors.textPrimary(
                         context,
-                      ).withValues(alpha: 0.8),
+                      ).withValues(alpha: AppAlpha.overlay),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -85,16 +86,16 @@ class EmergencyContactsSection extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.primary(context),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.mdAll,
                     ),
                   ),
                   onPressed: () {
@@ -123,9 +124,9 @@ class EmergencyContactsSection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 0.6),
+          color: AppColors.outline(context).withValues(alpha: AppAlpha.overlay),
         ),
       ),
       child: Column(
@@ -140,7 +141,7 @@ class EmergencyContactsSection extends StatelessWidget {
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
-                  color: AppColors.textPrimary(context).withValues(alpha: 0.8),
+                  color: AppColors.textPrimary(context).withValues(alpha: AppAlpha.overlay),
                 ),
               ),
               if (isUpdating)
@@ -155,13 +156,13 @@ class EmergencyContactsSection extends StatelessWidget {
                   icon: Icon(
                     Icons.edit_rounded,
                     size: 18,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                   ),
                   onPressed: () => _showEditBottomSheet(context),
                 ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             'Called when this device sends SOS · two numbers max',
             style: TextStyle(
@@ -169,7 +170,7 @@ class EmergencyContactsSection extends StatelessWidget {
               color: AppColors.textSecondary(context),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           _ContactBox(
             label: 'PRIMARY',
             number: settings.phoneNum1 ?? 'No Primary Number',
@@ -201,16 +202,16 @@ class _ContactBox extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary(context).withValues(alpha: 0.7),
+            color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xs),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant(context).withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.border),
+            borderRadius: AppRadius.mdAll,
           ),
           child: Text(
             number,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class InfoCard extends StatelessWidget {
   final IconData icon;
@@ -25,7 +26,7 @@ class InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface(context),
         // color: Colors.amber,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.lgAll,
         border: Border.all(color: AppColors.outline(context), width: 1),
       ),
       child: Row(
@@ -35,11 +36,11 @@ class InfoCard extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: iconBg,
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: AppRadius.mdAll,
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +52,7 @@ class InfoCard extends StatelessWidget {
                     fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   subtitle,
                   style: TextStyle(

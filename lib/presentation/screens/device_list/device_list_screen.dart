@@ -1,7 +1,6 @@
 // lib/presentation/screens/device_list/device_list_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/entities/device/device_entity.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
@@ -15,7 +14,10 @@ import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+/// Hosted as the "Devices" tab inside MainShellScreen.
+/// Back handling and auth redirect are owned by the shell.
 class DeviceListScreen extends StatefulWidget {
   const DeviceListScreen({super.key});
   @override
@@ -54,171 +56,137 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     return grouped;
   }
 
-  void _onDeviceTap(DeviceEntity device) {
+  void _refreshAfter(Future<dynamic> navigation) {
+    navigation.then((_) {
+      if (mounted) {
+        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+      }
+    });
+  }
+
+  void _onDeviceTap(DeviceEntity device) => _refreshAfter(
     AppRouter.pushDeviceDetail(
       context,
       device: device,
       deviceListBloc: context.read<DeviceListBloc>(),
-    ).then((_) {
-      if (mounted) {
-        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
-      }
-    });
-  }
+    ),
+  );
 
-  void _onModesTap(DeviceEntity device) {
+  void _onModesTap(DeviceEntity device) => _refreshAfter(
     AppRouter.pushModes(
       context,
       deviceId: device.id,
       currentModeName: device.currentMode,
-    ).then((_) {
-      if (mounted) {
-        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
-      }
-    });
-  }
+    ),
+  );
 
-  void _onAddDeviceTap() {
-    AppRouter.pushLinkDevice(context).then((_) {
-      if (mounted) {
-        context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
-      }
-    });
-  }
+  void _onAddDeviceTap() => _refreshAfter(AppRouter.pushLinkDevice(context));
 
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
 
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRoutes.login,
-            (_) => false,
-          );
-        }
-      },
-      child: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) async {
-          if (!didPop) await SystemNavigator.pop();
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('My Devices'),
-            automaticallyImplyLeading: false,
-            centerTitle: false,
-            actions: [
-              const NotificationBell(),
-
-              // lib/presentation/screens/device_list/device_list_screen.dart
-              ProfileMenuButton(
-                user: user,
-                onProfileTap: () => AppRouter.pushProfile(context),
-                onLogout: () =>
-                    context.read<AuthBloc>().add(const AuthLogoutRequested()),
-                onManageDevices: () => AppRouter.pushManageDevices(
-                  context,
-                  deviceListBloc: context.read<DeviceListBloc>(),
-                ),
-                onManageUsers: () => AppRouter.pushManageUsers(context),
-                onSchedules: () => AppRouter.pushSchedulesList(
-                  context,
-                ), // Added callback binding
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Devices'),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        actions: [
+          const NotificationBell(),
+          ProfileMenuButton(
+            user: user,
+            onLogout: () =>
+                context.read<AuthBloc>().add(const AuthLogoutRequested()),
+          ),
+        ],
+      ),
+      floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
+      body: BlocBuilder<DeviceListBloc, DeviceListState>(
+        builder: (context, state) {
+          if (state is DeviceListLoading || state is DeviceListInitial) {
+            return const DeviceListSkeleton();
+          }
+          if (state is DeviceListError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 48,
+                    color: AppColors.danger,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    state.message,
+                    style: TextStyle(color: AppColors.danger),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.read<DeviceListBloc>().add(
+                      const DeviceListLoadRequested(),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-            ],
-          ),
-          floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
-          body: BlocBuilder<DeviceListBloc, DeviceListState>(
-            builder: (context, state) {
-              if (state is DeviceListLoading || state is DeviceListInitial) {
-                return const DeviceListSkeleton();
-              }
-              if (state is DeviceListError) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 48,
-                        color: AppColors.danger,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        state.message,
-                        style: TextStyle(color: AppColors.danger),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => context.read<DeviceListBloc>().add(
-                          const DeviceListLoadRequested(),
-                        ),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              if (state is DeviceListLoaded) {
-                final grouped = _groupByRelationship(state.devices);
-                final alertsState = context.watch<AlertsBloc>().state;
-                final allAlerts = alertsState is AlertsLoaded
-                    ? alertsState.alerts
-                    : const [];
+            );
+          }
+          if (state is DeviceListLoaded) {
+            final grouped = _groupByRelationship(state.devices);
+            final alertsState = context.watch<AlertsBloc>().state;
+            final allAlerts = alertsState is AlertsLoaded
+                ? alertsState.alerts
+                : const [];
 
-                return RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  color: AppColors.primary,
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                          child: Text(
-                            '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary(context),
-                            ),
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppColors.primary(context),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      child: Text(
+                        '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (state.devices.isEmpty)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'No devices found.',
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
                           ),
                         ),
                       ),
-                      if (state.devices.isEmpty)
-                        SliverFillRemaining(
-                          child: Center(
-                            child: Text(
-                              'No devices found.',
-                              style: TextStyle(
-                                color: AppColors.textSecondary(context),
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        for (final entry in _relationshipOrder)
-                          if (grouped[entry.key]?.isNotEmpty ?? false)
-                            ..._buildSection(
-                              context,
-                              title: entry.value,
-                              devices: grouped[entry.key]!,
-                              user: user,
-                              allAlerts: allAlerts,
-                            ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                    ],
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
+                    )
+                  else
+                    for (final entry in _relationshipOrder)
+                      if (grouped[entry.key]?.isNotEmpty ?? false)
+                        ..._buildSection(
+                          context,
+                          title: entry.value,
+                          devices: grouped[entry.key]!,
+                          user: user,
+                          allAlerts: allAlerts,
+                        ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -241,10 +209,10 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 '(${devices.length})',
                 style: TextStyle(
@@ -262,7 +230,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           final deviceAlerts = alertsForDevice(device, allAlerts.cast());
           return DeviceCard(
             device: device,
-            isActive: device.isActive,
             currentUserFullName: user?.fullName ?? '—',
             deviceAlerts: deviceAlerts.cast(),
             onTap: () => _onDeviceTap(device),

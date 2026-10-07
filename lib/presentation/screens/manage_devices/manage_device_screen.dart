@@ -3,6 +3,7 @@ import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../themes/colors.dart';
 import 'widgets/manage_device_card.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ManageDevicesScreen extends StatefulWidget {
   final List<DeviceEntity> devices;
@@ -64,7 +65,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
       appBar: AppBar(title: const Text('Manage Devices'), centerTitle: false),
       body: RefreshIndicator(
         onRefresh: widget.onRefresh ?? () async {},
-        color: AppColors.primary,
+        color: AppColors.primary(context),
         child: _ownedDevices.isEmpty
             ? Center(
                 child: Text(
@@ -114,7 +115,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                     context,
                     title: 'Assigned Devices',
                     count: _assignedDevices.length,
-                    color: AppColors.primary,
+                    color: AppColors.primary(context),
                   ),
                   if (_assignedDevices.isEmpty)
                     _buildEmptyPlaceholder('No assigned devices')
@@ -170,7 +171,7 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
                 color: color,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               '($count)',
               style: TextStyle(
@@ -191,8 +192,8 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant(context).withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.border),
+            borderRadius: AppRadius.mdAll,
           ),
           child: Text(
             message,

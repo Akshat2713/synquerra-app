@@ -35,3 +35,17 @@ Future<Either<Failure, E>> safeCall<M, E>({
     return Left(mapExceptionToFailure(cause));
   }
 }
+
+Future<Either<Failure, void>> safeVoidCall({
+  required Future<void> Function() call,
+}) async {
+  try {
+    await call();
+    return const Right(null);
+  } catch (e) {
+    final cause = (e is DioException && e.error is AppException)
+        ? e.error as AppException
+        : e;
+    return Left(mapExceptionToFailure(cause));
+  }
+}

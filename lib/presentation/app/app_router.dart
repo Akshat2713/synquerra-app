@@ -12,6 +12,7 @@ import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
 import '../../domain/entities/schedule/schedule_entity.dart';
 import '../../domain/entities/schedule/schedule_override_entity.dart';
+import '../../domain/entities/signup/person_entity.dart';
 import '../../domain/entities/signup/signup_profile_data.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
@@ -23,6 +24,7 @@ import '../blocs/manage_users/manage_users_bloc.dart';
 import '../blocs/modes/mode_bloc.dart';
 import '../blocs/manage/manage_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
+import '../blocs/realtime/device_events_cubit.dart';
 import '../blocs/schedule_form/schedule_form_bloc.dart';
 import '../blocs/schedule_list/schedule_list_bloc.dart';
 import '../blocs/schedule_override/schedule_overrides_bloc.dart';
@@ -35,13 +37,15 @@ import '../screens/geofence/add_geofence_page.dart';
 import '../screens/geofence/geofence_list_page.dart';
 import '../screens/geofence/geofence_map_picker_page.dart';
 import '../screens/geofence/geofence_preview_page.dart';
+import '../screens/main_shell/main_shell_screen.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/profile/update_profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/device_list/device_list_screen.dart';
+// import '../screens/device_list/device_list_screen.dart';
 import '../screens/schedule_form/create_schedule_screen.dart';
 import '../screens/user_schedule/schedules_list_screen.dart';
 
@@ -95,6 +99,11 @@ class ScheduleOverrideArgs {
   });
 }
 
+class EditProfileArgs {
+  final ProfileBloc bloc;
+  final PersonEntity person;
+  const EditProfileArgs({required this.bloc, required this.person});
+}
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -124,6 +133,7 @@ class AppRoutes {
   static const String createSchedule = '/create-schedule';
   static const String scheduleOverride = '/schedule-override';
   static const String scheduleView = '/schedule-view';
+  static const String editProfile = '/edit-profile';
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -149,7 +159,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<DeviceListBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
             ],
-            child: const DeviceListScreen(),
+            child: const MainShellScreen(),
           ),
         );
 
@@ -164,6 +174,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
+              BlocProvider(create: (_) => sl<DeviceEventsCubit>()),
             ],
             child: DeviceShellScreen(device: args.device),
           ),
@@ -290,6 +301,16 @@ class AppRouter {
         return _slide(
           settings,
           BlocProvider.value(value: bloc, child: const AddMemberScreen()),
+        );
+
+      case AppRoutes.editProfile:
+        final args = settings.arguments as EditProfileArgs;
+        return _slide(
+          settings,
+          BlocProvider.value(
+            value: args.bloc,
+            child: UpdateProfileScreen(person: args.person),
+          ),
         );
 
       case AppRoutes.schedulesList:
@@ -507,6 +528,18 @@ class AppRouter {
       context,
       AppRoutes.scheduleView,
       arguments: schedule,
+    );
+  }
+
+  static Future<T?> pushEditProfile<T>(
+    BuildContext context, {
+    required ProfileBloc bloc,
+    required PersonEntity person,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.editProfile,
+      arguments: EditProfileArgs(bloc: bloc, person: person),
     );
   }
 }

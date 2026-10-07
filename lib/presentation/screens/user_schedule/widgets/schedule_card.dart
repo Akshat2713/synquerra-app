@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/schedule/schedule_entity.dart';
 import '../../../../presentation/themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ScheduleCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -36,7 +37,7 @@ class ScheduleCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: AppColors.surface(context),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.lgAll,
             border: Border.all(color: AppColors.outline(context)),
             boxShadow: [
               BoxShadow(
@@ -48,10 +49,10 @@ class ScheduleCard extends StatelessWidget {
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.lgAll,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadius.lgAll,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -78,7 +79,7 @@ class ScheduleCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Switch.adaptive(
                           value: schedule.isActive,
-                          activeThumbColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary(context),
                           onChanged: onToggle,
                         ),
                         PopupMenuButton<String>(
@@ -89,7 +90,7 @@ class ScheduleCard extends StatelessWidget {
                             color: AppColors.textTertiary(context),
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.mdAll,
                           ),
                           onSelected: (value) {
                             if (value == 'edit') onEdit();
@@ -154,9 +155,9 @@ class ScheduleCard extends StatelessWidget {
                         Icon(
                           Icons.access_time_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.primary(context),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
                           '${schedule.startTime} - ${schedule.endTime}',
                           style: TextStyle(
@@ -201,7 +202,7 @@ class ScheduleCard extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: selected
-                                ? AppColors.primary
+                                ? AppColors.primary(context)
                                 : AppColors.surfaceVariant(context),
                             shape: BoxShape.circle,
                           ),
@@ -241,9 +242,9 @@ class _PriorityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        color: color.withValues(alpha: AppAlpha.tint),
+        borderRadius: AppRadius.smAll,
+        border: Border.all(color: color.withValues(alpha: AppAlpha.border), width: 1),
       ),
       child: Text(
         priority.toUpperCase(),
