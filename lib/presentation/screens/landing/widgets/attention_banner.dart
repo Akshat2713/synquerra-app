@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';
-import '../../../blocs/auth/auth_bloc.dart';
+// import '../../../blocs/auth/auth_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 
@@ -86,10 +86,10 @@ class _AvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    final currentUserFullName = authState is AuthAuthenticated
-        ? authState.user.fullName
-        : '—';
+    // final authState = context.watch<AuthBloc>().state;
+    // final currentUserFullName = authState is AuthAuthenticated
+    //     ? authState.user.fullName
+    //     : '—';
 
     const size = 28.0;
     const overlap = 10.0;

@@ -89,36 +89,6 @@ class DeviceEntity extends Equatable {
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
 
-  // String displayOwnerName(String currentUserFullName) {
-  //   AppLogger.d('DeviceEntity', 'New Device');
-  //   final carrierName = carrier != null
-  //       ? '${carrier!.firstName} ${carrier!.lastName}'.trim()
-  //       : '';
-  //   AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
-  //   if (carrierName.isNotEmpty) return carrierName;
-
-  //   final ownerName = owner?.name.trim() ?? '';
-  //   AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
-  //   if (ownerName.isNotEmpty) return ownerName;
-
-  //   return currentUserFullName;
-  // }
-
-  // String get displayOwnerName => _resolveDisplayOwnerName();
-
-  // String _resolveDisplayOwnerName() {
-  //   AppLogger.d('DeviceEntity', 'New Device');
-  //   final c = carrier;
-  //   if (c != null) {
-  //     final carrierName = '${c.firstName} ${c.lastName}'.trim();
-  //     AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
-  //     if (carrierName.isNotEmpty) return carrierName;
-  //   }
-  //   final ownerName = owner.name.trim();
-  //   AppLogger.d('DeviceEntity', 'Owner Name: "$ownerName"');
-  //   return ownerName;
-  // }
-
   DeviceAssociationEntity? associationFor(String roleKey) {
     try {
       return assignments.firstWhere((a) => a.assignmentType == roleKey);

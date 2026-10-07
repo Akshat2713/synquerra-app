@@ -21,6 +21,7 @@ import '../landing/widgets/attention_device_sheet.dart';
 import '../location/location_screen.dart';
 import '../manage/manage_screen.dart';
 import '../user_schedule/schedules_list_screen.dart';
+import '../../blocs/mode_condition/mode_condition_bloc.dart';
 
 class DeviceShellScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -108,8 +109,15 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
 
             // Tab 2: Geofence List
             _activatedTabs.contains(2)
-                ? BlocProvider(
-                    create: (_) => sl<GeofenceBloc>(),
+                ? MultiBlocProvider(
+                    providers: [
+                      BlocProvider<GeofenceBloc>(
+                        create: (_) => sl<GeofenceBloc>(),
+                      ),
+                      BlocProvider<ModeConditionBloc>(
+                        create: (_) => sl<ModeConditionBloc>(),
+                      ),
+                    ],
                     child: GeofenceListPage(
                       deviceId: widget.device.id,
                       initialCenter: _defaultCenter,

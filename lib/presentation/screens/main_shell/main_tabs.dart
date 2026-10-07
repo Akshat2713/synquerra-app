@@ -6,12 +6,12 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/manage_devices/manage_devices_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
-import '../../blocs/schedule_list/schedule_list_bloc.dart';
+// import '../../blocs/schedule_list/schedule_list_bloc.dart';
 import '../device_list/device_list_screen.dart';
 import '../manage_devices/manage_devices_page.dart';
 import '../manage_users/manage_users_screen.dart';
 import '../profile/profile_screen.dart';
-import '../user_schedule/schedules_list_screen.dart';
+// import '../user_schedule/schedules_list_screen.dart';
 import 'main_tab.dart';
 
 /// Single source of truth for the bottom navigation.

@@ -10,17 +10,20 @@ import '../../data/datasources/realtime/analytics_realtime_datasource.dart';
 import '../../data/datasources/realtime/device_events_realtime_datasource.dart';
 import '../../data/datasources/realtime/realtime_connection.dart';
 import '../../data/datasources/remote/device_assignment_remote_datasource.dart';
+import '../../data/datasources/remote/mode_conditions_remote_data_source.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
+import '../../data/repositories_impl/mode_conditions_repository_impl.dart';
 import '../../data/repositories_impl/realtime_events_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/schedule_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
 import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
+import '../../domain/repositories/mode_conditions_repository.dart';
 import '../../domain/repositories/realtime_events_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
@@ -31,6 +34,11 @@ import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dar
 import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/mode_conditions/create_mode_condition_usecase.dart';
+import '../../domain/usecases/mode_conditions/delete_mode_condition_usecase.dart';
+import '../../domain/usecases/mode_conditions/get_geofence_modes_usecase.dart';
+import '../../domain/usecases/mode_conditions/get_mode_conditions_usecase.dart';
+import '../../domain/usecases/mode_conditions/update_mode_condition_usecase.dart';
 import '../../domain/usecases/modes/toggle_auto_mode_switch_usecase.dart';
 import '../../domain/usecases/realtime/watch_device_events_usecase.dart';
 import '../../domain/usecases/relationship/create_person_with_relationship_usecase.dart';
@@ -55,6 +63,7 @@ import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
+import '../../presentation/blocs/mode_condition/mode_condition_bloc.dart';
 import '../../presentation/blocs/realtime/device_events_cubit.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';
@@ -450,6 +459,50 @@ Future<void> initDependencies() async {
       createScheduleOverrideUseCase: sl(),
       updateScheduleOverrideUseCase: sl(),
       deleteScheduleOverrideUseCase: sl(),
+    ),
+  );
+
+  // ── Mode Conditions Feature ──────────────────────────────
+
+  // Remote data source
+  sl.registerLazySingleton<ModeConditionsRemoteDataSource>(
+    () => ModeConditionsRemoteDataSource(sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ModeConditionsRepository>(
+    () => ModeConditionsRepositoryImpl(remote: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton<GetModeConditionsUseCase>(
+    () => GetModeConditionsUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<CreateModeConditionUseCase>(
+    () => CreateModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<UpdateModeConditionUseCase>(
+    () => UpdateModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<DeleteModeConditionUseCase>(
+    () => DeleteModeConditionUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<GetGeofenceModesUseCase>(
+    () => GetGeofenceModesUseCase(sl()),
+  );
+
+  // Bloc
+  sl.registerFactory<ModeConditionBloc>(
+    () => ModeConditionBloc(
+      getModeConditionsUseCase: sl(),
+      createModeConditionUseCase: sl(),
+      updateModeConditionUseCase: sl(),
+      deleteModeConditionUseCase: sl(),
+      getGeofenceModesUseCase: sl(),
     ),
   );
 

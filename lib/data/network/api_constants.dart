@@ -84,6 +84,11 @@ class ApiConstants {
   static const String sendQueryCommand =
       '/api/v1/device-settings/send-query-command';
 
+  // ── Mode Conditions ───────────
+  static const String geofenceMode = '/api/v1/modes/query';
+  static const String modeConditions = '/api/v1/mode-conditions';
+  static const String modeConditionsQuery = '/api/v1/mode-conditions/query';
+
   // ── Schedules ─────────────────────────────────────
   static const String schedules = '/api/v1/schedules';
   static const String mySchedules = '/api/v1/schedules/me';

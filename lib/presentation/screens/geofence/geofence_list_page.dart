@@ -3,11 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../data/datasources/graphql/mode_conditions_query.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../domain/entities/geofence_mode/mode_condition_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../blocs/mode_condition/mode_condition_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
+import 'widgets/configure_trigger_mode_dialog.dart';
 import 'widgets/geofence_list_tile.dart';
 
 class GeofenceListPage extends StatefulWidget {
@@ -28,10 +32,15 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   final _searchController = TextEditingController();
   String _query = '';
 
+  // Last loaded conditions, kept here so tiles don't lose their mode while
+  // the bloc is in a loading/operation state.
+  List<ModeConditionEntity> _conditions = const [];
+
   @override
   void initState() {
     super.initState();
     context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId));
+    context.read<ModeConditionBloc>().add(ModeConditionLoad(widget.deviceId));
   }
 
   @override
@@ -47,6 +56,32 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
           (g) => g.geofenceName.toLowerCase().contains(_query.toLowerCase()),
         )
         .toList();
+  }
+
+  /// Finds the mode condition attached to this geofence (or null).
+  /// Synced to device -> device_geofence, otherwise -> geofence.
+  ModeConditionEntity? _conditionFor(GeofenceEntity g) {
+    final type = g.isSyncToDevice
+        ? ModeConditionType.deviceGeofence
+        : ModeConditionType.geofence;
+    for (final c in _conditions) {
+      if (c.conditionType == type && c.geofenceId == g.id) return c;
+    }
+    return null;
+  }
+
+  void _openModeDialog(GeofenceEntity geofence) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<ModeConditionBloc>(),
+        child: ConfigureTriggerModeDialog(
+          deviceId: widget.deviceId,
+          geofence: geofence,
+          existing: _conditionFor(geofence),
+        ),
+      ),
+    );
   }
 
   void _confirmDelete(BuildContext context, GeofenceEntity geofence) {
@@ -89,118 +124,172 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 
+  void _snack(String message, {Color? color}) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Geofences')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddPage,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('New Geofence'),
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.primary, // Or AppColors.primary(context)
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        elevation: 6,
-      ),
-      body: BlocConsumer<GeofenceBloc, GeofenceState>(
-        listener: (context, state) {
-          if (state is GeofenceDeleted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Geofence deleted.')));
-          } else if (state is GeofenceOperationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.danger,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is GeofenceLoading;
-          final errorMessage = state is GeofenceError ? state.message : null;
-          final geofences = state is GeofenceLoaded
-              ? state.geofences
-              : <GeofenceEntity>[];
-          final filtered = _filtered(geofences);
+    return BlocListener<ModeConditionBloc, ModeConditionState>(
+      listener: (context, state) {
+        if (state is ModeConditionLoaded) {
+          setState(() => _conditions = state.conditions);
+        } else if (state is ModeConditionCreated) {
+          _snack('Trigger mode saved.');
+        } else if (state is ModeConditionUpdated) {
+          _snack('Trigger mode updated.');
+        } else if (state is ModeConditionDeleted) {
+          _snack('Trigger mode removed.');
+        } else if (state is ModeConditionOperationError) {
+          _snack(state.message, color: AppColors.danger);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Geofences')),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openAddPage,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('New Geofence'),
+          backgroundColor: Theme.of(
+            context,
+          ).colorScheme.primary, // Or AppColors.primary(context)
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          elevation: 6,
+        ),
+        body: BlocConsumer<GeofenceBloc, GeofenceState>(
+          listener: (context, state) {
+            if (state is GeofenceDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Geofence deleted.')),
+              );
+            } else if (state is GeofenceOperationError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.danger,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is GeofenceLoading;
+            final errorMessage = state is GeofenceError ? state.message : null;
+            final geofences = state is GeofenceLoaded
+                ? state.geofences
+                : <GeofenceEntity>[];
+            final filtered = _filtered(geofences);
+            final deviceSynced = filtered
+                .where((g) => g.isSyncToDevice)
+                .toList();
+            final cloudSynced = filtered
+                .where((g) => !g.isSyncToDevice)
+                .toList();
 
-          return AsyncStateView(
-            isLoading: isLoading,
-            errorMessage: errorMessage,
-            onRetry: () =>
-                context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId)),
-            builder: () => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (v) => setState(() => _query = v),
-                    decoration: InputDecoration(
-                      hintText: 'Search geofences...',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: _query.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _query = '');
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+            return AsyncStateView(
+              isLoading: isLoading,
+              errorMessage: errorMessage,
+              onRetry: () => context.read<GeofenceBloc>().add(
+                GeofenceLoad(widget.deviceId),
+              ),
+              builder: () => Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setState(() => _query = v),
+                      decoration: InputDecoration(
+                        hintText: 'Search geofences...',
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: _query.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _query = '');
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary(context),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textSecondary(context),
+                              ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: filtered.isEmpty
-                      ? _EmptyState(
-                          isSearching: _query.isNotEmpty,
-                          onAdd: _openAddPage,
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final g = filtered[index];
-                            return GeofenceListTile(
-                              geofence: g,
-                              onTap: () => _onTileTab(g),
-                              onEdit: () => _openAddPage(existing: g),
-                              onDelete: () => _confirmDelete(context, g),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          );
-        },
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? _EmptyState(
+                            isSearching: _query.isNotEmpty,
+                            onAdd: _openAddPage,
+                          )
+                        : ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                            children: [
+                              if (deviceSynced.isNotEmpty)
+                                ..._buildSection(
+                                  context,
+                                  title: 'Synced to device',
+                                  items: deviceSynced,
+                                ),
+                              if (cloudSynced.isNotEmpty)
+                                ..._buildSection(
+                                  context,
+                                  title: 'Synced to cloud',
+                                  items: cloudSynced,
+                                ),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
+  }
+
+  List<Widget> _buildSection(
+    BuildContext context, {
+    required String title,
+    required List<GeofenceEntity> items,
+  }) {
+    return [
+      _SectionHeader(title: title, count: items.length),
+      for (final g in items)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: GeofenceListTile(
+            geofence: g,
+            modeName: _conditionFor(g)?.mode?.name,
+            onTap: () => _onTileTab(g),
+            onEdit: () => _openAddPage(existing: g),
+            onDelete: () => _confirmDelete(context, g),
+            onMode: () => _openModeDialog(g),
+          ),
+        ),
+      const SizedBox(height: 6),
+    ];
   }
 
   void _onTileTab(GeofenceEntity geofence) {
@@ -209,6 +298,27 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
       context,
       AppRoutes.geofencePreview,
       arguments: GeofencePreviewArgs(geofence: geofence),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final int count;
+
+  const _SectionHeader({required this.title, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Text(
+        '$title ($count)',
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary(context),
+        ),
+      ),
     );
   }
 }

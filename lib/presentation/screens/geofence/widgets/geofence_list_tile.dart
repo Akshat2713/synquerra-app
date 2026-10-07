@@ -9,17 +9,26 @@ class GeofenceListTile extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  /// Opens the "Configure trigger mode" dialog. Icon is hidden when null.
+  final VoidCallback? onMode;
+
+  /// Name of the mode already attached to this geofence, if any.
+  final String? modeName;
+
   const GeofenceListTile({
     super.key,
     required this.geofence,
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    this.onMode,
+    this.modeName,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final hasMode = modeName != null;
 
     return InkWell(
       onTap: onTap,
@@ -57,9 +66,33 @@ class GeofenceListTile extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (hasMode) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Mode: $modeName',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary(context),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+            if (onMode != null)
+              IconButton(
+                onPressed: onMode,
+                icon: Icon(
+                  hasMode ? Icons.tune_rounded : Icons.add_task_rounded,
+                  size: 20,
+                  color: hasMode
+                      ? Theme.of(context).colorScheme.primary
+                      : AppColors.iconSecondary(context),
+                ),
+                visualDensity: VisualDensity.compact,
+                tooltip: hasMode ? 'Edit trigger mode' : 'Set trigger mode',
+              ),
             IconButton(
               onPressed: onEdit,
               icon: Icon(
