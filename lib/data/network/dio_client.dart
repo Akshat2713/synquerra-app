@@ -6,11 +6,15 @@ import 'api_constants.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 import 'interceptors/log_interceptor.dart';
+import 'session_expired_notifier.dart';
 
 class DioClient {
   late final Dio _dio;
 
-  DioClient(FlutterSecureStorage secureStorage) {
+  DioClient(
+    FlutterSecureStorage secureStorage,
+    SessionExpiredNotifier notifier,
+  ) {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
@@ -36,7 +40,7 @@ class DioClient {
 
     _dio.interceptors.addAll([
       AuthInterceptor(secureStorage),
-      ErrorInterceptor(),
+      ErrorInterceptor(secureStorage, notifier),
       AppLogInterceptor(),
     ]);
   }

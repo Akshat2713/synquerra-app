@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/usecases/auth/logout_usecase.dart';
 import '../../../core/services/push_notification_service.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../../data/network/session_expired_notifier.dart';
 import '../../../domain/entities/auth/user_entity.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/check_auth_status_usecase.dart';
@@ -18,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LogoutUseCase _logoutUseCase;
   final SyncFcmTokenUseCase _syncFcmTokenUseCase;
   final PushNotificationService _pushNotificationService;
+  late final StreamSubscription<void> _expirySub;
 
   AuthBloc({
     required LoginUseCase loginUseCase,
@@ -25,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required LogoutUseCase logoutUseCase,
     required SyncFcmTokenUseCase syncFcmTokenUseCase,
     required PushNotificationService pushNotificationService,
+    required SessionExpiredNotifier sessionExpiredNotifier,
   }) : _loginUseCase = loginUseCase,
        _checkAuthStatusUseCase = checkAuthStatusUseCase,
        _logoutUseCase = logoutUseCase,
@@ -34,6 +39,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckStatusRequested>(_onCheckStatus);
     on<AuthLoginRequested>(_onLogin);
     on<AuthLogoutRequested>(_onLogout);
+    on<AuthSessionExpired>(_onSessionExpired);
+
+    _expirySub = sessionExpiredNotifier.stream.listen(
+      (_) => add(const AuthSessionExpired()),
+    );
+  }
+  Future<void> _onSessionExpired(
+    AuthSessionExpired event,
+    Emitter<AuthState> emit,
+  ) async {
+    // Several parallel requests can all return 401; handle only once
+    if (state is AuthUnauthenticated) return;
+    emit(const AuthUnauthenticated(reason: LogoutReason.sessionExpired));
+  }
+
+  @override
+  Future<void> close() {
+    _expirySub.cancel();
+    return super.close();
   }
 
   Future<void> _onCheckStatus(

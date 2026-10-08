@@ -15,6 +15,7 @@ import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
+import '../../data/network/session_expired_notifier.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
 import '../../data/repositories_impl/mode_conditions_repository_impl.dart';
 import '../../data/repositories_impl/realtime_events_repository_impl.dart';
@@ -164,7 +165,10 @@ Future<void> initDependencies() async {
   );
 
   // ── Network ─────────────────────────────────────────────
-  sl.registerLazySingleton<DioClient>(() => DioClient(sl()));
+  sl.registerLazySingleton<SessionExpiredNotifier>(
+    () => SessionExpiredNotifier(),
+  );
+  sl.registerLazySingleton<DioClient>(() => DioClient(sl(), sl()));
 
   // ── Global State Holders ────────────────────────────────
   sl.registerLazySingleton<UserHolder>(() => const UserHolder(null));
@@ -209,8 +213,9 @@ Future<void> initDependencies() async {
       loginUseCase: sl(),
       checkAuthStatusUseCase: sl(),
       logoutUseCase: sl(),
-      syncFcmTokenUseCase: sl(), // NEW
-      pushNotificationService: sl(), // NEW
+      syncFcmTokenUseCase: sl(),
+      pushNotificationService: sl(),
+      sessionExpiredNotifier: sl(),
     ),
   );
 

@@ -234,9 +234,7 @@ class _TimelineSliderState extends State<TimelineSlider> {
                   tooltip: 'Playback Speed',
                   initialValue: _selectedSpeed,
                   onSelected: _updateSpeed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.mdAll,
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
                   itemBuilder: (context) => _speedOptions.map((speed) {
                     final label =
                         '${speed.toStringAsFixed(speed == speed.toInt() ? 0 : 1)}x';
@@ -432,7 +430,7 @@ class _ArrowThumbShape extends SliderComponentShape {
     this.icon = Icons.navigation_rounded,
     this.size = 22,
     this.color,
-    this.rotation = 1.5708, // π/2 — points right by default
+    this.rotation = 1.5708,
   });
 
   @override
