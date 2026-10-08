@@ -34,8 +34,11 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
 
   Future<void> _awaitDone(String deviceId) async {
     final bloc = context.read<ManageDevicesBloc>();
+    // Listen until processing finished OR an error occurs to prevent infinite hangs
     await bloc.stream.firstWhere(
-      (s) => s is ManageDevicesLoaded && s.processingDeviceId != deviceId,
+      (s) =>
+          (s is ManageDevicesLoaded && s.processingDeviceId != deviceId) ||
+          s is ManageDevicesError, // Adjust according to your error state class name
     );
   }
 
@@ -55,27 +58,51 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
         ? manageState.relationships
         : const [];
 
+    final resolvedPersonId = user?.personId ?? '';
+
     return ManageDevicesScreen(
       devices: devices,
       relationships: relationships,
-      currentUserId: user?.personId ?? '',
+      currentUserId: resolvedPersonId,
       currentUserFullName: user?.fullName ?? '',
       onRefresh: _onRefresh,
       onAssignDevice: (deviceId, personId, associationType) async {
+        final targetPersonId = personId.isNotEmpty
+            ? personId
+            : resolvedPersonId;
+        if (targetPersonId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cannot assign: User ID is missing.')),
+          );
+          return;
+        }
+
         context.read<ManageDevicesBloc>().add(
           ManageDevicesAssignRequested(
             deviceId: deviceId,
-            personId: personId,
+            personId: targetPersonId,
             associationType: associationType,
           ),
         );
         await _awaitDone(deviceId);
       },
       onUnassignDevice: (deviceId, personId, associationType) async {
+        final targetPersonId = personId.isNotEmpty
+            ? personId
+            : resolvedPersonId;
+        if (targetPersonId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cannot unassign: User ID is missing.'),
+            ),
+          );
+          return;
+        }
+
         context.read<ManageDevicesBloc>().add(
           ManageDevicesUnassignRequested(
             deviceId: deviceId,
-            personId: personId,
+            personId: targetPersonId,
             associationType: associationType,
           ),
         );

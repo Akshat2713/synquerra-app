@@ -106,7 +106,7 @@ class ManageDevicesBloc extends Bloc<ManageDevicesEvent, ManageDevicesState> {
     final result = await _unassignDeviceUseCase(
       deviceId: event.deviceId,
       associationType: event.associationType,
-      personId: event.personId!,
+      personId: event.personId,
     );
 
     result.fold(
