@@ -1,11 +1,18 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/error/app_exceptions.dart';
+import '../session_expired_notifier.dart';
 
 class ErrorInterceptor extends Interceptor {
+  final FlutterSecureStorage _storage;
+  final SessionExpiredNotifier _sessionNotifier;
+
+  ErrorInterceptor(this._storage, this._sessionNotifier);
+
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     AppException exception;
 
     switch (err.type) {
@@ -43,6 +50,13 @@ class ErrorInterceptor extends Interceptor {
               statusCode: statusCode,
             );
           case 401:
+            final hadToken = err.requestOptions.headers.containsKey(
+              'Authorization',
+            );
+            if (hadToken) {
+              await _clearTokens();
+              _sessionNotifier.notify();
+            }
             exception = AuthException(
               message: serverMessage ?? 'Session expired. Please log in again.',
               statusCode: statusCode,
@@ -110,5 +124,19 @@ class ErrorInterceptor extends Interceptor {
         response: err.response,
       ),
     );
+  }
+
+  Future<void> _clearTokens() async {
+    try {
+      await Future.wait([
+        _storage.delete(key: 'cached_user'),
+        _storage.delete(key: 'access_token'),
+        _storage.delete(key: 'refresh_token'),
+        _storage.delete(key: 'person_id'),
+        _storage.delete(key: 'last_sent_fcm_token'),
+      ]);
+    } catch (e) {
+      // Ignore errors during token clearing
+    }
   }
 }

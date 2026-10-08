@@ -22,6 +22,15 @@ class MainShellScreen extends StatelessWidget {
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthUnauthenticated) {
+            if (state.reason == LogoutReason.sessionExpired) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Session expired. Please log in again.'),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
             Navigator.pushNamedAndRemoveUntil(
               context,
               AppRoutes.login,

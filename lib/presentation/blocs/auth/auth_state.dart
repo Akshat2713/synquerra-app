@@ -24,8 +24,14 @@ class AuthAuthenticated extends AuthState {
   List<Object?> get props => [user];
 }
 
+enum LogoutReason { manual, sessionExpired }
+
 class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+  final LogoutReason reason;
+  const AuthUnauthenticated({this.reason = LogoutReason.manual});
+
+  @override
+  List<Object?> get props => [reason];
 }
 
 class AuthError extends AuthState {
