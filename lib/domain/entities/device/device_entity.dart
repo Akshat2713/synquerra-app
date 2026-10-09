@@ -33,6 +33,7 @@ class DeviceEntity extends Equatable {
   final PersonEntity? carrier;
   final List<DeviceAssociationEntity> assignments;
   final String displayOwnerName;
+  final String? displayProfilePhoto;
   final int? schemaVersion;
   final String? hdop;
   final String? satsUsed;
@@ -73,6 +74,7 @@ class DeviceEntity extends Equatable {
     this.carrier,
     this.assignments = const [],
     required this.displayOwnerName,
+    this.displayProfilePhoto,
     this.schemaVersion,
     this.hdop,
     this.satsUsed,
@@ -132,6 +134,8 @@ class DeviceEntity extends Equatable {
     relationship,
     owner,
     carrier,
+    displayOwnerName,
+    displayProfilePhoto,
     assignments,
     schemaVersion,
     hdop,

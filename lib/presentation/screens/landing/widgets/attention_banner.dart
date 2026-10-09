@@ -41,7 +41,10 @@ class AttentionBanner extends StatelessWidget {
         borderRadius: AppRadius.lgAll,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 12,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -111,6 +114,7 @@ class _AvatarStack extends StatelessWidget {
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
             final name = d.displayOwnerName;
+            final profilePhoto = d?.displayProfilePhoto;
             final parts = name
                 .split(RegExp(r'\s+'))
                 .where((p) => p.isNotEmpty)
@@ -131,10 +135,10 @@ class _AvatarStack extends StatelessWidget {
                 padding: const EdgeInsets.all(1.5),
                 child: CircleAvatar(
                   backgroundColor: AppColors.primaryContainer(context),
-                  backgroundImage: d.carrier?.profilePhoto != null
-                      ? CachedNetworkImageProvider(d.carrier!.profilePhoto!)
+                  backgroundImage: profilePhoto != null
+                      ? CachedNetworkImageProvider(profilePhoto)
                       : null,
-                  child: d.carrier?.profilePhoto == null
+                  child: profilePhoto == null
                       ? Text(
                           initials,
                           style: TextStyle(

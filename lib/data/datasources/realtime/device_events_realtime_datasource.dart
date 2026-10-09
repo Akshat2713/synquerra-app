@@ -1,73 +1,90 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
+
 import '../../../core/utils/app_logger.dart';
-import '../../models/alerts/alert_model.dart';
+import '../../../domain/entities/realtime/device_event.dart';
+import '../../models/realtime/device_alert_model.dart';
 import '../../models/realtime/mode_change_model.dart';
 import 'realtime_connection.dart';
 
 class DeviceEventsRealtimeDataSource {
-  final RealtimeConnection _conn;
   DeviceEventsRealtimeDataSource(this._conn);
+  final RealtimeConnection _conn;
 
-  final _mode = StreamController<ModeChangeModel>.broadcast();
-  final _alert = StreamController<AlertModel>.broadcast();
-  StreamSubscription<ChannelReadEvent>? _modeSub;
-  StreamSubscription<ChannelReadEvent>? _alertSub;
-  String? _imei;
+  StreamController<DeviceEvent>? _ctrl;
+  final _subs = <StreamSubscription>[];
+  String? _channel;
 
-  Stream<ModeChangeModel> get modeChanges => _mode.stream;
-  Stream<AlertModel> get alerts => _alert.stream;
+  Stream<DeviceEvent> watchUser(String userId) {
+    stop();
+    final name = _channel = 'user-$userId';
+    AppLogger.d('DeviceEvents', 'watchUser($userId) → $name');
+    final ctrl = _ctrl = StreamController<DeviceEvent>.broadcast();
+    final ch = _conn.acquire(name);
 
-  Future<void> subscribe(String imei) async {
-    if (_imei == imei) return;
-    await unsubscribe();
-    _imei = imei;
-    _modeSub = _listen(
-      _conn.acquire('mode-$imei'),
-
+    _listen(
+      ch,
       'mode_change',
-      ModeChangeModel.fromJson,
-      _mode,
+      ctrl,
+      (j) => ModeChangeModel.fromJson(j).toEvent(),
     );
-    _alertSub = _listen(
-      _conn.acquire('alert-$imei'),
-      'alert',
-      AlertModel.fromJson,
-      _alert,
+    _listen(
+      ch,
+      'device_alert',
+      ctrl,
+      (j) => AlertReceived(DeviceAlertModel.fromJson(j).toEntity()),
     );
+    return ctrl.stream;
   }
 
-  StreamSubscription<ChannelReadEvent> _listen<T>(
+  void _listen(
     PublicChannel ch,
     String event,
-    T Function(Map<String, dynamic>) parse,
-    StreamController<T> out,
+    StreamController<DeviceEvent> ctrl,
+    DeviceEvent Function(Map<String, dynamic>) parse,
   ) {
-    return ch.bind(event).listen((e) {
-      try {
-        final raw = e.data;
-        final json = raw is String
-            ? jsonDecode(raw) as Map<String, dynamic>
-            : raw as Map<String, dynamic>;
-        out.add(parse(json));
-        final parsed = parse(json);
-        AppLogger.d('DeviceEventsRealtime', '$event parsed OK');
-        out.add(parsed);
-      } catch (err, st) {
-        AppLogger.d('DeviceEventsRealtime', '$event parse error: $err\n$st');
-      }
-    });
+    AppLogger.d('DeviceEvents', 'bound event: $event');
+    _subs.add(
+      ch.bind(event).listen((e) {
+        AppLogger.d('DeviceEvents', '[$event] received: ${e.data}');
+        try {
+          final d = e.data;
+          final m = d is String ? jsonDecode(d) : d;
+          if (m is! Map) {
+            AppLogger.d(
+              'DeviceEvents',
+              '[$event] skipped, payload not a Map: ${m.runtimeType}',
+            );
+            return;
+          }
+          final parsed = parse(Map<String, dynamic>.from(m));
+          AppLogger.d('DeviceEvents', '[$event] parsed → ${_describe(parsed)}');
+          ctrl.add(parsed);
+        } catch (err, st) {
+          AppLogger.e('DeviceEvents', '[$event] PARSE FAILED', err, st);
+        }
+      }),
+    );
   }
 
-  Future<void> unsubscribe() async {
-    await _modeSub?.cancel();
-    await _alertSub?.cancel();
-    _modeSub = _alertSub = null;
-    if (_imei != null) {
-      _conn.release('mode-$_imei');
-      _conn.release('alert-$_imei');
+  String _describe(DeviceEvent e) => switch (e) {
+    ModeChanged(:final imei, :final modeName) =>
+      'ModeChanged($imei, $modeName)',
+    AlertReceived(:final alert) =>
+      'Alert(${alert.code}, ${alert.severity}, "${alert.title}")',
+  };
+
+  void stop() {
+    AppLogger.d('DeviceEvents', 'stop() channel=$_channel');
+    for (final s in _subs) {
+      s.cancel();
     }
-    _imei = null;
+    _subs.clear();
+    _ctrl?.close();
+    _ctrl = null;
+    if (_channel != null) _conn.release(_channel!);
+    _channel = null;
   }
 }

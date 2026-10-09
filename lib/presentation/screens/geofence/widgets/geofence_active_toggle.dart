@@ -47,8 +47,9 @@ class GeofenceActiveToggle extends StatelessWidget {
           Switch(
             value: isActive,
             onChanged: onChanged,
-            activeThumbColor: AppColors.success,
-            inactiveThumbColor: AppColors.textSecondary(context),
+            activeTrackColor: AppColors.success,
+            activeThumbColor: AppColors.onSuccess,
+            inactiveThumbColor: AppColors.onDanger,
           ),
         ],
       ),

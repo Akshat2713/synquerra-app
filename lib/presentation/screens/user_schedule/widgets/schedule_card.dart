@@ -79,7 +79,7 @@ class ScheduleCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Switch.adaptive(
                           value: schedule.isActive,
-                          activeThumbColor: AppColors.primary(context),
+                          activeThumbColor: AppColors.onSuccess,
                           onChanged: onToggle,
                         ),
                         PopupMenuButton<String>(
@@ -244,7 +244,10 @@ class _PriorityBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppAlpha.tint),
         borderRadius: AppRadius.smAll,
-        border: Border.all(color: color.withValues(alpha: AppAlpha.border), width: 1),
+        border: Border.all(
+          color: color.withValues(alpha: AppAlpha.border),
+          width: 1,
+        ),
       ),
       child: Text(
         priority.toUpperCase(),

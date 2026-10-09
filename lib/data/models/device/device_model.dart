@@ -164,6 +164,21 @@ class DeviceModel {
     return ownerName;
   }
 
+  String? get displayProfilePhoto => _resolveDisplayProfilePhoto();
+
+  String? _resolveDisplayProfilePhoto() {
+    // 1. Carrier exists -> use the carrier's photo only (null if they have none)
+    final c = carrier;
+    if (c != null) {
+      final p = c.profilePhoto;
+      return (p != null && p.isNotEmpty) ? p : null;
+    }
+
+    // 2. No carrier -> fall back to the owner's photo
+    final p = owner?.profile;
+    return (p != null && p.isNotEmpty) ? p : null;
+  }
+
   DeviceEntity toEntity() => DeviceEntity(
     id: id,
     topic: topic,
@@ -193,6 +208,7 @@ class DeviceModel {
     carrier: carrier?.toEntity(),
     assignments: assignments.map((a) => a.toEntity()).toList(),
     displayOwnerName: displayOwnerName,
+    displayProfilePhoto: displayProfilePhoto,
     schemaVersion: schemaVersion,
     hdop: hdop,
     satsUsed: satsUsed,

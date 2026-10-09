@@ -95,6 +95,7 @@ class GeofenceRemoteDataSource {
     required String deviceId,
     required String name,
     required bool isActive,
+    required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     String? locality,
@@ -118,6 +119,7 @@ class GeofenceRemoteDataSource {
           'device_id': deviceId,
           'geofence_name': name,
           'is_active': isActive,
+          'is_sync_to_device': isSyncToDevice,
           'coordinates': coordinates
               .map((c) => {'lat': c.lat, 'lng': c.lng})
               .toList(),
@@ -166,6 +168,7 @@ class GeofenceRemoteDataSource {
     required String id,
     required String name,
     required bool isActive,
+    required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
@@ -189,6 +192,7 @@ class GeofenceRemoteDataSource {
         data: {
           'geofence_name': name,
           'is_active': isActive,
+          'is_sync_to_device': isSyncToDevice,
           'coordinates': coordinates
               .map((c) => {'lat': c.lat, 'lng': c.lng})
               .toList(),

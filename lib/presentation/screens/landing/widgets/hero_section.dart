@@ -28,6 +28,7 @@ class HeroSection extends StatelessWidget {
     //     ? authState.user.fullName
     //     : '—';
     final displayName = device.displayOwnerName;
+    final photo = device.displayProfilePhoto;
     final isOnline = device.isOnline ?? false;
     final mode = device.currentMode;
 
@@ -82,12 +83,10 @@ class HeroSection extends StatelessWidget {
                     CircleAvatar(
                       radius: 36,
                       backgroundColor: AppColors.primaryContainer(context),
-                      backgroundImage: device.carrier?.profilePhoto != null
-                          ? CachedNetworkImageProvider(
-                              device.carrier!.profilePhoto!,
-                            )
+                      backgroundImage: photo != null
+                          ? CachedNetworkImageProvider(photo)
                           : null,
-                      child: device.carrier?.profilePhoto == null
+                      child: photo == null
                           ? Text(
                               device.carrier?.gender == 'female' ? '👧' : '👦',
                               style: const TextStyle(fontSize: 32),

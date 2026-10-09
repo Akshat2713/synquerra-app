@@ -158,6 +158,11 @@ class AppRouter {
             providers: [
               BlocProvider(create: (_) => sl<DeviceListBloc>()),
               BlocProvider(create: (_) => sl<AlertsBloc>()),
+              BlocProvider(
+                create: (_) =>
+                    sl<DeviceEventsCubit>()
+                      ..start(sl<UserHolder>().user!.personId),
+              ),
             ],
             child: const MainShellScreen(),
           ),
@@ -174,7 +179,7 @@ class AppRouter {
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
-              BlocProvider(create: (_) => sl<DeviceEventsCubit>()),
+              // BlocProvider(create: (_) => sl<DeviceEventsCubit>()),
             ],
             child: DeviceShellScreen(device: args.device),
           ),

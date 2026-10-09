@@ -70,18 +70,15 @@ class NotificationPanel extends StatelessWidget {
                   .where((d) => d.imei == alert.imei)
                   .firstOrNull;
               final name = device?.displayOwnerName ?? alert.imei;
+              final profilePhoto = device?.displayProfilePhoto;
 
               return ListTile(
                 dense: true,
                 leading: CircleAvatar(
-                  backgroundImage: device?.carrier?.profilePhoto != null
-                      ? CachedNetworkImageProvider(
-                          device!.carrier!.profilePhoto!,
-                        )
+                  backgroundImage: profilePhoto != null
+                      ? CachedNetworkImageProvider(profilePhoto)
                       : null,
-                  child: device?.carrier?.profilePhoto == null
-                      ? const Icon(Icons.person)
-                      : null,
+                  child: profilePhoto == null ? const Icon(Icons.person) : null,
                 ),
                 title: Text(name),
                 subtitle: Text(

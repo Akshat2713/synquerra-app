@@ -3,6 +3,8 @@
 import 'dart:io';
 import 'dart:isolate';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:synquerra/data/models/signup/person_model.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
@@ -32,13 +34,15 @@ abstract class UserRemoteDataSource {
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
+  static const _tag = 'UserRemoteDataSourceImpl';
+
   final DioClient _dioClient;
 
   UserRemoteDataSourceImpl(this._dioClient);
 
   @override
   Future<PersonModel> fetchUserProfile() async {
-    AppLogger.d('UserRemoteDataSourceImpl', 'fetchUserProfile() called');
+    AppLogger.d(_tag, 'fetchUserProfile() called');
 
     final response = await _dioClient.dio.get(ApiConstants.fetchUser);
     final body = response.data as Map<String, dynamic>;
@@ -74,7 +78,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     String? pincode,
     File? profileImage,
   }) async {
-    AppLogger.d('UserRemoteDataSourceImpl', 'updateUserProfile() called');
+    AppLogger.d(_tag, 'updateUserProfile() called');
 
     final Map<String, dynamic> data = {
       'first_name': firstName,
@@ -98,24 +102,43 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     dynamic payload = data;
 
     if (profileImage != null) {
+      final filename = profileImage.path.split(Platform.pathSeparator).last;
+
       payload = FormData.fromMap({
         ...data,
         'profile_photo': await MultipartFile.fromFile(
           profileImage.path,
-          filename: profileImage.path.split('/').last,
+          filename: filename,
+          contentType: _imageMediaType(filename),
         ),
       });
     }
 
-    final response = await _dioClient.dio.patch(
-      ApiConstants.updateProfile,
-      data: payload,
-      options: payload is FormData
-          ? Options(
-              contentType: 'multipart/form-data; boundary=${payload.boundary}',
-            )
-          : null, // let the client's existing default (application/json) apply, unchanged from before
-    );
+    _logPayload(payload);
+
+    final Response response;
+    try {
+      response = await _dioClient.dio.patch(
+        ApiConstants.updateProfile,
+        data: payload,
+        // No manual contentType: Dio sets multipart + boundary for FormData
+        // and application/json for a Map by itself.
+      );
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        AppLogger.d(_tag, '❌ PATCH failed');
+        AppLogger.d(_tag, 'status: ${e.response?.statusCode}');
+        AppLogger.d(_tag, 'response body: ${e.response?.data}');
+        AppLogger.d(
+          _tag,
+          'request content-type: '
+          '${e.requestOptions.headers['content-type'] ?? e.requestOptions.contentType}',
+        );
+        AppLogger.d(_tag, 'dio error type: ${e.type}, message: ${e.message}');
+      }
+      rethrow;
+    }
+
     final body = response.data as Map<String, dynamic>;
 
     if (body['status'] != 'success') {
@@ -128,5 +151,47 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     return await Isolate.run(
       () => PersonModel.fromJson(body['data'] as Map<String, dynamic>),
     );
+  }
+
+  // ── Debug helpers ──────────────────────────────────────────────
+
+  void _logPayload(dynamic payload) {
+    if (!kDebugMode) return;
+
+    if (payload is FormData) {
+      final fields = {for (final f in payload.fields) f.key: f.value};
+      if (fields.containsKey('password')) fields['password'] = '***';
+
+      AppLogger.d(_tag, 'PATCH ${ApiConstants.updateProfile} (multipart)');
+      AppLogger.d(_tag, 'fields: $fields');
+      AppLogger.d(
+        _tag,
+        'files: ${payload.files.map((f) => '${f.key} -> '
+            'filename=${f.value.filename}, '
+            'length=${f.value.length}, '
+            'contentType=${f.value.contentType}').toList()}',
+      );
+    } else {
+      final safe = Map<String, dynamic>.from(payload as Map);
+      if (safe.containsKey('password')) safe['password'] = '***';
+
+      AppLogger.d(_tag, 'PATCH ${ApiConstants.updateProfile} (json)');
+      AppLogger.d(_tag, 'payload: $safe');
+    }
+  }
+
+  MediaType _imageMediaType(String filename) {
+    switch (filename.split('.').last.toLowerCase()) {
+      case 'png':
+        return MediaType('image', 'png');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return MediaType('image', 'jpeg');
+    }
   }
 }

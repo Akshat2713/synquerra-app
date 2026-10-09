@@ -85,7 +85,7 @@ class GeofenceListTile extends StatelessWidget {
               IconButton(
                 onPressed: onMode,
                 icon: Icon(
-                  hasMode ? Icons.tune_rounded : Icons.add_task_rounded,
+                  Icons.tune_rounded,
                   size: 20,
                   color: hasMode
                       ? Theme.of(context).colorScheme.primary

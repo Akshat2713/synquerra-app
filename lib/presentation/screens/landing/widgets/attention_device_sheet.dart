@@ -81,6 +81,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                         .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
                     final name = d.displayOwnerName;
+                    final profilePhoto = d?.displayProfilePhoto;
                     final isCurrentDevice = d.imei == currentDeviceId;
                     return ListTile(
                       leading: Container(
@@ -90,12 +91,10 @@ class AttentionDeviceSheet extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.all(AppSpacing.xs),
                         child: CircleAvatar(
-                          backgroundImage: d.carrier?.profilePhoto != null
-                              ? CachedNetworkImageProvider(
-                                  d.carrier!.profilePhoto!,
-                                )
+                          backgroundImage: profilePhoto != null
+                              ? CachedNetworkImageProvider(profilePhoto)
                               : null,
-                          child: d.carrier?.profilePhoto == null
+                          child: profilePhoto == null
                               ? const Icon(Icons.person)
                               : null,
                         ),

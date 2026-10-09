@@ -19,6 +19,8 @@ import 'widgets/geofence_map_preview.dart';
 import 'widgets/geofence_name_input.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import 'widgets/geofence_sync_toggle.dart';
+
 class AddGeofencePage extends StatefulWidget {
   final String deviceId;
   final LatLng initialCenter;
@@ -41,6 +43,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     text: widget.existing?.geofenceName ?? '',
   );
   late bool _isActive = widget.existing?.isActive ?? true;
+  late bool _isSyncToDevice = widget.existing?.isSyncToDevice ?? false;
   late Color _selectedColor;
   List<Coordinate>? _coordinates;
   bool get _isEditing => widget.existing != null;
@@ -109,6 +112,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
           id: widget.existing!.id,
           name: _nameController.text.trim(),
           isActive: _isActive,
+          isSyncToDevice: _isSyncToDevice,
           coordinates: _coordinates!,
           color: colour_utils.hexFromColor(_selectedColor),
           geofenceNumber: widget.existing!.geofenceNumber,
@@ -128,6 +132,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
           deviceId: widget.deviceId,
           name: _nameController.text.trim(),
           isActive: _isActive,
+          isSyncToDevice: _isSyncToDevice,
           coordinates: _coordinates!,
           color: colour_utils.hexFromColor(_selectedColor),
           locality: _addressFields.locality,
@@ -193,6 +198,11 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
                   GeofenceActiveToggle(
                     isActive: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
+                  ),
+                  const SizedBox(height: 24),
+                  GeofenceSyncToggle(
+                    isSyncToDevice: _isSyncToDevice,
+                    onChanged: (v) => setState(() => _isSyncToDevice = v),
                   ),
                   const SizedBox(height: 24),
                   GeofenceAddressSection(fields: _addressFields),

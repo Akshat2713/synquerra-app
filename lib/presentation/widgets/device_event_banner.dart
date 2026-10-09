@@ -1,14 +1,22 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../domain/entities/alerts/alert_entity.dart';
 import '../../domain/entities/realtime/device_event.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 OverlayEntry? _current;
 
-void showDeviceEventBanner(BuildContext context, DeviceEvent event) {
+void showDeviceEventBanner(
+  BuildContext context,
+  DeviceEvent event, {
+  String? deviceName,
+}) {
   _current?.remove();
   _current = null;
+
+  final hasName = deviceName != null && deviceName.trim().isNotEmpty;
+  String who(String imei) => hasName
+      ? deviceName
+      : '…${imei.length > 4 ? imei.substring(imei.length - 4) : imei}';
 
   final cs = Theme.of(context).colorScheme;
   final (
@@ -17,16 +25,20 @@ void showDeviceEventBanner(BuildContext context, DeviceEvent event) {
     String title,
     String body,
   ) = switch (event) {
-    ModeChanged(:final modeName) => (
+    ModeChanged(:final modeName, :final imei) => (
       Icons.swap_horiz_rounded,
       cs.primary,
       'Mode changed',
-      'Device switched to $modeName',
+      '${who(imei)} switched to $modeName',
     ),
     AlertReceived(:final alert) => (
       alert.isCritical ? Icons.warning_rounded : Icons.notifications_active,
-      alert.severity == AlertSeverity.critical ? cs.error : cs.tertiary,
-      alert.isCritical ? 'Critical alert' : 'New alert',
+      switch (alert.severity) {
+        'critical' => cs.error,
+        'warning' => cs.tertiary,
+        _ => cs.primary,
+      },
+      hasName ? '${alert.title} • $deviceName' : alert.title,
       alert.description,
     ),
   };
@@ -77,10 +89,16 @@ class _EventBannerState extends State<_EventBanner>
     duration: const Duration(milliseconds: 250),
   )..forward();
   Timer? _timer;
+  bool _expanded = false;
 
   @override
   void initState() {
     super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer(const Duration(seconds: 5), _dismiss);
   }
 
@@ -89,6 +107,16 @@ class _EventBannerState extends State<_EventBanner>
     if (!mounted) return;
     await _ac.reverse();
     widget.onClose();
+  }
+
+  // Tap toggles expand/collapse. Auto-hide is paused while expanded.
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    if (_expanded) {
+      _timer?.cancel();
+    } else {
+      _startTimer();
+    }
   }
 
   @override
@@ -101,6 +129,8 @@ class _EventBannerState extends State<_EventBanner>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final bodyStyle = TextStyle(color: cs.onSurfaceVariant);
+
     return Positioned(
       top: 0,
       left: 0,
@@ -118,7 +148,7 @@ class _EventBannerState extends State<_EventBanner>
               direction: DismissDirection.horizontal,
               onDismissed: (_) => widget.onClose(),
               child: GestureDetector(
-                onTap: _dismiss,
+                onTap: _toggle,
                 onVerticalDragEnd: (d) {
                   if ((d.primaryVelocity ?? 0) < -200) _dismiss();
                 },
@@ -130,9 +160,12 @@ class _EventBannerState extends State<_EventBanner>
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       borderRadius: AppRadius.mdAll,
-                      border: Border.all(color: widget.color.withOpacity(0.6)),
+                      border: Border.all(
+                        color: widget.color.withValues(alpha: 0.6),
+                      ),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(widget.icon, color: widget.color),
                         const SizedBox(width: 12),
@@ -143,16 +176,24 @@ class _EventBannerState extends State<_EventBanner>
                             children: [
                               Text(
                                 widget.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: cs.onSurface,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Text(
-                                widget.body,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: cs.onSurfaceVariant),
+                              AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                alignment: Alignment.topCenter,
+                                child: Text(
+                                  widget.body,
+                                  maxLines: _expanded ? null : 2,
+                                  overflow: _expanded
+                                      ? TextOverflow.visible
+                                      : TextOverflow.ellipsis,
+                                  style: bodyStyle,
+                                ),
                               ),
                             ],
                           ),

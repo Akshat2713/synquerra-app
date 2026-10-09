@@ -2,8 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../data/datasources/realtime/realtime_connection.dart';
+import '../../../domain/entities/realtime/device_event.dart';
 import '../../app/app_router.dart';
+import '../../app/device_event_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
+import '../../blocs/realtime/device_events_cubit.dart';
 import 'main_shell_cubit.dart';
 import 'main_tab.dart';
 import 'main_tabs.dart';
@@ -19,49 +25,68 @@ class MainShellScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => MainShellCubit(),
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthUnauthenticated) {
-            if (state.reason == LogoutReason.sessionExpired) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Session expired. Please log in again.'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 3),
-                ),
+      child: BlocListener<DeviceEventsCubit, DeviceEvent?>(
+        listener: (context, e) {
+          if (e == null) return;
+          final imei = switch (e) {
+            ModeChanged(:final imei) => imei,
+            AlertReceived(:final alert) => alert.imei,
+          };
+          final ds = context.read<DeviceListBloc>().state;
+          final name = ds is DeviceListLoaded
+              ? ds.devices
+                    .where((d) => d.imei == imei)
+                    .firstOrNull
+                    ?.displayOwnerName
+              : null;
+          handleDeviceEvent(context, e, deviceName: name);
+        },
+
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              sl<RealtimeConnection>().dispose();
+              if (state.reason == LogoutReason.sessionExpired) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Session expired. Please log in again.'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              }
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.login,
+                (_) => false,
               );
             }
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.login,
-              (_) => false,
-            );
-          }
-        },
-        child: BlocBuilder<MainShellCubit, int>(
-          builder: (context, index) => PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (didPop, _) async {
-              if (didPop) return;
-              if (index != 0) {
-                context.read<MainShellCubit>().select(0);
-              } else {
-                await SystemNavigator.pop();
-              }
-            },
-            child: Scaffold(
-              body: _LazyIndexedStack(index: index, tabs: tabs),
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: index,
-                onDestinationSelected: context.read<MainShellCubit>().select,
-                destinations: [
-                  for (final t in tabs)
-                    NavigationDestination(
-                      icon: Icon(t.icon),
-                      selectedIcon: Icon(t.selectedIcon),
-                      label: t.label,
-                    ),
-                ],
+          },
+          child: BlocBuilder<MainShellCubit, int>(
+            builder: (context, index) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) async {
+                if (didPop) return;
+                if (index != 0) {
+                  context.read<MainShellCubit>().select(0);
+                } else {
+                  await SystemNavigator.pop();
+                }
+              },
+              child: Scaffold(
+                body: _LazyIndexedStack(index: index, tabs: tabs),
+                bottomNavigationBar: NavigationBar(
+                  selectedIndex: index,
+                  onDestinationSelected: context.read<MainShellCubit>().select,
+                  destinations: [
+                    for (final t in tabs)
+                      NavigationDestination(
+                        icon: Icon(t.icon),
+                        selectedIcon: Icon(t.selectedIcon),
+                        label: t.label,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

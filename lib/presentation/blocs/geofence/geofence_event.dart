@@ -17,6 +17,7 @@ class GeofenceCreate extends GeofenceEvent {
   final String deviceId;
   final String name;
   final bool isActive;
+  final bool isSyncToDevice;
   final List<Coordinate> coordinates;
   final String color;
   final String? locality;
@@ -32,6 +33,7 @@ class GeofenceCreate extends GeofenceEvent {
     required this.deviceId,
     required this.name,
     required this.isActive,
+    required this.isSyncToDevice,
     required this.coordinates,
     required this.color,
     this.locality,
@@ -49,6 +51,7 @@ class GeofenceCreate extends GeofenceEvent {
     deviceId,
     name,
     isActive,
+    isSyncToDevice,
     coordinates,
     color,
     locality,
@@ -68,6 +71,7 @@ class GeofenceEdit extends GeofenceEvent {
   // final String geofenceId;
   final String name;
   final bool isActive;
+  final bool isSyncToDevice;
   final List<Coordinate> coordinates;
   final String color;
   final String geofenceNumber;
@@ -86,6 +90,7 @@ class GeofenceEdit extends GeofenceEvent {
     // required this.geofenceId,
     required this.name,
     required this.isActive,
+    required this.isSyncToDevice,
     required this.coordinates,
     required this.color,
     required this.geofenceNumber,
@@ -106,6 +111,7 @@ class GeofenceEdit extends GeofenceEvent {
     // geofenceId,
     name,
     isActive,
+    isSyncToDevice,
     coordinates,
     color,
     geofenceNumber,
