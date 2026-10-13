@@ -84,6 +84,8 @@ dependencies:
   # colourpicker
   flutter_colorpicker: ^1.1.0
   dart_pusher_channels: ^1.3.1
+  just_audio: ^0.10.6
+  vibration: ^3.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -123,6 +125,7 @@ flutter_native_splash:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/app_name_logo.png
+    - assets/audio/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

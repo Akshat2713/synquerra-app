@@ -40,8 +40,8 @@ class ApiConstants {
       '/api/v1/alerts-errors/person/$personId';
   static String alertsByDevice(String deviceId) =>
       '/api/v1/alerts-errors/device/alerts?device_id=$deviceId';
-  static String acknowledgeAlert(String alertId) =>
-      '/api/v1/alerts-errors/$alertId/acknowledge';
+  // static String acknowledgeAlert(String alertId) =>
+  //     '/api/v1/alerts-errors/$alertId/acknowledge';
 
   // ── Analytics ─────────────────────────────────────
   static const String analytics = '/api/v1/analytics/device-analytics-query';
@@ -106,6 +106,11 @@ class ApiConstants {
       '/api/v1/schedules/$scheduleId/overrides/$overrideId';
   static String effectiveSchedule(String scheduleId) =>
       '/api/v1/schedules/$scheduleId/effective';
+
+  // ── SOS ───────────
+  static String acknowledgeSos(String alertId) =>
+      '/api/v1/alerts/$alertId/acknowledge';
+  static const String stopSos = '/api/v1/device-settings/stop-sos';
 
   // ── Realtime (Soketi) ─────────────────────────────
   static const String soketiHost = 'websocket.synquerra.com';

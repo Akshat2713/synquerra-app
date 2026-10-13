@@ -14,6 +14,7 @@ import '../../data/datasources/remote/mode_conditions_remote_data_source.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/datasources/remote/sos_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/network/session_expired_notifier.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
@@ -22,6 +23,7 @@ import '../../data/repositories_impl/realtime_events_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/schedule_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../data/repositories_impl/sos_repository_impl.dart';
 import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
 import '../../domain/repositories/mode_conditions_repository.dart';
@@ -29,6 +31,7 @@ import '../../domain/repositories/realtime_events_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/sos_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/analytics/get_live_telemetry_usecase.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
@@ -60,6 +63,8 @@ import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../domain/usecases/signup/signup_usecase.dart';
+import '../../domain/usecases/sos/acknowledge_sos_usecase.dart';
+import '../../domain/usecases/sos/stop_sos_usecase.dart';
 import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
@@ -70,6 +75,7 @@ import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';
 import '../../presentation/blocs/schedule_override/schedule_overrides_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
+import '../../presentation/blocs/sos/sos_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
 
@@ -146,6 +152,7 @@ import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
 import '../services/local_notification_service.dart';
 import '../services/push_notification_service.dart';
+import '../services/sos_alarm_service.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -521,6 +528,26 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => WatchDeviceEventsUseCase(sl()));
   sl.registerFactory<DeviceEventsCubit>(() => DeviceEventsCubit(sl()));
+
+  // ── SOS Feature ─────────────────────────────────────────
+  sl.registerLazySingleton<SosRemoteDataSource>(
+    // ASSUMED name
+    () => SosRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<SosRepository>(
+    () => SosRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => AcknowledgeSosUseCase(sl()));
+  sl.registerLazySingleton(() => StopSosUseCase(sl()));
+  sl.registerLazySingleton<SosAlarmService>(() => SosAlarmService());
+
+  sl.registerLazySingleton<SosBloc>(
+    () => SosBloc(
+      acknowledgeSosUseCase: sl(),
+      stopSosUseCase: sl(),
+      sosAlarmService: sl(),
+    ),
+  );
 }
 
 /// Called after successful login to store user globally

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/blocs/theme/theme_cubit.dart';
 import '../../core/di/injection_container.dart';
+import '../screens/sos/sos_stop_overlay.dart';
 import 'app_router.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../themes/app_palette.dart';
@@ -27,6 +28,8 @@ class MyApp extends StatelessWidget {
             themeMode: ThemeMode.light,
             initialRoute: AppRoutes.splash,
             onGenerateRoute: AppRouter.onGenerateRoute,
+            builder: (context, child) =>
+                SosStopOverlay(child: child ?? const SizedBox.shrink()),
           );
         },
       ),

@@ -38,6 +38,8 @@ class AnalyticsRemoteDataSource {
           dataInterval: dataInterval,
           startDate: startDate,
           endDate: endDate,
+          uniqueGeofence: true,
+          uniqueH3R12: false,
         ),
       },
     );

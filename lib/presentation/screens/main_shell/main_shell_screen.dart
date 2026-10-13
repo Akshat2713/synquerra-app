@@ -28,18 +28,18 @@ class MainShellScreen extends StatelessWidget {
       child: BlocListener<DeviceEventsCubit, DeviceEvent?>(
         listener: (context, e) {
           if (e == null) return;
-          final imei = switch (e) {
-            ModeChanged(:final imei) => imei,
-            AlertReceived(:final alert) => alert.imei,
+          final deviceId = switch (e) {
+            ModeChanged(:final deviceId) => deviceId,
+            AlertReceived(:final alert) => alert.deviceId,
           };
           final ds = context.read<DeviceListBloc>().state;
-          final name = ds is DeviceListLoaded
-              ? ds.devices
-                    .where((d) => d.imei == imei)
-                    .firstOrNull
-                    ?.displayOwnerName
-              : null;
-          handleDeviceEvent(context, e, deviceName: name);
+          if (ds is! DeviceListLoaded) return;
+
+          final name = ds.devices
+              .firstWhere((d) => d.id == deviceId)
+              .displayOwnerName;
+
+          handleDeviceEvent(context, e, name);
         },
 
         child: BlocListener<AuthBloc, AuthState>(

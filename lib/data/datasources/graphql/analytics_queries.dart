@@ -10,6 +10,8 @@ class AnalyticsQueries {
     int? dataInterval,
     String? startDate,
     String? endDate,
+    bool uniqueGeofence = true,
+    bool uniqueH3R12 = true,
   }) {
     return '''
       query {

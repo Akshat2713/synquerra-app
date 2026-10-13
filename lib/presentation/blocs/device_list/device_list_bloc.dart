@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection_container.dart';
@@ -40,8 +42,14 @@ class DeviceListBloc extends Bloc<DeviceListEvent, DeviceListState> {
     DeviceListRefreshRequested event,
     Emitter<DeviceListState> emit,
   ) async {
-    _invalidateDeviceCacheUseCase();
-    await _fetchData(emit);
+    try {
+      _invalidateDeviceCacheUseCase();
+      await _fetchData(emit);
+    } finally {
+      if (!(event.completer?.isCompleted ?? true)) {
+        event.completer!.complete();
+      }
+    }
   }
 
   Future<void> _fetchData(Emitter<DeviceListState> emit) async {

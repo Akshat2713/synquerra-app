@@ -1,5 +1,7 @@
 // lib/presentation/screens/device_list/device_list_screen.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/domain/entities/device/device_entity.dart';
@@ -33,9 +35,11 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final bloc = context.read<DeviceListBloc>();
-    bloc.add(const DeviceListRefreshRequested());
-    await bloc.stream.firstWhere((s) => s is! DeviceListLoading);
+    final completer = Completer<void>();
+    context.read<DeviceListBloc>().add(
+      DeviceListRefreshRequested(completer: completer),
+    );
+    await completer.future;
   }
 
   static const List<MapEntry<String, String>> _relationshipOrder = [
