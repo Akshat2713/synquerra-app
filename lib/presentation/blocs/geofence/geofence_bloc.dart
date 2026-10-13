@@ -5,6 +5,8 @@ import '../../../domain/usecases/geofence/create_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/edit_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/delete_geofence_usecase.dart';
 import '../../../domain/usecases/geofence/get_geofences_usecase.dart';
+import '../../../domain/usecases/geofence/assign_geofence_usecase.dart';
+import '../../../domain/usecases/geofence/unassign_geofence_usecase.dart';
 import '../../../core/utils/app_logger.dart';
 import '../base/base_state.dart';
 
@@ -16,21 +18,29 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
   final CreateGeofenceUseCase _createGeofenceUseCase;
   final EditGeofenceUseCase _editGeofenceUseCase;
   final DeleteGeofenceUseCase _deleteGeofenceUseCase;
+  final AssignGeofenceUseCase _assignGeofenceUseCase;
+  final UnassignGeofenceUseCase _unassignGeofenceUseCase;
 
   GeofenceBloc({
     required GetGeofencesUseCase getGeofencesUseCase,
     required CreateGeofenceUseCase createGeofenceUseCase,
     required EditGeofenceUseCase editGeofenceUseCase,
     required DeleteGeofenceUseCase deleteGeofenceUseCase,
+    required AssignGeofenceUseCase assignGeofenceUseCase,
+    required UnassignGeofenceUseCase unassignGeofenceUseCase,
   }) : _getGeofencesUseCase = getGeofencesUseCase,
        _createGeofenceUseCase = createGeofenceUseCase,
        _editGeofenceUseCase = editGeofenceUseCase,
        _deleteGeofenceUseCase = deleteGeofenceUseCase,
+       _assignGeofenceUseCase = assignGeofenceUseCase,
+       _unassignGeofenceUseCase = unassignGeofenceUseCase,
        super(const GeofenceInitial()) {
     on<GeofenceLoad>(_onLoad);
     on<GeofenceCreate>(_onCreate);
     on<GeofenceEdit>(_onEdit);
     on<GeofenceDelete>(_onDelete);
+    on<GeofenceAssign>(_onAssign);
+    on<GeofenceUnassign>(_onUnassign);
   }
 
   Future<void> _onLoad(GeofenceLoad event, Emitter<GeofenceState> emit) async {
@@ -59,7 +69,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       deviceId: event.deviceId,
       name: event.name,
       isActive: event.isActive,
-      isSyncToDevice: event.isSyncToDevice,
+      // isSyncToDevice: event.isSyncToDevice,
       coordinates: event.coordinates,
       color: event.color,
       locality: event.locality,
@@ -89,7 +99,7 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       id: event.id,
       name: event.name,
       isActive: event.isActive,
-      isSyncToDevice: event.isSyncToDevice,
+      // isSyncToDevice: event.isSyncToDevice,
       coordinates: event.coordinates,
       color: event.color,
       geofenceNumber: event.geofenceNumber,
@@ -127,6 +137,48 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
       (_) {
         AppLogger.d('GeofenceBloc', 'Deleted: ${event.id}');
         emit(const GeofenceDeleted());
+        add(GeofenceLoad(event.deviceId));
+      },
+    );
+  }
+
+  Future<void> _onAssign(
+    GeofenceAssign event,
+    Emitter<GeofenceState> emit,
+  ) async {
+    AppLogger.d(
+      'GeofenceBloc',
+      'Assign → slot: ${event.geofenceNumber}, geofenceId: ${event.geofenceId}',
+    );
+    emit(const GeofenceOperationLoading());
+    final result = await _assignGeofenceUseCase(
+      geofenceId: event.geofenceId,
+      geofenceNumber: event.geofenceNumber,
+    );
+    result.fold(
+      (failure) => emit(GeofenceOperationError(failure.userMessage)),
+      (_) {
+        AppLogger.d('GeofenceBloc', 'Assigned successfully');
+        emit(const GeofenceAssigned());
+        add(GeofenceLoad(event.deviceId));
+      },
+    );
+  }
+
+  Future<void> _onUnassign(
+    GeofenceUnassign event,
+    Emitter<GeofenceState> emit,
+  ) async {
+    AppLogger.d('GeofenceBloc', 'Unassign → slot: ${event.geofenceNumber}');
+    emit(const GeofenceOperationLoading());
+    final result = await _unassignGeofenceUseCase(
+      geofenceNumber: event.geofenceNumber,
+    );
+    result.fold(
+      (failure) => emit(GeofenceOperationError(failure.userMessage)),
+      (_) {
+        AppLogger.d('GeofenceBloc', 'Unassigned successfully');
+        emit(const GeofenceUnassigned());
         add(GeofenceLoad(event.deviceId));
       },
     );

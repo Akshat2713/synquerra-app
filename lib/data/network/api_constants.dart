@@ -64,6 +64,7 @@ class ApiConstants {
   static const String assignGeofence = '/api/v1/geofences/assign';
   static String geofenceHistory(String deviceId) =>
       '/api/v1/geofences/device/$deviceId/geofence-history';
+  static const String assigGeofence = '/api/v1/geofences/assign';
 
   // Legacy geofence aliases (also supported by backend)
   // static const String getGeofences = '/api/v1/geofences/list';

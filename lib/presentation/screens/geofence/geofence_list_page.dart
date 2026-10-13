@@ -4,14 +4,17 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../data/datasources/graphql/mode_conditions_query.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../domain/entities/geofence/geofence_slot.dart';
 import '../../../domain/entities/geofence_mode/mode_condition_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/mode_condition/mode_condition_bloc.dart';
 import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
+import 'geofence_list_page_widgets/device_geofence_slots.dart';
+import 'geofence_list_page_widgets/geofence_list_tile.dart';
+import 'geofence_list_page_widgets/select_cloud_geofence_dialog.dart';
 import 'widgets/configure_trigger_mode_dialog.dart';
-import 'widgets/geofence_list_tile.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceListPage extends StatefulWidget {
@@ -92,14 +95,14 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   void _confirmDelete(BuildContext context, GeofenceEntity geofence) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Geofence'),
         content: Text(
           'Are you sure you want to delete "${geofence.geofenceName}"?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           FilledButton(
@@ -107,7 +110,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               context.read<GeofenceBloc>().add(
                 GeofenceDelete(deviceId: widget.deviceId, id: geofence.id),
@@ -116,6 +119,67 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Cross button: confirm, then unassign by slot number only.
+  void _confirmUnassign(GeofenceSlot slot) {
+    final geofence = slot.geofence;
+    if (geofence == null) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Unassign Geofence'),
+        content: Text(
+          'Remove "${geofence.geofenceName}" from slot ${slot.index}? '
+          'It will go back to cloud geofences.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+
+              context.read<GeofenceBloc>().add(
+                GeofenceUnassign(
+                  deviceId: widget.deviceId,
+                  geofenceNumber: slot.number,
+                ),
+              );
+            },
+            child: const Text('Unassign'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Plus button on an empty slot: pick a cloud geofence, then assign it.
+  Future<void> _assignToSlot(
+    GeofenceSlot slot,
+    List<GeofenceEntity> cloudGeofences,
+  ) async {
+    final picked = await showSelectCloudGeofenceDialog(
+      context,
+      cloudGeofences: cloudGeofences,
+      slotNumber: '${slot.index}',
+    );
+
+    if (picked == null || !mounted) return;
+
+    context.read<GeofenceBloc>().add(
+      GeofenceAssign(
+        deviceId: widget.deviceId,
+        geofenceId: picked.id,
+        geofenceNumber: slot.number,
       ),
     );
   }
@@ -165,16 +229,13 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         body: BlocConsumer<GeofenceBloc, GeofenceState>(
           listener: (context, state) {
             if (state is GeofenceDeleted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Geofence deleted.')),
-              );
+              _snack('Geofence deleted.');
+            } else if (state is GeofenceAssigned) {
+              _snack('Geofence assigned to device.');
+            } else if (state is GeofenceUnassigned) {
+              _snack('Geofence unassigned from device.');
             } else if (state is GeofenceOperationError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.danger,
-                ),
-              );
+              _snack(state.message, color: AppColors.danger);
             }
           },
           builder: (context, state) {
@@ -186,15 +247,12 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                 ? state.geofences
                 : <GeofenceEntity>[];
 
-            final filtered = _filtered(geofences);
+            // Device section is a fixed 3-slot layout built from ALL geofences
+            // (search does not hide slots).
+            final slots = GeofenceSlot.fromGeofences(geofences);
 
-            final deviceSynced = filtered
-                .where((g) => g.isSyncToDevice)
-                .toList();
-
-            final cloudSynced = filtered
-                .where((g) => !g.isSyncToDevice)
-                .toList();
+            final cloudAll = geofences.where((g) => !g.isSyncToDevice).toList();
+            final cloudFiltered = _filtered(cloudAll);
 
             return AsyncStateView(
               isLoading: isLoading,
@@ -210,7 +268,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                       controller: _searchController,
                       onChanged: (v) => setState(() => _query = v),
                       decoration: InputDecoration(
-                        hintText: 'Search geofences...',
+                        hintText: 'Search cloud geofences...',
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _query.isNotEmpty
                             ? IconButton(
@@ -229,48 +287,28 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                     ),
                   ),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    child: Row(
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                       children: [
-                        Text(
-                          '${filtered.length} geofence${filtered.length == 1 ? '' : 's'}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: AppColors.textSecondary(context),
-                              ),
+                        DeviceGeofenceSlots(
+                          slots: slots,
+                          modeNameFor: (g) => _conditionFor(g)?.mode?.name,
+                          onAddToSlot: (slot) => _assignToSlot(slot, cloudAll),
+                          onTap: _onTileTab,
+                          onEdit: (g) => _openAddPage(existing: g),
+                          onDelete: (g) => _confirmDelete(context, g),
+                          onMode: _openModeDialog,
+                          onUnassign: _confirmUnassign,
+                        ),
+
+                        ..._buildCloudSection(
+                          context,
+                          items: cloudFiltered,
+                          hasAnyCloud: cloudAll.isNotEmpty,
                         ),
                       ],
                     ),
-                  ),
-
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? _EmptyState(
-                            isSearching: _query.isNotEmpty,
-                            onAdd: _openAddPage,
-                          )
-                        : ListView(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                            children: [
-                              if (deviceSynced.isNotEmpty)
-                                ..._buildSection(
-                                  context,
-                                  title: 'Synced to device',
-                                  items: deviceSynced,
-                                ),
-
-                              if (cloudSynced.isNotEmpty)
-                                ..._buildSection(
-                                  context,
-                                  title: 'Synced to cloud',
-                                  items: cloudSynced,
-                                ),
-                            ],
-                          ),
                   ),
                 ],
               ),
@@ -281,13 +319,26 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 
-  List<Widget> _buildSection(
+  List<Widget> _buildCloudSection(
     BuildContext context, {
-    required String title,
     required List<GeofenceEntity> items,
+    required bool hasAnyCloud,
   }) {
     return [
-      _SectionHeader(title: title, count: items.length),
+      _SectionHeader(title: 'Synced to cloud', count: items.length),
+
+      if (items.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: Text(
+              !hasAnyCloud
+                  ? 'No cloud geofences yet.'
+                  : 'No geofences match your search.',
+              style: TextStyle(color: AppColors.textSecondary(context)),
+            ),
+          ),
+        ),
 
       for (final g in items)
         Padding(
@@ -301,8 +352,6 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onMode: () => _openModeDialog(g),
           ),
         ),
-
-      const SizedBox(height: 6),
     ];
   }
 
@@ -333,50 +382,6 @@ class _SectionHeader extends StatelessWidget {
           fontWeight: FontWeight.w700,
           color: AppColors.textSecondary(context),
         ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final bool isSearching;
-  final VoidCallback onAdd;
-
-  const _EmptyState({required this.isSearching, required this.onAdd});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isSearching ? Icons.search_off_rounded : Icons.fence_rounded,
-            size: 56,
-            color: AppColors.textSecondary(
-              context,
-            ).withValues(alpha: AppAlpha.border),
-          ),
-
-          const SizedBox(height: 12),
-
-          Text(
-            isSearching
-                ? 'No geofences match your search.'
-                : 'No geofences yet.',
-            style: TextStyle(color: AppColors.textSecondary(context)),
-          ),
-
-          if (!isSearching) ...[
-            const SizedBox(height: 16),
-
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('New Geofence'),
-            ),
-          ],
-        ],
       ),
     );
   }

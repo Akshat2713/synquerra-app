@@ -95,7 +95,7 @@ class GeofenceRemoteDataSource {
     required String deviceId,
     required String name,
     required bool isActive,
-    required bool isSyncToDevice,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     String? locality,
@@ -119,7 +119,7 @@ class GeofenceRemoteDataSource {
           'device_id': deviceId,
           'geofence_name': name,
           'is_active': isActive,
-          'is_sync_to_device': isSyncToDevice,
+          // 'is_sync_to_device': isSyncToDevice,
           'coordinates': coordinates
               .map((c) => {'lat': c.lat, 'lng': c.lng})
               .toList(),
@@ -168,7 +168,7 @@ class GeofenceRemoteDataSource {
     required String id,
     required String name,
     required bool isActive,
-    required bool isSyncToDevice,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
@@ -192,7 +192,7 @@ class GeofenceRemoteDataSource {
         data: {
           'geofence_name': name,
           'is_active': isActive,
-          'is_sync_to_device': isSyncToDevice,
+          // 'is_sync_to_device': isSyncToDevice,
           'coordinates': coordinates
               .map((c) => {'lat': c.lat, 'lng': c.lng})
               .toList(),
@@ -264,6 +264,79 @@ class GeofenceRemoteDataSource {
       }
     } catch (e) {
       _logError('deleteGeofence', e);
+      rethrow;
+    }
+  }
+
+  /// Assigns a geofence to a specific slot (e.g., GEO1, GEO2)
+  Future<void> assignGeofence({
+    required String geofenceId,
+    required String geofenceNumber,
+  }) async {
+    AppLogger.d(
+      'GeofenceRemoteDataSource',
+      'assignGeofence() called for geofence: $geofenceId, slot: $geofenceNumber',
+    );
+
+    try {
+      final response = await _dioClient.dio.post(
+        ApiConstants.assignGeofence,
+        data: {
+          'assignments': [
+            {'geofence_id': geofenceId, 'geofence_number': geofenceNumber},
+          ],
+        },
+      );
+
+      final body = response.data as Map<String, dynamic>;
+
+      if (body['status'] != 'success') {
+        AppLogger.w(
+          'GeofenceRemoteDataSource',
+          'assignGeofence failed status: $body',
+        );
+        throw ServerException(
+          message: body['message'] ?? 'Failed to assign geofence.',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      _logError('assignGeofence', e);
+      rethrow;
+    }
+  }
+
+  /// Unassigns a geofence slot (e.g., GEO1) by passing null for the geofence ID
+  Future<void> unassignGeofence({required String geofenceNumber}) async {
+    AppLogger.d(
+      'GeofenceRemoteDataSource',
+      'unassignGeofence() called for slot: $geofenceNumber',
+    );
+
+    try {
+      final response = await _dioClient.dio.post(
+        ApiConstants.assignGeofence,
+        data: {
+          'assignments': [
+            {'geofence_id': null, 'geofence_number': geofenceNumber},
+          ],
+        },
+      );
+
+      final body = response.data as Map<String, dynamic>;
+
+      if (body['status'] != 'success') {
+        AppLogger.w(
+          'GeofenceRemoteDataSource',
+          'unassignGeofence failed status: $body',
+        );
+        throw ServerException(
+          message: body['message'] ?? 'Failed to unassign geofence.',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      _logError('unassignGeofence', e);
       rethrow;
     }
   }

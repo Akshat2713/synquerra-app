@@ -38,6 +38,8 @@ import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dar
 import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/geofence/assign_geofence_usecase.dart';
+import '../../domain/usecases/geofence/unassign_geofence_usecase.dart';
 import '../../domain/usecases/mode_conditions/create_mode_condition_usecase.dart';
 import '../../domain/usecases/mode_conditions/delete_mode_condition_usecase.dart';
 import '../../domain/usecases/mode_conditions/get_geofence_modes_usecase.dart';
@@ -294,6 +296,7 @@ Future<void> initDependencies() async {
       getLiveTelemetryUseCase: sl(),
     ),
   );
+
   // ── Geofence Feature ────────────────────────────────────
   sl.registerLazySingleton<GeofenceRemoteDataSource>(
     () => GeofenceRemoteDataSource(sl()),
@@ -305,12 +308,17 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CreateGeofenceUseCase(sl()));
   sl.registerLazySingleton(() => DeleteGeofenceUseCase(sl()));
   sl.registerFactory(() => EditGeofenceUseCase(sl()));
+  sl.registerLazySingleton(() => AssignGeofenceUseCase(sl()));
+  sl.registerLazySingleton(() => UnassignGeofenceUseCase(sl()));
+
   sl.registerFactory<GeofenceBloc>(
     () => GeofenceBloc(
       getGeofencesUseCase: sl(),
       createGeofenceUseCase: sl(),
       editGeofenceUseCase: sl(),
       deleteGeofenceUseCase: sl(),
+      assignGeofenceUseCase: sl(),
+      unassignGeofenceUseCase: sl(),
     ),
   );
 

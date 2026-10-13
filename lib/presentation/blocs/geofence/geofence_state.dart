@@ -1,5 +1,3 @@
-// lib/presentation/blocs/geofence/geofence_state.dart
-
 part of 'geofence_bloc.dart';
 
 abstract class GeofenceState extends BaseState {
@@ -60,6 +58,14 @@ class GeofenceEdited extends GeofenceState {
 
 class GeofenceDeleted extends GeofenceState {
   const GeofenceDeleted();
+}
+
+class GeofenceAssigned extends GeofenceState {
+  const GeofenceAssigned();
+}
+
+class GeofenceUnassigned extends GeofenceState {
+  const GeofenceUnassigned();
 }
 
 class GeofenceOperationError extends GeofenceState with ErrorState {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
-import 'geofence_status_chip.dart';
+import '../widgets/geofence_status_chip.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceListTile extends StatelessWidget {
@@ -13,6 +13,9 @@ class GeofenceListTile extends StatelessWidget {
   /// Opens the "Configure trigger mode" dialog. Icon is hidden when null.
   final VoidCallback? onMode;
 
+  /// Unassigns the geofence from its device slot. Cross icon is hidden when null.
+  final VoidCallback? onUnassign;
+
   /// Name of the mode already attached to this geofence, if any.
   final String? modeName;
 
@@ -23,6 +26,7 @@ class GeofenceListTile extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onMode,
+    this.onUnassign,
     this.modeName,
   });
 
@@ -114,6 +118,17 @@ class GeofenceListTile extends StatelessWidget {
               visualDensity: VisualDensity.compact,
               tooltip: 'Delete',
             ),
+            if (onUnassign != null)
+              IconButton(
+                onPressed: onUnassign,
+                icon: Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: AppColors.iconSecondary(context),
+                ),
+                visualDensity: VisualDensity.compact,
+                tooltip: 'Unassign from device',
+              ),
           ],
         ),
       ),
