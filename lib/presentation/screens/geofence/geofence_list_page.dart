@@ -38,6 +38,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   // Last loaded conditions, kept here so tiles don't lose their mode while
   // the bloc is in a loading/operation state.
   List<ModeConditionEntity> _conditions = const [];
+  List<GeofenceEntity> _geofences = const [];
 
   @override
   void initState() {
@@ -151,7 +152,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
               context.read<GeofenceBloc>().add(
                 GeofenceUnassign(
                   deviceId: widget.deviceId,
-                  geofenceNumber: slot.number,
+                  geofenceId: geofence.id,
                 ),
               );
             },
@@ -228,7 +229,9 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         ),
         body: BlocConsumer<GeofenceBloc, GeofenceState>(
           listener: (context, state) {
-            if (state is GeofenceDeleted) {
+            if (state is GeofenceLoaded) {
+              setState(() => _geofences = state.geofences);
+            } else if (state is GeofenceDeleted) {
               _snack('Geofence deleted.');
             } else if (state is GeofenceAssigned) {
               _snack('Geofence assigned to device.');
@@ -245,7 +248,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
 
             final geofences = state is GeofenceLoaded
                 ? state.geofences
-                : <GeofenceEntity>[];
+                : _geofences;
 
             // Device section is a fixed 3-slot layout built from ALL geofences
             // (search does not hide slots).

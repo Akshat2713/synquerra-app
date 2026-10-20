@@ -110,6 +110,7 @@ flutter_launcher_icons:
 flutter:
   assets:
     - assets/images/
+    - assets/audio/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -125,7 +126,7 @@ flutter_native_splash:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/app_name_logo.png
-    - assets/audio/
+    
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

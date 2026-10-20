@@ -148,13 +148,10 @@ class GeofenceAssign extends GeofenceEvent {
 
 class GeofenceUnassign extends GeofenceEvent {
   final String deviceId; // Required to reload geofences after success
-  final String geofenceNumber;
+  final String geofenceId;
 
-  const GeofenceUnassign({
-    required this.deviceId,
-    required this.geofenceNumber,
-  });
+  const GeofenceUnassign({required this.deviceId, required this.geofenceId});
 
   @override
-  List<Object?> get props => [deviceId, geofenceNumber];
+  List<Object?> get props => [deviceId, geofenceId];
 }

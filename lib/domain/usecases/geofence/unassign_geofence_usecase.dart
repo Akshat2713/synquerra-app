@@ -6,6 +6,6 @@ class UnassignGeofenceUseCase {
   final GeofenceRepository _repository;
   const UnassignGeofenceUseCase(this._repository);
 
-  Future<Either<Failure, Unit>> call({required String geofenceNumber}) =>
-      _repository.unassignGeofence(geofenceNumber: geofenceNumber);
+  Future<Either<Failure, Unit>> call({required String geofenceId}) =>
+      _repository.unassignGeofence(geofenceId: geofenceId);
 }

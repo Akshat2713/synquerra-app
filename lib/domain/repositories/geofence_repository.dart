@@ -53,7 +53,5 @@ abstract class GeofenceRepository {
     required String geofenceNumber,
   });
 
-  Future<Either<Failure, Unit>> unassignGeofence({
-    required String geofenceNumber,
-  });
+  Future<Either<Failure, Unit>> unassignGeofence({required String geofenceId});
 }

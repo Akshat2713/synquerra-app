@@ -117,9 +117,9 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
 
   @override
   Future<Either<Failure, Unit>> unassignGeofence({
-    required String geofenceNumber,
+    required String geofenceId,
   }) => safeCall(
-    call: () => _remote.unassignGeofence(geofenceNumber: geofenceNumber),
+    call: () => _remote.unassignGeofence(geofenceId: geofenceId),
     toEntity: (_) => unit,
   );
 }

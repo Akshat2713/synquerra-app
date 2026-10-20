@@ -307,10 +307,10 @@ class GeofenceRemoteDataSource {
   }
 
   /// Unassigns a geofence slot (e.g., GEO1) by passing null for the geofence ID
-  Future<void> unassignGeofence({required String geofenceNumber}) async {
+  Future<void> unassignGeofence({required String geofenceId}) async {
     AppLogger.d(
       'GeofenceRemoteDataSource',
-      'unassignGeofence() called for slot: $geofenceNumber',
+      'unassignGeofence() called for: $geofenceId',
     );
 
     try {
@@ -318,7 +318,7 @@ class GeofenceRemoteDataSource {
         ApiConstants.assignGeofence,
         data: {
           'assignments': [
-            {'geofence_id': null, 'geofence_number': geofenceNumber},
+            {'geofence_id': geofenceId, 'action': 'dsync'},
           ],
         },
       );

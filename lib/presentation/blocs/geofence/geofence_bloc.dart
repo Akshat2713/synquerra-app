@@ -169,11 +169,9 @@ class GeofenceBloc extends Bloc<GeofenceEvent, GeofenceState> {
     GeofenceUnassign event,
     Emitter<GeofenceState> emit,
   ) async {
-    AppLogger.d('GeofenceBloc', 'Unassign → slot: ${event.geofenceNumber}');
+    AppLogger.d('GeofenceBloc', 'Unassign → geofenceId: ${event.geofenceId}');
     emit(const GeofenceOperationLoading());
-    final result = await _unassignGeofenceUseCase(
-      geofenceNumber: event.geofenceNumber,
-    );
+    final result = await _unassignGeofenceUseCase(geofenceId: event.geofenceId);
     result.fold(
       (failure) => emit(GeofenceOperationError(failure.userMessage)),
       (_) {
