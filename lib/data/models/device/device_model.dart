@@ -15,14 +15,11 @@ class DeviceModel {
   final String? speed;
   final String? temperature;
   final String? currentMode;
-  final String ledStatus;
+  // final String ledStatus;
   final String? timestamp;
   final String? battery;
   final String? signal;
   final String? gpsStrength;
-  final bool? isActive;
-  final bool? isSubscribed;
-  final String? inventoryStatus;
   final String? associationType;
   final bool? isOnline;
   final bool? isCharging;
@@ -32,18 +29,6 @@ class DeviceModel {
   final DeviceOwnerModel? owner;
   final PersonModel? carrier;
   final List<DeviceAssociationModel> assignments;
-
-  // Fields present in the newer API payload that weren't modeled before.
-  final int? schemaVersion;
-  final String? hdop;
-  final String? satsUsed;
-  final String? satsInView;
-  final String? fixType;
-  final String? deviceMode;
-  final String? gnssMode;
-  final String? source;
-  final String? hardwareVersion;
-  final String? firmwareVersion;
 
   const DeviceModel({
     required this.id,
@@ -56,14 +41,11 @@ class DeviceModel {
     this.speed,
     this.temperature,
     this.currentMode = 'NA',
-    required this.ledStatus,
+    // required this.ledStatus,
     this.timestamp,
     this.battery,
     this.signal,
     this.gpsStrength,
-    this.isActive,
-    this.isSubscribed,
-    this.inventoryStatus,
     this.associationType,
     this.isOnline,
     this.isCharging,
@@ -73,16 +55,6 @@ class DeviceModel {
     this.owner,
     this.carrier,
     this.assignments = const [],
-    this.schemaVersion,
-    this.hdop,
-    this.satsUsed,
-    this.satsInView,
-    this.fixType,
-    this.deviceMode,
-    this.gnssMode,
-    this.source,
-    this.hardwareVersion,
-    this.firmwareVersion,
   });
 
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
@@ -103,14 +75,11 @@ class DeviceModel {
       speed: master['speed']?.toString(),
       temperature: master['temperature']?.toString(),
       currentMode: master['current_mode'] as String?,
-      ledStatus: (master['led_status'] ?? '') as String,
+      // ledStatus: (master['led_status'] ?? '') as String,
       timestamp: master['timestamp'] as String?,
       battery: master['battery']?.toString(),
       signal: master['signal']?.toString(),
       gpsStrength: master['gps_strength']?.toString(),
-      isActive: master['is_active'] as bool?,
-      isSubscribed: master['is_subscribed'] as bool?,
-      inventoryStatus: master['inventory_status'] as String?,
       associationType: master['association_type'] as String?,
       isOnline: master['is_online'] as bool?,
       isCharging: master['is_charging'] as bool?,
@@ -124,16 +93,6 @@ class DeviceModel {
             (a) => DeviceAssociationModel.fromJson(a as Map<String, dynamic>),
           )
           .toList(),
-      schemaVersion: master['schema_version'] as int?,
-      hdop: master['hdop']?.toString(),
-      satsUsed: master['sats_used']?.toString(),
-      satsInView: master['sats_in_view']?.toString(),
-      fixType: master['fix_type'] as String?,
-      deviceMode: master['device_mode'] as String?,
-      gnssMode: master['gnss_mode'] as String?,
-      source: master['source'] as String?,
-      hardwareVersion: master['hardware_version'] as String?,
-      firmwareVersion: master['firmware_version'] as String?,
     );
   }
 
@@ -190,14 +149,11 @@ class DeviceModel {
     speed: _parseLeadingNumber(speed),
     temperature: temperature,
     currentMode: currentMode ?? 'NA',
-    ledStatus: ledStatus,
+    // ledStatus: ledStatus,
     timestamp: timestamp,
     battery: battery != null ? int.tryParse(battery!) : null,
     signal: signal != null ? int.tryParse(signal!) : null,
     gpsStrength: gpsStrength,
-    isActive: isActive,
-    isSubscribed: isSubscribed,
-    inventoryStatus: inventoryStatus,
     associationType: associationType,
     isOnline: isOnline,
     isCharging: isCharging,
@@ -209,15 +165,5 @@ class DeviceModel {
     assignments: assignments.map((a) => a.toEntity()).toList(),
     displayOwnerName: displayOwnerName,
     displayProfilePhoto: displayProfilePhoto,
-    schemaVersion: schemaVersion,
-    hdop: hdop,
-    satsUsed: satsUsed,
-    satsInView: satsInView,
-    fixType: fixType,
-    deviceMode: deviceMode,
-    gnssMode: gnssMode,
-    source: source,
-    hardwareVersion: hardwareVersion,
-    firmwareVersion: firmwareVersion,
   );
 }

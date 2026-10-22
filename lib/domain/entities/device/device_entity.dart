@@ -15,14 +15,11 @@ class DeviceEntity extends Equatable {
   final double? speed;
   final String? temperature;
   final String currentMode;
-  final String ledStatus;
+  // final String ledStatus;
   final String? timestamp;
   final int? battery;
   final int? signal;
   final String? gpsStrength;
-  final bool? isActive;
-  final bool? isSubscribed;
-  final String? inventoryStatus;
   final String? associationType;
   final bool? isOnline;
   final bool? isCharging;
@@ -34,16 +31,6 @@ class DeviceEntity extends Equatable {
   final List<DeviceAssociationEntity> assignments;
   final String displayOwnerName;
   final String? displayProfilePhoto;
-  final int? schemaVersion;
-  final String? hdop;
-  final String? satsUsed;
-  final String? satsInView;
-  final String? fixType;
-  final String? deviceMode;
-  final String? gnssMode;
-  final String? source;
-  final String? hardwareVersion;
-  final String? firmwareVersion;
 
   const DeviceEntity({
     required this.id,
@@ -56,14 +43,11 @@ class DeviceEntity extends Equatable {
     this.speed,
     this.temperature,
     required this.currentMode,
-    required this.ledStatus,
+    // required this.ledStatus,
     this.timestamp,
     this.battery,
     this.signal,
     this.gpsStrength,
-    this.isActive,
-    this.isSubscribed,
-    this.inventoryStatus,
     this.associationType,
     this.isOnline,
     this.isCharging,
@@ -75,16 +59,6 @@ class DeviceEntity extends Equatable {
     this.assignments = const [],
     required this.displayOwnerName,
     this.displayProfilePhoto,
-    this.schemaVersion,
-    this.hdop,
-    this.satsUsed,
-    this.satsInView,
-    this.fixType,
-    this.deviceMode,
-    this.gnssMode,
-    this.source,
-    this.hardwareVersion,
-    this.firmwareVersion,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -118,14 +92,11 @@ class DeviceEntity extends Equatable {
     speed,
     temperature,
     currentMode,
-    ledStatus,
+    // ledStatus,
     timestamp,
     battery,
     signal,
     gpsStrength,
-    isActive,
-    isSubscribed,
-    inventoryStatus,
     associationType,
     isOnline,
     isCharging,
@@ -137,16 +108,6 @@ class DeviceEntity extends Equatable {
     displayOwnerName,
     displayProfilePhoto,
     assignments,
-    schemaVersion,
-    hdop,
-    satsUsed,
-    satsInView,
-    fixType,
-    deviceMode,
-    gnssMode,
-    source,
-    hardwareVersion,
-    firmwareVersion,
   ];
 }
 

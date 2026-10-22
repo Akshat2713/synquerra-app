@@ -12,7 +12,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
-import 'widgets/add_device_fab.dart';
+// import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
@@ -84,7 +84,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     ),
   );
 
-  void _onAddDeviceTap() => _refreshAfter(AppRouter.pushLinkDevice(context));
+  // void _onAddDeviceTap() => _refreshAfter(AppRouter.pushLinkDevice(context));
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +105,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           ),
         ],
       ),
-      floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
+      // floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
       body: BlocBuilder<DeviceListBloc, DeviceListState>(
         builder: (context, state) {
           if (state is DeviceListLoading || state is DeviceListInitial) {
@@ -184,7 +184,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                           user: user,
                           allAlerts: allAlerts,
                         ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 48)),
                 ],
               ),
             );

@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
+import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../blocs/analytics/analytics_bloc.dart';
 import '../../../themes/colors.dart';
@@ -10,6 +12,8 @@ import 'utils/curve_geometry.dart';
 
 class MapHistoryMarkersLayer extends StatelessWidget {
   const MapHistoryMarkersLayer({super.key});
+
+  static const _tag = 'MarkersLayer';
 
   bool _isNegligibleMove(AnalyticsEntity a, AnalyticsEntity b) {
     const threshold = 0.00005; // ~5 meters in lat/lng degrees, rough
@@ -21,18 +25,31 @@ class MapHistoryMarkersLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AnalyticsBloc, AnalyticsState>(
       buildWhen: (prev, curr) {
-        if (prev is AnalyticsLoaded && curr is AnalyticsLoaded) {
-          return prev.sliderIndex != curr.sliderIndex ||
-              prev.points != curr.points;
-        }
-        return prev.runtimeType != curr.runtimeType;
+        final rebuild = (prev is AnalyticsLoaded && curr is AnalyticsLoaded)
+            ? prev.sliderIndex != curr.sliderIndex || prev.points != curr.points
+            : prev.runtimeType != curr.runtimeType;
+        AppLogger.d(
+          _tag,
+          'buildWhen → rebuild=$rebuild '
+          '(prev=${prev.runtimeType}, curr=${curr.runtimeType})',
+        );
+        return rebuild;
       },
       builder: (context, state) {
         final loaded = state is AnalyticsLoaded ? state : null;
-        if (loaded == null) return const SizedBox.shrink();
+        if (loaded == null) {
+          AppLogger.d(_tag, 'NOT rendered: state=${state.runtimeType}');
+          return const SizedBox.shrink();
+        }
 
         final points = loaded.mappablePoints;
-        if (points.isEmpty) return const SizedBox.shrink();
+        if (points.isEmpty) {
+          AppLogger.d(
+            _tag,
+            'NOT rendered: 0 mappable (total=${loaded.points.length})',
+          );
+          return const SizedBox.shrink();
+        }
 
         // Same screen-space points the polyline uses, so angles match the line
         // (and include any map rotation).
@@ -48,11 +65,18 @@ class MapHistoryMarkersLayer extends StatelessWidget {
         final lastIndex = points.length - 1;
         final markers = <Marker>[];
 
+        // Points we actually added a marker for (used by the AFTER log).
+        final builtPoints = <AnalyticsEntity>[];
+
         for (var index = 0; index <= lastIndex; index++) {
           final point = points[index];
           final isSelected = index == loaded.sliderIndex;
-
           if (index == lastIndex) {
+            AppLogger.d(
+              _tag,
+              'BEFORE render [$index/$lastIndex] circle (last) → '
+              '${point.latitude}, ${point.longitude} @ ${point.deviceTimestamp} camera=${camera.center} z=${camera.zoom}',
+            );
             markers.add(
               _circleMarker(
                 point: point,
@@ -60,15 +84,28 @@ class MapHistoryMarkersLayer extends StatelessWidget {
                 color: AppColors.primary(context),
               ),
             );
+            builtPoints.add(point);
             continue;
           }
 
           final next = points[index + 1];
-          if (_isNegligibleMove(point, next)) continue;
+          if (_isNegligibleMove(point, next)) {
+            AppLogger.d(
+              _tag,
+              'SKIPPED [$index/$lastIndex] negligible move → '
+              '${point.latitude}, ${point.longitude}',
+            );
+            continue;
+          }
 
           final dir = CurveGeometry.tangentAt(offsets, index);
           if (dir == null) {
             // Overlapping on screen: no meaningful direction, show a dot.
+            AppLogger.d(
+              _tag,
+              'BEFORE render [$index/$lastIndex] circle (no direction) → '
+              '${point.latitude}, ${point.longitude} @ ${point.deviceTimestamp}',
+            );
             markers.add(
               _circleMarker(
                 point: point,
@@ -76,12 +113,18 @@ class MapHistoryMarkersLayer extends StatelessWidget {
                 color: AppColors.primary(context),
               ),
             );
+            builtPoints.add(point);
             continue;
           }
 
           // Icon points up; rotate clockwise from up to the screen direction.
           final angle = math.atan2(dir.dx, -dir.dy);
 
+          AppLogger.d(
+            _tag,
+            'BEFORE render [$index/$lastIndex] arrow → '
+            '${point.latitude}, ${point.longitude} @ ${point.deviceTimestamp}',
+          );
           markers.add(
             _arrowMarker(
               point: point,
@@ -94,7 +137,23 @@ class MapHistoryMarkersLayer extends StatelessWidget {
                         : AppColors.primary(context)),
             ),
           );
+          builtPoints.add(point);
         }
+
+        // AFTER: runs once the frame has been drawn.
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          for (final p in builtPoints) {
+            final inView = camera.visibleBounds.contains(
+              LatLng(p.latitude!, p.longitude!),
+            );
+            AppLogger.d(
+              _tag,
+              'AFTER render → ${p.latitude}, ${p.longitude} '
+              '${inView ? "RENDERED (visible)" : "BUILT but OFF-SCREEN"}',
+            );
+          }
+        });
+
         return MarkerLayer(markers: markers);
       },
     );

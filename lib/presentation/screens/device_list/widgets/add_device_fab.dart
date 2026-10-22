@@ -1,22 +1,22 @@
-import 'package:flutter/material.dart';
-import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+// import 'package:flutter/material.dart';
+// import '../../../themes/colors.dart';
+// import 'package:synquerra/presentation/themes/app_tokens.dart';
 
-class AddDeviceFab extends StatelessWidget {
-  final VoidCallback onTap;
+// class AddDeviceFab extends StatelessWidget {
+//   final VoidCallback onTap;
 
-  const AddDeviceFab({super.key, required this.onTap});
+//   const AddDeviceFab({super.key, required this.onTap});
 
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: onTap,
-      backgroundColor: AppColors.primary(context),
-      foregroundColor: Colors.white,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
-      tooltip: 'Add New Device',
-      child: const Icon(Icons.add_rounded, size: 28),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return FloatingActionButton(
+//       onPressed: onTap,
+//       backgroundColor: AppColors.primary(context),
+//       foregroundColor: Colors.white,
+//       elevation: 4,
+//       shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
+//       tooltip: 'Add New Device',
+//       child: const Icon(Icons.add_rounded, size: 28),
+//     );
+//   }
+// }

@@ -10,6 +10,7 @@ import '../../app/device_event_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/realtime/device_events_cubit.dart';
+import 'bottom_bar.dart';
 import 'main_shell_cubit.dart';
 import 'main_tab.dart';
 import 'main_tabs.dart';
@@ -18,6 +19,12 @@ class MainShellScreen extends StatelessWidget {
   /// Injectable for testing / role-based tabs. Defaults to [mainTabs].
   final List<MainTab>? tabs;
   const MainShellScreen({super.key, this.tabs});
+
+  Future<void> _onAddDevice(BuildContext context) async {
+    await AppRouter.pushLinkDevice(context);
+    if (!context.mounted) return;
+    context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +81,49 @@ class MainShellScreen extends StatelessWidget {
                 }
               },
               child: Scaffold(
-                body: _LazyIndexedStack(index: index, tabs: tabs),
-                bottomNavigationBar: NavigationBar(
-                  selectedIndex: index,
-                  onDestinationSelected: context.read<MainShellCubit>().select,
-                  destinations: [
-                    for (final t in tabs)
-                      NavigationDestination(
-                        icon: Icon(t.icon),
-                        selectedIcon: Icon(t.selectedIcon),
-                        label: t.label,
-                      ),
-                  ],
+                resizeToAvoidBottomInset: false,
+                body: Builder(
+                  builder: (context) {
+                    final keyboardOpen =
+                        MediaQuery.viewInsetsOf(context).bottom > 0;
+                    final barSpace = keyboardOpen
+                        ? 0.0
+                        : BottomBar.barHeight +
+                              MediaQuery.paddingOf(context).bottom;
+
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: barSpace),
+                            child: MediaQuery.removePadding(
+                              context: context,
+                              removeBottom: true,
+                              child: _LazyIndexedStack(
+                                index: index,
+                                tabs: tabs,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (!keyboardOpen)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: BottomBar(
+                              items: [
+                                for (final t in tabs)
+                                  BarItem(t.label, t.icon, t.selectedIcon),
+                              ],
+                              selectedIndex: index,
+                              onSelected: context.read<MainShellCubit>().select,
+                              onCenterTap: () => _onAddDevice(context),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
