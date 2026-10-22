@@ -74,6 +74,21 @@ class DateTimeFormatter {
     }
   }
 
+  /// Compact time for feed rows, takes the raw ISO string.
+  /// Today: "now", "5m ago", "2h ago". Yesterday: "9:30 PM". Older: "14 Oct".
+  static String formatFeedTime(String? iso) {
+    final dt = parseUtcToLocal(iso);
+    if (dt == null) return '';
+    if (isToday(dt)) {
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return 'now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      return '${diff.inHours}h ago';
+    }
+    if (isYesterday(dt)) return DateFormat('h:mm a').format(dt);
+    return DateFormat('d MMM').format(dt);
+  }
+
   /// Checks if a timestamp falls within the live threshold
   static bool isLive(
     DateTime? timestamp, {
@@ -103,7 +118,7 @@ class DateTimeFormatter {
 
   static String toFullDateTime(String? isoTimestamp) {
     final dt = parseUtcToLocal(isoTimestamp);
-    return formatFullDateTime(dt); // Reuses formatFullDateTime directly
+    return formatFullDateTime(dt);
   }
 
   static String formatFullDateTime(DateTime? dateTime) {

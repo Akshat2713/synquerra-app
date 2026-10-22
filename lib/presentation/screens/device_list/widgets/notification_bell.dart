@@ -57,78 +57,72 @@ class _NotificationBellState extends State<NotificationBell>
 
     _panelEntry = OverlayEntry(
       builder: (ctx) {
-        final screenWidth = MediaQuery.of(ctx).size.width;
-        final panelWidth = screenWidth * 0.75;
         return Positioned(
-          width: panelWidth,
-          child: CompositedTransformFollower(
-            link: _layerLink,
-            showWhenUnlinked: false,
-            offset: Offset(-(panelWidth - 44) + 20, 44),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ScaleTransition(
-                scale: CurvedAnimation(
-                  parent: _controller,
-                  curve: Curves.easeOutBack,
-                ),
-                alignment: Alignment.topRight,
-                child: FadeTransition(
-                  opacity: _controller,
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider.value(value: alertsBloc),
-                      BlocProvider.value(value: deviceListBloc),
-                      BlocProvider.value(value: authBloc),
-                    ],
-                    child: BlocBuilder<AlertsBloc, AlertsState>(
-                      builder: (panelContext, state) {
-                        final authState = panelContext.watch<AuthBloc>().state;
-                        final deviceState = panelContext
-                            .watch<DeviceListBloc>()
-                            .state;
+          top: MediaQuery.paddingOf(ctx).top + kToolbarHeight,
+          left: AppSpacing.md - 4,
+          right: AppSpacing.md - 4,
+          child: ScaleTransition(
+            scale: CurvedAnimation(
+              parent: _controller,
+              curve: Curves.easeOutCubic,
+            ),
+            alignment: Alignment.topRight,
+            child: FadeTransition(
+              opacity: _controller,
+              child: MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: alertsBloc),
+                  BlocProvider.value(value: deviceListBloc),
+                  BlocProvider.value(value: authBloc),
+                ],
+                child: BlocBuilder<AlertsBloc, AlertsState>(
+                  builder: (panelContext, state) {
+                    final authState = panelContext.watch<AuthBloc>().state;
+                    final deviceState = panelContext
+                        .watch<DeviceListBloc>()
+                        .state;
 
-                        final currentUserFullName =
-                            authState is AuthAuthenticated
-                            ? authState.user.fullName
-                            : '—';
-                        final devices = deviceState is DeviceListLoaded
-                            ? deviceState.devices
-                            : <DeviceEntity>[];
+                    final currentUserFullName = authState is AuthAuthenticated
+                        ? authState.user.fullName
+                        : '—';
+                    final devices = deviceState is DeviceListLoaded
+                        ? deviceState.devices
+                        : <DeviceEntity>[];
 
-                        final isLoading =
-                            state is AlertsLoading || state is AlertsInitial;
-                        final errorMessage = state is AlertsError
-                            ? state.message
-                            : null;
-                        final List<AlertEntity> alerts = state is AlertsLoaded
-                            ? state.alerts
-                            : const <AlertEntity>[];
+                    final isLoading =
+                        state is AlertsLoading || state is AlertsInitial;
+                    final errorMessage = state is AlertsError
+                        ? state.message
+                        : null;
+                    final List<AlertEntity> alerts = state is AlertsLoaded
+                        ? state.alerts
+                        : const <AlertEntity>[];
 
-                        return NotificationPanel(
-                          alerts: alerts,
-                          devices: devices,
-                          currentUserFullName: currentUserFullName,
-                          isLoading: isLoading,
-                          errorMessage: errorMessage,
-                          onClose: _close,
-                          onAlertTap: (alert, device) {
-                            if (device != null) {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.deviceDetail,
-                                arguments: DeviceDetailArgs(
-                                  device: device,
-                                  deviceListBloc: context
-                                      .read<DeviceListBloc>(),
-                                ),
-                              );
-                            }
-                          },
-                        );
+                    return NotificationPanel(
+                      alerts: alerts,
+                      devices: devices,
+                      currentUserFullName: currentUserFullName,
+                      isLoading: isLoading,
+                      errorMessage: errorMessage,
+                      onClose: _close,
+                      onAlertTap: (alert, device) {
+                        if (device != null) {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.deviceDetail,
+                            arguments: DeviceDetailArgs(
+                              device: device,
+                              deviceListBloc: context.read<DeviceListBloc>(),
+                            ),
+                          );
+                        }
                       },
-                    ),
-                  ),
+                      onMarkAllRead: () {
+                        // TODO: dispatch your "acknowledge all" event, e.g.
+                        // alertsBloc.add(const AlertsMarkAllReadRequested());
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -136,7 +130,6 @@ class _NotificationBellState extends State<NotificationBell>
         );
       },
     );
-
     overlay.insert(_barrierEntry!);
     overlay.insert(_panelEntry!);
     _controller.forward();
