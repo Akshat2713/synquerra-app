@@ -1,9 +1,20 @@
-// lib/presentation/screens/manage/widgets/emergency_contacts_section.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../../../../domain/entities/settings/settings_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../utils/unit_formatter.dart';
+import '../../../widgets/app_motion_widgets.dart';
+import '../../../widgets/app_surfaces.dart';
+import 'edit_contacts_sheet.dart';
+
+const _kNoPrimary = 'No Primary Number';
+const _kNoSecondary = 'No Secondary Number';
+
+String _value(String? n) =>
+    (n == null || n == _kNoPrimary || n == _kNoSecondary) ? '' : n;
 
 class EmergencyContactsSection extends StatelessWidget {
   final String deviceId;
@@ -19,166 +30,98 @@ class EmergencyContactsSection extends StatelessWidget {
     this.onSaveContacts,
   });
 
-  void _showEditBottomSheet(BuildContext context) {
-    final primaryController = TextEditingController(
-      text: settings.phoneNum1 == 'No Primary Number' ? '' : settings.phoneNum1,
-    );
-    final secondaryController = TextEditingController(
-      text: settings.phoneNum2 == 'No Secondary Number'
-          ? ''
-          : settings.phoneNum2,
-    );
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (bottomSheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Edit Emergency Contacts',
-                    style: TextStyle(
-                      color: AppColors.textPrimary(
-                        context,
-                      ).withValues(alpha: AppAlpha.overlay),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(bottomSheetContext),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: primaryController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Primary Phone Number',
-                  prefixIcon: Icon(Icons.phone_rounded),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: secondaryController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Secondary Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary(context),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.mdAll,
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(bottomSheetContext);
-                    onSaveContacts?.call(
-                      primaryController.text.trim(),
-                      secondaryController.text.trim(),
-                    );
-                  },
-                  child: const Text(
-                    'Save Contacts',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+  void _edit(BuildContext context) {
+    if (isUpdating) return;
+    showEditContactsSheet(
+      context,
+      primary: _value(settings.phoneNum1),
+      secondary: _value(settings.phoneNum2),
+      onSave: (p1, p2) => onSaveContacts?.call(p1, p2),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: AppAlpha.overlay),
-        ),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'EMERGENCY CONTACTS',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                  color: AppColors.textPrimary(context).withValues(alpha: AppAlpha.overlay),
+              const IconTile(
+                icon: Icons.emergency_rounded,
+                background: AppColors.dangerContainer,
+                foreground: AppColors.danger,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Emergency contacts',
+                      style: AppTextStyles.sectionWithColor(context),
+                    ),
+                    Text(
+                      'Called when this device sends SOS',
+                      style: AppTextStyles.metaWithColor(context),
+                    ),
+                  ],
                 ),
               ),
-              if (isUpdating)
-                const SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                )
-              else
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    Icons.edit_rounded,
-                    size: 18,
-                    color: AppColors.primary(context),
-                  ),
-                  onPressed: () => _showEditBottomSheet(context),
+              SizedBox(
+                height: AppSize.tapTarget,
+                child: AnimatedSwitcher(
+                  duration: AppMotion.base,
+                  child: isUpdating
+                      ? Padding(
+                          key: const ValueKey('loading'),
+                          padding: AppSpacing.mdAll,
+                          child: SizedBox.square(
+                            dimension: AppSize.icon,
+                            child: CircularProgressIndicator.adaptive(
+                              strokeWidth: AppSize.stroke,
+                            ),
+                          ),
+                        )
+                      : TextButton.icon(
+                          key: const ValueKey('edit'),
+                          onPressed: () => _edit(context),
+                          icon: const Icon(
+                            Icons.edit_rounded,
+                            size: AppSize.iconSm,
+                          ),
+                          label: const Text('Edit'),
+                        ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Called when this device sends SOS · two numbers max',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
           const SizedBox(height: AppSpacing.md),
-          _ContactBox(
-            label: 'PRIMARY',
-            number: settings.phoneNum1 ?? 'No Primary Number',
-          ),
-          const SizedBox(height: 12),
-          _ContactBox(
-            label: 'SECONDARY',
-            number: settings.phoneNum2 ?? 'No Secondary Number',
+          AnimatedOpacity(
+            duration: AppMotion.base,
+            opacity: isUpdating ? AppAlpha.disabled : 1,
+            child: Column(
+              children: [
+                _ContactTile(
+                  role: 'Primary',
+                  badge: 'Called first',
+                  number: _value(settings.phoneNum1),
+                  emptyText: _kNoPrimary,
+                  isPrimary: true,
+                  onTap: () => _edit(context),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _ContactTile(
+                  role: 'Secondary',
+                  badge: 'Backup',
+                  number: _value(settings.phoneNum2),
+                  emptyText: _kNoSecondary,
+                  isPrimary: false,
+                  onTap: () => _edit(context),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -186,43 +129,129 @@ class EmergencyContactsSection extends StatelessWidget {
   }
 }
 
-class _ContactBox extends StatelessWidget {
-  final String label;
+class _ContactTile extends StatelessWidget {
+  final String role;
+  final String badge;
   final String number;
+  final String emptyText;
+  final bool isPrimary;
+  final VoidCallback onTap;
 
-  const _ContactBox({required this.label, required this.number});
+  const _ContactTile({
+    required this.role,
+    required this.badge,
+    required this.number,
+    required this.emptyText,
+    required this.isPrimary,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
+    final empty = number.isEmpty;
+    final primary = AppColors.primary(context);
+
+    return Material(
+      color: AppColors.surfaceVariant(context),
+      borderRadius: AppRadius.lgAll,
+      child: InkWell(
+        borderRadius: AppRadius.lgAll,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Padding(
+          padding: AppSpacing.mdAll,
+          child: Row(
+            children: [
+              IconTile(
+                circle: true,
+                icon: empty
+                    ? Icons.add_rounded
+                    : (isPrimary
+                          ? Icons.phone_in_talk_rounded
+                          : Icons.phone_rounded),
+                background: empty
+                    ? AppColors.surface(context)
+                    : AppColors.primaryContainer(context),
+                foreground: empty ? AppColors.textTertiary(context) : primary,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(role, style: AppTextStyles.metaWithColor(context)),
+                        const SizedBox(width: AppSpacing.sm),
+                        _Pill(
+                          label: badge,
+                          background: isPrimary
+                              ? AppColors.successContainer
+                              : AppColors.offlineContainer,
+                          foreground: isPrimary
+                              ? AppColors.success
+                              : AppColors.offline,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    AnimatedText(
+                      empty ? emptyText : UnitFormatter.formatPhone(number),
+                      style: empty
+                          ? AppTextStyles.bodyWithColor(
+                              context,
+                              color: AppColors.textTertiary(context),
+                            )
+                          : AppTextStyles.sectionWithColor(context),
+                    ),
+                  ],
+                ),
+              ),
+              empty
+                  ? Text(
+                      'Add',
+                      style: AppTextStyles.sectionWithColor(
+                        context,
+                        color: primary,
+                      ),
+                    )
+                  : Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textTertiary(context),
+                    ),
+            ],
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.border),
-            borderRadius: AppRadius.mdAll,
-          ),
-          child: Text(
-            number,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  final Color background;
+  final Color foreground;
+  const _Pill({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.sm,
+      vertical: AppSpacing.xs,
+    ),
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: AppRadius.pillAll,
+    ),
+    child: Text(
+      label,
+      style: AppTextStyles.microWithColor(context, color: foreground),
+    ),
+  );
 }

@@ -5,6 +5,7 @@ import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../domain/entities/signup/person_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/profile/profile_bloc.dart';
+import '../../widgets/user_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -122,29 +123,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Column(
       children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: AppColors.primaryContainer(context),
-              backgroundImage:
-                  user.profilePhoto != null && user.profilePhoto!.isNotEmpty
-                  ? NetworkImage(user.profilePhoto!)
-                  : null,
-              child: user.profilePhoto == null || user.profilePhoto!.isEmpty
-                  ? Text(
-                      user.firstName.isNotEmpty
-                          ? user.firstName[0].toUpperCase()
-                          : 'U',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.onPrimaryContainer(context),
-                      ),
-                    )
-                  : null,
-            ),
-          ],
+        UserAvatar(
+          name: fullName,
+          photoUrl: user.profilePhoto,
+          radius: 50,
+          maxInitials: 1, // keeps your original single-letter look
         ),
         const SizedBox(height: 16),
         Text(

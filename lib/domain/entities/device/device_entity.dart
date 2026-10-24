@@ -27,7 +27,7 @@ class DeviceEntity extends Equatable {
   final String updatedAt;
   final String relationship;
   final DeviceOwnerEntity owner;
-  final PersonEntity? carrier;
+  // final PersonEntity? carrier;
   final List<DeviceAssociationEntity> assignments;
   final String displayOwnerName;
   final String? displayProfilePhoto;
@@ -55,7 +55,7 @@ class DeviceEntity extends Equatable {
     required this.updatedAt,
     required this.relationship,
     required this.owner,
-    this.carrier,
+    // this.carrier,
     this.assignments = const [],
     required this.displayOwnerName,
     this.displayProfilePhoto,
@@ -64,6 +64,7 @@ class DeviceEntity extends Equatable {
   bool get hasLocation => latitude != null && longitude != null;
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
+  bool get hasCarrier => associationFor('carrier') != null;
 
   DeviceAssociationEntity? associationFor(String roleKey) {
     try {
@@ -72,6 +73,8 @@ class DeviceEntity extends Equatable {
       return null;
     }
   }
+
+  DeviceAssociationEntity? get carrier => associationFor('carrier');
 
   String? get geoidLocation {
     if (geoid == '10' || geoid == '11') {
@@ -104,7 +107,7 @@ class DeviceEntity extends Equatable {
     updatedAt,
     relationship,
     owner,
-    carrier,
+    // carrier,
     displayOwnerName,
     displayProfilePhoto,
     assignments,
@@ -117,8 +120,8 @@ extension DeviceEntityFiltering on List<DeviceEntity> {
   ).toList();
 
   List<DeviceEntity> get unassignedDevices =>
-      ownedDevices.where((d) => d.carrier == null).toList();
+      ownedDevices.where((d) => !d.hasCarrier).toList();
 
   List<DeviceEntity> get assignedDevices =>
-      ownedDevices.where((d) => d.carrier != null).toList();
+      ownedDevices.where((d) => d.hasCarrier).toList();
 }

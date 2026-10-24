@@ -46,7 +46,9 @@ class ManageDeviceCard extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
+          color: AppColors.textSecondary(
+            context,
+          ).withValues(alpha: AppAlpha.tint),
         ),
       ),
       child: Padding(
@@ -60,7 +62,9 @@ class ManageDeviceCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer(context).withValues(alpha: AppAlpha.border),
+                    color: AppColors.primaryContainer(
+                      context,
+                    ).withValues(alpha: AppAlpha.border),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -118,10 +122,7 @@ class ManageDeviceCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        _isAssigned
-                            ? '${device.carrier!.firstName} ${device.carrier!.lastName}'
-                                  .trim()
-                            : 'Unassigned',
+                        _isAssigned ? device.carrier!.name : 'Unassigned',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -145,7 +146,9 @@ class ManageDeviceCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.danger,
                         side: BorderSide(
-                          color: AppColors.danger.withValues(alpha: AppAlpha.border),
+                          color: AppColors.danger.withValues(
+                            alpha: AppAlpha.border,
+                          ),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.mdAll,
@@ -212,7 +215,10 @@ class ManageDeviceCard extends StatelessWidget {
 
   Widget _buildStatusChip(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: _isAssigned
             ? AppColors.primary(context).withValues(alpha: AppAlpha.tint)

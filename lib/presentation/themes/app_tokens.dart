@@ -28,9 +28,18 @@ class AppSpacing {
   static EdgeInsets mdVertical = const EdgeInsets.symmetric(vertical: md);
   static EdgeInsets lgVertical = const EdgeInsets.symmetric(vertical: lg);
 
-  static EdgeInsets xsSymmetric = const EdgeInsets.symmetric(horizontal: xs, vertical: xs);
-  static EdgeInsets smSymmetric = const EdgeInsets.symmetric(horizontal: sm, vertical: sm);
-  static EdgeInsets mdSymmetric = const EdgeInsets.symmetric(horizontal: md, vertical: md);
+  static EdgeInsets xsSymmetric = const EdgeInsets.symmetric(
+    horizontal: xs,
+    vertical: xs,
+  );
+  static EdgeInsets smSymmetric = const EdgeInsets.symmetric(
+    horizontal: sm,
+    vertical: sm,
+  );
+  static EdgeInsets mdSymmetric = const EdgeInsets.symmetric(
+    horizontal: md,
+    vertical: md,
+  );
 }
 
 /// Design tokens for consistent border radii across the app.
@@ -52,14 +61,64 @@ class AppRadius {
 class AppAlpha {
   AppAlpha._();
 
-  static const double tint = 0.08;    // 8% opacity for tint overlays
-  static const double border = 0.25;  // 25% opacity for subtle borders
-  static const double overlay = 0.5;  // 50% opacity for overlays/scrims
+  static const double tint = 0.08; // 8% opacity for tint overlays
+  static const double border = 0.25; // 25% opacity for subtle borders
+  static const double overlay = 0.5; // 50% opacity for overlays/scrims
+  static const double fill = 0.2; // translucent fill on a colored surface
+  static const double strong = 0.85; // secondary text on a colored surface
+  static const double disabled = 0.4;
 
   /// Helper to create color with alpha applied
-  static Color withAlpha(Color color, double alpha) => color.withValues(alpha: alpha);
+  static Color withAlpha(Color color, double alpha) =>
+      color.withValues(alpha: alpha);
 
   static Color withTint(Color color) => color.withValues(alpha: tint);
   static Color withBorderAlpha(Color color) => color.withValues(alpha: border);
-  static Color withOverlayAlpha(Color color) => color.withValues(alpha: overlay);
+  static Color withOverlayAlpha(Color color) =>
+      color.withValues(alpha: overlay);
+}
+
+/// Component sizes.
+class AppSize {
+  AppSize._();
+  static const double iconSm = 16;
+  static const double icon = 20;
+  static const double iconLg = 24;
+  static const double tile = 40; // icon tile / avatar
+  static const double tapTarget = 48;
+  static const double stroke = 2; // borders and spinners
+  static const double carouselCard = 128;
+}
+
+/// Durations, curves and motion amounts.
+class AppMotion {
+  AppMotion._();
+  static const Duration fast = Duration(milliseconds: 120);
+  static const Duration base = Duration(milliseconds: 250);
+  static const Duration slow = Duration(milliseconds: 420);
+  static const Duration stagger = Duration(milliseconds: 80);
+  static const Duration snack = Duration(seconds: 2);
+  static const Duration snackLong = Duration(seconds: 4);
+  static const Curve curve = Curves.easeOutCubic;
+  static const double pressScale = 0.96;
+  static const double slideOffset = 0.06;
+}
+
+/// Elevation. Pass AppColors.shadow(context) so it follows the theme.
+class AppShadow {
+  AppShadow._();
+  static List<BoxShadow> card(Color shadow) => [
+    BoxShadow(color: shadow, blurRadius: 24, offset: const Offset(0, 8)),
+    BoxShadow(color: shadow, blurRadius: 4, offset: const Offset(0, 1)),
+  ];
+  static List<BoxShadow> soft(Color shadow) => [
+    BoxShadow(color: shadow, blurRadius: 8, offset: const Offset(0, 2)),
+  ];
+  static List<BoxShadow> glow(Color color) => [
+    BoxShadow(
+      color: AppAlpha.withBorderAlpha(color),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
+    ),
+  ];
 }

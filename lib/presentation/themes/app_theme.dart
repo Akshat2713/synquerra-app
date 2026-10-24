@@ -15,9 +15,7 @@ class AppTheme {
 
   static ThemeData _build(AppPalette p) {
     final isDark = p.brightness == Brightness.dark;
-    final shape12 = RoundedRectangleBorder(
-      borderRadius: AppRadius.mdAll,
-    );
+    final shape12 = RoundedRectangleBorder(borderRadius: AppRadius.mdAll);
 
     final scheme = ColorScheme(
       brightness: p.brightness,
@@ -65,6 +63,20 @@ class AppTheme {
       highlightColor: p.primary.withValues(alpha: isDark ? 0.12 : 0.08),
       splashColor: p.primary.withValues(alpha: isDark ? 0.24 : 0.12),
       disabledColor: p.textDisabled,
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: shape12,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: p.surface,
+        modalBackgroundColor: p.surface,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.lg),
+          ),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
@@ -80,9 +92,7 @@ class AppTheme {
         elevation: 2,
         shadowColor: p.shadow,
         margin: EdgeInsets.only(bottom: AppSpacing.md),
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.mdAll,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
         clipBehavior: Clip.antiAlias,
       ),
       // Elevated button (for secondary actions)
@@ -91,7 +101,10 @@ class AppTheme {
           backgroundColor: p.surface,
           foregroundColor: p.primary,
           minimumSize: const Size(88, 48),
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
+          ),
           shape: shape12,
           elevation: 0,
           textStyle: AppTextStyles.buttonMedium,
@@ -110,7 +123,10 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: p.primary,
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
           textStyle: AppTextStyles.buttonMedium,
         ),
       ),
@@ -118,7 +134,10 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: p.primary,
           side: BorderSide(color: p.primary),
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
           shape: shape12,
           textStyle: AppTextStyles.buttonMedium,
         ),
@@ -158,17 +177,35 @@ class AppTheme {
       ),
       textTheme: TextTheme(
         displayLarge: AppTextStyles.display.copyWith(color: p.textPrimary),
-        displayMedium: AppTextStyles.display.copyWith(fontSize: 28, color: p.textPrimary),
-        displaySmall: AppTextStyles.title.copyWith(fontSize: 24, color: p.textPrimary),
+        displayMedium: AppTextStyles.display.copyWith(
+          fontSize: 28,
+          color: p.textPrimary,
+        ),
+        displaySmall: AppTextStyles.title.copyWith(
+          fontSize: 24,
+          color: p.textPrimary,
+        ),
         headlineMedium: AppTextStyles.title.copyWith(color: p.textPrimary),
-        headlineSmall: AppTextStyles.section.copyWith(fontSize: 18, color: p.textPrimary),
+        headlineSmall: AppTextStyles.section.copyWith(
+          fontSize: 18,
+          color: p.textPrimary,
+        ),
         titleLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
         bodyLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
         bodyMedium: AppTextStyles.body.copyWith(color: p.textSecondary),
         bodySmall: AppTextStyles.meta.copyWith(color: p.textTertiary),
-        labelLarge: AppTextStyles.section.copyWith(color: p.primary, fontWeight: FontWeight.w600),
-        labelMedium: AppTextStyles.body.copyWith(color: p.primary, fontWeight: FontWeight.w600),
-        labelSmall: AppTextStyles.meta.copyWith(color: p.primary, fontWeight: FontWeight.w600),
+        labelLarge: AppTextStyles.section.copyWith(
+          color: p.primary,
+          fontWeight: FontWeight.w600,
+        ),
+        labelMedium: AppTextStyles.body.copyWith(
+          color: p.primary,
+          fontWeight: FontWeight.w600,
+        ),
+        labelSmall: AppTextStyles.meta.copyWith(
+          color: p.primary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       iconTheme: IconThemeData(color: p.iconPrimary, size: 24),
       primaryIconTheme: IconThemeData(color: p.primary, size: 24),

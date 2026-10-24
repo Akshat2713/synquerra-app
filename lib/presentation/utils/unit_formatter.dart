@@ -28,4 +28,17 @@ class UnitFormatter {
     if (sig > 0) return 1;
     return 0;
   }
+
+  static String formatDuration(int seconds) =>
+      (seconds >= 60 && seconds % 60 == 0)
+      ? '${seconds ~/ 60} min'
+      : '$seconds sec';
+
+  static String formatTemperature(num value) =>
+      '${value % 1 == 0 ? value.toInt() : value.toStringAsFixed(1)} °C';
+
+  /// Display only: 10 digits become "95762 63111". No country code.
+  static String formatPhone(String n) => RegExp(r'^\d{10}$').hasMatch(n)
+      ? '${n.substring(0, 5)} ${n.substring(5)}'
+      : n;
 }

@@ -7,6 +7,8 @@ import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../themes/colors.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import '../../../widgets/user_avatar.dart';
+
 class AssignMemberSheet extends StatefulWidget {
   final DeviceEntity device;
   final String currentUserId;
@@ -170,9 +172,7 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                 horizontal: 14,
                 vertical: 10,
               ),
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.mdAll,
-              ),
+              border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
               filled: true,
               fillColor: AppColors.surfaceVariant(
                 context,
@@ -203,7 +203,9 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
           Flexible(
             child: _availablePersons.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg,
+                    ),
                     child: Center(
                       child: Text(
                         'All available contacts are already assigned.',
@@ -220,27 +222,21 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final person = _availablePersons[index];
-                      final hasPhoto =
-                          person.profilePhoto != null &&
-                          person.profilePhoto!.isNotEmpty;
+                      // final hasPhoto =
+                      //     person.profilePhoto != null &&
+                      //     person.profilePhoto!.isNotEmpty;
 
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 4,
                           vertical: 2,
                         ),
-                        leading: CircleAvatar(
-                          backgroundColor: AppColors.primaryContainer(context)
-                              .withValues(alpha: AppAlpha.border),
-                          backgroundImage: hasPhoto
-                              ? NetworkImage(person.profilePhoto!)
-                              : null,
-                          child: !hasPhoto
-                              ? Icon(
-                                  Icons.person_outline_rounded,
-                                  color: AppColors.primary(context),
-                                )
-                              : null,
+                        leading: UserAvatar(
+                          name: person.id == widget.currentUserId
+                              ? widget.currentUserFullName
+                              : person.fullName,
+                          photoUrl: person.profilePhoto,
+                          radius: 20,
                         ),
                         title: Text(
                           person.fullName.isEmpty

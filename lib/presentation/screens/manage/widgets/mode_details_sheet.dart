@@ -1,149 +1,115 @@
-// lib/presentation/screens/manage/widgets/mode_details_sheet.dart
-
 import 'package:flutter/material.dart';
-import '../../../../domain/entities/modes/mode_entity.dart';
-import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
-void showModeDetailsSheet(BuildContext context, ModeEntity mode) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => ModeDetailsSheet(mode: mode),
-  );
-}
+import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/mode_icon_resolver.dart';
+import '../../../utils/unit_formatter.dart';
+import '../../../widgets/app_overlays.dart';
+import '../../../widgets/app_surfaces.dart';
+
+void showModeDetailsSheet(BuildContext context, ModeEntity mode) =>
+    showAppBottomSheet(context, builder: (_) => ModeDetailsSheet(mode: mode));
 
 class ModeDetailsSheet extends StatelessWidget {
   final ModeEntity mode;
-
   const ModeDetailsSheet({super.key, required this.mode});
+
+  Map<String, List<(String, String)>> get _groups => {
+    'Intervals': [
+      (
+        'Normal sending',
+        UnitFormatter.formatDuration(mode.normalSendingInterval),
+      ),
+      ('SOS sending', UnitFormatter.formatDuration(mode.sosSendingInterval)),
+      (
+        'Normal scanning',
+        UnitFormatter.formatDuration(mode.normalScanningInterval),
+      ),
+      (
+        'Airplane interval',
+        UnitFormatter.formatDuration(mode.airplaneInterval),
+      ),
+    ],
+    'Limits & thresholds': [
+      (
+        'Temperature limit',
+        UnitFormatter.formatTemperature(mode.temperatureLimit),
+      ),
+      ('Speed limit', UnitFormatter.formatSpeed(mode.speedLimit, decimals: 0)),
+      ('Low battery limit', '${mode.lowbatLimit}%'),
+    ],
+    'Configuration & status': [
+      ('Priority', '${mode.priority}'),
+      (
+        'Reconfirmation time',
+        UnitFormatter.formatDuration(mode.reconfirmationTime),
+      ),
+      ('Airplane mode', mode.airplaneMode ? 'Enabled' : 'Disabled'),
+      ('Ambient listening', mode.ambientListeningStatus),
+      ('LED status', mode.ledStatus ? 'Enabled' : 'Disabled'),
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              IconTile(
+                icon: ModeIconResolver.resolve(mode),
+                background: AppColors.primaryContainer(context),
+                foreground: AppColors.primary(context),
+              ),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(
-                  mode.name,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary(context),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mode.name,
+                      style: AppTextStyles.titleWithColor(context),
+                    ),
+                    if (mode.description.isNotEmpty)
+                      Text(
+                        mode.description,
+                        style: AppTextStyles.metaWithColor(context),
+                      ),
+                  ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close),
+                tooltip: 'Close',
+                icon: const Icon(Icons.close_rounded),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
-          if (mode.description.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              mode.description,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary(context),
-              ),
-            ),
-          ],
-          const Divider(height: 24),
-          Expanded(
+          const Divider(height: AppSpacing.lg),
+          Flexible(
             child: ListView(
               shrinkWrap: true,
               children: [
-                _buildSectionHeader(context, 'Intervals'),
-                _buildDetailRow(
-                  context,
-                  'Normal Sending',
-                  '${mode.normalSendingInterval}s',
-                ),
-                _buildDetailRow(
-                  context,
-                  'SOS Sending',
-                  '${mode.sosSendingInterval}s',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Normal Scanning',
-                  '${mode.normalScanningInterval}s',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Airplane Interval',
-                  '${mode.airplaneInterval}s',
-                ),
-
-                _buildSectionHeader(context, 'Limits & Thresholds'),
-                _buildDetailRow(
-                  context,
-                  'Temperature Limit',
-                  '${mode.temperatureLimit} ℃',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Speed Limit',
-                  '${mode.speedLimit} km/h',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Low Battery Limit',
-                  '${mode.lowbatLimit}%',
-                ),
-
-                _buildSectionHeader(context, 'Configuration & Status'),
-                _buildDetailRow(context, 'Priority', mode.priority.toString()),
-                _buildDetailRow(
-                  context,
-                  'Reconfirmation Time',
-                  '${mode.reconfirmationTime}s',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Airplane Mode',
-                  mode.airplaneMode ? 'Enabled' : 'Disabled',
-                ),
-                _buildDetailRow(
-                  context,
-                  'Ambient Listening',
-                  mode.ambientListeningStatus,
-                ),
-                _buildDetailRow(
-                  context,
-                  'LED Status',
-                  mode.ledStatus ? 'Enabled' : 'Disabled',
-                ),
-
-                if (mode.note.isNotEmpty) ...[
-                  _buildSectionHeader(context, 'Note'),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      mode.note,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ),
+                for (final g in _groups.entries) ...[
+                  _SectionTitle(g.key),
+                  for (final (label, value) in g.value)
+                    _DetailRow(label, value),
                 ],
-                const SizedBox(height: 16),
+                if (mode.note.isNotEmpty) ...[
+                  const _SectionTitle('Note'),
+                  Text(mode.note, style: AppTextStyles.bodyWithColor(context)),
+                ],
               ],
             ),
           ),
@@ -151,46 +117,39 @@ class ModeDetailsSheet extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.8,
-          color: AppColors.primary(context),
-        ),
-      ),
-    );
-  }
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle(this.title);
 
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary(context),
-            ),
-          ),
-        ],
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
+    child: Text(
+      title.toUpperCase(),
+      style: AppTextStyles.microWithColor(
+        context,
+        color: AppColors.primary(context),
       ),
-    );
-  }
+    ),
+  );
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DetailRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: AppSpacing.xsVertical,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTextStyles.bodyWithColor(context)),
+        Text(value, style: AppTextStyles.sectionWithColor(context)),
+      ],
+    ),
+  );
 }

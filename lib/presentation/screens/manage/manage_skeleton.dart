@@ -3,6 +3,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/modes/mode_entity.dart';
 import '../../../domain/entities/settings/settings_entity.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import 'widgets/emergency_contacts_section.dart';
 import 'widgets/mode_picker_row.dart';
@@ -62,18 +63,18 @@ class ManageSkeleton extends StatelessWidget {
         highlightColor: AppColors.surface(context),
       ),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.mdAll,
         physics: const NeverScrollableScrollPhysics(),
         children: [
           ModePickerRow(
             modes: fakeModes,
             activeModeId: 'fake_0',
             isSwitching: false,
-            autoModeSwitch: true,
+            autoModeSwitch: false,
             onAutoModeToggle: () {},
             onChanged: (_) {},
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           EmergencyContactsSection(
             deviceId: device.id,
             settings: fakeSettingsEntity,

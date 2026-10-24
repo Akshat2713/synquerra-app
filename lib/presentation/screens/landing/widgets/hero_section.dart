@@ -8,6 +8,8 @@ import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import '../../../widgets/user_avatar.dart';
+
 class HeroSection extends StatelessWidget {
   final DeviceEntity device;
   final AnalyticsEntity? latest;
@@ -80,19 +82,7 @@ class HeroSection extends StatelessWidget {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: AppColors.primaryContainer(context),
-                      backgroundImage: photo != null
-                          ? CachedNetworkImageProvider(photo)
-                          : null,
-                      child: photo == null
-                          ? Text(
-                              device.carrier?.gender == 'female' ? '👧' : '👦',
-                              style: const TextStyle(fontSize: 32),
-                            )
-                          : null,
-                    ),
+                    UserAvatar(name: displayName, photoUrl: photo, radius: 36),
                     Positioned(
                       bottom: 0,
                       right: 0,

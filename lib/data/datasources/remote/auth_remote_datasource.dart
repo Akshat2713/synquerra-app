@@ -50,7 +50,7 @@ class AuthRemoteDataSource {
     AppLogger.d('AuthRemoteDataSource', 'updateFcmToken() called');
 
     final response = await _dioClient.dio.patch(
-      ApiConstants.updateProfile,
+      ApiConstants.profile,
       data: {'fcm_token': fcmToken, 'platform': platform},
     );
 

@@ -27,7 +27,7 @@ class DeviceModel {
   final String updatedAt;
   final String relationship;
   final DeviceOwnerModel? owner;
-  final PersonModel? carrier;
+  // final PersonModel? carrier;
   final List<DeviceAssociationModel> assignments;
 
   const DeviceModel({
@@ -53,7 +53,7 @@ class DeviceModel {
     required this.updatedAt,
     required this.relationship,
     this.owner,
-    this.carrier,
+    // this.carrier,
     this.assignments = const [],
   });
 
@@ -87,7 +87,7 @@ class DeviceModel {
       updatedAt: (master['updated_at'] ?? master['updatedAt'] ?? '') as String,
       relationship: (json['relationship'] ?? '') as String,
       owner: ownerJson != null ? DeviceOwnerModel.fromJson(ownerJson) : null,
-      carrier: carrierJson != null ? PersonModel.fromJson(carrierJson) : null,
+      // carrier: carrierJson != null ? PersonModel.fromJson(carrierJson) : null,
       assignments: assignmentsJson
           .map(
             (a) => DeviceAssociationModel.fromJson(a as Map<String, dynamic>),
@@ -105,14 +105,15 @@ class DeviceModel {
 
   String get displayOwnerName => _resolveDisplayOwnerName();
 
+  String? get displayProfilePhoto => _resolveDisplayProfilePhoto();
+
   String _resolveDisplayOwnerName() {
     AppLogger.d('DeviceEntity', 'New Device');
 
-    // 1. Check carrier first (carrier_user)
-    final c = carrier;
+    // 1. Check carrier in assignments first
+    final c = carrierAssignment;
     if (c != null) {
-      // Safely combine firstName and optional lastName
-      final carrierName = '${c.firstName} ${c.lastName}'.trim();
+      final carrierName = c.name.trim(); // already "first last" combined
       AppLogger.d('DeviceEntity', 'Carrier Name: "$carrierName"');
       if (carrierName.isNotEmpty) return carrierName;
     }
@@ -123,13 +124,11 @@ class DeviceModel {
     return ownerName;
   }
 
-  String? get displayProfilePhoto => _resolveDisplayProfilePhoto();
-
   String? _resolveDisplayProfilePhoto() {
     // 1. Carrier exists -> use the carrier's photo only (null if they have none)
-    final c = carrier;
+    final c = carrierAssignment;
     if (c != null) {
-      final p = c.profilePhoto;
+      final p = c.profile;
       return (p != null && p.isNotEmpty) ? p : null;
     }
 
@@ -161,9 +160,16 @@ class DeviceModel {
     updatedAt: updatedAt,
     relationship: relationship,
     owner: owner!.toEntity(),
-    carrier: carrier?.toEntity(),
+    // carrier: carrier?.toEntity(),
     assignments: assignments.map((a) => a.toEntity()).toList(),
     displayOwnerName: displayOwnerName,
     displayProfilePhoto: displayProfilePhoto,
   );
+
+  DeviceAssociationModel? get carrierAssignment {
+    for (final a in assignments) {
+      if (a.assignmentType.toLowerCase() == 'carrier') return a;
+    }
+    return null;
+  }
 }

@@ -1,6 +1,6 @@
 // lib/presentation/screens/landing/widgets/attention_device_sheet.dart
 
-import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
@@ -11,6 +11,8 @@ import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+
+import '../../../widgets/user_avatar.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
   final List<AlertEntity> alerts;
@@ -81,7 +83,7 @@ class AttentionDeviceSheet extends StatelessWidget {
                         .length;
                     final ringColor = deviceSeverityColor(deviceAlerts.cast());
                     final name = d.displayOwnerName;
-                    final profilePhoto = d?.displayProfilePhoto;
+                    // final profilePhoto = d?.displayProfilePhoto;
                     final isCurrentDevice = d.imei == currentDeviceId;
                     return ListTile(
                       leading: Container(
@@ -90,13 +92,10 @@ class AttentionDeviceSheet extends StatelessWidget {
                           border: Border.all(color: ringColor, width: 2),
                         ),
                         padding: const EdgeInsets.all(AppSpacing.xs),
-                        child: CircleAvatar(
-                          backgroundImage: profilePhoto != null
-                              ? CachedNetworkImageProvider(profilePhoto)
-                              : null,
-                          child: profilePhoto == null
-                              ? const Icon(Icons.person)
-                              : null,
+                        child: UserAvatar(
+                          name: name,
+                          photoUrl: d.displayProfilePhoto,
+                          radius: 20,
                         ),
                       ),
                       title: Text(

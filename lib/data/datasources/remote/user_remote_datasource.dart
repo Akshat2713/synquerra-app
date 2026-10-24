@@ -44,7 +44,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<PersonModel> fetchUserProfile() async {
     AppLogger.d(_tag, 'fetchUserProfile() called');
 
-    final response = await _dioClient.dio.get(ApiConstants.fetchUser);
+    final response = await _dioClient.dio.get(ApiConstants.profile);
     final body = response.data as Map<String, dynamic>;
 
     if (body['status'] != 'success') {
@@ -119,7 +119,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     final Response response;
     try {
       response = await _dioClient.dio.patch(
-        ApiConstants.updateProfile,
+        ApiConstants.profile,
         data: payload,
         // No manual contentType: Dio sets multipart + boundary for FormData
         // and application/json for a Map by itself.
@@ -162,7 +162,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final fields = {for (final f in payload.fields) f.key: f.value};
       if (fields.containsKey('password')) fields['password'] = '***';
 
-      AppLogger.d(_tag, 'PATCH ${ApiConstants.updateProfile} (multipart)');
+      AppLogger.d(_tag, 'PATCH ${ApiConstants.profile} (multipart)');
       AppLogger.d(_tag, 'fields: $fields');
       AppLogger.d(
         _tag,
@@ -175,7 +175,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final safe = Map<String, dynamic>.from(payload as Map);
       if (safe.containsKey('password')) safe['password'] = '***';
 
-      AppLogger.d(_tag, 'PATCH ${ApiConstants.updateProfile} (json)');
+      AppLogger.d(_tag, 'PATCH ${ApiConstants.profile} (json)');
       AppLogger.d(_tag, 'payload: $safe');
     }
   }

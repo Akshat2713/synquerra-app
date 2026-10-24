@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
@@ -8,6 +8,8 @@ import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+
+import '../../../widgets/user_avatar.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -113,15 +115,15 @@ class _AvatarStack extends StatelessWidget {
               alerts,
             ).where((a) => !a.isAcknowledged).toList();
             final ringColor = deviceSeverityColor(deviceAlerts);
-            final name = d.displayOwnerName;
-            final profilePhoto = d?.displayProfilePhoto;
-            final parts = name
-                .split(RegExp(r'\s+'))
-                .where((p) => p.isNotEmpty)
-                .toList();
-            final initials = parts.length >= 2
-                ? '${parts[0][0]}${parts[1][0]}'
-                : (parts.isNotEmpty ? parts[0][0] : '?');
+            // final name = d.displayOwnerName;
+            // final profilePhoto = d?.displayProfilePhoto;
+            // final parts = name
+            //     .split(RegExp(r'\s+'))
+            //     .where((p) => p.isNotEmpty)
+            //     .toList();
+            // final initials = parts.length >= 2
+            //     ? '${parts[0][0]}${parts[1][0]}'
+            //     : (parts.isNotEmpty ? parts[0][0] : '?');
 
             return Positioned(
               left: e.key * (size - overlap),
@@ -133,21 +135,11 @@ class _AvatarStack extends StatelessWidget {
                   border: Border.all(color: ringColor, width: 2),
                 ),
                 padding: const EdgeInsets.all(1.5),
-                child: CircleAvatar(
-                  backgroundColor: AppColors.primaryContainer(context),
-                  backgroundImage: profilePhoto != null
-                      ? CachedNetworkImageProvider(profilePhoto)
-                      : null,
-                  child: profilePhoto == null
-                      ? Text(
-                          initials,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.onPrimaryContainer(context),
-                          ),
-                        )
-                      : null,
+                child: UserAvatar(
+                  name: d.displayOwnerName,
+                  photoUrl: d.displayProfilePhoto,
+                  radius:
+                      12.5, // 28 size - 2*1.5 padding - 2*2 border ≈ 12.5 radius
                 ),
               ),
             );

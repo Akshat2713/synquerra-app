@@ -1,20 +1,16 @@
-// lib/presentation/screens/manage/manage_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../blocs/manage/manage_bloc.dart';
-import '../../themes/colors.dart';
+import '../../widgets/app_overlays.dart';
 import '../../widgets/async_state_view.dart';
 import 'manage_skeleton.dart';
-import 'widgets/emergency_contacts_section.dart';
-import 'widgets/mode_picker_row.dart';
+import 'widgets/manage_body.dart';
 
 class ManageScreen extends StatefulWidget {
   final DeviceEntity device;
-
   const ManageScreen({super.key, required this.device});
 
   @override
@@ -36,86 +32,99 @@ class _ManageScreenState extends State<ManageScreen> {
     super.dispose();
   }
 
-  void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.danger),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _manageBloc,
       child: Scaffold(
         appBar: AppBar(title: const Text('Manage'), centerTitle: false),
-        body: BlocConsumer<ManageBloc, ManageState>(
-          listener: (context, state) {
-            if (state is! ManageLoaded) return;
-
-            if (state.modeSwitchError != null) {
-              _showError(context, state.modeSwitchError!);
-            }
-            if (state.settingsUpdateError != null) {
-              _showError(context, state.settingsUpdateError!);
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is ManageLoading || state is ManageInitial;
-            final errorMessage = state is ManageError ? state.message : null;
-
-            if (isLoading) {
-              return ManageSkeleton(device: widget.device);
-            }
-
-            return AsyncStateView(
-              isLoading: false,
-              errorMessage: errorMessage,
-              onRetry: () {
-                _manageBloc.add(ManageLoadRequested(widget.device));
-              },
-              builder: () {
-                if (state is ManageLoaded) {
-                  return ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      ModePickerRow(
-                        modes: state.modes,
-                        activeModeId: state.activeModeId,
-                        isSwitching: state.isSwitchingMode,
-                        autoModeSwitch: state.settings.autoModeSwitch,
-                        onAutoModeToggle: () => _manageBloc.add(
-                          ManageAutoModeToggleRequested(widget.device.id),
-                        ),
-                        onChanged: (modeId) => _manageBloc.add(
-                          ManageModeSwitchRequested(
-                            deviceId: widget.device.id,
-                            modeId: modeId,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      EmergencyContactsSection(
-                        deviceId: widget.device.id,
-                        settings: state.settings,
-                        isUpdating: state.isUpdatingSettings,
-                        onSaveContacts: (phoneNum1, phoneNum2) =>
-                            _manageBloc.add(
-                              ManagePhoneNumbersUpdateRequested(
-                                deviceId: widget.device.id,
-                                phoneNum1: phoneNum1,
-                                phoneNum2: phoneNum2,
-                              ),
-                            ),
-                      ),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            );
-          },
+        body: _ManageFeedbackListener(
+          child: BlocBuilder<ManageBloc, ManageState>(
+            builder: (context, state) {
+              if (state is ManageLoading || state is ManageInitial) {
+                return ManageSkeleton(device: widget.device);
+              }
+              return AsyncStateView(
+                isLoading: false,
+                errorMessage: state is ManageError ? state.message : null,
+                onRetry: () =>
+                    _manageBloc.add(ManageLoadRequested(widget.device)),
+                builder: () => state is ManageLoaded
+                    ? ManageBody(device: widget.device, state: state)
+                    : const SizedBox.shrink(),
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// Shows one snackbar when an action finishes. Wraps the screen body.
+class _ManageFeedbackListener extends StatefulWidget {
+  final Widget child;
+  const _ManageFeedbackListener({required this.child});
+
+  @override
+  State<_ManageFeedbackListener> createState() =>
+      _ManageFeedbackListenerState();
+}
+
+class _ManageFeedbackListenerState extends State<_ManageFeedbackListener> {
+  ManageLoaded? _prev;
+
+  ({String text, bool isError})? _messageFor(ManageLoaded p, ManageLoaded s) {
+    if (s.modeSwitchError != null && s.modeSwitchError != p.modeSwitchError) {
+      return (text: s.modeSwitchError!, isError: true);
+    }
+    if (s.settingsUpdateError != null &&
+        s.settingsUpdateError != p.settingsUpdateError) {
+      return (text: s.settingsUpdateError!, isError: true);
+    }
+    if (p.settings.autoModeSwitch != s.settings.autoModeSwitch) {
+      return (
+        text: s.settings.autoModeSwitch
+            ? 'Auto Mode turned on'
+            : 'Auto Mode turned off',
+        isError: false,
+      );
+    }
+    if (p.isSwitchingMode && !s.isSwitchingMode) {
+      final name = s.modes
+          .where((m) => m.id == s.activeModeId)
+          .map((m) => m.name)
+          .firstOrNull;
+      return (
+        text: name == null ? 'Mode switched' : 'Switched to $name',
+        isError: false,
+      );
+    }
+    if (p.isUpdatingSettings && !s.isUpdatingSettings) {
+      return (text: 'Emergency contacts updated', isError: false);
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<ManageBloc, ManageState>(
+      listener: (context, state) {
+        if (state is! ManageLoaded) {
+          _prev = null;
+          return;
+        }
+        final prev = _prev;
+        _prev = state;
+        if (prev == null) return;
+
+        final m = _messageFor(prev, state);
+        if (m == null) return;
+        m.isError
+            ? AppSnackBar.error(context, m.text)
+            : AppSnackBar.success(context, m.text);
+      },
+      child: widget.child,
     );
   }
 }

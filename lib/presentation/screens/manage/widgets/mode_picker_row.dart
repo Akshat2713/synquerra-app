@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../domain/entities/modes/mode_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/mode_icon_resolver.dart';
+import '../../../utils/unit_formatter.dart';
+import '../../../widgets/app_motion_widgets.dart';
+import '../../../widgets/app_surfaces.dart';
+import 'mode_carousel.dart';
 import 'mode_details_sheet.dart';
 
 class ModePickerRow extends StatelessWidget {
@@ -25,187 +30,79 @@ class ModePickerRow extends StatelessWidget {
     required this.onChanged,
   });
 
-  void _setAuto(bool value) {
-    if (value == autoModeSwitch || isSwitching) return;
-    onAutoModeToggle();
-  }
-
   @override
   Widget build(BuildContext context) {
-    ModeEntity? activeMode;
+    final active = modes.isEmpty
+        ? null
+        : modes.firstWhere(
+            (m) => m.id == activeModeId,
+            orElse: () => modes.first,
+          );
+    final collapsed = autoModeSwitch || modes.isEmpty;
 
-    if (modes.isNotEmpty) {
-      activeMode = modes.firstWhere(
-        (m) => m.id == activeModeId,
-        orElse: () => modes.first,
-      );
-    }
-
-    final modeDesc = (activeMode != null && activeMode.description.isNotEmpty)
-        ? activeMode.description
-        : 'Fast updates (~10 sec)';
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: AppAlpha.overlay),
-        ),
-      ),
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  'TRACKING MODE',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: AppColors.textPrimary(
-                      context,
-                    ).withValues(alpha: AppAlpha.overlay),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 150,
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.xs),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant(
-                      context,
-                    ).withValues(alpha: AppAlpha.border),
-                    borderRadius: AppRadius.lgAll,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SegmentTab(
-                          label: 'Auto',
-                          isSelected: autoModeSwitch,
-                          onTap: () => _setAuto(true),
-                        ),
-                      ),
-                      Expanded(
-                        child: _SegmentTab(
-                          label: 'Manual',
-                          isSelected: !autoModeSwitch,
-                          onTap: () => _setAuto(false),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          Padding(
+            padding: AppSpacing.mdAll,
+            child: _AutoModeHeader(
+              value: autoModeSwitch,
+              enabled: !isSwitching,
+              onChanged: onAutoModeToggle,
+            ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            height: 90,
-            child: modes.isEmpty
-                ? Center(
-                    child: Text(
-                      'No modes available',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary(context),
+          Padding(
+            padding: AppSpacing.mdHorizontal,
+            child: active == null
+                ? Padding(
+                    padding: AppSpacing.lgVertical,
+                    child: Center(
+                      child: Text(
+                        'No modes available',
+                        style: AppTextStyles.metaWithColor(context),
                       ),
                     ),
                   )
-                : IgnorePointer(
-                    ignoring: autoModeSwitch || isSwitching,
-                    child: Opacity(
-                      opacity: autoModeSwitch ? 0.4 : 1.0,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: modes.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final mode = modes[index];
-                          final isSelected = mode.id == activeModeId;
-
-                          return GestureDetector(
-                            onTap: () => onChanged(mode.id),
-                            onLongPress: () =>
-                                showModeDetailsSheet(context, mode),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: 72,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primaryContainer(
-                                        context,
-                                      ).withValues(alpha: AppAlpha.border)
-                                    : AppColors.surfaceVariant(context),
-                                borderRadius: AppRadius.lgAll,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary(context)
-                                      : Colors.transparent,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (isSwitching && isSelected)
-                                    const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator.adaptive(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  else
-                                    Icon(
-                                      ModeIconResolver.resolve(mode),
-                                      size: 22,
-                                      color: isSelected
-                                          ? AppColors.primary(context)
-                                          : AppColors.textSecondary(context),
-                                    ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    mode.name,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: isSelected
-                                          ? AppColors.primary(context)
-                                          : AppColors.textSecondary(context),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                : _CurrentModeHero(
+                    mode: active,
+                    isAuto: autoModeSwitch,
+                    isSwitching: isSwitching,
                   ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            modeDesc,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary(context),
-            ),
+          AnimatedSize(
+            duration: AppMotion.base,
+            curve: AppMotion.curve,
+            alignment: Alignment.topCenter,
+            child: collapsed
+                ? const SizedBox(width: double.infinity, height: AppSpacing.md)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.md,
+                          AppSpacing.md,
+                          AppSpacing.md,
+                          0,
+                        ),
+                        child: Text(
+                          'Choose a mode',
+                          style: AppTextStyles.sectionWithColor(context),
+                        ),
+                      ),
+                      ModeCarousel(
+                        modes: modes,
+                        selectedId: activeModeId,
+                        enabled: !isSwitching,
+                        onSelect: (m) {
+                          if (m.id != activeModeId) onChanged(m.id);
+                        },
+                        onDetails: (m) => showModeDetailsSheet(context, m),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -213,50 +110,203 @@ class ModePickerRow extends StatelessWidget {
   }
 }
 
-class _SegmentTab extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
+class _AutoModeHeader extends StatelessWidget {
+  final bool value;
+  final bool enabled;
+  final VoidCallback onChanged;
 
-  const _SegmentTab({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
+  const _AutoModeHeader({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.surface(context) : Colors.transparent,
-          borderRadius: AppRadius.mdAll,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: AppAlpha.tint),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
+    return Row(
+      children: [
+        IconTile(
+          icon: Icons.auto_awesome_rounded,
+          background: value
+              ? AppColors.primary(context)
+              : AppColors.surfaceVariant(context),
+          foreground: value
+              ? AppColors.onPrimary(context)
+              : AppColors.textSecondary(context),
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected
-                  ? AppColors.textPrimary(context)
-                  : AppColors.textSecondary(context),
-            ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Auto Mode', style: AppTextStyles.sectionWithColor(context)),
+              AnimatedText(
+                value
+                    ? 'Device picks the best mode for you'
+                    : 'You are choosing the mode manually',
+                style: AppTextStyles.metaWithColor(context),
+              ),
+            ],
           ),
         ),
+        Switch.adaptive(
+          value: value,
+          onChanged: enabled
+              ? (_) {
+                  HapticFeedback.selectionClick();
+                  onChanged();
+                }
+              : null,
+        ),
+      ],
+    );
+  }
+}
+
+class _CurrentModeHero extends StatelessWidget {
+  final ModeEntity mode;
+  final bool isAuto;
+  final bool isSwitching;
+
+  const _CurrentModeHero({
+    required this.mode,
+    required this.isAuto,
+    required this.isSwitching,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final on = AppColors.onPrimary(context);
+    final soft = AppAlpha.withAlpha(on, AppAlpha.fill);
+    final muted = AppAlpha.withAlpha(on, AppAlpha.strong);
+    final desc = mode.description.isNotEmpty
+        ? mode.description
+        : 'Location updates every ${UnitFormatter.formatDuration(mode.normalSendingInterval)}';
+
+    return AnimatedContainer(
+      duration: AppMotion.base,
+      padding: AppSpacing.mdAll,
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient(context),
+        borderRadius: AppRadius.lgAll,
+        boxShadow: AppShadow.glow(AppColors.primary(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconTile(
+                size: AppSize.tapTarget,
+                background: soft,
+                foreground: on,
+                child: AnimatedSwitcher(
+                  duration: AppMotion.base,
+                  child: isSwitching
+                      ? SizedBox.square(
+                          key: const ValueKey('spinner'),
+                          dimension: AppSize.icon,
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSize.stroke,
+                            color: on,
+                          ),
+                        )
+                      : Icon(
+                          ModeIconResolver.resolve(mode),
+                          key: ValueKey(mode.id),
+                          color: on,
+                        ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAuto ? 'Auto Mode · using now' : 'Current mode',
+                      style: AppTextStyles.metaWithColor(context, color: muted),
+                    ),
+                    AnimatedText(
+                      mode.name,
+                      maxLines: 1,
+                      style: AppTextStyles.titleWithColor(context, color: on),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Mode details',
+                icon: Icon(Icons.info_outline_rounded, color: on),
+                onPressed: () => showModeDetailsSheet(context, mode),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AnimatedSize(
+            duration: AppMotion.base,
+            curve: AppMotion.curve,
+            alignment: Alignment.topLeft,
+            child: AnimatedText(
+              desc,
+              maxLines: 2,
+              style: AppTextStyles.bodyWithColor(context, color: on),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              _HeroChip(
+                icon: Icons.schedule_rounded,
+                label:
+                    'Every ${UnitFormatter.formatDuration(mode.normalSendingInterval)}',
+                fill: soft,
+                color: on,
+              ),
+              _HeroChip(
+                icon: Icons.sos_rounded,
+                label:
+                    'SOS ${UnitFormatter.formatDuration(mode.sosSendingInterval)}',
+                fill: soft,
+                color: on,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
+}
+
+class _HeroChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color fill;
+  final Color color;
+
+  const _HeroChip({
+    required this.icon,
+    required this.label,
+    required this.fill,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.sm,
+      vertical: AppSpacing.xs,
+    ),
+    decoration: BoxDecoration(color: fill, borderRadius: AppRadius.pillAll),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: AppSize.iconSm, color: color),
+        const SizedBox(width: AppSpacing.xs),
+        Text(label, style: AppTextStyles.metaWithColor(context, color: color)),
+      ],
+    ),
+  );
 }

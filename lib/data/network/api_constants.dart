@@ -19,10 +19,10 @@ class ApiConstants {
 
   // ── User ────────────────────────────
 
-  static const String fetchUser = '/api/v1/auth/me';
+  // static const String fetchUser = '/api/v1/auth/me';
 
   // ── User Profile ────────────────────────────────────
-  static const String updateProfile = '/api/v1/auth/profile';
+  static const String profile = '/api/v1/auth/profile';
 
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/users/devices';

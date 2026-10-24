@@ -10,6 +10,8 @@ import '../../../utils/date_time_formatter.dart';
 import '../../../widgets/async_state_view.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import '../../../widgets/user_avatar.dart';
+
 class NotificationPanel extends StatelessWidget {
   final List<AlertEntity> alerts;
   final List<DeviceEntity> devices;
@@ -256,18 +258,12 @@ class _AlertRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
+            UserAvatar(
+              name: name,
+              photoUrl: photoUrl,
               radius: 20,
               backgroundColor: AppColors.surfaceVariant(context),
-              backgroundImage: photoUrl != null
-                  ? CachedNetworkImageProvider(photoUrl!)
-                  : null,
-              child: photoUrl == null
-                  ? Icon(
-                      Icons.person_rounded,
-                      color: AppColors.iconSecondary(context),
-                    )
-                  : null,
+              textColor: AppColors.iconSecondary(context),
             ),
             const SizedBox(width: 12),
             Expanded(
