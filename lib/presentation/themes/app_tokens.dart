@@ -7,6 +7,7 @@ class AppSpacing {
 
   static const double xs = 4.0;
   static const double sm = 8.0;
+  static const double smd = 12.0;
   static const double md = 16.0;
   static const double lg = 24.0;
   static const double xl = 32.0;
@@ -67,6 +68,8 @@ class AppAlpha {
   static const double fill = 0.2; // translucent fill on a colored surface
   static const double strong = 0.85; // secondary text on a colored surface
   static const double disabled = 0.4;
+  static const double hover = 0.04; // hover overlay
+  static const double pressed = 0.12;
 
   /// Helper to create color with alpha applied
   static Color withAlpha(Color color, double alpha) =>
@@ -88,6 +91,16 @@ class AppSize {
   static const double tapTarget = 48;
   static const double stroke = 2; // borders and spinners
   static const double carouselCard = 128;
+  static const double dot = 8;
+  static const double avatarSm = 28;
+  static const double avatarLg = 72;
+  static const double timeColumn = 56;
+  static const double skeletonLine = 12;
+  static const double appBarLogo = 36;
+  static const double hairline = 1; // thin borders
+  static const double buttonMinWidth = 88;
+  static const double elevationLow = 2;
+  static const double elevationHigh = 8;
 }
 
 /// Durations, curves and motion amounts.
@@ -102,6 +115,7 @@ class AppMotion {
   static const Curve curve = Curves.easeOutCubic;
   static const double pressScale = 0.96;
   static const double slideOffset = 0.06;
+  static const Duration refreshTimeout = Duration(seconds: 10);
 }
 
 /// Elevation. Pass AppColors.shadow(context) so it follows the theme.

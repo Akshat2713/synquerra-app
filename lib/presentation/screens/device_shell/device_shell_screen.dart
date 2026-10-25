@@ -15,6 +15,7 @@ import '../../blocs/landing/landing_bloc.dart';
 // import '../../blocs/realtime/device_events_cubit.dart';
 import '../../blocs/schedule_list/schedule_list_bloc.dart';
 // import '../../widgets/device_event_banner.dart';
+import '../../widgets/app_overlays.dart';
 import '../geofence/geofence_list_page.dart';
 import '../landing/landing_screen.dart';
 import '../landing/widgets/attention_device_sheet.dart';
@@ -69,10 +70,8 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
         ? landingState.alerts
         : <AlertEntity>[];
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+    showAppBottomSheet(
+      context,
       builder: (_) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: deviceListBloc),

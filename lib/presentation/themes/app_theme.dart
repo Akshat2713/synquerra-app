@@ -6,7 +6,6 @@ import 'app_text_styles.dart';
 import 'app_tokens.dart';
 
 /// Builds ThemeData for ANY AppThemeType from its AppPalette.
-/// One builder instead of separate light/dark copies.
 class AppTheme {
   AppTheme._();
 
@@ -15,7 +14,9 @@ class AppTheme {
 
   static ThemeData _build(AppPalette p) {
     final isDark = p.brightness == Brightness.dark;
-    final shape12 = RoundedRectangleBorder(borderRadius: AppRadius.mdAll);
+    final shapeMd = RoundedRectangleBorder(borderRadius: AppRadius.mdAll);
+    final shapeLg = RoundedRectangleBorder(borderRadius: AppRadius.lgAll);
+    const buttonMin = Size(AppSize.buttonMinWidth, AppSize.tapTarget);
 
     final scheme = ColorScheme(
       brightness: p.brightness,
@@ -51,25 +52,26 @@ class AppTheme {
       useMaterial3: true,
       brightness: p.brightness,
       colorScheme: scheme,
-      extensions: <ThemeExtension<dynamic>>[
-        p,
-      ], // <- AppColors.xxx(context) reads this
+      extensions: <ThemeExtension<dynamic>>[p], // AppColors.xxx(context)
       primaryColor: p.primary,
       scaffoldBackgroundColor: p.background,
       cardColor: p.surface,
       dividerColor: p.outlineVariant,
-      focusColor: p.primary.withValues(alpha: isDark ? 0.24 : 0.12),
-      hoverColor: p.primary.withValues(alpha: isDark ? 0.08 : 0.04),
-      highlightColor: p.primary.withValues(alpha: isDark ? 0.12 : 0.08),
-      splashColor: p.primary.withValues(alpha: isDark ? 0.24 : 0.12),
+      focusColor: AppAlpha.withAlpha(p.primary, AppAlpha.pressed),
+      hoverColor: AppAlpha.withAlpha(p.primary, AppAlpha.hover),
+      highlightColor: AppAlpha.withTint(p.primary),
+      splashColor: AppAlpha.withAlpha(p.primary, AppAlpha.pressed),
       disabledColor: p.textDisabled,
+
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: shape12,
+        shape: shapeMd,
       ),
+
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: p.surface,
         modalBackgroundColor: p.surface,
+        surfaceTintColor: Colors.transparent,
         showDragHandle: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -77,47 +79,56 @@ class AppTheme {
           ),
         ),
       ),
+
       appBarTheme: AppBarTheme(
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 2,
+        scrolledUnderElevation: AppSize.elevationLow,
         centerTitle: true,
         iconTheme: IconThemeData(color: p.textPrimary),
         actionsIconTheme: IconThemeData(color: p.textPrimary),
         titleTextStyle: AppTextStyles.title.copyWith(color: p.textPrimary),
       ),
+
+      // Matches AppCard: lg radius + outline border. No elevation, so raw
+      // Card() looks like AppCard minus the layered shadow.
       cardTheme: CardThemeData(
         color: p.surface,
-        elevation: 2,
-        shadowColor: p.shadow,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.only(bottom: AppSpacing.md),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.lgAll,
+          side: BorderSide(color: AppAlpha.withOverlayAlpha(p.outline)),
+        ),
         clipBehavior: Clip.antiAlias,
       ),
-      // Elevated button (for secondary actions)
+
+      // Secondary action
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: p.surface,
           foregroundColor: p.primary,
-          minimumSize: const Size(88, 48),
+          minimumSize: buttonMin,
           padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          shape: shape12,
+          shape: shapeMd,
           elevation: 0,
-          textStyle: AppTextStyles.buttonMedium,
+          textStyle: AppTextStyles.button,
         ),
       ),
-      // FilledButton for primary actions (uses primary color)
+      // Primary action
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: p.primary,
           foregroundColor: p.onPrimary,
-          minimumSize: const Size(88, 48),
-          shape: shape12,
-          textStyle: AppTextStyles.buttonMedium,
+          minimumSize: buttonMin,
+          shape: shapeMd,
+          textStyle: AppTextStyles.button,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -127,7 +138,7 @@ class AppTheme {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          textStyle: AppTextStyles.buttonMedium,
+          textStyle: AppTextStyles.button,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -138,10 +149,11 @@ class AppTheme {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          shape: shape12,
-          textStyle: AppTextStyles.buttonMedium,
+          shape: shapeMd,
+          textStyle: AppTextStyles.button,
         ),
       ),
+
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected) ? p.primary : null,
@@ -156,59 +168,69 @@ class AppTheme {
           (s) => s.contains(WidgetState.selected) ? p.primary : null,
         ),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: p.surfaceVariant,
         contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: 14,
+          vertical: AppSpacing.smd,
         ),
         border: OutlineInputBorder(
-          borderRadius: AppRadius.smAll,
+          borderRadius: AppRadius.mdAll,
           borderSide: BorderSide.none,
         ),
-        enabledBorder: _inputBorder(p.outline, 1),
-        focusedBorder: _inputBorder(p.primary, 2),
-        errorBorder: _inputBorder(AppColors.danger, 1),
-        focusedErrorBorder: _inputBorder(AppColors.danger, 2),
-        labelStyle: AppTextStyles.label,
+        enabledBorder: _inputBorder(p.outline, AppSize.hairline),
+        focusedBorder: _inputBorder(p.primary, AppSize.stroke),
+        errorBorder: _inputBorder(AppColors.danger, AppSize.hairline),
+        focusedErrorBorder: _inputBorder(AppColors.danger, AppSize.stroke),
+        labelStyle: AppTextStyles.body,
         hintStyle: AppTextStyles.body.copyWith(color: p.textTertiary),
         errorStyle: AppTextStyles.meta.copyWith(color: AppColors.danger),
       ),
+
+      // Mapped to roles only (no size overrides).
       textTheme: TextTheme(
         displayLarge: AppTextStyles.display.copyWith(color: p.textPrimary),
-        displayMedium: AppTextStyles.display.copyWith(
-          fontSize: 28,
-          color: p.textPrimary,
-        ),
-        displaySmall: AppTextStyles.title.copyWith(
-          fontSize: 24,
-          color: p.textPrimary,
-        ),
+        displayMedium: AppTextStyles.display.copyWith(color: p.textPrimary),
+        displaySmall: AppTextStyles.title.copyWith(color: p.textPrimary),
         headlineMedium: AppTextStyles.title.copyWith(color: p.textPrimary),
-        headlineSmall: AppTextStyles.section.copyWith(
-          fontSize: 18,
-          color: p.textPrimary,
-        ),
+        headlineSmall: AppTextStyles.section.copyWith(color: p.textPrimary),
         titleLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
         bodyLarge: AppTextStyles.section.copyWith(color: p.textPrimary),
         bodyMedium: AppTextStyles.body.copyWith(color: p.textSecondary),
         bodySmall: AppTextStyles.meta.copyWith(color: p.textTertiary),
-        labelLarge: AppTextStyles.section.copyWith(
-          color: p.primary,
-          fontWeight: FontWeight.w600,
+        labelLarge: AppTextStyles.section.copyWith(color: p.primary),
+        labelMedium: AppTextStyles.button.copyWith(color: p.primary),
+        labelSmall: AppTextStyles.meta.copyWith(color: p.primary),
+      ),
+
+      iconTheme: IconThemeData(color: p.iconPrimary, size: AppSize.iconLg),
+      primaryIconTheme: IconThemeData(color: p.primary, size: AppSize.iconLg),
+
+      // NEW: this is what DeviceShellScreen's NavigationBar actually reads.
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: p.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        indicatorColor: p.primaryContainer,
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (s) => AppTextStyles.meta.copyWith(
+            color: s.contains(WidgetState.selected)
+                ? p.primary
+                : p.textSecondary,
+          ),
         ),
-        labelMedium: AppTextStyles.body.copyWith(
-          color: p.primary,
-          fontWeight: FontWeight.w600,
-        ),
-        labelSmall: AppTextStyles.meta.copyWith(
-          color: p.primary,
-          fontWeight: FontWeight.w600,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (s) => IconThemeData(
+            color: s.contains(WidgetState.selected)
+                ? p.onPrimaryContainer
+                : p.iconSecondary,
+          ),
         ),
       ),
-      iconTheme: IconThemeData(color: p.iconPrimary, size: 24),
-      primaryIconTheme: IconThemeData(color: p.primary, size: 24),
+
+      // Old-style bar, kept in case main_shell/bottom_bar.dart uses it.
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: p.surface,
         selectedItemColor: p.primary,
@@ -217,8 +239,9 @@ class AppTheme {
         unselectedIconTheme: IconThemeData(color: p.iconSecondary),
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: AppSize.elevationHigh,
       ),
+
       tabBarTheme: TabBarThemeData(
         labelColor: p.primary,
         unselectedLabelColor: p.textSecondary,
@@ -226,20 +249,20 @@ class AppTheme {
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: p.outlineVariant,
       ),
+
       dialogTheme: DialogThemeData(
         backgroundColor: p.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: AppTextStyles.heading5.copyWith(color: p.textPrimary),
-        contentTextStyle: AppTextStyles.bodyMedium.copyWith(
-          color: p.textSecondary,
-        ),
+        surfaceTintColor: Colors.transparent,
+        shape: shapeLg,
+        titleTextStyle: AppTextStyles.section.copyWith(color: p.textPrimary),
+        contentTextStyle: AppTextStyles.body.copyWith(color: p.textSecondary),
       ),
     );
   }
 
   static OutlineInputBorder _inputBorder(Color color, double width) =>
       OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdAll,
         borderSide: BorderSide(color: color, width: width),
       );
 

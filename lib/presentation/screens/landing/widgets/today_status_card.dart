@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-
-import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import 'package:synquerra/presentation/widgets/expandable_card.dart';
 
-// Simple model to hold the live status logs
+// TODO(logic): move to domain/entities once real data is wired.
 class StatusLogEntry {
   final String label;
   final String value;
@@ -16,7 +18,7 @@ class StatusLogEntry {
   });
 }
 
-class TodayStatusCard extends StatefulWidget {
+class TodayStatusCard extends StatelessWidget {
   final bool looksNormal;
   final List<StatusLogEntry> logs;
 
@@ -27,108 +29,49 @@ class TodayStatusCard extends StatefulWidget {
   });
 
   @override
-  State<TodayStatusCard> createState() => _TodayStatusCardState();
-}
-
-class _TodayStatusCardState extends State<TodayStatusCard> {
-  bool _expanded = false; // Kept open by default matching image_4a1587.png
-
-  @override
   Widget build(BuildContext context) {
-    const kGreen = Color(0xFF3DDC84);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(color: AppColors.outline(context), width: 1),
+    return ExpandableCard(
+      leading: IconTile(
+        icon: looksNormal ? Icons.check_circle_rounded : Icons.insights_rounded,
+        background: looksNormal ? AppColors.success : AppColors.warning,
+        foreground: looksNormal ? AppColors.onSuccess : AppColors.onWarning,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header Row
-          InkWell(
-            borderRadius: AppRadius.lgAll,
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  const Text('📊', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.looksNormal
-                          ? 'Today looks normal'
-                          : 'Today has changes',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    _expanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary(context),
-                    size: 18,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Expandable Live Logs
-          if (_expanded && widget.logs.isNotEmpty) ...[
-            ...widget.logs.map(
-              (log) => Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: AppColors.outlineVariant(
-                        context,
-                      ).withValues(alpha: AppAlpha.border),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Row(
-                  children: [
-                    // Status indicator dot
-                    const Icon(Icons.circle, size: 8, color: kGreen),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        log.label,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: AppColors.textSecondary(context),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      log.value,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: log.isHighlightValue
-                            ? kGreen
-                            : AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+      title: looksNormal ? 'Today looks normal' : 'Today has changes',
+      child: logs.isEmpty
+          ? const ExpandableCardEmpty('Nothing logged yet today.')
+          : Column(children: [for (final log in logs) _LogRow(log: log)]),
     );
   }
+}
+
+class _LogRow extends StatelessWidget {
+  final StatusLogEntry log;
+  const _LogRow({required this.log});
+
+  @override
+  Widget build(BuildContext context) => InsetRow(
+    onTap: () {}, // TODO(logic): wire destination
+    child: Row(
+      children: [
+        const Icon(Icons.circle, size: AppSize.dot, color: AppColors.success),
+        const SizedBox(width: AppSpacing.smd),
+        Expanded(
+          child: Text(log.label, style: AppTextStyles.bodyWithColor(context)),
+        ),
+        log.isHighlightValue
+            ? InfoPill(
+                label: log.value,
+                background: AppColors.successContainer,
+                foreground: AppColors.success,
+              )
+            : Text(
+                log.value,
+                style: AppTextStyles.bodyWithColor(
+                  context,
+                  color: AppColors.textPrimary(context),
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
+      ],
+    ),
+  );
 }

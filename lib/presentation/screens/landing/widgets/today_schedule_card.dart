@@ -1,156 +1,78 @@
 import 'package:flutter/material.dart';
-
-import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import 'package:synquerra/presentation/widgets/expandable_card.dart';
 
-class TodayScheduleCard extends StatefulWidget {
+class TodayScheduleCard extends StatelessWidget {
   final List<ScheduleEntry> schedule;
 
   const TodayScheduleCard({super.key, required this.schedule});
 
   @override
-  State<TodayScheduleCard> createState() => _TodayScheduleCardState();
-}
-
-class _TodayScheduleCardState extends State<TodayScheduleCard> {
-  bool _isExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 1),
-        ),
+    return ExpandableCard(
+      leading: IconTile(
+        icon: Icons.event_rounded,
+        background: AppColors.primary(context),
+        foreground: AppColors.onPrimary(context),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Dropdown Header ──────────────────────────────────────
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: AppRadius.lgAll,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary(context),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Today's Schedule",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+      title: "Today's Schedule",
+      child: schedule.isEmpty
+          ? const ExpandableCardEmpty('No scheduled events today.')
+          : Column(
+              children: [for (final e in schedule) _ScheduleRow(entry: e)],
             ),
-          ),
-
-          // ── Expandable List ──────────────────────────────────────
-          if (_isExpanded) ...[
-            Divider(
-              height: 1,
-              color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
-            ),
-            if (widget.schedule.isNotEmpty)
-              ...widget.schedule.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        child: Text(
-                          item.time,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary(context),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.label,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'Safe environment',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary(context),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.lgAll,
-                          ),
-                          side: BorderSide(
-                            color: AppColors.outlineVariant(
-                              context,
-                            ).withValues(alpha: AppAlpha.border),
-                          ),
-                        ),
-                        child: const Text(
-                          'Skip',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'No scheduled events today.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
-              ),
-          ],
-        ],
-      ),
     );
   }
 }
 
+class _ScheduleRow extends StatelessWidget {
+  final ScheduleEntry entry;
+  const _ScheduleRow({required this.entry});
+
+  @override
+  Widget build(BuildContext context) => InsetRow(
+    onTap: () {}, // TODO(logic): wire destination
+    child: Row(
+      children: [
+        InfoPill(
+          label: entry.time,
+          background: AppColors.primaryContainer(context),
+          foreground: AppColors.primary(context),
+        ),
+        const SizedBox(width: AppSpacing.smd),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                entry.label,
+                style: AppTextStyles.bodyWithColor(
+                  context,
+                  color: AppColors.textPrimary(context),
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
+              Text(entry.subtitle, style: AppTextStyles.metaWithColor(context)),
+            ],
+          ),
+        ),
+        // TODO(logic): wire skip action.
+        FilledButton.tonal(
+          onPressed: () {},
+          style: FilledButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+            minimumSize: Size.zero,
+          ),
+          child: const Text('Skip'),
+        ),
+      ],
+    ),
+  );
+}
+
+// TODO(logic): move ScheduleEntry + mockSchedule to domain/entities, fed by a bloc.
 class ScheduleEntry {
   final String id;
   final String time;
@@ -168,12 +90,7 @@ class ScheduleEntry {
 }
 
 final List<ScheduleEntry> mockSchedule = [
-  const ScheduleEntry(
-    id: '1',
-    time: '08:00',
-    label: 'School day',
-    subtitle: 'Safe environment',
-  ),
+  const ScheduleEntry(id: '1', time: '08:00', label: 'School day'),
   const ScheduleEntry(
     id: '2',
     time: '12:30',

@@ -65,6 +65,9 @@ class AppTextStyles {
     height: 1.4,
     letterSpacing: 0.5,
   );
+  // button - label inside buttons
+  static TextStyle get button =>
+      body.copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.3);
 
   // ===== DEPRECATED ALIASES (for backward compatibility) =====
   // Headings - mapped to new roles

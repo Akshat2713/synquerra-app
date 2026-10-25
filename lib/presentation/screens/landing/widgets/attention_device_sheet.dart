@@ -1,18 +1,15 @@
-// lib/presentation/screens/landing/widgets/attention_device_sheet.dart
-
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/utils/colour_util.dart';
+import 'package:synquerra/presentation/widgets/user_avatar.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../app/app_router.dart';
-// import '../../../blocs/auth/auth_bloc.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
 import '../../../themes/colors.dart';
-import '../../../utils/colour_util.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-
-import '../../../widgets/user_avatar.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
   final List<AlertEntity> alerts;
@@ -26,10 +23,6 @@ class AttentionDeviceSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceState = context.watch<DeviceListBloc>().state;
-    // final authState = context.watch<AuthBloc>().state;
-    // final currentUserFullName = authState is AuthAuthenticated
-    //     ? authState.user.fullName
-    //     : '—';
     final devices = deviceState is DeviceListLoaded
         ? deviceState.devices
         : <DeviceEntity>[];
@@ -39,94 +32,76 @@ class AttentionDeviceSheet extends StatelessWidget {
       minChildSize: 0.3,
       maxChildSize: 0.9,
       expand: false,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface(context),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            children: [
-              const SizedBox(height: AppSpacing.sm),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.outline(context),
-                  borderRadius: AppRadius.smAll,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Devices needing attention',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary(context),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: devices.length,
-                  itemBuilder: (context, i) {
-                    final d = devices[i];
-                    final deviceAlerts = alerts
-                        .where((a) => a.imei == d.imei && !a.isAcknowledged)
-                        .toList();
-                    final criticalCount = deviceAlerts
-                        .where((a) => a.isCritical)
-                        .length;
-                    final ringColor = deviceSeverityColor(deviceAlerts.cast());
-                    final name = d.displayOwnerName;
-                    // final profilePhoto = d?.displayProfilePhoto;
-                    final isCurrentDevice = d.imei == currentDeviceId;
-                    return ListTile(
-                      leading: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: ringColor, width: 2),
-                        ),
-                        padding: const EdgeInsets.all(AppSpacing.xs),
-                        child: UserAvatar(
-                          name: name,
-                          photoUrl: d.displayProfilePhoto,
-                          radius: 20,
-                        ),
+      builder: (context, scrollController) => Column(
+        children: [
+          Padding(
+            padding: AppSpacing.mdAll,
+            child: Text(
+              'Devices needing attention',
+              style: AppTextStyles.sectionWithColor(context),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              itemCount: devices.length,
+              itemBuilder: (context, i) {
+                final d = devices[i];
+                final open = alertsForDevice(
+                  d,
+                  alerts,
+                ).where((a) => !a.isAcknowledged).toList();
+                final critical = open.where((a) => a.isCritical).length;
+                final isCurrent = d.id == currentDeviceId;
+
+                return ListTile(
+                  leading: Container(
+                    padding: AppSpacing.xsAll,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: deviceSeverityColor(open),
+                        width: AppSize.stroke,
                       ),
-                      title: Text(
-                        name,
-                        style: TextStyle(
-                          fontWeight: isCurrentDevice
-                              ? FontWeight.w900
+                    ),
+                    child: UserAvatar(
+                      name: d.displayOwnerName,
+                      photoUrl: d.displayProfilePhoto,
+                      radius: AppSize.tile / 2,
+                    ),
+                  ),
+                  title: Text(
+                    d.displayOwnerName,
+                    style:
+                        AppTextStyles.bodyWithColor(
+                          context,
+                          color: AppColors.textPrimary(context),
+                        ).copyWith(
+                          fontWeight: isCurrent
+                              ? FontWeight.w800
                               : FontWeight.w500,
                         ),
-                      ),
-                      subtitle: Text(
-                        criticalCount == 0
-                            ? 'No critical alerts'
-                            : '$criticalCount critical alert${criticalCount > 1 ? 's' : ''}',
-                      ),
-                      onTap: () {
-                        final deviceListBloc = context.read<DeviceListBloc>();
-                        Navigator.pop(context);
-                        AppRouter.pushDeviceDetail(
-                          context,
-                          device: d,
-                          deviceListBloc: deviceListBloc,
-                        );
-                      },
+                  ),
+                  subtitle: Text(
+                    critical == 0
+                        ? 'No critical alerts'
+                        : '$critical critical alert${critical > 1 ? 's' : ''}',
+                    style: AppTextStyles.metaWithColor(context),
+                  ),
+                  onTap: () {
+                    final bloc = context.read<DeviceListBloc>();
+                    Navigator.pop(context);
+                    AppRouter.pushDeviceDetail(
+                      context,
+                      device: d,
+                      deviceListBloc: bloc,
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

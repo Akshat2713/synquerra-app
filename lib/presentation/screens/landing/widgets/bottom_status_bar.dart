@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-
-import '../../../themes/colors.dart';
-import '../../../utils/colour_util.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/colour_util.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
+
+import '../../../widgets/app_surfaces.dart';
 
 class BottomMetricsBar extends StatelessWidget {
   final int battery;
@@ -16,107 +19,53 @@ class BottomMetricsBar extends StatelessWidget {
     required this.temperature,
   });
 
+  // TODO(logic): make DeviceEntity.temperature a num? and drop this parsing.
+  String get _temperatureLabel {
+    final t = num.tryParse(temperature);
+    return t == null ? temperature : UnitFormatter.formatTemperature(t);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.smd,
+        horizontal: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
         border: Border(
           top: BorderSide(
-            color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
+            color: AppAlpha.withBorderAlpha(AppColors.outlineVariant(context)),
           ),
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _MetricCell(
             title: 'NETWORK\nSTRENGTH',
-            valueRow: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.signal_cellular_alt,
-                  size: 14,
-                  color: AppColors.warning,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  networkStatus,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.warning,
-                  ),
-                ),
-              ],
-            ),
+            icon: Icons.signal_cellular_alt,
+            value: networkStatus,
+            color: AppColors.warning,
           ),
-          _MetricCell(
+          // TODO(logic): static for now.
+          const _MetricCell(
             title: 'LOCATION\nCONFIDENCE',
-            valueRow: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.wifi, size: 14, color: AppColors.warning),
-                const SizedBox(width: 4),
-                Text(
-                  'Poor',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.warning,
-                  ),
-                ),
-              ],
-            ),
+            icon: Icons.wifi,
+            value: 'Poor',
+            color: AppColors.warning,
           ),
           _MetricCell(
             title: 'CURRENT\nBATTERY',
-            valueRow: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.battery_4_bar_rounded,
-                  size: 14,
-                  color: batteryColor(battery),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$battery%',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: batteryColor(battery),
-                  ),
-                ),
-              ],
-            ),
+            icon: Icons.battery_4_bar_rounded,
+            value: '$battery%',
+            color: batteryColor(battery),
           ),
-          // const _MetricCell(
-          //   title: 'REMAINING\nTIME',
-          //   valueRow: Text(
-          //     '≈ 3.4h',
-          //     style: TextStyle(fontWeight: FontWeight.w800),
-          //   ),
-          // ),
           _MetricCell(
             title: 'DEVICE\nTEMP',
-            valueRow: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.thermostat,
-                  size: 14,
-                  color: temperatureColor(temperature),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$temperature ℃',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: temperatureColor(temperature),
-                  ),
-                ),
-              ],
-            ),
+            icon: Icons.thermostat,
+            value: _temperatureLabel,
+            color: temperatureColor(temperature),
           ),
         ],
       ),
@@ -126,27 +75,44 @@ class BottomMetricsBar extends StatelessWidget {
 
 class _MetricCell extends StatelessWidget {
   final String title;
-  final Widget valueRow;
+  final IconData icon;
+  final String value;
+  final Color color;
 
-  const _MetricCell({required this.title, required this.valueRow});
+  const _MetricCell({
+    required this.title,
+    required this.icon,
+    required this.value,
+    required this.color,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        IconTile(
+          circle: true,
+          size: AppSize.avatarSm,
+          iconSize: AppSize.iconSm,
+          icon: icon,
+          background: AppAlpha.withAlpha(color, AppAlpha.fill),
+          foreground: color,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          value,
+          style: AppTextStyles.metaWithColor(
+            context,
+            color: color,
+          ).copyWith(fontWeight: FontWeight.w700),
+        ),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
-          ),
+          style: AppTextStyles.microWithColor(context),
         ),
-        const SizedBox(height: 4),
-        valueRow,
       ],
-    );
-  }
+    ),
+  );
 }

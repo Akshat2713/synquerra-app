@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../themes/app_text_styles.dart';
+import '../themes/app_tokens.dart';
+import '../themes/colors.dart';
+import 'app_button.dart';
+import 'app_surfaces.dart';
 
 class AsyncStateView extends StatelessWidget {
   final bool isLoading;
@@ -32,28 +37,26 @@ class AsyncStateView extends StatelessWidget {
     if (errorMessage != null && errorMessage!.isNotEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppSpacing.lgAll,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.md,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
+              const IconTile(
+                circle: true,
+                size: AppSize.tapTarget,
+                iconSize: AppSize.iconLg,
+                icon: Icons.error_outline_rounded,
+                background: AppColors.dangerContainer,
+                foreground: AppColors.danger,
               ),
-              const SizedBox(height: 12),
               Text(
                 errorMessage!,
-                textAlign: TextAlign.justify,
-                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyWithColor(context),
               ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 16),
-                FilledButton.tonal(
-                  onPressed: onRetry,
-                  child: const Text('Retry'),
-                ),
-              ],
+              if (onRetry != null)
+                AppButton(label: 'Retry', onPressed: onRetry, fullWidth: false),
             ],
           ),
         ),
@@ -65,8 +68,9 @@ class AsyncStateView extends StatelessWidget {
           Center(
             child: Text(
               emptyMessage,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).hintColor,
+              style: AppTextStyles.bodyWithColor(
+                context,
+                color: AppColors.textTertiary(context),
               ),
             ),
           );

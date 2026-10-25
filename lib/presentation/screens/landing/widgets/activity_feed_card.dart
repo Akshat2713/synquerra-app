@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-
-import '../../../themes/colors.dart';
-import '../../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import 'package:synquerra/presentation/widgets/expandable_card.dart';
 
 class ActivityFeedEntry {
   final String title;
@@ -17,152 +19,107 @@ class ActivityFeedEntry {
   });
 }
 
-class ActivityFeedCard extends StatefulWidget {
+class ActivityFeedCard extends StatelessWidget {
   final List<ActivityFeedEntry> activities;
 
   const ActivityFeedCard({super.key, required this.activities});
 
-  @override
-  State<ActivityFeedCard> createState() => _ActivityFeedCardState();
-}
-
-class _ActivityFeedCardState extends State<ActivityFeedCard> {
-  bool _isExpanded = false;
-
-  List<Widget> _buildGroupedItems() {
+  // TODO(logic): move day-grouping to a util / bloc.
+  List<Widget> _groupedRows() {
     final today = <ActivityFeedEntry>[];
     final yesterday = <ActivityFeedEntry>[];
     final older = <ActivityFeedEntry>[];
 
-    for (final item in widget.activities) {
-      if (item.date == null) {
+    for (final item in activities) {
+      final d = item.date;
+      if (d == null) {
         older.add(item);
-      } else if (DateTimeFormatter.isToday(item.date!)) {
+      } else if (DateTimeFormatter.isToday(d)) {
         today.add(item);
-      } else if (DateTimeFormatter.isYesterday(item.date!)) {
+      } else if (DateTimeFormatter.isYesterday(d)) {
         yesterday.add(item);
       } else {
         older.add(item);
       }
     }
 
-    final widgets = <Widget>[];
-    if (today.isNotEmpty) {
-      widgets.add(_sectionHeader('Today'));
-      widgets.addAll(today.map((item) => _buildItemRow(item)));
-    }
-    if (yesterday.isNotEmpty) {
-      widgets.add(_sectionHeader('Yesterday'));
-      widgets.addAll(yesterday.map((item) => _buildItemRow(item)));
-    }
-    if (older.isNotEmpty) {
-      widgets.add(_sectionHeader('Earlier'));
-      widgets.addAll(older.map((item) => _buildItemRow(item)));
-    }
-    return widgets;
+    return [
+      for (final g in [
+        ('Today', today),
+        ('Yesterday', yesterday),
+        ('Earlier', older),
+      ])
+        if (g.$2.isNotEmpty) ...[
+          _SectionHeader(g.$1),
+          for (final item in g.$2) _FeedRow(item: item),
+        ],
+    ];
   }
 
-  Widget _sectionHeader(String label) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-    child: Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.overlay),
-          letterSpacing: 0.5,
+  @override
+  Widget build(BuildContext context) {
+    return ExpandableCard(
+      leading: const IconTile(
+        icon: Icons.notifications_active_rounded,
+        background: AppColors.info,
+        foreground: AppColors.onInfo,
+      ),
+      title: 'Activity Feed',
+      child: activities.isEmpty
+          ? const ExpandableCardEmpty('No activity yet.')
+          : Column(children: _groupedRows()),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  const _SectionHeader(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label.toUpperCase(),
+          style: AppTextStyles.microWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w700),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
 
-  Widget _buildItemRow(ActivityFeedEntry item) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+class _FeedRow extends StatelessWidget {
+  final ActivityFeedEntry item;
+  const _FeedRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) => InsetRow(
+    onTap: () {}, // TODO(logic): wire destination
     child: Row(
       children: [
-        Icon(Icons.circle, size: 8, color: item.color),
-        const SizedBox(width: 12),
+        Icon(Icons.circle, size: AppSize.dot, color: item.color),
+        const SizedBox(width: AppSpacing.smd),
         Expanded(
           child: Text(
             item.title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: item.color,
-            ),
+            style: AppTextStyles.bodyWithColor(
+              context,
+              color: AppColors.textPrimary(context),
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(
-          item.time,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary(context),
-          ),
+        const SizedBox(width: AppSpacing.sm),
+        InfoPill(
+          label: item.time,
+          background: AppAlpha.withAlpha(item.color, AppAlpha.fill),
+          foreground: AppColors.textPrimary(context),
         ),
       ],
     ),
   );
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 1),
-        ),
-      ),
-      child: Column(
-        children: [
-          // ── Collapsible Header ─────────────────────────────────────
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: AppRadius.lgAll,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary(context),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Activity Feed',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Expandable Feed Items ────────────────────────────────
-          if (_isExpanded) ...[
-            Divider(
-              height: 1,
-              color: AppColors.outline(context).withValues(alpha: AppAlpha.border),
-            ),
-            ..._buildGroupedItems(),
-          ],
-        ],
-      ),
-    );
-  }
 }

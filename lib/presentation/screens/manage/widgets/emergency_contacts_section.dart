@@ -109,7 +109,8 @@ class EmergencyContactsSection extends StatelessWidget {
                   number: _value(settings.phoneNum1),
                   emptyText: _kNoPrimary,
                   isPrimary: true,
-                  onTap: () => _edit(context),
+                  // onTap: () => _edit(context),
+                  onTap: () => {},
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _ContactTile(
@@ -118,7 +119,8 @@ class EmergencyContactsSection extends StatelessWidget {
                   number: _value(settings.phoneNum2),
                   emptyText: _kNoSecondary,
                   isPrimary: false,
-                  onTap: () => _edit(context),
+                  // onTap: () => _edit(context),
+                  onTap: () => {},
                 ),
               ],
             ),
@@ -209,18 +211,18 @@ class _ContactTile extends StatelessWidget {
                   ],
                 ),
               ),
-              empty
-                  ? Text(
-                      'Add',
-                      style: AppTextStyles.sectionWithColor(
-                        context,
-                        color: primary,
-                      ),
-                    )
-                  : Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.textTertiary(context),
-                    ),
+              // empty
+              //     ? Text(
+              //         'Add',
+              //         style: AppTextStyles.sectionWithColor(
+              //           context,
+              //           color: primary,
+              //         ),
+              //       )
+              //     : Icon(
+              //         Icons.chevron_right_rounded,
+              //         color: AppColors.textTertiary(context),
+              //       ),
             ],
           ),
         ),

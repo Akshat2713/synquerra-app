@@ -1,15 +1,14 @@
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/colour_util.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import 'package:synquerra/presentation/widgets/user_avatar.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';
-// import '../../../blocs/auth/auth_bloc.dart';
-import '../../../themes/colors.dart';
-import '../../../utils/colour_util.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-
-import '../../../widgets/user_avatar.dart';
 
 class AttentionBanner extends StatelessWidget {
   final List<DeviceEntity> devices;
@@ -24,60 +23,82 @@ class AttentionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // In AttentionBanner build method:
-    final attentionCount = devices
+    // TODO(logic): move to domain/utils/alert_device_matcher.dart as
+    // `devicesNeedingAttention(devices, alerts)`.
+    final attention = devices
         .where(
           (d) => alertsForDevice(
             d,
             alerts,
           ).any((a) => a.isCritical && !a.isAcknowledged),
         )
-        .length;
-    return Material(
-      color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(
+        .toList();
+    final ordered = [
+      ...attention,
+      ...devices.where((d) => !attention.contains(d)),
+    ];
+
+    final count = attention.length;
+    final allClear = count == 0;
+    final tone = allClear ? AppColors.success : AppColors.danger;
+    final onTone = allClear ? AppColors.onSuccess : AppColors.onDanger;
+    final toneBg = allClear
+        ? AppColors.successContainer
+        : AppColors.dangerContainer;
+
+    return AppCard(
+      tint: toneBg,
+      padding: EdgeInsets.zero,
+      child: Material(
+        type: MaterialType.transparency,
         borderRadius: AppRadius.lgAll,
-        side: BorderSide(color: AppColors.outline(context), width: 1),
-      ),
-      child: InkWell(
-        borderRadius: AppRadius.lgAll,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: 12,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$attentionCount ${attentionCount == 1 ? 'device needs' : 'devices need'} attention',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Text(
-                      'Of ${devices.length} ${devices.length == 1 ? 'device' : 'devices'}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
+          child: Padding(
+            padding: AppSpacing.mdAll,
+            child: Row(
+              children: [
+                IconTile(
+                  icon: allClear
+                      ? Icons.verified_user_rounded
+                      : Icons.warning_amber_rounded,
+                  background: tone,
+                  foreground: onTone,
                 ),
-              ),
-              _AvatarStack(devices: devices, alerts: alerts),
-              const SizedBox(width: AppSpacing.xs),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary(context),
-                size: 20,
-              ),
-            ],
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        allClear
+                            ? 'All devices are fine'
+                            : '$count ${count == 1 ? 'device needs' : 'devices need'} attention',
+                        style: AppTextStyles.bodyWithColor(
+                          context,
+                          color: AppColors.textPrimary(context),
+                        ).copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'Of ${devices.length} ${devices.length == 1 ? 'device' : 'devices'}',
+                        style: AppTextStyles.metaWithColor(context),
+                      ),
+                    ],
+                  ),
+                ),
+                _AvatarStack(devices: ordered, alerts: alerts),
+                const SizedBox(width: AppSpacing.xs),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: AppSize.icon,
+                  color: AppColors.textSecondary(context),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -90,82 +111,68 @@ class _AvatarStack extends StatelessWidget {
   final List<AlertEntity> alerts;
   const _AvatarStack({required this.devices, required this.alerts});
 
+  static const _maxShown = 3;
+  static const _step = AppSize.avatarSm - AppSpacing.sm;
+
   @override
   Widget build(BuildContext context) {
-    // final authState = context.watch<AuthBloc>().state;
-    // final currentUserFullName = authState is AuthAuthenticated
-    //     ? authState.user.fullName
-    //     : '—';
-
-    const size = 28.0;
-    const overlap = 10.0;
-    final shown = devices.take(3).toList();
+    final shown = devices.take(_maxShown).toList();
     final extra = devices.length - shown.length;
+    final slots = shown.length + (extra > 0 ? 1 : 0);
+    if (slots == 0) return const SizedBox.shrink();
 
     return SizedBox(
-      width:
-          size + (shown.length - 1) * (size - overlap) + (extra > 0 ? 20 : 0),
-      height: size,
+      width: AppSize.avatarSm + (slots - 1) * _step,
+      height: AppSize.avatarSm,
       child: Stack(
         children: [
-          ...shown.asMap().entries.map((e) {
-            final d = e.value;
-            final deviceAlerts = alertsForDevice(
-              d,
-              alerts,
-            ).where((a) => !a.isAcknowledged).toList();
-            final ringColor = deviceSeverityColor(deviceAlerts);
-            // final name = d.displayOwnerName;
-            // final profilePhoto = d?.displayProfilePhoto;
-            // final parts = name
-            //     .split(RegExp(r'\s+'))
-            //     .where((p) => p.isNotEmpty)
-            //     .toList();
-            // final initials = parts.length >= 2
-            //     ? '${parts[0][0]}${parts[1][0]}'
-            //     : (parts.isNotEmpty ? parts[0][0] : '?');
-
-            return Positioned(
-              left: e.key * (size - overlap),
+          for (final (i, d) in shown.indexed)
+            Positioned(
+              left: i * _step,
               child: Container(
-                width: size,
-                height: size,
+                width: AppSize.avatarSm,
+                height: AppSize.avatarSm,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: ringColor, width: 2),
+                  color: AppColors.surface(context),
+                  border: Border.all(
+                    color: deviceSeverityColor(
+                      alertsForDevice(
+                        d,
+                        alerts,
+                      ).where((a) => !a.isAcknowledged).toList(),
+                    ),
+                    width: AppSize.stroke,
+                  ),
                 ),
-                padding: const EdgeInsets.all(1.5),
                 child: UserAvatar(
                   name: d.displayOwnerName,
                   photoUrl: d.displayProfilePhoto,
-                  radius:
-                      12.5, // 28 size - 2*1.5 padding - 2*2 border ≈ 12.5 radius
+                  radius: (AppSize.avatarSm - 2 * AppSize.stroke) / 2,
                 ),
               ),
-            );
-          }),
+            ),
           if (extra > 0)
             Positioned(
-              left: shown.length * (size - overlap),
+              left: shown.length * _step,
               child: Container(
-                width: size,
-                height: size,
+                width: AppSize.avatarSm,
+                height: AppSize.avatarSm,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  color: AppColors.surfaceVariant(context),
                   border: Border.all(
                     color: AppColors.surface(context),
-                    width: 1.5,
+                    width: AppSize.stroke,
                   ),
-                  color: AppColors.surface(context),
                 ),
-                alignment: Alignment.center,
                 child: Text(
                   '+$extra',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.microWithColor(
+                    context,
                     color: AppColors.textSecondary(context),
-                  ),
+                  ).copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             ),

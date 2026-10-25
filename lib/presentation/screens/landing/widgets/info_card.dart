@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-
-import '../../../themes/colors.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/widgets/app_motion_widgets.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
 
 class InfoCard extends StatelessWidget {
   final IconData icon;
@@ -21,44 +23,28 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        // color: Colors.amber,
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(color: AppColors.outline(context), width: 1),
-      ),
+    return AppCard(
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: AppRadius.mdAll,
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
+          IconTile(icon: icon, background: iconBg, foreground: iconColor),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AnimatedText(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                  style: AppTextStyles.bodyWithColor(
+                    context,
+                    color: AppColors.textPrimary(context),
+                  ).copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 2,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(
+                AnimatedText(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(context),
-                  ),
+                  style: AppTextStyles.metaWithColor(context),
+                  maxLines: 1,
                 ),
               ],
             ),

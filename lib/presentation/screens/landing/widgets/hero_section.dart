@@ -1,230 +1,150 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../domain/entities/device/device_entity.dart';
-import '../../../../domain/entities/analytics/analytics_entity.dart';
-// import '../../../blocs/auth/auth_bloc.dart';
-import '../../../themes/colors.dart';
-import '../../../utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
-
-import '../../../widgets/user_avatar.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import 'package:synquerra/presentation/widgets/user_avatar.dart';
+import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../../domain/entities/device/device_entity.dart';
 
 class HeroSection extends StatelessWidget {
   final DeviceEntity device;
   final AnalyticsEntity? latest;
-  final Color successColor;
 
-  const HeroSection({
-    super.key,
-    required this.device,
-    this.latest,
-    this.successColor = AppColors.success,
-  });
+  const HeroSection({super.key, required this.device, this.latest});
 
   @override
   Widget build(BuildContext context) {
-    // ── Resolve display name: carrier if assigned, else logged-in user ──
-    // final authState = context.watch<AuthBloc>().state;
-    // final loggedInName = authState is AuthAuthenticated
-    //     ? authState.user.fullName
-    //     : '—';
-    final displayName = device.displayOwnerName;
-    final photo = device.displayProfilePhoto;
+    final name = device.displayOwnerName;
     final isOnline = device.isOnline ?? false;
-    final mode = device.currentMode;
+    final onP = AppColors.onPrimary(context);
+    final soft = AppAlpha.withAlpha(onP, AppAlpha.strong);
+    final pillBg = AppAlpha.withAlpha(onP, AppAlpha.fill);
+    final speed = latest?.speed;
+    final moving = (speed ?? 0) > 0;
+    final alert = latest?.alert;
+    final hasAlert = alert != null && alert.isNotEmpty;
 
     return AnimatedOpacity(
-      duration: const Duration(milliseconds: 300),
-      opacity: isOnline ? 1.0 : 0.6,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : AppMotion.base,
+      opacity: isOnline ? 1 : 1 - AppAlpha.disabled,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        padding: AppSpacing.mdAll,
         decoration: BoxDecoration(
-          color: AppColors.surface(context),
-          // color: Colors.blue,
+          gradient: AppColors.primaryGradient(context),
           borderRadius: AppRadius.lgAll,
-          border: Border.all(color: AppColors.outline(context), width: 1),
+          boxShadow: AppShadow.glow(AppColors.primary(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Row 0: Online / Offline status, top-right ─────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 8,
-                  color: isOnline
-                      ? successColor
-                      : AppColors.textSecondary(context),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  isOnline ? 'Online' : 'Offline',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isOnline
-                        ? successColor
-                        : AppColors.textSecondary(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-
-            // ── Avatar + info grid ──────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Avatar with Emoji Fallback Logic ─────────────────
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    UserAvatar(name: displayName, photoUrl: photo, radius: 36),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 16,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface(context),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: isOnline ? successColor : Colors.grey,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: AppSpacing.xsAll,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: pillBg, width: AppSize.stroke),
+                  ),
+                  child: UserAvatar(
+                    name: name,
+                    photoUrl: device.displayProfilePhoto,
+                    radius: AppSize.avatarLg / 2,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-
-                // ── Info grid: name/speed, mode/updated, alert/travel ─
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row 1: Name (left) — Speed (right)
+                      // Name — online status (top-right corner)
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
-                              displayName,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              name,
                               overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.speed_rounded,
-                                size: 16,
-                                color: isOnline
-                                    ? AppColors.primary(context)
-                                    : AppColors.textSecondary(context),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                latest?.speed != null
-                                    ? '${latest!.speed!.toStringAsFixed(0)} km/h'
-                                    : '—',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-
-                      // Row 2: Mode (left) — Updated at (right)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              mode,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isOnline
-                                    ? AppColors.primary(context)
-                                    : AppColors.textSecondary(context),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Text(
-                            latest?.deviceTimestamp != null
-                                ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
-                                : 'No updates yet',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary(
+                              style: AppTextStyles.titleWithColor(
                                 context,
-                              ).withValues(alpha: AppAlpha.overlay),
+                                color: onP,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-
-                      // Row 3: Recent alert (left) — Travelling/Stationary (right)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
+                          const SizedBox(width: AppSpacing.sm),
                           Icon(
                             Icons.circle,
-                            size: 8,
-                            color: isOnline
-                                ? AppColors.warning
-                                : AppColors.textSecondary(context),
+                            size: AppSize.dot,
+                            color: isOnline ? AppColors.success : soft,
                           ),
                           const SizedBox(width: AppSpacing.xs),
-                          Expanded(
-                            child: Text(
-                              (latest?.alert != null &&
-                                      latest!.alert!.isNotEmpty)
-                                  ? latest!.alert!
-                                  : 'No recent alerts',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary(context),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
                           Text(
-                            (latest?.speed ?? 0) > 0
-                                ? 'Travelling'
-                                : 'Stationary',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary(context),
-                            ),
+                            isOnline ? 'Online' : 'Offline',
+                            style: AppTextStyles.metaWithColor(
+                              context,
+                              color: onP,
+                            ).copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                      // Mode, plain text
+                      Text(
+                        device.currentMode,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyWithColor(
+                          context,
+                          color: soft,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Speed — movement
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          InfoPill(
+                            label: speed != null
+                                ? UnitFormatter.formatSpeed(speed, decimals: 0)
+                                : '—',
+                            icon: Icons.speed_rounded,
+                            background: pillBg,
+                            foreground: onP,
+                          ),
+                          InfoPill(
+                            label: moving ? 'Travelling' : 'Stationary',
+                            icon: moving
+                                ? Icons.directions_walk_rounded
+                                : Icons.pause_circle_outline_rounded,
+                            background: pillBg,
+                            foreground: onP,
                           ),
                         ],
                       ),
                     ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Alert: full width, starts under the avatar
+            Row(
+              children: [
+                Icon(
+                  hasAlert
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline_rounded,
+                  size: AppSize.icon,
+                  color: soft,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    hasAlert ? alert : 'No recent alerts',
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyWithColor(context, color: onP),
                   ),
                 ),
               ],

@@ -31,6 +31,7 @@ class AppColors {
 
   static const Color info = Color(0xFF0EA5E9);
   static const Color infoContainer = Color(0x1F0EA5E9); // sheet: #EFF8FF
+  static const Color onInfo = Colors.white;
 
   // NEW: "Offline" state from the design sheet
   static const Color offline = Color(0xFF64748B);
