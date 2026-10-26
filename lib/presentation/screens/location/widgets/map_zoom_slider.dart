@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapZoomSlider extends StatelessWidget {
   final MapController mapController;
+  // TODO(logic): take these from MapConfig instead of hardcoding.
   final double minZoom;
   final double maxZoom;
 
@@ -23,46 +26,22 @@ class MapZoomSlider extends StatelessWidget {
       builder: (context, snapshot) {
         final currentZoom = mapController.camera.zoom.clamp(minZoom, maxZoom);
 
-        return Container(
-          height: 140,
-          width: 44,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant(context),
-            borderRadius: AppRadius.lgAll,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: AppAlpha.tint),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.add_rounded,
-                size: 16,
-                color: AppColors.textSecondary(context),
-              ),
-              Expanded(
-                child: RotatedBox(
-                  quarterTurns: 3,
-                  child: SliderTheme(
-                    data: SliderThemeData(
-                      trackHeight: 3,
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 6,
-                      ),
-                      overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 12,
-                      ),
-                      activeTrackColor: AppColors.primary(context),
-                      inactiveTrackColor: AppColors.textSecondary(
-                        context,
-                      ).withValues(alpha: AppAlpha.border),
-                      thumbColor: AppColors.primary(context),
-                    ),
+        return SizedBox(
+          width: AppSize.tile,
+          height: AppSize.mapSlider,
+          child: AppCard(
+            padding: AppSpacing.smVertical,
+            child: Column(
+              children: [
+                Icon(
+                  AppIcons.zoomIn,
+                  size: AppSize.iconSm,
+                  color: AppColors.textSecondary(context),
+                ),
+                Expanded(
+                  child: RotatedBox(
+                    quarterTurns: 3,
+                    // Colors, track and thumb come from sliderTheme in app_theme.
                     child: Slider(
                       value: currentZoom,
                       min: minZoom,
@@ -76,13 +55,13 @@ class MapZoomSlider extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.remove_rounded,
-                size: 16,
-                color: AppColors.textSecondary(context),
-              ),
-            ],
+                Icon(
+                  AppIcons.zoomOut,
+                  size: AppSize.iconSm,
+                  color: AppColors.textSecondary(context),
+                ),
+              ],
+            ),
           ),
         );
       },

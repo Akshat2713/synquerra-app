@@ -2,39 +2,51 @@ import 'package:flutter/material.dart';
 import '../themes/app_text_styles.dart';
 import '../themes/app_tokens.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
+
+enum _SnackKind { success, error, info }
 
 class AppSnackBar {
   AppSnackBar._();
 
   static void success(BuildContext c, String message) =>
-      _show(c, message, isError: false);
+      _show(c, message, _SnackKind.success);
 
   static void error(BuildContext c, String message) =>
-      _show(c, message, isError: true);
+      _show(c, message, _SnackKind.error);
 
-  static void _show(
-    BuildContext context,
-    String message, {
-    required bool isError,
-  }) {
-    final fg = isError ? AppColors.onDanger : AppColors.onSuccess;
+  /// Neutral heads-up (empty results, notices). Not an error.
+  static void info(BuildContext c, String message) =>
+      _show(c, message, _SnackKind.info);
+
+  static void _show(BuildContext context, String message, _SnackKind kind) {
+    final (bg, fg, icon) = switch (kind) {
+      _SnackKind.success => (
+        AppColors.success,
+        AppColors.onSuccess,
+        AppIcons.success,
+      ),
+      _SnackKind.error => (
+        AppColors.danger,
+        AppColors.onDanger,
+        AppIcons.error,
+      ),
+      _SnackKind.info => (AppColors.info, AppColors.onInfo, AppIcons.info),
+    };
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          backgroundColor: isError ? AppColors.danger : AppColors.success,
+          backgroundColor: bg,
           margin: AppSpacing.mdAll,
-          duration: isError ? AppMotion.snackLong : AppMotion.snack,
+          duration: kind == _SnackKind.success
+              ? AppMotion.snack
+              : AppMotion.snackLong,
           content: Row(
+            spacing: AppSpacing.sm,
             children: [
-              Icon(
-                isError
-                    ? Icons.error_outline_rounded
-                    : Icons.check_circle_rounded,
-                color: fg,
-                size: AppSize.icon,
-              ),
-              const SizedBox(width: AppSpacing.sm),
+              Icon(icon, color: fg, size: AppSize.icon),
               Expanded(
                 child: Text(
                   message,

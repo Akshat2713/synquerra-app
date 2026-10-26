@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
+import '../../../widgets/app_surfaces.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ViewTabs extends StatelessWidget {
@@ -10,46 +13,77 @@ class ViewTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: AppAlpha.tint), blurRadius: 8),
-        ],
-      ),
+    return AppCard(
+      padding: AppSpacing.xsAll,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _segment(context, 'Latest', !isHistory, () => onChanged(false)),
-          _segment(context, 'History', isHistory, () => onChanged(true)),
+          _Segment(
+            label: 'Latest',
+            active: !isHistory,
+            onTap: () => onChanged(false),
+          ),
+          _Segment(
+            label: 'History',
+            active: isHistory,
+            onTap: () => onChanged(true),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _segment(
-    BuildContext context,
-    String label,
-    bool active,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
+class _Segment extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _Segment({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
+    return Semantics(
+      button: true,
+      selected: active,
+      label: label,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: reduceMotion ? Duration.zero : AppMotion.base,
+        curve: AppMotion.curve,
         decoration: BoxDecoration(
-          color: active ? AppColors.primary(context) : Colors.transparent,
+          color: active ? AppColors.primary(context) : null,
           borderRadius: AppRadius.lgAll,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: active ? Colors.white : AppColors.textSecondary(context),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: AppRadius.lgAll,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onTap();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Text(
+                label,
+                style: AppTextStyles.bodyWithColor(
+                  context,
+                  color: active
+                      ? AppColors.onPrimary(context)
+                      : AppColors.textSecondary(context),
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
           ),
         ),
       ),

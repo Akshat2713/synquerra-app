@@ -1,13 +1,15 @@
-// presentation/widgets/map_icon_button.dart
+// presentation/screens/device_detail/widgets/map_icon_button.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../themes/colors.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MapIconButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback? onTap; // ← nullable
+  final VoidCallback? onTap; // null = disabled
   final bool highlighted;
   final Widget? child;
+  final String? tooltip;
 
   const MapIconButton({
     super.key,
@@ -15,40 +17,54 @@ class MapIconButton extends StatelessWidget {
     required this.onTap,
     this.highlighted = false,
     this.child,
+    this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
     final disabled = onTap == null;
-    final iconColor = highlighted
-        ? Colors.white
+    final background = highlighted
+        ? AppColors.primary(context)
         : disabled
-        ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
+        ? AppColors.surfaceVariant(context)
+        : AppColors.surface(context);
+    final iconColor = highlighted
+        ? AppColors.onPrimary(context)
+        : disabled
+        ? AppAlpha.withAlpha(
+            AppColors.textSecondary(context),
+            AppAlpha.disabled,
+          )
         : AppColors.textPrimary(context);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: highlighted
-              ? AppColors.primary(context)
-              : disabled
-              ? AppColors.surfaceVariant(context)
-              : AppColors.surface(context),
-          borderRadius: AppRadius.mdAll,
-          boxShadow: disabled
+    // Shadow lives on the outer box; the Material (and its ink) sits inside.
+    final button = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.mdAll,
+        boxShadow: disabled ? null : AppShadow.soft(AppColors.shadow(context)),
+      ),
+      child: Material(
+        color: background,
+        borderRadius: AppRadius.mdAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: disabled
               ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: AppAlpha.tint),
-                    blurRadius: 8,
-                  ),
-                ],
+              : () {
+                  HapticFeedback.selectionClick();
+                  onTap!();
+                },
+          child: SizedBox(
+            width: AppSize.tile,
+            height: AppSize.tile,
+            child: Center(
+              child: child ?? Icon(icon, size: AppSize.icon, color: iconColor),
+            ),
+          ),
         ),
-        child: Center(child: child ?? Icon(icon, size: 20, color: iconColor)),
       ),
     );
+
+    return tooltip == null ? button : Tooltip(message: tooltip!, child: button);
   }
 }

@@ -1,24 +1,64 @@
-// presentation/utils/color_utils.dart
-
+// lib/presentation/utils/colour_util.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/alerts/alert_entity.dart';
 import '../themes/colors.dart';
 
-Color batteryColor(int? battery) {
-  if (battery == null) return Colors.grey;
+// ======================================================= thresholds
+// Shared with app_icons.dart. Never hardcode these numbers anywhere else.
 
-  if (battery <= 20) return AppColors.danger;
-  if (battery <= 50) return AppColors.warning;
+// Battery (%)
+const int kBatteryCritical = 20; // <= red
+const int kBatteryLow = 50; // <= yellow
+const int kBatteryHigh = 70; // icon only: <= 5 bars, above = full
+
+// Temperature (°C)
+const double kTempDangerHigh = 45; // >= red
+const double kTempWarnHigh = 38; // >= yellow
+const double kTempWarnLow = 10; // <= yellow
+const double kTempDangerLow = 0; // <= red
+
+// ======================================================= parsing
+
+/// Temperature may arrive as num, a numeric String, or 'NA' / null.
+/// Returns null when there is no usable value.
+// TODO(logic): drop this once the entity exposes temperature as num?.
+double? parseTemperature(dynamic temp) {
+  if (temp == null) return null;
+  if (temp is num) return temp.toDouble();
+  return double.tryParse(temp.toString());
+}
+
+// ======================================================= colors
+
+Color batteryColor(int? battery) {
+  if (battery == null) return AppColors.offline;
+  if (battery <= kBatteryCritical) return AppColors.danger;
+  if (battery <= kBatteryLow) return AppColors.warning;
   return AppColors.success;
 }
 
-String hexFromColor(Color c) =>
-    '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+Color temperatureColor(dynamic temp) {
+  final parsed = parseTemperature(temp);
+  if (parsed == null) return AppColors.offline;
 
-Color colorFromHex(String hex) {
-  final cleaned = hex.replaceFirst('#', '');
-  final value = int.tryParse(cleaned, radix: 16);
-  return value == null ? Colors.blue : Color(0xFF000000 | value);
+  if (parsed >= kTempDangerHigh || parsed <= kTempDangerLow) {
+    return AppColors.danger;
+  }
+  if (parsed >= kTempWarnHigh || parsed <= kTempWarnLow) {
+    return AppColors.warning;
+  }
+  return AppColors.success;
+}
+
+Color alertColor(AlertEntity alert) {
+  switch (alert.severity) {
+    case AlertSeverity.critical:
+      return AppColors.danger;
+    case AlertSeverity.warning:
+      return AppColors.warning;
+    case AlertSeverity.advisory:
+      return AppColors.success;
+  }
 }
 
 Color deviceSeverityColor(List<dynamic> deviceAlerts) {
@@ -36,31 +76,13 @@ Color deviceSeverityColor(List<dynamic> deviceAlerts) {
   return AppColors.success;
 }
 
-Color alertColor(AlertEntity alert) {
-  switch (alert.severity) {
-    case AlertSeverity.critical:
-      return AppColors.danger;
-    case AlertSeverity.warning:
-      return AppColors.warning;
-    case AlertSeverity.advisory:
-      return AppColors.success;
-  }
-}
+// ======================================================= hex helpers
 
-Color temperatureColor(dynamic temp) {
-  if (temp == null) return Colors.grey;
+String hexFromColor(Color c) =>
+    '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
-  final double? parsed = temp is num
-      ? temp.toDouble()
-      : double.tryParse(temp.toString());
-
-  if (parsed == null) return Colors.grey;
-
-  if (parsed >= 45 || parsed <= 0) {
-    return AppColors.danger;
-  }
-  if (parsed >= 38 || parsed <= 10) {
-    return AppColors.warning;
-  }
-  return AppColors.success;
+Color colorFromHex(String hex) {
+  final cleaned = hex.replaceFirst('#', '');
+  final value = int.tryParse(cleaned, radix: 16);
+  return value == null ? Colors.blue : Color(0xFF000000 | value);
 }

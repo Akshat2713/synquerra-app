@@ -1,12 +1,16 @@
 // lib/presentation/screens/location/widgets/timeline_slider.dart
 
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
 import '../../../utils/colour_util.dart';
+import '../../../widgets/app_surfaces.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class TimelineSlider extends StatefulWidget {
@@ -28,25 +32,22 @@ class TimelineSlider extends StatefulWidget {
 }
 
 class _TimelineSliderState extends State<TimelineSlider> {
+  // TODO(logic): playback (timer, speed, base interval) belongs in a
+  // controller/bloc, not in the widget state.
+  static const _speedOptions = [1.0, 2.0, 4.0];
+  static const _baseIntervalMs = 800;
+
   bool _isPlaying = false;
   Timer? _playbackTimer;
-
   double _selectedSpeed = 1.0;
-  final List<double> _speedOptions = [1.0, 2.0, 4.0];
 
   @override
   void dispose() {
-    _stopPlayback();
+    _playbackTimer?.cancel();
     super.dispose();
   }
 
-  void _togglePlayback() {
-    if (_isPlaying) {
-      _stopPlayback();
-    } else {
-      _startPlayback();
-    }
-  }
+  void _togglePlayback() => _isPlaying ? _stopPlayback() : _startPlayback();
 
   void _startPlayback() {
     if (widget.points.isEmpty) return;
@@ -57,12 +58,9 @@ class _TimelineSliderState extends State<TimelineSlider> {
     }
 
     _playbackTimer?.cancel();
+    final intervalMs = (_baseIntervalMs / _selectedSpeed).round();
 
-    final intervalMs = (800 / _selectedSpeed).round();
-
-    _playbackTimer = Timer.periodic(Duration(milliseconds: intervalMs), (
-      timer,
-    ) {
+    _playbackTimer = Timer.periodic(Duration(milliseconds: intervalMs), (_) {
       if (widget.currentIndex < widget.points.length - 1) {
         widget.onChanged(widget.currentIndex + 1);
       } else {
@@ -80,21 +78,31 @@ class _TimelineSliderState extends State<TimelineSlider> {
 
   void _updateSpeed(double speed) {
     if (_selectedSpeed == speed) return;
-    setState(() {
-      _selectedSpeed = speed;
-    });
-
-    if (_isPlaying) {
-      _startPlayback();
-    }
+    setState(() => _selectedSpeed = speed);
+    if (_isPlaying) _startPlayback();
   }
+
+  static String _speedLabel(double speed) =>
+      '${speed.toStringAsFixed(speed == speed.toInt() ? 0 : 1)}x';
+
+  // // TODO(logic): move to colour_util.dart next to batteryColor.
+  // IconData _batteryIcon(int? battery) {
+  //   if (battery == null) return Icons.battery_unknown_rounded;
+  //   if (battery <= 15) return Icons.battery_alert_rounded;
+  //   if (battery <= 30) return Icons.battery_3_bar_rounded;
+  //   if (battery <= 70) return Icons.battery_5_bar_rounded;
+  //   return Icons.battery_full_rounded;
+  // }
 
   @override
   Widget build(BuildContext context) {
+    // TODO(logic): the bloc's mappablePoints is already sorted oldest -> newest,
+    // so this sort is redundant. Remove it and use widget.points directly.
     final sortedPoints = List<AnalyticsEntity>.from(widget.points)
       ..sort((a, b) {
         final aTime = a.deviceTimestamp;
         final bTime = b.deviceTimestamp;
+        if (aTime == null && bTime == null) return 0;
         if (aTime == null) return -1;
         if (bTime == null) return 1;
         return aTime.compareTo(bTime);
@@ -106,282 +114,259 @@ class _TimelineSliderState extends State<TimelineSlider> {
         : 0;
     final current = hasPoints ? sortedPoints[safeIndex] : null;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context),
-        borderRadius: AppRadius.lgAll,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: AppAlpha.tint),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.smd,
+        0,
+        AppSpacing.smd,
+        AppSpacing.md,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (current != null)
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time_filled_rounded,
-                  size: 16,
-                  color: AppColors.iconSecondary(context),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    DateTimeFormatter.formatFullDateTime(
-                      current.deviceTimestamp,
-                    ),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary(context),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                // Speed + Battery inline, before the minimize button
-                const SizedBox(width: 8),
-                _InlineMetric(
-                  icon: Icons.speed_rounded,
-                  label: UnitFormatter.formatSpeed(current.speed),
-                  color: AppColors.iconSecondary(context),
-                ),
-                const SizedBox(width: 8),
-                _InlineMetric(
-                  icon: _getBatteryIcon(current.battery),
-                  label: current.battery != null
-                      ? '${current.battery}%'
-                      : 'N/A',
-                  color: batteryColor(current.battery),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.expand_more_rounded),
-                  iconSize: 26,
-                  color: AppColors.iconSecondary(context),
-                  onPressed: widget.onMinimize,
-                ),
-              ],
-            )
-          else
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.expand_more_rounded),
-                iconSize: 26,
-                color: AppColors.iconSecondary(context),
-                onPressed: widget.onMinimize,
-              ),
-            ),
-          if (current != null) const SizedBox(height: 8),
-          Stack(
-            alignment: Alignment.center,
-            children: [
+      child: AppCard(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.smd,
+          AppSpacing.md,
+          AppSpacing.smd,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: AppSpacing.sm,
+          children: [
+            if (current != null)
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: AppSpacing.sm,
                 children: [
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.skip_previous_rounded),
-                    iconSize: 26,
-                    color: AppColors.textSecondary(context),
-                    onPressed: hasPoints && safeIndex > 0
-                        ? () => widget.onChanged(safeIndex - 1)
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      _isPlaying
-                          ? Icons.pause_circle_filled_rounded
-                          : Icons.play_circle_fill_rounded,
-                    ),
-                    iconSize: 36,
-                    color: AppColors.primary(context),
-                    onPressed: hasPoints ? _togglePlayback : null,
-                  ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.skip_next_rounded),
-                    iconSize: 26,
-                    color: AppColors.textSecondary(context),
-                    onPressed: hasPoints && safeIndex < sortedPoints.length - 1
-                        ? () => widget.onChanged(safeIndex + 1)
-                        : null,
-                  ),
-                ],
-              ),
-              Positioned(
-                right: 0,
-                child: PopupMenuButton<double>(
-                  tooltip: 'Playback Speed',
-                  initialValue: _selectedSpeed,
-                  onSelected: _updateSpeed,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
-                  itemBuilder: (context) => _speedOptions.map((speed) {
-                    final label =
-                        '${speed.toStringAsFixed(speed == speed.toInt() ? 0 : 1)}x';
-                    return PopupMenuItem<double>(
-                      value: speed,
-                      height: 36,
-                      child: Row(
-                        children: [
-                          Text(
-                            label,
-                            style: TextStyle(
-                              fontWeight: _selectedSpeed == speed
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: _selectedSpeed == speed
-                                  ? AppColors.primary(context)
-                                  : AppColors.textPrimary(context),
-                            ),
-                          ),
-                          if (_selectedSpeed == speed) ...[
-                            const Spacer(),
-                            Icon(
-                              Icons.check_rounded,
-                              size: 16,
-                              color: AppColors.primary(context),
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface(context),
-                      borderRadius: AppRadius.mdAll,
-                      border: Border.all(
-                        color: AppColors.outlineVariant(
-                          context,
-                        ).withValues(alpha: AppAlpha.border),
-                      ),
-                    ),
+                  Expanded(
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      spacing: AppSpacing.xs,
                       children: [
-                        Text(
-                          '${_selectedSpeed.toStringAsFixed(_selectedSpeed == _selectedSpeed.toInt() ? 0 : 1)}x',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary(context),
-                          ),
-                        ),
                         Icon(
-                          Icons.arrow_drop_down_rounded,
-                          size: 18,
-                          color: AppColors.primary(context),
+                          AppIcons.timestamp,
+                          size: AppSize.iconSm,
+                          color: AppColors.iconSecondary(context),
+                        ),
+                        Expanded(
+                          child: Text(
+                            DateTimeFormatter.formatFullDateTime(
+                              current.deviceTimestamp,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.metaWithColor(
+                              context,
+                              color: AppColors.textPrimary(context),
+                            ).copyWith(fontWeight: FontWeight.w700),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
+                  _InlineMetric(
+                    icon: AppIcons.speed,
+                    label: UnitFormatter.formatSpeed(current.speed),
+                    color: AppColors.iconSecondary(context),
+                  ),
+                  _InlineMetric(
+                    icon: AppIcons.battery(current.battery),
+                    label: current.battery != null
+                        ? '${current.battery}%'
+                        : 'N/A',
+                    color: batteryColor(current.battery),
+                  ),
+                  _MinimizeButton(onPressed: widget.onMinimize),
+                ],
+              )
+            else
+              Align(
+                alignment: Alignment.centerRight,
+                child: _MinimizeButton(onPressed: widget.onMinimize),
               ),
-            ],
-          ),
-          // Timeline: date before + slider + date after, all inline
-          if (hasPoints)
-            Row(
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Text(
-                  DateTimeFormatter.formatCompactDate(
-                    sortedPoints.first.deviceTimestamp,
-                  ),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 4,
-                      thumbShape: const _ArrowThumbShape(
-                        icon: Icons.navigation_rounded,
-                        size: 22,
-                      ),
-                      thumbColor: AppColors.primary(context),
-                      overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 14,
-                      ),
-                      activeTrackColor: AppColors.primary(context),
-                      inactiveTrackColor: AppColors.outlineVariant(
-                        context,
-                      ).withValues(alpha: AppAlpha.border),
-                    ),
-                    child: Slider(
-                      value: safeIndex.toDouble(),
-                      min: 0,
-                      max: hasPoints ? (sortedPoints.length - 1).toDouble() : 1,
-                      divisions: hasPoints && sortedPoints.length > 1
-                          ? sortedPoints.length - 1
-                          : 1,
-                      onChanged: hasPoints
-                          ? (v) {
-                              if (_isPlaying) _stopPlayback();
-                              widget.onChanged(v.round());
-                            }
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: AppSpacing.md,
+                  children: [
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.skip_previous_rounded),
+                      iconSize: AppSize.iconLg,
+                      color: AppColors.textSecondary(context),
+                      tooltip: 'Previous point',
+                      onPressed: hasPoints && safeIndex > 0
+                          ? () => widget.onChanged(safeIndex - 1)
                           : null,
                     ),
-                  ),
+                    IconButton.filled(
+                      icon: Icon(_isPlaying ? AppIcons.pause : AppIcons.play),
+                      iconSize: AppSize.iconLg,
+                      tooltip: _isPlaying ? 'Pause' : 'Play',
+                      onPressed: hasPoints ? _togglePlayback : null,
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(AppIcons.next),
+                      iconSize: AppSize.iconLg,
+                      color: AppColors.textSecondary(context),
+                      tooltip: 'Next point',
+                      onPressed:
+                          hasPoints && safeIndex < sortedPoints.length - 1
+                          ? () => widget.onChanged(safeIndex + 1)
+                          : null,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  DateTimeFormatter.formatCompactDate(
-                    sortedPoints.last.deviceTimestamp,
-                  ),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary(context),
+                Positioned(
+                  right: 0,
+                  child: PopupMenuButton<double>(
+                    tooltip: 'Playback speed',
+                    initialValue: _selectedSpeed,
+                    onSelected: _updateSpeed,
+                    itemBuilder: (context) => _speedOptions.map((speed) {
+                      final selected = _selectedSpeed == speed;
+                      return PopupMenuItem<double>(
+                        value: speed,
+                        child: Row(
+                          children: [
+                            Text(
+                              _speedLabel(speed),
+                              style:
+                                  AppTextStyles.bodyWithColor(
+                                    context,
+                                    color: selected
+                                        ? AppColors.primary(context)
+                                        : AppColors.textPrimary(context),
+                                  ).copyWith(
+                                    fontWeight: selected
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                  ),
+                            ),
+                            if (selected) ...[
+                              const Spacer(),
+                              Icon(
+                                Icons.check_rounded,
+                                size: AppSize.iconSm,
+                                color: AppColors.primary(context),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    child: _SpeedChip(label: _speedLabel(_selectedSpeed)),
                   ),
                 ),
               ],
             ),
-        ],
+            // Timeline: start date + slider + end date
+            if (hasPoints)
+              Row(
+                spacing: AppSpacing.xs,
+                children: [
+                  Text(
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.first.deviceTimestamp,
+                    ),
+                    style: AppTextStyles.microWithColor(
+                      context,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                  Expanded(
+                    // Track, colors and overlay come from sliderTheme in
+                    // app_theme. Only the arrow thumb is local.
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        thumbShape: const _ArrowThumbShape(
+                          icon: AppIcons.directionMarker,
+                          size: AppSize.iconLg,
+                        ),
+                      ),
+                      child: Slider(
+                        value: safeIndex.toDouble(),
+                        min: 0,
+                        max: (sortedPoints.length - 1).toDouble(),
+                        divisions: sortedPoints.length > 1
+                            ? sortedPoints.length - 1
+                            : 1,
+                        onChanged: (v) {
+                          if (_isPlaying) _stopPlayback();
+                          widget.onChanged(v.round());
+                        },
+                      ),
+                    ),
+                  ),
+                  Text(
+                    DateTimeFormatter.formatCompactDate(
+                      sortedPoints.last.deviceTimestamp,
+                    ),
+                    style: AppTextStyles.microWithColor(
+                      context,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  // Color _getBatteryColor(int? battery) {
-  //   if (battery == null) return AppColors.textSecondary(context);
-  //   if (battery <= 15) return AppColors.danger;
-  //   if (battery <= 30) return AppColors.warning;
-  //   return AppColors.success;
-  // }
+class _MinimizeButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _MinimizeButton({required this.onPressed});
 
-  IconData _getBatteryIcon(int? battery) {
-    if (battery == null) return Icons.battery_unknown_rounded;
-    if (battery <= 15) return Icons.battery_alert_rounded;
-    if (battery <= 30) return Icons.battery_3_bar_rounded;
-    if (battery <= 70) return Icons.battery_5_bar_rounded;
-    return Icons.battery_full_rounded;
+  @override
+  Widget build(BuildContext context) => IconButton(
+    visualDensity: VisualDensity.compact,
+    padding: EdgeInsets.zero,
+    constraints: const BoxConstraints(),
+    icon: const Icon(AppIcons.minimize),
+    iconSize: AppSize.iconLg,
+    color: AppColors.iconSecondary(context),
+    tooltip: 'Minimize',
+    onPressed: onPressed,
+  );
+}
+
+/// Playback speed selector (the popup's trigger).
+class _SpeedChip extends StatelessWidget {
+  final String label;
+  const _SpeedChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = AppColors.onPrimaryContainer(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.primaryContainer(context),
+        borderRadius: AppRadius.pillAll,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smd,
+          AppSpacing.xs,
+          AppSpacing.xs,
+          AppSpacing.xs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.metaWithColor(
+                context,
+                color: foreground,
+              ).copyWith(fontWeight: FontWeight.w700),
+            ),
+            Icon(AppIcons.menuDropdown, size: AppSize.icon, color: foreground),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -401,25 +386,23 @@ class _InlineMetric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.xs,
       children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: AppSpacing.xs),
+        Icon(icon, size: AppSize.iconSm, color: color),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.microWithColor(
+            context,
             color: AppColors.textPrimary(context),
-          ),
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
   }
 }
 
-/// Custom slider thumb rendered as an arrow (triangle) pointing up.
-/// Slider thumb that renders a Material arrow icon.
-/// Slider thumb that renders a Material arrow icon.
+/// Slider thumb that renders a Material icon (default: arrow rotated to
+/// point along the track).
 class _ArrowThumbShape extends SliderComponentShape {
   final IconData icon;
   final double size;
@@ -427,16 +410,13 @@ class _ArrowThumbShape extends SliderComponentShape {
   final double rotation;
 
   const _ArrowThumbShape({
-    this.icon = Icons.navigation_rounded,
-    this.size = 22,
-    this.color,
-    this.rotation = 1.5708,
-  });
+    this.icon = AppIcons.directionMarker,
+    this.size = AppSize.iconLg,
+  }) : rotation = math.pi / 2,
+       color = null;
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
-    return Size(size, size);
-  }
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size(size, size);
 
   @override
   void paint(
@@ -453,9 +433,10 @@ class _ArrowThumbShape extends SliderComponentShape {
     required double textScaleFactor,
     required Size sizeWithOverflow,
   }) {
-    final effectiveColor =
-        color ?? sliderTheme.thumbColor ?? const Color(0xFF000000);
+    // Slider passes a fully resolved theme here, so thumbColor is non-null.
+    final effectiveColor = color ?? sliderTheme.thumbColor!;
 
+    // Glyph painting (icon font), not UI text, so no AppTextStyles role.
     final textPainter = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),

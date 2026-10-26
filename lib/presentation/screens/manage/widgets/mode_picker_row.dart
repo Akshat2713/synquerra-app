@@ -5,7 +5,7 @@ import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import '../../../utils/mode_icon_resolver.dart';
+import '../../../utils/app_icons.dart';
 import '../../../utils/unit_formatter.dart';
 import '../../../widgets/app_motion_widgets.dart';
 import '../../../widgets/app_surfaces.dart';
@@ -212,7 +212,7 @@ class _CurrentModeHero extends StatelessWidget {
                           ),
                         )
                       : Icon(
-                          ModeIconResolver.resolve(mode),
+                          AppIcons.mode(mode),
                           key: ValueKey(mode.id),
                           color: on,
                         ),

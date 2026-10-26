@@ -250,6 +250,27 @@ class AppTheme {
         dividerColor: p.outlineVariant,
       ),
 
+      sliderTheme: SliderThemeData(
+        trackHeight: AppSize.sliderTrack,
+        activeTrackColor: p.primary,
+        inactiveTrackColor: AppAlpha.withBorderAlpha(p.outlineVariant),
+        thumbColor: p.primary,
+        overlayColor: AppAlpha.withAlpha(p.primary, AppAlpha.pressed),
+        thumbShape: const RoundSliderThumbShape(
+          enabledThumbRadius: AppSize.sliderThumb,
+        ),
+        overlayShape: const RoundSliderOverlayShape(
+          overlayRadius: AppSize.sliderOverlay,
+        ),
+      ),
+
+      popupMenuTheme: PopupMenuThemeData(
+        color: p.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: shapeMd,
+        textStyle: AppTextStyles.body.copyWith(color: p.textPrimary),
+      ),
+
       dialogTheme: DialogThemeData(
         backgroundColor: p.surface,
         surfaceTintColor: Colors.transparent,

@@ -6,6 +6,8 @@ import '../../../blocs/user_location/user_location_bloc.dart';
 import '../../../themes/colors.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import '../../../utils/app_icons.dart';
+
 class MapUserLocationLayer extends StatelessWidget {
   final UserLocationBloc userLocationBloc;
 
@@ -19,29 +21,33 @@ class MapUserLocationLayer extends StatelessWidget {
         if (state is! UserLocationLoaded) {
           return const SizedBox.shrink();
         }
+        final primary = AppColors.primary(context);
         return MarkerLayer(
           markers: [
             Marker(
               point: state.position,
-              width: 32,
-              height: 32,
-              child: Container(
+              width: AppSize.avatarSm,
+              height: AppSize.avatarSm,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.primary(context),
+                  color: primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
+                  border: Border.all(
+                    color: AppColors.mapMarkerOutline,
+                    width: AppSize.stroke,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary(context).withValues(alpha: AppAlpha.border),
-                      blurRadius: 8,
-                      spreadRadius: 4,
+                      color: AppAlpha.withBorderAlpha(primary),
+                      blurRadius: AppSpacing.sm,
+                      spreadRadius: AppSpacing.xs,
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 18,
+                child: Icon(
+                  AppIcons.userMarker,
+                  color: AppColors.onPrimary(context),
+                  size: AppSize.iconSm,
                 ),
               ),
             ),

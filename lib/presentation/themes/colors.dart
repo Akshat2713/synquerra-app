@@ -52,6 +52,9 @@ class AppColors {
   static const Color darkMapZonePrimary = Color(0xFF064E3B);
   static const Color darkMapZoneSecondary = Color(0xFF1E3A8A);
 
+  static const Color mapMarkerOutline =
+      Colors.white; // halo/border on map markers
+
   // ==========================================
   // ===== THEME-AWARE (read from AppPalette)
   // ==========================================

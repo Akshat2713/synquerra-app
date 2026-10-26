@@ -1,6 +1,5 @@
 // lib/presentation/screens/device_list/widgets/notification_panel.dart
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';

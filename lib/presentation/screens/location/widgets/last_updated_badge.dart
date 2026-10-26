@@ -2,20 +2,11 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
-/// Small pill badge showing "x ago" for the current analytics point's
-/// device timestamp.
-///
-/// * Live (<60s old, per DateTimeFormatter.isLive): green, pulsing dot.
-/// * Stale: neutral colour, static dot, so a last-known position is never
-///   presented as if it were current.
-///
-/// It re-evaluates on its own timer, so the text and live/stale state keep
-/// updating even when no new data arrives (the old `_ticker` was declared but
-/// never started).
 class LastUpdatedBadge extends StatefulWidget {
   final DateTime? timestamp;
   const LastUpdatedBadge({super.key, required this.timestamp});
@@ -26,24 +17,33 @@ class LastUpdatedBadge extends StatefulWidget {
 
 class _LastUpdatedBadgeState extends State<LastUpdatedBadge>
     with SingleTickerProviderStateMixin {
+  // TODO(logic): freshness polling interval, not a visual duration.
   static const _refreshEvery = Duration(seconds: 10);
 
   late final AnimationController _pulseController;
   Timer? _ticker;
   bool _isLive = false;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: AppMotion.pulse,
     );
-    _evaluateFreshness();
+    _isLive = DateTimeFormatter.isLive(widget.timestamp);
     _ticker = Timer.periodic(_refreshEvery, (_) {
       if (!mounted) return;
       setState(_evaluateFreshness);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _syncPulse();
   }
 
   @override
@@ -54,12 +54,17 @@ class _LastUpdatedBadgeState extends State<LastUpdatedBadge>
 
   void _evaluateFreshness() {
     _isLive = DateTimeFormatter.isLive(widget.timestamp);
-    if (_isLive) {
+    _syncPulse();
+  }
+
+  void _syncPulse() {
+    if (_isLive && !_reduceMotion) {
       if (!_pulseController.isAnimating) {
         _pulseController.repeat(reverse: true);
       }
     } else {
-      _pulseController.stop(); // no wasted frames while stale
+      _pulseController.stop(); // no wasted frames while stale / reduce-motion
+      _pulseController.value = 1;
     }
   }
 
@@ -70,54 +75,66 @@ class _LastUpdatedBadgeState extends State<LastUpdatedBadge>
     super.dispose();
   }
 
+  Widget _dot(Color color, double fillAlpha) => Container(
+    width: AppSize.dot,
+    height: AppSize.dot,
+    decoration: BoxDecoration(
+      color: AppAlpha.withAlpha(color, fillAlpha),
+      border: Border.all(color: color, width: AppSize.stroke),
+      shape: BoxShape.circle,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     if (widget.timestamp == null) return const SizedBox.shrink();
 
-    final Color color = _isLive
-        ? AppColors.success
-        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final surface = AppColors.surface(context);
+    final dotColor = _isLive ? AppColors.success : AppColors.offline;
+    final textColor = _isLive
+        ? AppColors.textPrimary(context)
+        : AppColors.textSecondary(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.overlay),
-        borderRadius: AppRadius.lgAll,
+        color: _isLive
+            ? Color.alphaBlend(AppColors.successContainer, surface)
+            : surface,
+        borderRadius: AppRadius.pillAll,
+        border: Border.all(
+          color: AppAlpha.withBorderAlpha(AppColors.outlineVariant(context)),
+        ),
+        boxShadow: AppShadow.soft(AppColors.shadow(context)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_isLive)
-            AnimatedBuilder(
-              animation: _pulseController,
-              builder: (_, __) => Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.4 + (_pulseController.value * 0.6),
-                  ),
-                  border: Border.all(color: color, width: 2),
-                  shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.smd,
+          vertical: AppSpacing.xs,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: AppSpacing.xs,
+          children: [
+            if (_isLive)
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (_, __) => _dot(
+                  dotColor,
+                  AppAlpha.disabled +
+                      (1 - AppAlpha.disabled) * _pulseController.value,
                 ),
-              ),
-            )
-          else
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              )
+            else
+              _dot(dotColor, 1),
+            Text(
+              DateTimeFormatter.formatRelativeTime(widget.timestamp),
+              style: AppTextStyles.metaWithColor(
+                context,
+                color: textColor,
+              ).copyWith(fontWeight: FontWeight.w700),
             ),
-          const SizedBox(width: 4),
-          Text(
-            DateTimeFormatter.formatRelativeTime(widget.timestamp),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

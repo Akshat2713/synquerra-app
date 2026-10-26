@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Card showing the address of the currently active analytics point
@@ -28,42 +31,36 @@ class AddressCard extends StatelessWidget {
 
     return Skeletonizer(
       enabled: isLoading,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 320),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.surface(context),
-          borderRadius: AppRadius.lgAll,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: AppAlpha.tint),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min, // Shrinks the Row to fit short text
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.location_on_rounded, size: 18, color: AppColors.primary(context)),
-            const SizedBox(width: 8),
-
-            Flexible(
-              // Allows text to size naturally up to the max width
-              child: Text(
-                address ?? 'Address Unavailable',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary(context),
-                  height: 1.3,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppSize.overlayMaxWidth),
+        child: AppCard(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min, // shrinks to fit short text
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.sm,
+            children: [
+              Icon(
+                AppIcons.address,
+                size: AppSize.icon,
+                color: AppColors.primary(context),
+              ),
+              Flexible(
+                child: Text(
+                  address ?? 'Address Unavailable',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyWithColor(
+                    context,
+                    color: AppColors.textPrimary(context),
+                  ).copyWith(fontWeight: FontWeight.w500),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

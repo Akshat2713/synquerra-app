@@ -1,7 +1,8 @@
-// presentation/screens/device_detail/location_screen.dart
+// presentation/screens/location/location_screen.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,10 +16,13 @@ import '../../../domain/entities/device/device_entity.dart';
 import '../../blocs/analytics/analytics_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/user_location/user_location_bloc.dart';
+import '../../themes/app_text_styles.dart';
 import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../widgets/app_overlays.dart';
+import '../../widgets/app_surfaces.dart';
 import '../../widgets/geofence_polygon_layer.dart';
 import 'widgets/address_card.dart';
-import 'widgets/empty_data_banner.dart';
 import 'widgets/history_filter_chips.dart';
 import 'widgets/last_updated_badge.dart';
 import 'widgets/map_controls_column.dart';
@@ -38,13 +42,18 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  // TODO(logic): the cooldown rule, zoom level and fallback center belong in
+  // MapConfig / the bloc, not in the widget.
+  static const _liveQueryCooldown = Duration(minutes: 5);
+  static const _focusZoom = 16.0;
+  static const _fallbackCenter = LatLng(28.6172, 77.2094);
+
   late final MapController _mapController;
   late final UserLocationBloc _userLocationBloc;
   late final TileProvider _tileProvider;
   bool _showTimeline = false;
   bool _isTimelineMinimized = true;
 
-  static const _liveQueryCooldown = Duration(minutes: 5);
   DateTime? _cooldownUntil;
   Timer? _cooldownTimer;
 
@@ -63,7 +72,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
   LatLng get _defaultCenter => widget.device.hasLocation
       ? LatLng(widget.device.latitude!, widget.device.longitude!)
-      : const LatLng(28.6172, 77.2094);
+      : _fallbackCenter;
 
   @override
   void dispose() {
@@ -122,14 +131,7 @@ class _LocationScreenState extends State<LocationScreen> {
   void _fitMapToPoints(List<AnalyticsEntity> points) {
     final mappable = points.where((p) => p.hasLocation).toList();
     if (mappable.isEmpty) return;
-    if (mappable.length == 1) {
-      _mapController.move(
-        LatLng(mappable.first.latitude!, mappable.first.longitude!),
-        MapConfig.defaultZoom,
-      );
-      return;
-    }
-    if (!_showTimeline) {
+    if (mappable.length == 1 || !_showTimeline) {
       _mapController.move(
         LatLng(mappable.first.latitude!, mappable.first.longitude!),
         MapConfig.defaultZoom,
@@ -140,33 +142,37 @@ class _LocationScreenState extends State<LocationScreen> {
       mappable.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
     );
     _mapController.fitCamera(
-      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(48)),
+      CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.all(AppSpacing.xl + AppSpacing.md),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isPlayVisible = _showTimeline && _isTimelineMinimized;
+    final topInset = MediaQuery.paddingOf(context).top + AppSpacing.sm;
 
     return PopScope(
       canPop: !_showTimeline,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (_showTimeline) {
-          setState(() {
-            _showTimeline = false;
-            _isTimelineMinimized = true;
-          });
-          context.read<AnalyticsBloc>().add(
-            AnalyticsFilterChanged(
-              deviceId: widget.device.id,
-              filter: AnalyticsFilter.latest,
-            ),
-          );
-        }
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+        // Back from History returns to Latest instead of leaving the screen.
+        setState(() {
+          _showTimeline = false;
+          _isTimelineMinimized = true;
+        });
+        context.read<AnalyticsBloc>().add(
+          AnalyticsFilterChanged(
+            deviceId: widget.device.id,
+            filter: AnalyticsFilter.latest,
+          ),
+        );
       },
       child: MultiBlocListener(
         listeners: [
+          // Fit the map whenever a new set of points arrives.
           BlocListener<AnalyticsBloc, AnalyticsState>(
             listenWhen: (prev, curr) =>
                 prev is! AnalyticsLoaded ||
@@ -179,19 +185,38 @@ class _LocationScreenState extends State<LocationScreen> {
               }
             },
           ),
+          // Live query failed.
           BlocListener<AnalyticsBloc, AnalyticsState>(
             listenWhen: (prev, curr) =>
                 curr is AnalyticsLoaded &&
                 curr.liveQueryError != null &&
                 (prev is! AnalyticsLoaded ||
                     prev.liveQueryError != curr.liveQueryError),
+            listener: (context, state) => AppSnackBar.error(
+              context,
+              (state as AnalyticsLoaded).liveQueryError!,
+            ),
+          ),
+          // History query finished with nothing to draw.
+          BlocListener<AnalyticsBloc, AnalyticsState>(
+            listenWhen: (prev, curr) =>
+                curr is AnalyticsLoaded &&
+                !curr.isQuerying &&
+                curr.mappablePoints.isEmpty &&
+                (prev is! AnalyticsLoaded ||
+                    prev.points != curr.points ||
+                    prev.activeFilter != curr.activeFilter ||
+                    prev.startDate != curr.startDate ||
+                    prev.endDate != curr.endDate),
             listener: (context, state) {
-              final msg = (state as AnalyticsLoaded).liveQueryError!;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(msg)));
+              if (!_showTimeline) return; // History mode only
+              AppSnackBar.info(
+                context,
+                'No data found in the selected timeframe.',
+              );
             },
           ),
+          // Live query finished OK: start the cooldown.
           BlocListener<AnalyticsBloc, AnalyticsState>(
             listenWhen: (prev, curr) =>
                 prev is AnalyticsLoaded &&
@@ -205,12 +230,10 @@ class _LocationScreenState extends State<LocationScreen> {
             bloc: _userLocationBloc,
             listener: (context, state) {
               if (state is UserLocationLoaded) {
-                _mapController.move(state.position, 16.0);
+                _mapController.move(state.position, _focusZoom);
               }
               if (state is UserLocationError) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
+                AppSnackBar.error(context, state.message);
               }
             },
           ),
@@ -239,22 +262,45 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ),
 
-            // TOP LEFT: VIEW TABS
+            // TOP LEFT: VIEW TABS + ADDRESS CARD (stacked, so no magic offset)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 8,
-              left: 12,
-              child: ViewTabs(
-                isHistory: _showTimeline,
-                onChanged: _onViewChanged,
+              top: topInset,
+              left: AppSpacing.smd,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpacing.sm,
+                children: [
+                  ViewTabs(isHistory: _showTimeline, onChanged: _onViewChanged),
+                  BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                    buildWhen: (prev, curr) {
+                      final prevPoint = prev is AnalyticsLoaded
+                          ? prev.currentPoint
+                          : null;
+                      final currPoint = curr is AnalyticsLoaded
+                          ? curr.currentPoint
+                          : null;
+                      return prevPoint != currPoint ||
+                          prev.runtimeType != curr.runtimeType;
+                    },
+                    builder: (context, state) {
+                      final loaded = state is AnalyticsLoaded ? state : null;
+                      return AddressCard(
+                        point: loaded?.currentPoint,
+                        isLoading: state is AnalyticsLoading,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
 
-            // TOP RIGHT: LAST UPDATED & MAP CONTROLS (ZOOM SLIDER + COMPASS)
+            // TOP RIGHT: LAST UPDATED + MAP CONTROLS (zoom slider + compass)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 8,
-              right: 12,
+              top: topInset,
+              right: AppSpacing.smd,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                spacing: AppSpacing.sm,
                 children: [
                   BlocBuilder<AnalyticsBloc, AnalyticsState>(
                     buildWhen: (prev, curr) {
@@ -273,53 +319,30 @@ class _LocationScreenState extends State<LocationScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 8),
                   MapControlsColumn(mapController: _mapController),
                 ],
               ),
             ),
 
-            // ADDRESS CARD
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 8 + 54,
-              left: 12,
-              child: BlocBuilder<AnalyticsBloc, AnalyticsState>(
-                buildWhen: (prev, curr) {
-                  final prevPoint = prev is AnalyticsLoaded
-                      ? prev.currentPoint
-                      : null;
-                  final currPoint = curr is AnalyticsLoaded
-                      ? curr.currentPoint
-                      : null;
-                  return prevPoint != currPoint ||
-                      prev.runtimeType != curr.runtimeType;
-                },
-                builder: (context, state) {
-                  final loaded = state is AnalyticsLoaded ? state : null;
-                  return AddressCard(
-                    point: loaded?.currentPoint,
-                    isLoading: state is AnalyticsLoading,
-                  );
-                },
-              ),
-            ),
-
-            // BOTTOM LEFT: LIVE QUERY SEARCH BUTTON (Only visible in LATEST mode)
+            // BOTTOM LEFT: LIVE QUERY BUTTON (Latest mode only)
             if (!_showTimeline)
               Positioned(
-                bottom: 24,
-                left: 12,
+                bottom: AppSpacing.lg,
+                left: AppSpacing.smd,
                 child: BlocSelector<AnalyticsBloc, AnalyticsState, bool>(
                   selector: (s) => s is AnalyticsLoaded && s.isQuerying,
                   builder: (context, isQuerying) {
                     return MapIconButton(
-                      icon: Icons.location_searching,
+                      icon: AppIcons.liveQuery,
+                      tooltip: 'Request live location',
                       onTap: (_inCooldown || isQuerying) ? null : _onLiveQuery,
                       child: isQuerying
                           ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              width: AppSize.iconSm,
+                              height: AppSize.iconSm,
+                              child: CircularProgressIndicator(
+                                strokeWidth: AppSize.stroke,
+                              ),
                             )
                           : null,
                     );
@@ -327,29 +350,33 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
 
-            // BOTTOM RIGHT: RECENTER & GPS BUTTONS / PLAY BUTTON OFFSET
+            // BOTTOM RIGHT: RECENTER BUTTONS (lifted above the Play overlay)
             Positioned(
-              bottom: isPlayVisible ? 144 : 24,
-              right: 12,
+              bottom: isPlayVisible
+                  ? AppSize.mapPlayBottom + AppSize.tapTarget + AppSpacing.sm
+                  : AppSpacing.lg,
+              right: AppSpacing.smd,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                spacing: AppSpacing.sm,
                 children: [
-                  // Recenter on device last known position
                   MapIconButton(
-                    icon: Icons.my_location_rounded,
-                    onTap: () => _mapController.move(_defaultCenter, 16),
+                    icon: AppIcons.recenterDevice,
+                    tooltip: 'Center on device',
+                    onTap: () =>
+                        _mapController.move(_defaultCenter, _focusZoom),
                   ),
-                  // Recenter on User GPS location (hidden during Play mode)
-                  if (!isPlayVisible) ...[
-                    const SizedBox(height: 8),
+                  // User GPS button is hidden while the Play overlay is shown.
+                  if (!isPlayVisible)
                     BlocBuilder<UserLocationBloc, UserLocationState>(
                       bloc: _userLocationBloc,
                       builder: (context, state) {
                         final isLoading = state is UserLocationLoading;
                         return MapIconButton(
                           icon: isLoading
-                              ? Icons.hourglass_bottom_rounded
-                              : Icons.phone_android,
+                              ? AppIcons.userLoading
+                              : AppIcons.recenterUser,
+                          tooltip: 'Show my location',
                           onTap: isLoading
                               ? null
                               : () =>
@@ -357,12 +384,11 @@ class _LocationScreenState extends State<LocationScreen> {
                         );
                       },
                     ),
-                  ],
                 ],
               ),
             ),
 
-            // BOTTOM PANEL: TIMELINE SLIDER & HISTORY CHIPS
+            // BOTTOM PANEL: TIMELINE SLIDER + HISTORY CHIPS
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -383,12 +409,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (!_isTimelineMinimized) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: const EmptyDataBanner(),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
+                        if (!_isTimelineMinimized)
                           Skeletonizer(
                             enabled: isLoading,
                             child: TimelineSlider(
@@ -401,7 +422,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                   setState(() => _isTimelineMinimized = true),
                             ),
                           ),
-                        ],
                         HistoryFilterChips(
                           activeFilter: activeFilter,
                           isLoading: isLoading,
@@ -428,52 +448,69 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
             ),
 
-            // PLAY BUTTON (FLOATING OVERLAY WHEN MINIMIZED IN HISTORY MODE)
+            // PLAY OVERLAY (History mode, timeline minimized)
             if (isPlayVisible)
               Positioned(
-                bottom: 88,
-                right: 12,
-                child: GestureDetector(
+                bottom: AppSize.mapPlayBottom,
+                right: AppSpacing.smd,
+                child: _PlayOverlay(
                   onTap: () => setState(() => _isTimelineMinimized = false),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant(context),
-                      borderRadius: AppRadius.lgAll,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: AppAlpha.tint),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.play_circle_fill_rounded,
-                          color: AppColors.primary(context),
-                          size: 22,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          'Play',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Floating "Play" pill that expands the timeline panel.
+class _PlayOverlay extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PlayOverlay({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    // Material + InkWell sit INSIDE the card so the ripple is visible.
+    return Semantics(
+      button: true,
+      label: 'Open timeline playback',
+      child: AppCard(
+        padding: EdgeInsets.zero,
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: AppRadius.lgAll,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onTap();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.smd,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: AppSpacing.xs,
+                children: [
+                  Icon(
+                    AppIcons.play,
+                    size: AppSize.iconLg,
+                    color: AppColors.primary(context),
+                  ),
+                  Text(
+                    'Play',
+                    style: AppTextStyles.metaWithColor(
+                      context,
+                      color: AppColors.textPrimary(context),
+                    ).copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

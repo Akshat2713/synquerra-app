@@ -101,6 +101,14 @@ class AppSize {
   static const double buttonMinWidth = 88;
   static const double elevationLow = 2;
   static const double elevationHigh = 8;
+  static const double mapSlider = 140; // vertical zoom slider height
+  static const double overlayMaxWidth = 320; // floating map card max width
+  static const double sliderTrack = 4;
+  static const double sliderThumb = 6; // thumb radius
+  static const double sliderOverlay = 14; // touch overlay radius
+  static const double pickerHeight = 120; // wheel picker viewport
+  static const double pickerItem = 36; // wheel picker row height
+  static const double mapPlayBottom = 88;
 }
 
 /// Durations, curves and motion amounts.
@@ -116,6 +124,7 @@ class AppMotion {
   static const double pressScale = 0.96;
   static const double slideOffset = 0.06;
   static const Duration refreshTimeout = Duration(seconds: 10);
+  static const Duration pulse = Duration(milliseconds: 1200);
 }
 
 /// Elevation. Pass AppColors.shadow(context) so it follows the theme.

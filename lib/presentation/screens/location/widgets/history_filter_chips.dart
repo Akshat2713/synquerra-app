@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../domain/entities/analytics/analytics_filter.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../widgets/analytics_filter_sheet.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
@@ -28,39 +30,37 @@ class HistoryFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = [..._options.entries];
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.smd,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
         border: Border(
           top: BorderSide(
-            color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
-            width: 1.0,
+            color: AppAlpha.withBorderAlpha(AppColors.outlineVariant(context)),
+            width: AppSize.hairline,
           ),
         ),
       ),
       child: Row(
+        spacing: AppSpacing.sm,
         children: [
-          for (final e in items) ...[
+          for (final e in _options.entries)
             Expanded(
-              child: _chip(
-                context,
-                e.value,
-                e.key == activeFilter,
-                isLoading ? null : () => onFilterSelected(e.key),
+              child: _FilterChip(
+                label: e.value,
+                active: e.key == activeFilter,
+                onTap: isLoading ? null : () => onFilterSelected(e.key),
               ),
             ),
-            const SizedBox(width: 8),
-          ],
           Expanded(
-            child: _chip(
-              context,
-              'Custom',
-              activeFilter == AnalyticsFilter.custom,
-              isLoading
+            child: _FilterChip(
+              label: 'Custom',
+              active: activeFilter == AnalyticsFilter.custom,
+              onTap: isLoading
                   ? null
                   : () => showCustomRangePicker(
                       context: context,
@@ -72,52 +72,76 @@ class HistoryFilterChips extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _chip(
-    BuildContext context,
-    String label,
-    bool active,
-    VoidCallback? onTap,
-  ) {
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback? onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final disabled = onTap == null;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final primary = AppColors.primary(context);
 
-    final activeBg = AppColors.primary(context).withValues(alpha: AppAlpha.tint);
-    final activeBorder = AppColors.primary(context);
-    final activeTextColor = AppColors.primary(context);
+    final textColor = active
+        ? AppColors.onPrimary(context)
+        : disabled
+        ? AppAlpha.withAlpha(
+            AppColors.textSecondary(context),
+            AppAlpha.disabled,
+          )
+        : AppColors.textSecondary(context);
 
-    final inactiveBg = AppColors.surface(context);
-    final inactiveBorder = AppColors.outlineVariant(
-      context,
-    ).withValues(alpha: AppAlpha.border);
-    final inactiveTextColor = AppColors.textPrimary(
-      context,
-    ).withValues(alpha: AppAlpha.overlay);
-
-    return GestureDetector(
-      onTap: onTap,
+    return Semantics(
+      button: true,
+      selected: active,
+      enabled: !disabled,
+      label: label,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
+        duration: reduceMotion ? Duration.zero : AppMotion.base,
+        curve: AppMotion.curve,
         decoration: BoxDecoration(
-          color: active ? activeBg : inactiveBg,
+          color: active ? primary : AppColors.surfaceVariant(context),
           borderRadius: AppRadius.mdAll,
           border: Border.all(
-            color: active ? activeBorder : inactiveBorder,
-            width: active ? 1.5 : 1.0,
+            color: active
+                ? primary
+                : AppAlpha.withBorderAlpha(AppColors.outlineVariant(context)),
+            width: AppSize.hairline,
           ),
         ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-            color: active
-                ? activeTextColor
-                : disabled
-                ? AppColors.textSecondary(context).withValues(alpha: AppAlpha.border)
-                : inactiveTextColor,
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: AppRadius.mdAll,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: disabled
+                ? null
+                : () {
+                    HapticFeedback.selectionClick();
+                    onTap!();
+                  },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.smd),
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.meta.copyWith(
+                    color: textColor,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

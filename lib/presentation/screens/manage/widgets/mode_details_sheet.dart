@@ -4,7 +4,7 @@ import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import '../../../utils/mode_icon_resolver.dart';
+import '../../../utils/app_icons.dart';
 import '../../../utils/unit_formatter.dart';
 import '../../../widgets/app_overlays.dart';
 import '../../../widgets/app_surfaces.dart';
@@ -68,7 +68,7 @@ class ModeDetailsSheet extends StatelessWidget {
           Row(
             children: [
               IconTile(
-                icon: ModeIconResolver.resolve(mode),
+                icon: AppIcons.mode(mode),
                 background: AppColors.primaryContainer(context),
                 foreground: AppColors.primary(context),
               ),

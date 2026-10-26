@@ -1,10 +1,14 @@
 // lib/presentation/widgets/analytics_filter_sheet.dart
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart' show CupertinoPicker;
 import 'package:flutter/material.dart';
 import 'package:synquerra/presentation/utils/date_time_formatter.dart';
 import 'package:synquerra/presentation/utils/unit_formatter.dart';
 import '../../domain/entities/analytics/analytics_filter.dart';
+import '../themes/app_text_styles.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
+import 'app_overlays.dart';
+import 'app_surfaces.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 void showAnalyticsFilterSheet({
@@ -13,10 +17,8 @@ void showAnalyticsFilterSheet({
   required void Function(AnalyticsFilter filter) onFilterSelected,
   required void Function(DateTime start, DateTime end) onCustomSelected,
 }) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+  showAppBottomSheet<void>(
+    context,
     builder: (_) => _AnalyticsFilterSheet(
       activeFilter: activeFilter,
       onFilterSelected: onFilterSelected,
@@ -29,10 +31,8 @@ void showCustomRangePicker({
   required BuildContext context,
   required void Function(DateTime start, DateTime end) onCustomSelected,
 }) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+  showAppBottomSheet<void>(
+    context,
     builder: (_) => _AnalyticsFilterSheet(
       activeFilter: AnalyticsFilter.custom,
       onFilterSelected: (_) {},
@@ -43,6 +43,7 @@ void showCustomRangePicker({
 }
 
 /// Allowed durations (hours) for a custom range. Max is 24h per business rule.
+// TODO(logic): business rule, move next to the filter/bloc constants.
 const List<int> _kDurationOptions = [2, 4, 6, 12, 18, 24];
 
 class _AnalyticsFilterSheet extends StatefulWidget {
@@ -110,207 +111,325 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    // The theme supplies surface, shape and drag handle (showDragHandle).
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
       ),
-      padding: EdgeInsets.fromLTRB(
-        24,
-        16,
-        24,
-        MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.border),
-                borderRadius: AppRadius.smAll,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          if (!_showCustomPicker) ...[
-            Text(
-              'Filter by Time',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary(context),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Select a time range for telemetry data',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _filterOption(
-              label: 'Last Hour',
-              icon: Icons.access_time_rounded,
-              isActive: widget.activeFilter == AnalyticsFilter.lastHour,
-              onTap: () {
-                Navigator.pop(context);
-                widget.onFilterSelected(AnalyticsFilter.lastHour);
-              },
-            ),
-            _filterOption(
-              label: 'Last 24 Hours',
-              icon: Icons.today_rounded,
-              isActive: widget.activeFilter == AnalyticsFilter.last24Hours,
-              onTap: () {
-                Navigator.pop(context);
-                widget.onFilterSelected(AnalyticsFilter.last24Hours);
-              },
-            ),
-            _filterOption(
-              label: 'Custom Range',
-              icon: Icons.tune_rounded,
-              isActive: widget.activeFilter == AnalyticsFilter.custom,
-              onTap: () => setState(() => _showCustomPicker = true),
-            ),
-          ] else ...[
-            Row(
-              children: [
-                if (!widget.startAtCustomPicker) ...[
-                  GestureDetector(
-                    onTap: () => setState(() => _showCustomPicker = false),
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      color: AppColors.primary(context),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Text(
-                  'Custom Range',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Max range is 24 hours',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary(context),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _dateTile(label: 'Date', date: _selectedDate, onTap: _pickDate),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Start Time',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.textPrimary(context),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _wheelPicker(
-              controller: _hourController,
-              itemCount: 24,
-              labelBuilder: UnitFormatter.hourLabel,
-              onChanged: (i) => setState(() => _selectedHour = i),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Duration',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.textPrimary(context),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _wheelPicker(
-              controller: _durationController,
-              itemCount: _kDurationOptions.length,
-              labelBuilder: (i) => '${_kDurationOptions[i]} hrs',
-              onChanged: (i) => setState(() => _durationIndex = i),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
-                borderRadius: AppRadius.mdAll,
-              ),
-              child: Text(
-                '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  ${DateTimeFormatter.formatDateTime(_endDateTime)}',
-                style: TextStyle(
-                  color: AppColors.primary(context),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => widget.startAtCustomPicker
-                        ? Navigator.pop(context)
-                        : setState(() => _showCustomPicker = false),
-                    child: const Text('Back'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _selectedDate != null
-                        ? () {
-                            Navigator.pop(context);
-                            widget.onCustomSelected(
-                              _startDateTime,
-                              _endDateTime,
-                            );
-                          }
-                        : null,
-                    child: const Text('Apply'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
+      child: _showCustomPicker ? _buildCustom(context) : _buildPresets(context),
     );
   }
 
-  Widget _wheelPicker({
-    required FixedExtentScrollController controller,
-    required int itemCount,
-    required String Function(int index) labelBuilder,
-    required void Function(int index) onChanged,
-  }) {
+  // ---------------------------------------------------------------- presets
+  Widget _buildPresets(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Header(
+          title: 'Filter by Time',
+          subtitle: 'Select a time range for telemetry data',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _FilterOption(
+          label: 'Last Hour',
+          icon: AppIcons.lastHour,
+          isActive: widget.activeFilter == AnalyticsFilter.lastHour,
+          onTap: () {
+            Navigator.pop(context);
+            widget.onFilterSelected(AnalyticsFilter.lastHour);
+          },
+        ),
+        _FilterOption(
+          label: 'Last 24 Hours',
+          icon: AppIcons.last24Hours,
+          isActive: widget.activeFilter == AnalyticsFilter.last24Hours,
+          onTap: () {
+            Navigator.pop(context);
+            widget.onFilterSelected(AnalyticsFilter.last24Hours);
+          },
+        ),
+        _FilterOption(
+          label: 'Custom Range',
+          icon: AppIcons.customRange,
+          isActive: widget.activeFilter == AnalyticsFilter.custom,
+          onTap: () => setState(() => _showCustomPicker = true),
+        ),
+      ],
+    );
+  }
+
+  // ----------------------------------------------------------------- custom
+  Widget _buildCustom(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.md,
+      children: [
+        Row(
+          spacing: AppSpacing.sm,
+          children: [
+            if (!widget.startAtCustomPicker)
+              IconButton(
+                icon: const Icon(AppIcons.back),
+                color: AppColors.primary(context),
+                tooltip: 'Back',
+                onPressed: () => setState(() => _showCustomPicker = false),
+              ),
+            Expanded(
+              child: _Header(
+                title: 'Custom Range',
+                subtitle: 'Max range is 24 hours',
+              ),
+            ),
+          ],
+        ),
+        _DateTile(label: 'Date', date: _selectedDate, onTap: _pickDate),
+        _LabeledWheel(
+          label: 'Start Time',
+          child: _WheelPicker(
+            controller: _hourController,
+            itemCount: 24,
+            labelBuilder: UnitFormatter.hourLabel,
+            onChanged: (i) => setState(() => _selectedHour = i),
+          ),
+        ),
+        _LabeledWheel(
+          label: 'Duration',
+          child: _WheelPicker(
+            controller: _durationController,
+            itemCount: _kDurationOptions.length,
+            labelBuilder: (i) => '${_kDurationOptions[i]} hrs',
+            onChanged: (i) => setState(() => _durationIndex = i),
+          ),
+        ),
+        _RangeSummary(
+          text:
+              '${DateTimeFormatter.formatDateTime(_startDateTime)}  →  '
+              '${DateTimeFormatter.formatDateTime(_endDateTime)}',
+        ),
+        Row(
+          spacing: AppSpacing.smd,
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => widget.startAtCustomPicker
+                    ? Navigator.pop(context)
+                    : setState(() => _showCustomPicker = false),
+                child: const Text('Back'),
+              ),
+            ),
+            Expanded(
+              child: FilledButton(
+                onPressed: _selectedDate != null
+                    ? () {
+                        Navigator.pop(context);
+                        widget.onCustomSelected(_startDateTime, _endDateTime);
+                      }
+                    : null,
+                child: const Text('Apply'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  const _Header({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: AppSpacing.xs,
+    children: [
+      Text(title, style: AppTextStyles.titleWithColor(context)),
+      Text(subtitle, style: AppTextStyles.metaWithColor(context)),
+    ],
+  );
+}
+
+class _FilterOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _FilterOption({
+    required this.label,
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: isActive,
+      child: InsetRow(
+        onTap: onTap,
+        child: Row(
+          spacing: AppSpacing.smd,
+          children: [
+            IconTile(
+              icon: icon,
+              background: isActive
+                  ? AppColors.primary(context)
+                  : AppColors.surface(context),
+              foreground: isActive
+                  ? AppColors.onPrimary(context)
+                  : AppColors.textSecondary(context),
+            ),
+            Expanded(
+              child: Text(
+                label,
+                style:
+                    AppTextStyles.bodyWithColor(
+                      context,
+                      color: AppColors.textPrimary(context),
+                    ).copyWith(
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    ),
+              ),
+            ),
+            Icon(
+              isActive ? AppIcons.activeCheck : AppIcons.chevron,
+              size: AppSize.icon,
+              color: isActive
+                  ? AppColors.primary(context)
+                  : AppColors.textSecondary(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DateTile extends StatelessWidget {
+  final String label;
+  final DateTime? date;
+  final VoidCallback onTap;
+
+  const _DateTile({
+    required this.label,
+    required this.date,
+    required this.onTap,
+  });
+
+  // TODO(logic): use a DateTimeFormatter method instead of manual dd/MM/yyyy.
+  String get _text =>
+      '${date!.day.toString().padLeft(2, '0')}/'
+      '${date!.month.toString().padLeft(2, '0')}/'
+      '${date!.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = date != null;
+    return Semantics(
+      button: true,
+      child: InsetRow(
+        onTap: onTap,
+        child: Row(
+          spacing: AppSpacing.smd,
+          children: [
+            IconTile(
+              icon: AppIcons.date,
+              background: selected
+                  ? AppColors.primary(context)
+                  : AppColors.surface(context),
+              foreground: selected
+                  ? AppColors.onPrimary(context)
+                  : AppColors.textSecondary(context),
+            ),
+            Expanded(
+              child: Text(
+                selected ? _text : label,
+                style:
+                    AppTextStyles.bodyWithColor(
+                      context,
+                      color: selected
+                          ? AppColors.textPrimary(context)
+                          : AppColors.textSecondary(context),
+                    ).copyWith(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LabeledWheel extends StatelessWidget {
+  final String label;
+  final Widget child;
+  const _LabeledWheel({required this.label, required this.child});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: AppSpacing.sm,
+    children: [
+      Text(
+        label,
+        style: AppTextStyles.bodyWithColor(
+          context,
+          color: AppColors.textPrimary(context),
+        ).copyWith(fontWeight: FontWeight.w600),
+      ),
+      child,
+    ],
+  );
+}
+
+class _WheelPicker extends StatelessWidget {
+  final FixedExtentScrollController controller;
+  final int itemCount;
+  final String Function(int index) labelBuilder;
+  final void Function(int index) onChanged;
+
+  const _WheelPicker({
+    required this.controller,
+    required this.itemCount,
+    required this.labelBuilder,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selectionBorder = BorderSide(
+      color: AppColors.primaryBorder(context),
+      width: AppSize.hairline,
+    );
+
     return Container(
-      height: 120,
+      height: AppSize.pickerHeight,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.outline(context)),
+        color: AppColors.surfaceVariant(context),
         borderRadius: AppRadius.mdAll,
+        border: Border.all(
+          color: AppAlpha.withOverlayAlpha(AppColors.outline(context)),
+          width: AppSize.hairline,
+        ),
       ),
       child: CupertinoPicker(
         scrollController: controller,
-        itemExtent: 36,
+        itemExtent: AppSize.pickerItem,
         onSelectedItemChanged: onChanged,
-        selectionOverlay: Container(
+        selectionOverlay: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: AppColors.primary(context).withValues(alpha: AppAlpha.border)),
-              bottom: BorderSide(
-                color: AppColors.primary(context).withValues(alpha: AppAlpha.border),
-              ),
-            ),
+            border: Border(top: selectionBorder, bottom: selectionBorder),
           ),
         ),
         children: List.generate(
@@ -318,9 +437,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
           (i) => Center(
             child: Text(
               labelBuilder(i),
-              style: TextStyle(
+              style: AppTextStyles.bodyWithColor(
+                context,
                 color: AppColors.textPrimary(context),
-                fontSize: 15,
               ),
             ),
           ),
@@ -328,80 +447,41 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
       ),
     );
   }
+}
 
-  Widget _filterOption({
-    required String label,
-    required IconData icon,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        icon,
-        color: isActive ? AppColors.primary(context) : AppColors.textSecondary(context),
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: isActive ? AppColors.primary(context) : AppColors.textPrimary(context),
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+class _RangeSummary extends StatelessWidget {
+  final String text;
+  const _RangeSummary({required this.text});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.smd,
+      vertical: AppSpacing.smd,
+    ),
+    decoration: BoxDecoration(
+      color: AppColors.primaryContainer(context),
+      borderRadius: AppRadius.mdAll,
+    ),
+    child: Row(
+      spacing: AppSpacing.sm,
+      children: [
+        Icon(
+          AppIcons.dateRange,
+          size: AppSize.icon,
+          color: AppColors.onPrimaryContainer(context),
         ),
-      ),
-      trailing: isActive
-          ? Icon(Icons.check_circle_rounded, color: AppColors.primary(context), size: 20)
-          : Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textSecondary(context),
-            ),
-      onTap: onTap,
-    );
-  }
-
-  Widget _dateTile({
-    required String label,
-    required DateTime? date,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: date != null
-                ? AppColors.primary(context)
-                : AppColors.outline(context),
-            width: date != null ? 1.5 : 1,
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.metaWithColor(
+              context,
+              color: AppColors.onPrimaryContainer(context),
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
-          borderRadius: AppRadius.mdAll,
         ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.calendar_today_rounded,
-              size: 18,
-              color: date != null
-                  ? AppColors.primary(context)
-                  : AppColors.textSecondary(context),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              date != null
-                  ? '${date.day.toString().padLeft(2, '0')}/'
-                        '${date.month.toString().padLeft(2, '0')}/'
-                        '${date.year}'
-                  : label,
-              style: TextStyle(
-                color: date != null
-                    ? AppColors.textPrimary(context)
-                    : AppColors.textSecondary(context),
-                fontWeight: date != null ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }
