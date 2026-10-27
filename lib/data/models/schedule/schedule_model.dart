@@ -21,7 +21,6 @@ class ScheduleModel {
   final int arrivalGraceMins;
   final int departureBufferMins;
   final int? minimumStayMins;
-
   final String? createdAt;
   final String? updatedAt;
 
@@ -46,57 +45,49 @@ class ScheduleModel {
     required this.arrivalGraceMins,
     required this.departureBufferMins,
     this.minimumStayMins,
-
     this.createdAt,
     this.updatedAt,
   });
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
-    final graceConfig = json['grace_config'] as Map<String, dynamic>? ?? {};
-    final targetUser = json['target_user'] as Map<String, dynamic>? ?? {};
+    final grace = json['graceConfig'] as Map<String, dynamic>? ?? {};
+    final targetUser = json['targetUser'] as Map<String, dynamic>? ?? {};
     final device = json['device'] as Map<String, dynamic>? ?? {};
     final geofence = json['geofence'] as Map<String, dynamic>? ?? {};
 
     return ScheduleModel(
-      id: json['id'] as String? ?? json['_id'] as String? ?? '',
-      // These three IDs live inside nested objects in the API response,
-      // not at the top level — pulling from the nested maps fixes the
-      // empty-string bug that broke geofence fetching downstream.
-      targetUserId: targetUser['user_id'] as String? ?? '',
-      deviceId: device['device_id'] as String? ?? '',
-      geofenceId: geofence['geofence_id'] as String? ?? '',
+      id: json['id'] as String? ?? '',
+      targetUserId: targetUser['userId'] as String? ?? '',
+      deviceId: device['deviceId'] as String? ?? '',
+      geofenceId: geofence['geofenceId'] as String? ?? '',
       title: json['title'] as String? ?? '',
       description: json['description'] as String?,
-      startTime: json['start_time'] as String? ?? '',
-      endTime: json['end_time'] as String? ?? '',
+      startTime: json['startTime'] as String? ?? '',
+      endTime: json['endTime'] as String? ?? '',
       timezone: json['timezone'] as String? ?? 'Asia/Kolkata',
-      recurrenceType: json['recurrence_type'] as String? ?? 'WEEKLY',
+      recurrenceType: json['recurrenceType'] as String? ?? 'WEEKLY',
       daysOfWeek:
-          (json['days_of_week'] as List<dynamic>?)
+          (json['daysOfWeek'] as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
               .toList() ??
           [],
       customDates:
-          (json['custom_dates'] as List<dynamic>?)
+          (json['customDates'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      startDate: json['start_date'] as String? ?? '',
-      endDate: json['end_date'] as String?,
-      crossesMidnight: json['crosses_midnight'] as bool? ?? false,
+      startDate: json['startDate'] as String? ?? '',
+      endDate: json['endDate'] as String?,
+      crossesMidnight: json['crossesMidnight'] as bool? ?? false,
       priority: json['priority'] as String? ?? 'MEDIUM',
-      isActive: json['is_active'] as bool? ?? true,
-      arrivalGraceMins:
-          (graceConfig['arrival_grace_mins'] as num?)?.toInt() ?? 10,
-      departureBufferMins:
-          (graceConfig['departure_buffer_mins'] as num?)?.toInt() ?? 5,
-      minimumStayMins: (graceConfig['minimum_stay_mins'] as num?)?.toInt(),
-
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+      arrivalGraceMins: (grace['entryGraceMinutes'] as num?)?.toInt() ?? 10,
+      departureBufferMins: (grace['exitGraceMinutes'] as num?)?.toInt() ?? 5,
+      minimumStayMins: (grace['minimumStayMinutes'] as num?)?.toInt(),
+      createdAt: json['createdAt'] as String?,
+      updatedAt: json['updatedAt'] as String?,
     );
   }
-
   ScheduleEntity toEntity() => ScheduleEntity(
     id: id,
     targetUserId: targetUserId,
@@ -118,7 +109,6 @@ class ScheduleModel {
     arrivalGraceMins: arrivalGraceMins,
     departureBufferMins: departureBufferMins,
     minimumStayMins: minimumStayMins,
-
     createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
     updatedAt: updatedAt != null ? DateTime.tryParse(updatedAt!) : null,
   );

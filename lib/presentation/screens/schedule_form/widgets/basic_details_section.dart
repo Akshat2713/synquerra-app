@@ -94,10 +94,7 @@ class BasicDetailsSection extends StatelessWidget {
               items: [
                 DropdownMenuItem(
                   value: 'self',
-                  child: Text(
-                    'Myself ($currentUserFullName)',
-                    style: inputTextStyle,
-                  ),
+                  child: Text(currentUserFullName, style: inputTextStyle),
                 ),
               ],
               onChanged: null,

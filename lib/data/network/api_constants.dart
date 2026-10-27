@@ -93,8 +93,7 @@ class ApiConstants {
   // ── Schedules ─────────────────────────────────────
   static const String schedules = '/api/v1/schedules';
   static const String mySchedules = '/api/v1/schedules/me';
-  static String targetUserSchedules(String targetUserId) =>
-      '/api/v1/schedules/user/$targetUserId';
+  static String targetUserSchedules = '/api/v1/schedules/graphql';
   static String scheduleById(String scheduleId) =>
       '/api/v1/schedules/$scheduleId';
   static String scheduleStatus(String scheduleId) =>

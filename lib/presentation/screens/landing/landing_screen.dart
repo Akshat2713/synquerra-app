@@ -173,9 +173,9 @@ class _LoadedBody extends StatelessWidget {
       StatusLogEntry(label: 'Left home', value: '7:58 AM'),
       StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
     ];
-    const defaultSchedule = <ScheduleEntry>[
-      ScheduleEntry(id: 'evening', time: '18:00', label: 'Evening routine'),
-    ];
+    // const defaultSchedule = <ScheduleEntry>[
+    //   ScheduleEntry(id: 'evening', time: '18:00', label: 'Evening routine'),
+    // ];
 
     final items = <Widget>[
       AttentionBanner(
@@ -194,7 +194,7 @@ class _LoadedBody extends StatelessWidget {
             : 'Awaiting first fix',
       ),
       const TodayStatusCard(looksNormal: true, logs: statusLogs),
-      const TodayScheduleCard(schedule: defaultSchedule),
+      TodayScheduleCard(device: device),
       ActivityFeedCard(activities: _buildActivityFeed(device, state.alerts)),
     ];
 

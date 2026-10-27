@@ -1,6 +1,5 @@
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/device/device_entity.dart';
-import '../signup/person_model.dart';
 import 'device_association_model.dart';
 import 'device_owner_model.dart';
 
@@ -60,7 +59,7 @@ class DeviceModel {
   factory DeviceModel.fromJson(Map<String, dynamic> json) {
     // Use nested 'device_master' if available, otherwise fallback to root json
     final master = (json['device_master'] as Map<String, dynamic>?) ?? json;
-    final carrierJson = json['carrier_user'] as Map<String, dynamic>?;
+    // final carrierJson = json['carrier_user'] as Map<String, dynamic>?;
     final ownerJson = json['owner'] as Map<String, dynamic>?;
     final assignmentsJson = json['assignments'] as List<dynamic>? ?? [];
 
@@ -106,6 +105,21 @@ class DeviceModel {
   String get displayOwnerName => _resolveDisplayOwnerName();
 
   String? get displayProfilePhoto => _resolveDisplayProfilePhoto();
+
+  String get displayRealUserId => _resolveDisplayRealUserId();
+
+  String _resolveDisplayRealUserId() {
+    // 1. Check carrier in assignments first
+    final c = carrierAssignment;
+    if (c != null) {
+      final carrierUserId = c.userId
+          .trim(); // (or c.id depending on your model property)
+      if (carrierUserId.isNotEmpty) return carrierUserId;
+    }
+
+    // 2. Fall back to the owner's id
+    return owner?.id ?? ''; // (or owner?.userId ?? '')
+  }
 
   String _resolveDisplayOwnerName() {
     AppLogger.d('DeviceEntity', 'New Device');
@@ -164,6 +178,7 @@ class DeviceModel {
     assignments: assignments.map((a) => a.toEntity()).toList(),
     displayOwnerName: displayOwnerName,
     displayProfilePhoto: displayProfilePhoto,
+    displayRealUserId: displayRealUserId,
   );
 
   DeviceAssociationModel? get carrierAssignment {

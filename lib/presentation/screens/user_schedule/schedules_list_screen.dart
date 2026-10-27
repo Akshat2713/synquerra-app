@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synquerra/presentation/app/app_router.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 
+import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/schedule/schedule_entity.dart';
 import '../../blocs/schedule_list/schedule_list_bloc.dart';
 import 'widgets/schedule_card.dart';
@@ -12,17 +13,27 @@ import 'widgets/schedule_error_view.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class SchedulesListScreen extends StatefulWidget {
-  const SchedulesListScreen({super.key});
+  final DeviceEntity device;
+  const SchedulesListScreen({super.key, required this.device});
 
   @override
   State<SchedulesListScreen> createState() => _SchedulesListScreenState();
 }
 
 class _SchedulesListScreenState extends State<SchedulesListScreen> {
+  void _load() {
+    context.read<ScheduleListBloc>().add(
+      ScheduleListLoadRequested(
+        userId: widget.device.displayRealUserId,
+        deviceId: widget.device.id,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    context.read<ScheduleListBloc>().add(const ScheduleListLoadRequested());
+    _load();
   }
 
   Future<void> _onRefresh() async {
@@ -32,7 +43,11 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
   }
 
   void _onEdit(ScheduleEntity schedule) {
-    AppRouter.pushEditSchedule(context, scheduleId: schedule.id).then((_) {
+    AppRouter.pushEditSchedule(
+      context,
+      scheduleId: schedule.id,
+      device: widget.device,
+    ).then((_) {
       if (mounted) {
         context.read<ScheduleListBloc>().add(
           const ScheduleListRefreshRequested(),
@@ -42,7 +57,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
   }
 
   void _onAdd() {
-    AppRouter.pushCreateSchedule(context).then((_) {
+    AppRouter.pushCreateSchedule(context, device: widget.device).then((_) {
       if (mounted) {
         context.read<ScheduleListBloc>().add(
           const ScheduleListRefreshRequested(),
@@ -73,9 +88,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
             SnackBar(
               content: Text(state.actionError!),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: AppRadius.mdAll,
-              ),
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
             ),
           );
         },
@@ -87,9 +100,7 @@ class _SchedulesListScreenState extends State<SchedulesListScreen> {
           if (state.isError && state.schedules.isEmpty) {
             return ScheduleErrorView(
               message: state.errorMessage ?? 'Something went wrong',
-              onRetry: () => context.read<ScheduleListBloc>().add(
-                const ScheduleListLoadRequested(),
-              ),
+              onRetry: _load,
             );
           }
 

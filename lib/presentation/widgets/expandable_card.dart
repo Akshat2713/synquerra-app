@@ -7,18 +7,20 @@ import 'package:synquerra/presentation/widgets/app_surfaces.dart';
 
 /// Collapsible card: leading tile + title + right chevron.
 class ExpandableCard extends StatefulWidget {
+  final String title;
+  final Widget child;
+  final Widget? leading;
+  final bool initiallyExpanded;
+  final VoidCallback? onExpanded;
+
   const ExpandableCard({
     super.key,
     required this.title,
     required this.child,
     this.leading,
+    this.onExpanded,
     this.initiallyExpanded = false,
   });
-
-  final String title;
-  final Widget child;
-  final Widget? leading;
-  final bool initiallyExpanded;
 
   @override
   State<ExpandableCard> createState() => _ExpandableCardState();
@@ -46,6 +48,7 @@ class _ExpandableCardState extends State<ExpandableCard> {
               onTap: () {
                 HapticFeedback.selectionClick();
                 setState(() => _expanded = !_expanded);
+                if (_expanded) widget.onExpanded?.call();
               },
               child: Padding(
                 padding: AppSpacing.mdAll,

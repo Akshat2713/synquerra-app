@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../signup/person_entity.dart';
 import 'device_association_entity.dart';
 import 'device_owner_entity.dart';
 
@@ -31,6 +30,7 @@ class DeviceEntity extends Equatable {
   final List<DeviceAssociationEntity> assignments;
   final String displayOwnerName;
   final String? displayProfilePhoto;
+  final String displayRealUserId;
 
   const DeviceEntity({
     required this.id,
@@ -59,6 +59,7 @@ class DeviceEntity extends Equatable {
     this.assignments = const [],
     required this.displayOwnerName,
     this.displayProfilePhoto,
+    required this.displayRealUserId,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -110,6 +111,7 @@ class DeviceEntity extends Equatable {
     // carrier,
     displayOwnerName,
     displayProfilePhoto,
+    displayRealUserId,
     assignments,
   ];
 }

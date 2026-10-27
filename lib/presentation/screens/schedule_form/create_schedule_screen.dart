@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/core/di/injection_container.dart';
+// import 'package:synquerra/core/di/injection_container.dart';
 import 'package:synquerra/presentation/themes/colors.dart';
 import 'package:synquerra/presentation/widgets/app_text_field.dart';
 
@@ -172,15 +172,15 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = sl<UserHolder>().user;
-    final personId = user?.personId;
-    final currentUserFullName = user?.fullName ?? 'Myself';
+    final device = widget.initialDevice;
+    final currentUserFullName = device?.displayOwnerName ?? '';
 
     return BlocListener<DeviceListBloc, DeviceListState>(
       listener: (context, deviceState) {
         if (widget.isEdit || widget.initialDevice != null) return;
-        if (deviceState is! DeviceListLoaded || deviceState.devices.isEmpty)
+        if (deviceState is! DeviceListLoaded || deviceState.devices.isEmpty) {
           return;
+        }
 
         final formBloc = context.read<ScheduleFormBloc>();
         if (formBloc.state.selectedDeviceId == null) {
@@ -388,11 +388,13 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                                   );
                                   return;
                                 }
-                                if (personId == null) {
+                                final targetUserId = device?.displayRealUserId;
+                                if (targetUserId == null ||
+                                    targetUserId.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'User not found. Please log in again.',
+                                        'User not found for this device.',
                                       ),
                                     ),
                                   );
@@ -400,7 +402,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                                 }
                                 final body = _buildRequestBody(
                                   deviceId: deviceId,
-                                  targetUserId: personId,
+                                  targetUserId: targetUserId,
                                 );
                                 if (widget.isEdit) {
                                   context.read<ScheduleFormBloc>().add(

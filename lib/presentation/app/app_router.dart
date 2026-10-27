@@ -104,6 +104,13 @@ class EditProfileArgs {
   final PersonEntity person;
   const EditProfileArgs({required this.bloc, required this.person});
 }
+
+class CreateScheduleArgs {
+  final DeviceEntity device;
+  final String? scheduleId;
+  const CreateScheduleArgs({required this.device, this.scheduleId});
+}
+
 // ── Route names ───────────────────────────────────────────────────────────────
 
 class AppRoutes {
@@ -177,6 +184,7 @@ class AppRouter {
               BlocProvider.value(value: args.deviceListBloc),
               BlocProvider(create: (_) => sl<LandingBloc>()),
               BlocProvider(create: (_) => sl<AnalyticsBloc>()),
+              BlocProvider(create: (_) => sl<ScheduleListBloc>()),
               BlocProvider(create: (_) => sl<GeofenceBloc>()),
               BlocProvider(create: (_) => sl<ManageBloc>()),
               // BlocProvider(create: (_) => sl<DeviceEventsCubit>()),
@@ -319,17 +327,16 @@ class AppRouter {
         );
 
       case AppRoutes.schedulesList:
+        final device = settings.arguments as DeviceEntity;
         return _slide(
           settings,
           BlocProvider(
             create: (_) => sl<ScheduleListBloc>(),
-            child: const SchedulesListScreen(),
+            child: SchedulesListScreen(device: device),
           ),
         );
-
       case AppRoutes.createSchedule:
-        // arguments: null for create, String scheduleId for edit
-        final scheduleId = settings.arguments as String?;
+        final args = settings.arguments as CreateScheduleArgs;
         return _slide(
           settings,
           MultiBlocProvider(
@@ -340,10 +347,12 @@ class AppRouter {
               ),
               BlocProvider(create: (_) => sl<ScheduleFormBloc>()),
             ],
-            child: CreateScheduleScreen(scheduleId: scheduleId),
+            child: CreateScheduleScreen(
+              scheduleId: args.scheduleId,
+              initialDevice: args.device,
+            ),
           ),
         );
-
       case AppRoutes.scheduleOverride:
         final args = settings.arguments as ScheduleOverrideArgs;
         return _slide(
@@ -489,22 +498,37 @@ class AppRouter {
     return Navigator.pushNamed<T>(context, AppRoutes.linkDevice);
   }
 
-  static Future<T?> pushSchedulesList<T>(BuildContext context) {
-    return Navigator.pushNamed<T>(context, AppRoutes.schedulesList);
+  static Future<T?> pushSchedulesList<T>(
+    BuildContext context, {
+    required DeviceEntity device,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.schedulesList,
+      arguments: device,
+    );
   }
 
-  static Future<T?> pushCreateSchedule<T>(BuildContext context) {
-    return Navigator.pushNamed<T>(context, AppRoutes.createSchedule);
+  static Future<T?> pushCreateSchedule<T>(
+    BuildContext context, {
+    required DeviceEntity device,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      AppRoutes.createSchedule,
+      arguments: CreateScheduleArgs(device: device),
+    );
   }
 
   static Future<T?> pushEditSchedule<T>(
     BuildContext context, {
     required String scheduleId,
+    required DeviceEntity device,
   }) {
     return Navigator.pushNamed<T>(
       context,
       AppRoutes.createSchedule,
-      arguments: scheduleId,
+      arguments: CreateScheduleArgs(device: device, scheduleId: scheduleId),
     );
   }
 

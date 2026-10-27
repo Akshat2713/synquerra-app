@@ -13,7 +13,7 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/landing/landing_bloc.dart';
 // import '../../blocs/realtime/device_events_cubit.dart';
-import '../../blocs/schedule_list/schedule_list_bloc.dart';
+// import '../../blocs/schedule_list/schedule_list_bloc.dart';
 // import '../../widgets/device_event_banner.dart';
 import '../../widgets/app_overlays.dart';
 import '../geofence/geofence_list_page.dart';
@@ -121,11 +121,10 @@ class _DeviceShellScreenState extends State<DeviceShellScreen> {
               : const SizedBox.shrink(),
 
           // Tab 3: Schedules List
+          // Tab 3: Schedules List
+          // Tab 3: Schedules List
           _activatedTabs.contains(3)
-              ? BlocProvider(
-                  create: (_) => sl<ScheduleListBloc>(),
-                  child: const SchedulesListScreen(),
-                )
+              ? SchedulesListScreen(device: widget.device)
               : const SizedBox.shrink(),
 
           // Tab 4: Manage

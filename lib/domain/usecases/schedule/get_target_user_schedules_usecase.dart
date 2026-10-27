@@ -9,10 +9,10 @@ class GetTargetUserSchedulesUseCase {
 
   GetTargetUserSchedulesUseCase(this._repository);
 
-  Future<Either<Failure, List<ScheduleEntity>>> call(
-    String targetUserId, {
-    bool? isActive,
+  Future<Either<Failure, List<ScheduleEntity>>> call({
+    required String userId,
+    required String deviceId,
   }) {
-    return _repository.getTargetUserSchedules(targetUserId, isActive: isActive);
+    return _repository.getTargetUserSchedules(userId, deviceId);
   }
 }

@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/schedule/schedule_entity.dart';
-import '../../../domain/usecases/schedule/get_my_schedules_usecase.dart';
+import '../../../domain/usecases/schedule/get_target_user_schedules_usecase.dart';
 import '../../../domain/usecases/schedule/delete_schedule_usecase.dart';
 import '../../../domain/usecases/schedule/toggle_schedule_status_usecase.dart';
 
@@ -10,15 +10,15 @@ part 'schedule_list_event.dart';
 part 'schedule_list_state.dart';
 
 class ScheduleListBloc extends Bloc<ScheduleListEvent, ScheduleListState> {
-  final GetMySchedulesUseCase _getMySchedulesUseCase;
+  final GetTargetUserSchedulesUseCase _getTargetUserSchedulesUseCase;
   final DeleteScheduleUseCase _deleteScheduleUseCase;
   final ToggleScheduleStatusUseCase _toggleScheduleStatusUseCase;
 
   ScheduleListBloc({
-    required GetMySchedulesUseCase getMySchedulesUseCase,
+    required GetTargetUserSchedulesUseCase getTargetUserSchedulesUseCase,
     required DeleteScheduleUseCase deleteScheduleUseCase,
     required ToggleScheduleStatusUseCase toggleScheduleStatusUseCase,
-  }) : _getMySchedulesUseCase = getMySchedulesUseCase,
+  }) : _getTargetUserSchedulesUseCase = getTargetUserSchedulesUseCase,
        _deleteScheduleUseCase = deleteScheduleUseCase,
        _toggleScheduleStatusUseCase = toggleScheduleStatusUseCase,
        super(const ScheduleListState()) {
@@ -32,24 +32,56 @@ class ScheduleListBloc extends Bloc<ScheduleListEvent, ScheduleListState> {
     ScheduleListLoadRequested event,
     Emitter<ScheduleListState> emit,
   ) async {
+    final sameTarget =
+        state.userId == event.userId && state.deviceId == event.deviceId;
+    if (sameTarget &&
+        (state.isLoading || state.status == ScheduleListStatus.loaded)) {
+      return; // already cached or in flight
+    }
+
     emit(
-      state.copyWith(status: ScheduleListStatus.loading, errorMessage: null),
+      state.copyWith(
+        status: ScheduleListStatus.loading,
+        errorMessage: null,
+        userId: event.userId,
+        deviceId: event.deviceId,
+      ),
     );
-    await _fetch(event.isActive, emit);
+    await _fetch(event.userId, event.deviceId, emit);
   }
 
   Future<void> _onRefresh(
     ScheduleListRefreshRequested event,
     Emitter<ScheduleListState> emit,
   ) async {
+    final userId = state.userId;
+    final deviceId = state.deviceId;
+
+    if (userId == null || deviceId == null) {
+      emit(
+        state.copyWith(
+          status: ScheduleListStatus.error,
+          errorMessage: 'Missing user or device identifier for refresh.',
+        ),
+      );
+      return;
+    }
+
     emit(
       state.copyWith(status: ScheduleListStatus.loading, errorMessage: null),
     );
-    await _fetch(event.isActive, emit);
+    await _fetch(userId, deviceId, emit);
   }
 
-  Future<void> _fetch(bool? isActive, Emitter<ScheduleListState> emit) async {
-    final result = await _getMySchedulesUseCase(isActive: isActive);
+  Future<void> _fetch(
+    String userId,
+    String deviceId,
+    Emitter<ScheduleListState> emit,
+  ) async {
+    final result = await _getTargetUserSchedulesUseCase(
+      userId: userId,
+      deviceId: deviceId,
+    );
     result.fold(
       (failure) => emit(
         state.copyWith(

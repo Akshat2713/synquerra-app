@@ -58,6 +58,7 @@ import '../../domain/usecases/schedule/delete_schedule_usecase.dart';
 import '../../domain/usecases/schedule/get_my_schedules_usecase.dart';
 import '../../domain/usecases/schedule/get_schedule_by_id_usecase.dart';
 import '../../domain/usecases/schedule/get_schedule_overrides_usecase.dart';
+import '../../domain/usecases/schedule/get_target_user_schedules_usecase.dart';
 import '../../domain/usecases/schedule/toggle_schedule_status_usecase.dart';
 import '../../domain/usecases/schedule/update_schedule_override_usecase.dart';
 import '../../domain/usecases/schedule/update_schedule_usecase.dart';
@@ -449,10 +450,11 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DeleteScheduleUseCase(sl()));
   sl.registerLazySingleton(() => GetScheduleByIdUseCase(sl()));
   sl.registerLazySingleton(() => ToggleScheduleStatusUseCase(sl()));
+  sl.registerLazySingleton(() => GetTargetUserSchedulesUseCase(sl()));
 
   sl.registerFactory<ScheduleListBloc>(
     () => ScheduleListBloc(
-      getMySchedulesUseCase: sl(),
+      getTargetUserSchedulesUseCase: sl(),
       deleteScheduleUseCase: sl(),
       toggleScheduleStatusUseCase: sl(),
     ),
