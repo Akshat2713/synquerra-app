@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/app_icons.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
 
 import '../../../../domain/entities/schedule/schedule_override_entity.dart';
-import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'detail_card_parts.dart';
 
 class ScheduleExceptionsCard extends StatelessWidget {
   final List<ScheduleOverrideEntity> overrides;
@@ -22,182 +26,142 @@ class ScheduleExceptionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.event_busy_outlined,
-                  size: 20,
-                  color: AppColors.primary(context),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Schedule Exceptions (${overrides.length})',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary(context),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.add, color: AppColors.primary(context)),
-                  onPressed: onAddException,
-                ),
-              ],
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.smd,
+        children: [
+          DetailCardHeader(
+            title: 'Schedule Exceptions (${overrides.length})',
+            icon: AppIcons.eventBusy,
+            background: AppColors.warning,
+            foreground: AppColors.onWarning,
+            trailing: IconButton.filled(
+              tooltip: 'Add exception',
+              icon: Icon(AppIcons.add, color: AppColors.onPrimary(context)),
+              onPressed: onAddException,
             ),
-            const SizedBox(height: 12),
-            overrides.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+          ),
+          if (overrides.isEmpty)
+            InsetRow(
+              child: Row(
+                spacing: AppSpacing.sm,
+                children: [
+                  Icon(
+                    AppIcons.info,
+                    size: AppSize.iconSm,
+                    color: AppColors.offline,
+                  ),
+                  Expanded(
                     child: Text(
                       'No custom exceptions configured for this schedule.',
-                      style: TextStyle(
-                        color: AppColors.textSecondary(context),
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.metaWithColor(context),
                     ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: overrides.length,
-                    separatorBuilder: (_, __) => const Divider(height: 16),
-                    itemBuilder: (context, index) {
-                      return _buildOverrideItem(context, overrides[index]);
-                    },
                   ),
-          ],
-        ),
+                ],
+              ),
+            )
+          else
+            Column(children: [for (final o in overrides) _item(context, o)]),
+        ],
       ),
     );
   }
 
-  Widget _buildOverrideItem(
-    BuildContext context,
-    ScheduleOverrideEntity override,
-  ) {
-    final isCancel = override.overrideType.toUpperCase() == 'CANCEL';
-    final isProcessing = processingIds.contains(override.id);
+  Widget _item(BuildContext context, ScheduleOverrideEntity o) {
+    final isCancel = o.overrideType.toUpperCase() == 'CANCEL';
+    final isProcessing = processingIds.contains(o.id);
+    final hasTimes = !isCancel && o.startTime != null && o.endTime != null;
+    final reason = o.reason;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.background(context),
-        borderRadius: AppRadius.mdAll,
-      ),
+    return InsetRow(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.xs,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                override.date,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: AppColors.textPrimary(context),
+              Expanded(
+                child: Text(
+                  o.date,
+                  style: AppTextStyles.bodyWithColor(
+                    context,
+                    color: AppColors.textPrimary(context),
+                  ).copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isCancel
-                          ? AppColors.danger.withAlpha(30)
-                          : AppColors.primary(context).withAlpha(30),
-                      borderRadius: AppRadius.smAll,
-                    ),
-                    child: Text(
-                      isCancel ? 'Cancelled' : 'Modified Hours',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isCancel ? AppColors.danger : AppColors.primary(context),
+              if (isProcessing)
+                const SizedBox.square(
+                  dimension: AppSize.tile,
+                  child: Center(
+                    child: SizedBox.square(
+                      dimension: AppSize.iconSm,
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppSize.stroke,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  if (isProcessing)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  else ...[
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        size: 18,
-                        color: AppColors.textSecondary(context),
-                      ),
-                      onPressed: () => onEditException(override),
-                    ),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                        color: AppColors.danger,
-                      ),
-                      onPressed: () => onDeleteException(override),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-          if (!isCancel &&
-              override.startTime != null &&
-              override.endTime != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time,
-                  size: 14,
-                  color: AppColors.textSecondary(context),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${override.startTime} - ${override.endTime}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(context),
+                )
+              else ...[
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Edit exception',
+                  icon: Icon(
+                    AppIcons.edit,
+                    size: AppSize.icon,
+                    color: AppColors.iconSecondary(context),
                   ),
+                  onPressed: () => onEditException(o),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Delete exception',
+                  icon: Icon(
+                    AppIcons.delete,
+                    size: AppSize.icon,
+                    color: AppColors.danger,
+                  ),
+                  onPressed: () => onDeleteException(o),
                 ),
               ],
-            ),
-          ],
-          if (override.reason != null && override.reason!.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Reason: ${override.reason}',
-              style: TextStyle(
-                fontSize: 13,
-                fontStyle: FontStyle.italic,
-                color: AppColors.textSecondary(context),
+            ],
+          ),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              InfoPill(
+                label: isCancel ? 'Cancelled' : 'Modified Hours',
+                dotColor: isCancel
+                    ? AppColors.danger
+                    : AppColors.primary(context),
+                background: AppColors.surface(context),
+                foreground: AppColors.textPrimary(context),
               ),
+              if (hasTimes)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Icon(
+                      AppIcons.time,
+                      size: AppSize.iconSm,
+                      color: AppColors.textSecondary(context),
+                    ),
+                    Text(
+                      '${o.startTime} - ${o.endTime}',
+                      style: AppTextStyles.metaWithColor(context),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          if (reason != null && reason.isNotEmpty)
+            Text(
+              'Reason: $reason',
+              style: AppTextStyles.metaWithColor(context),
             ),
-          ],
         ],
       ),
     );

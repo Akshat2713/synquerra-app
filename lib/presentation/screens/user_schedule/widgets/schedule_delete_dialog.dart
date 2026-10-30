@@ -1,34 +1,25 @@
 import 'package:flutter/material.dart';
-import '../../../../presentation/themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/widgets/app_button.dart';
 
-Future<bool?> showScheduleDeleteDialog(BuildContext context, String title) {
-  return showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
-      title: const Text('Delete Schedule'),
-      content: Text('Are you sure you want to delete "$title"?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary(context)),
+Future<bool?> showScheduleDeleteDialog(BuildContext context, String title) =>
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete schedule?'),
+        content: Text('Are you sure you want to delete "$title"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
           ),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
+          AppButton(
+            label: 'Delete',
+            fullWidth: false,
             backgroundColor: AppColors.danger,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: AppRadius.smAll,
-            ),
+            foregroundColor: AppColors.onDanger,
+            onPressed: () => Navigator.of(ctx).pop(true),
           ),
-          onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );

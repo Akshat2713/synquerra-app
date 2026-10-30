@@ -137,4 +137,31 @@ class DateTimeFormatter {
 
   static bool isYesterday(DateTime dateTime) =>
       isSameDay(dateTime, DateTime.now().subtract(const Duration(days: 1)));
+
+  /// "09:00" or "09:00:00" -> "9:00 AM". Returns the input if unparseable.
+  // TODO(logic): drop once ScheduleEntity exposes TimeOfDay.
+  static String formatTimeString(String? value) {
+    if (value == null || value.isEmpty) return '--:--';
+    final parts = value.split(':');
+    final hour = parts.length >= 2 ? int.tryParse(parts[0]) : null;
+    final minute = parts.length >= 2 ? int.tryParse(parts[1]) : null;
+    if (hour == null || minute == null) return value;
+    return formatTimeOfDay(TimeOfDay(hour: hour, minute: minute));
+  }
+
+  /// "12 Oct – 30 Nov", or "From 12 Oct" with no end date.
+  /// Adds the year when a date is outside the current year.
+  // TODO(logic): drop once ScheduleEntity exposes DateTime.
+  static String formatDateRange(String start, String? end) {
+    final hasEnd = end != null && end.isNotEmpty;
+    final from = DateTime.tryParse(start);
+    final to = hasEnd ? DateTime.tryParse(end) : null;
+    if (from == null) return hasEnd ? '$start – $end' : start;
+    final year = DateTime.now().year;
+    final withYear = from.year != year || (to != null && to.year != year);
+    final fmt = DateFormat(withYear ? 'd MMM yyyy' : 'd MMM');
+    return to == null
+        ? 'From ${fmt.format(from)}'
+        : '${fmt.format(from)} – ${fmt.format(to)}';
+  }
 }

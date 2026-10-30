@@ -74,6 +74,7 @@ class IconTile extends StatelessWidget {
 class InfoPill extends StatelessWidget {
   final String label;
   final IconData? icon;
+  final Color? dotColor;
   final Color background;
   final Color foreground;
 
@@ -83,6 +84,7 @@ class InfoPill extends StatelessWidget {
     required this.background,
     required this.foreground,
     this.icon,
+    this.dotColor,
   });
 
   @override
@@ -98,6 +100,14 @@ class InfoPill extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (dotColor != null) ...[
+          Container(
+            width: AppSize.dot,
+            height: AppSize.dot,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+        ],
         if (icon != null) ...[
           Icon(icon, size: AppSize.iconSm, color: foreground),
           const SizedBox(width: AppSpacing.xs),

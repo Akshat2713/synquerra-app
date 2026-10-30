@@ -5,6 +5,13 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/schedule/schedule_override_entity.dart';
 import '../../blocs/schedule_override/schedule_overrides_bloc.dart';
 import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../utils/date_time_formatter.dart';
+import '../../widgets/app_dropdown_field.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
+import '../../widgets/app_picker_field.dart';
+import '../../widgets/app_surfaces.dart';
 import '../../widgets/app_text_field.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
@@ -36,9 +43,9 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
 
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _startTimeController = TextEditingController();
-  final TextEditingController _endTimeController = TextEditingController();
+  // final TextEditingController _dateController = TextEditingController();
+  // final TextEditingController _startTimeController = TextEditingController();
+  // final TextEditingController _endTimeController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   bool _wasSubmitting = false;
@@ -58,18 +65,9 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         : ExceptionType.modify;
 
     _selectedDate = DateTime.tryParse(existing.date);
-    _dateController.text = _selectedDate != null
-        ? DateFormat('EEE, MMM d, yyyy').format(_selectedDate!)
-        : existing.date;
-
-    if (existing.startTime != null) {
+    if (existing.startTime != null)
       _startTime = _parseTimeOfDay(existing.startTime!);
-      _startTimeController.text = existing.startTime!;
-    }
-    if (existing.endTime != null) {
-      _endTime = _parseTimeOfDay(existing.endTime!);
-      _endTimeController.text = existing.endTime!;
-    }
+    if (existing.endTime != null) _endTime = _parseTimeOfDay(existing.endTime!);
     _descriptionController.text = existing.reason ?? '';
   }
 
@@ -91,75 +89,37 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
 
   @override
   void dispose() {
-    _dateController.dispose();
-    _startTimeController.dispose();
-    _endTimeController.dispose();
+    // _dateController.dispose();
+    // _startTimeController.dispose();
+    // _endTimeController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDate(BuildContext context) async {
+  Future<void> _pickDate() async {
     final now = DateTime.now();
+    final selected = _selectedDate;
+    final firstDate = (selected != null && selected.isBefore(now))
+        ? selected
+        : now;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
-      firstDate: now,
+      initialDate: selected ?? now,
+      firstDate: firstDate,
       lastDate: DateTime(now.year + 2),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary(context),
-              onPrimary: Colors.white,
-              surface: AppColors.surface(context),
-              onSurface: AppColors.textPrimary(context),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('EEE, MMM d, yyyy').format(picked);
-      });
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
-  Future<void> _pickTime(BuildContext context, {required bool isStart}) async {
+  Future<void> _pickTime({required bool isStart}) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: isStart
           ? (_startTime ?? const TimeOfDay(hour: 9, minute: 0))
           : (_endTime ?? const TimeOfDay(hour: 17, minute: 0)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary(context),
-              onPrimary: Colors.white,
-              surface: AppColors.surface(context),
-              onSurface: AppColors.textPrimary(context),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
-
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          _startTime = picked;
-          _startTimeController.text = picked.format(context);
-        } else {
-          _endTime = picked;
-          _endTimeController.text = picked.format(context);
-        }
-      });
-    }
+    if (picked == null) return;
+    setState(() => isStart ? _startTime = picked : _endTime = picked);
   }
 
   Map<String, dynamic> _buildBody() {
@@ -202,11 +162,13 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         ),
       );
     }
-    Navigator.pop(context);
+    // Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    String? required(String? v) => (v == null || v.isEmpty) ? 'Required' : null;
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
@@ -216,7 +178,8 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
               : 'Add Schedule Exception',
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.iconPrimary(context)),
+          tooltip: 'Back',
+          icon: const Icon(AppIcons.back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -224,21 +187,15 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         listener: (context, state) {
           if (_wasSubmitting && !state.isSubmitting) {
             if (state.actionError == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    widget.isEditing
-                        ? 'Exception updated successfully!'
-                        : 'Schedule exception saved successfully!',
-                  ),
-                  backgroundColor: AppColors.success,
-                ),
+              AppSnackBar.success(
+                context,
+                widget.isEditing
+                    ? 'Exception updated successfully!'
+                    : 'Schedule exception saved successfully!',
               );
               Navigator.of(context).pop();
             } else {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.actionError!)));
+              AppSnackBar.error(context, state.actionError!);
             }
           }
           _wasSubmitting = state.isSubmitting;
@@ -246,165 +203,101 @@ class _ScheduleExceptionScreenState extends State<ScheduleExceptionScreen> {
         child: BlocBuilder<ScheduleOverridesBloc, ScheduleOverridesState>(
           builder: (context, state) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
+              padding: AppSpacing.mdAll,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.md,
                   children: [
-                    Text(
-                      'Action Type',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<ExceptionType>(
-                      initialValue: _selectedType,
-                      dropdownColor: AppColors.surface(context),
-                      style: TextStyle(
-                        color: AppColors.textPrimary(context),
-                        fontSize: 15,
-                      ),
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(
-                          _selectedType == ExceptionType.cancel
-                              ? Icons.event_busy_outlined
-                              : Icons.access_time_outlined,
-                          size: 20,
-                          color: AppColors.textSecondary(context),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: ExceptionType.cancel,
-                          child: Text('Cancel Schedule'),
-                        ),
-                        DropdownMenuItem(
-                          value: ExceptionType.modify,
-                          child: Text('Modify Hours'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _selectedType = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    GestureDetector(
-                      onTap: () => _pickDate(context),
-                      child: AbsorbPointer(
-                        child: AppTextField(
-                          controller: _dateController,
-                          label: 'Date',
-                          hint: 'Select Exception Date',
-                          prefixIcon: Icons.calendar_today_outlined,
-                          readOnly: true,
-                          validator: (val) => (val == null || val.isEmpty)
-                              ? 'Please select a date'
-                              : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    if (_selectedType == ExceptionType.modify) ...[
-                      Row(
+                    AppCard(
+                      child: Column(
+                        spacing: AppSpacing.md,
                         children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => _pickTime(context, isStart: true),
-                              child: AbsorbPointer(
-                                child: AppTextField(
-                                  controller: _startTimeController,
-                                  label: 'Start Time',
-                                  hint: '09:00 AM',
-                                  prefixIcon: Icons.schedule_outlined,
-                                  readOnly: true,
-                                  validator: (val) {
-                                    if (_selectedType == ExceptionType.modify &&
-                                        (val == null || val.isEmpty)) {
-                                      return 'Required';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ),
+                          AppDropdownField<ExceptionType>(
+                            label: 'Action Type',
+                            prefixIcon: _selectedType == ExceptionType.cancel
+                                ? AppIcons.eventBusy
+                                : AppIcons.time,
+                            value: _selectedType,
+                            items: ExceptionType.values,
+                            itemLabel: (t) => switch (t) {
+                              ExceptionType.cancel => 'Cancel Schedule',
+                              ExceptionType.modify => 'Modify Hours',
+                            },
+                            onChanged: (v) {
+                              if (v != null) setState(() => _selectedType = v);
+                            },
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => _pickTime(context, isStart: false),
-                              child: AbsorbPointer(
-                                child: AppTextField(
-                                  controller: _endTimeController,
-                                  label: 'End Time',
-                                  hint: '05:00 PM',
-                                  prefixIcon: Icons.schedule_outlined,
-                                  readOnly: true,
-                                  validator: (val) {
-                                    if (_selectedType == ExceptionType.modify &&
-                                        (val == null || val.isEmpty)) {
-                                      return 'Required';
-                                    }
-                                    return null;
-                                  },
+                          AppPickerField(
+                            label: 'Date',
+                            value: _selectedDate == null
+                                ? ''
+                                : DateTimeFormatter.formatDate(_selectedDate),
+                            icon: AppIcons.date,
+                            onTap: _pickDate,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Please select a date'
+                                : null,
+                          ),
+                          if (_selectedType == ExceptionType.modify)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: AppSpacing.smd,
+                              children: [
+                                Expanded(
+                                  child: AppPickerField(
+                                    label: 'Start Time',
+                                    value: _startTime?.format(context) ?? '',
+                                    icon: AppIcons.time,
+                                    onTap: () => _pickTime(isStart: true),
+                                    validator: required,
+                                  ),
                                 ),
-                              ),
+                                Expanded(
+                                  child: AppPickerField(
+                                    label: 'End Time',
+                                    value: _endTime?.format(context) ?? '',
+                                    icon: AppIcons.time,
+                                    onTap: () => _pickTime(isStart: false),
+                                    validator: required,
+                                  ),
+                                ),
+                              ],
                             ),
+                          AppTextField(
+                            controller: _descriptionController,
+                            label: 'Description / Reason',
+                            hint:
+                                'Provide context for this exception (e.g., Public Holiday, Maintenance)',
+                            prefixIcon: AppIcons.description,
+                            keyboardType: TextInputType.multiline,
+                            textInputAction: TextInputAction.done,
+                            validator: (val) =>
+                                (val == null || val.trim().isEmpty)
+                                ? 'Please provide a description'
+                                : null,
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-
-                    AppTextField(
-                      controller: _descriptionController,
-                      label: 'Description / Reason',
-                      hint:
-                          'Provide context for this exception (e.g., Public Holiday, Maintenance)',
-                      prefixIcon: Icons.description_outlined,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.done,
-                      validator: (val) => (val == null || val.trim().isEmpty)
-                          ? 'Please provide a description'
-                          : null,
-                    ),
-                    const SizedBox(height: 32),
-
-                    ElevatedButton(
+                    ).entrance(context, index: 0),
+                    FilledButton(
                       onPressed: state.isSubmitting ? null : _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary(context),
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.mdAll,
-                        ),
-                      ),
                       child: state.isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                          ? SizedBox.square(
+                              dimension: AppSize.icon,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                                strokeWidth: AppSize.stroke,
+                                color: AppColors.onPrimary(context),
                               ),
                             )
                           : Text(
                               widget.isEditing
                                   ? 'Update Exception'
                                   : 'Save Exception',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
                             ),
-                    ),
+                    ).entrance(context, index: 1),
                   ],
                 ),
               ),

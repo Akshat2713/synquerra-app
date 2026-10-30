@@ -1,38 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:flutter/services.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
 
 class DaySelectorRow extends StatelessWidget {
   final List<int> selectedDays;
-  final ValueChanged<int> onDayToggled;
+  // final ValueChanged<int> onDayToggled;
 
-  static const List<String> _dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  // Index 0 (Sun) to 6 (Sat).
+  static const List<String> _dayInitials = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  static const List<String> _dayNames = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
 
+  final ValueChanged<int>? onDayToggled; // was non-null
   const DaySelectorRow({
     super.key,
     required this.selectedDays,
-    required this.onDayToggled,
+    this.onDayToggled,
   });
 
   @override
   Widget build(BuildContext context) {
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : AppMotion.base;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(7, (index) {
-        // index directly corresponds to 0 (Sun) -> 6 (Sat)
+      children: List.generate(_dayInitials.length, (index) {
         final isSelected = selectedDays.contains(index);
-        return InkWell(
-          borderRadius: AppRadius.lgAll,
-          onTap: () => onDayToggled(index),
+        final background = isSelected
+            ? AppColors.primary(context)
+            : AppColors.surfaceVariant(context);
+        final foreground = isSelected
+            ? AppColors.onPrimary(context)
+            : AppColors.textSecondary(context);
+
+        return Semantics(
+          button: onDayToggled != null,
+          selected: isSelected,
+          label: _dayNames[index],
+          excludeSemantics: true,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
+            duration: duration,
+            curve: AppMotion.curve,
+            width: AppSize.tile,
+            height: AppSize.tile,
             decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary(context)
-                  : AppColors.surfaceVariant(context),
+              color: background,
               shape: BoxShape.circle,
               border: Border.all(
                 color: isSelected
@@ -40,14 +63,27 @@ class DaySelectorRow extends StatelessWidget {
                     : AppColors.outline(context),
               ),
             ),
-            child: Text(
-              _dayNames[index],
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isSelected
-                    ? Colors.white
-                    : AppColors.textSecondary(context),
+            child: Material(
+              type: MaterialType.transparency,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: onDayToggled == null
+                    ? null
+                    : () {
+                        HapticFeedback.selectionClick();
+                        onDayToggled!(index);
+                      },
+                child: Center(
+                  child: Text(
+                    _dayInitials[index],
+                    style: AppTextStyles.bodyWithColor(
+                      context,
+                      color: foreground,
+                    ).copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
               ),
             ),
           ),

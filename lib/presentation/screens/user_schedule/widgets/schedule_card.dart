@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../../domain/entities/schedule/schedule_entity.dart';
-import '../../../../presentation/themes/colors.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:synquerra/domain/entities/schedule/schedule_entity.dart';
+import 'package:synquerra/presentation/themes/app_text_styles.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/app_icons.dart';
+import 'package:synquerra/presentation/utils/colour_util.dart';
+import 'package:synquerra/presentation/utils/date_time_formatter.dart';
+import 'package:synquerra/presentation/utils/unit_formatter.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+
+enum _Menu { edit, delete }
 
 class ScheduleCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -23,204 +33,49 @@ class ScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const displayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    final description = (schedule.description ?? '').trim();
 
-    bool isDaySelected(int displayIndex) {
-      return schedule.daysOfWeek.contains(displayIndex);
-    }
-
-    return Opacity(
-      opacity: isProcessing ? 0.5 : 1.0,
-      child: IgnorePointer(
-        ignoring: isProcessing,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: AppColors.surface(context),
-            borderRadius: AppRadius.lgAll,
-            border: Border.all(color: AppColors.outline(context)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadow(context),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: AppRadius.lgAll,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: AppRadius.lgAll,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // --- HEADER ROW: Title & Main Controls ---
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            schedule.title,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                              color: AppColors.textPrimary(context),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _PriorityBadge(priority: schedule.priority),
-                        const SizedBox(width: 4),
-                        Switch.adaptive(
-                          value: schedule.isActive,
-                          activeThumbColor: AppColors.onSuccess,
-                          onChanged: onToggle,
-                        ),
-                        PopupMenuButton<String>(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: AppColors.textTertiary(context),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.mdAll,
-                          ),
-                          onSelected: (value) {
-                            if (value == 'edit') onEdit();
-                            if (value == 'delete') onDelete();
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_outlined, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Edit'),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: AppColors.danger,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Delete',
-                                    style: TextStyle(
-                                      color: AppColors.danger,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+    return IgnorePointer(
+      ignoring: isProcessing,
+      child: AppCard(
+        padding: EdgeInsets.zero,
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: AppRadius.lgAll,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap == null
+                ? null
+                : () {
+                    HapticFeedback.selectionClick();
+                    onTap!();
+                  },
+            child: Padding(
+              padding: AppSpacing.mdAll,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpacing.smd,
+                children: [
+                  _Header(
+                    schedule: schedule,
+                    isProcessing: isProcessing,
+                    onToggle: onToggle,
+                  ),
+                  if (description.isNotEmpty)
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.metaWithColor(context),
                     ),
-
-                    // Optional Description
-                    if ((schedule.description ?? '').trim().isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        schedule.description!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.3,
-                          color: AppColors.textSecondary(context),
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 12),
-
-                    // --- TIME SECTION ---
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 18,
-                          color: AppColors.primary(context),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          '${schedule.startTime} - ${schedule.endTime}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary(context),
-                          ),
-                        ),
-                        const Spacer(),
-                        if (schedule.startDate.isNotEmpty)
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                size: 13,
-                                color: AppColors.textTertiary(context),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${schedule.startDate}${schedule.endDate != null ? ' - ${schedule.endDate}' : ''}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textTertiary(context),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // --- FOOTER ROW: Day Selection Pills ---
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(7, (i) {
-                        final selected = isDaySelected(i);
-                        return Container(
-                          width: 28,
-                          height: 28,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? AppColors.primary(context)
-                                : AppColors.surfaceVariant(context),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            displayLabels[i],
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: selected
-                                  ? Colors.white
-                                  : AppColors.textTertiary(context),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
+                  _TimeStrip(schedule: schedule),
+                  // _DaysRow(schedule: schedule),
+                  _Footer(
+                    schedule: schedule,
+                    onEdit: onEdit,
+                    onDelete: onDelete,
+                  ),
+                ],
               ),
             ),
           ),
@@ -230,49 +85,270 @@ class ScheduleCard extends StatelessWidget {
   }
 }
 
-class _PriorityBadge extends StatelessWidget {
-  final String priority;
+class _Header extends StatelessWidget {
+  final ScheduleEntity schedule;
+  final bool isProcessing;
+  final ValueChanged<bool> onToggle;
 
-  const _PriorityBadge({required this.priority});
+  const _Header({
+    required this.schedule,
+    required this.isProcessing,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = _getPriorityColor(priority);
+    final active = schedule.isActive;
+    return Row(
+      spacing: AppSpacing.smd,
+      children: [
+        IconTile(
+          icon: AppIcons.schedule,
+          background: active
+              ? AppColors.primary(context)
+              : AppColors.surfaceVariant(context),
+          foreground: active
+              ? AppColors.onPrimary(context)
+              : AppColors.iconSecondary(context),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                schedule.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.sectionWithColor(context),
+              ),
+              Text(
+                UnitFormatter.formatDays(schedule.daysOfWeek),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.metaWithColor(context),
+              ),
+            ],
+          ),
+        ),
+        if (isProcessing)
+          const SizedBox.square(
+            dimension: AppSize.tapTarget,
+            child: Center(
+              child: SizedBox.square(
+                dimension: AppSize.icon,
+                child: CircularProgressIndicator(strokeWidth: AppSize.stroke),
+              ),
+            ),
+          )
+        else
+          MergeSemantics(
+            child: Semantics(
+              label: schedule.title,
+              child: Switch(value: active, onChanged: onToggle),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _TimeStrip extends StatelessWidget {
+  final ScheduleEntity schedule;
+
+  const _TimeStrip({required this.schedule});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = schedule.isActive;
+    final foreground = active
+        ? AppColors.onPrimaryContainer(context)
+        : AppColors.textSecondary(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: AppAlpha.tint),
-        borderRadius: AppRadius.smAll,
-        border: Border.all(
-          color: color.withValues(alpha: AppAlpha.border),
-          width: 1,
-        ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.smd,
       ),
-      child: Text(
-        priority.toUpperCase(),
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
-          color: color,
-        ),
+      decoration: BoxDecoration(
+        color: active
+            ? AppColors.primaryContainer(context)
+            : AppColors.surfaceVariant(context),
+        borderRadius: AppRadius.mdAll,
+      ),
+      child: Row(
+        spacing: AppSpacing.sm,
+        children: [
+          Icon(AppIcons.time, size: AppSize.icon, color: foreground),
+          Expanded(
+            child: Text(
+              '${DateTimeFormatter.formatTimeString(schedule.startTime)} – '
+              '${DateTimeFormatter.formatTimeString(schedule.endTime)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.sectionWithColor(context, color: foreground),
+            ),
+          ),
+          Icon(
+            AppIcons.chevron,
+            size: AppSize.icon,
+            color: active
+                ? AppColors.primary(context)
+                : AppColors.iconSecondary(context),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Color _getPriorityColor(String priority) {
-    switch (priority.toUpperCase()) {
-      case 'CRITICAL':
-        return AppColors.danger;
-      case 'HIGH':
-        return AppColors.dangerContainer;
-      case 'MEDIUM':
-        return AppColors.warning;
-      case 'LOW':
-        return AppColors.info;
-      default:
-        return AppColors.success;
-    }
+// class _DaysRow extends StatelessWidget {
+//   static const _labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+//   final ScheduleEntity schedule;
+
+//   const _DaysRow({required this.schedule});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final active = schedule.isActive;
+
+//     return Semantics(
+//       label: 'Runs ${UnitFormatter.formatDays(schedule.daysOfWeek)}',
+//       excludeSemantics: true,
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: List.generate(_labels.length, (i) {
+//           final selected = schedule.daysOfWeek.contains(i);
+//           final (bg, fg) = !selected
+//               ? (
+//                   AppColors.surfaceVariant(context),
+//                   AppColors.textTertiary(context),
+//                 )
+//               : active
+//               ? (AppColors.primary(context), AppColors.onPrimary(context))
+//               : (AppColors.outline(context), AppColors.textSecondary(context));
+
+//           return Container(
+//             width: AppSize.avatarSm,
+//             height: AppSize.avatarSm,
+//             alignment: Alignment.center,
+//             decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+//             child: Text(
+//               _labels[i],
+//               style: AppTextStyles.metaWithColor(
+//                 context,
+//                 color: fg,
+//               ).copyWith(fontWeight: FontWeight.w700),
+//             ),
+//           );
+//         }),
+//       ),
+//     );
+//   }
+// }
+
+class _Footer extends StatelessWidget {
+  final ScheduleEntity schedule;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _Footer({
+    required this.schedule,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final priority = schedule.priority.trim();
+    final neutralBg = AppColors.surfaceVariant(context);
+    final neutralFg = AppColors.textSecondary(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              if (!schedule.isActive)
+                InfoPill(
+                  // icon: AppIcons.pause,
+                  label: 'Inactive',
+                  background: AppColors.offlineContainer,
+                  foreground: neutralFg,
+                ),
+              if (priority.isNotEmpty)
+                InfoPill(
+                  label:
+                      '${toBeginningOfSentenceCase(priority.toLowerCase())} priority',
+                  dotColor: priorityColor(priority),
+                  background: AppAlpha.withAlpha(
+                    priorityColor(priority),
+                    AppAlpha.fill,
+                  ),
+                  foreground: AppColors.textPrimary(context),
+                ),
+              if (schedule.startDate.isNotEmpty)
+                InfoPill(
+                  icon: AppIcons.date,
+                  label: DateTimeFormatter.formatDateRange(
+                    schedule.startDate,
+                    schedule.endDate,
+                  ),
+                  background: neutralBg,
+                  foreground: neutralFg,
+                ),
+              if (schedule.crossesMidnight)
+                InfoPill(
+                  icon: AppIcons.overnight,
+                  label: 'Overnight',
+                  background: neutralBg,
+                  foreground: neutralFg,
+                ),
+            ],
+          ),
+        ),
+        PopupMenuButton<_Menu>(
+          tooltip: 'More options',
+          icon: Icon(AppIcons.more, color: AppColors.iconSecondary(context)),
+          onSelected: (value) {
+            switch (value) {
+              case _Menu.edit:
+                onEdit();
+              case _Menu.delete:
+                onDelete();
+            }
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: _Menu.edit,
+              child: Row(
+                spacing: AppSpacing.sm,
+                children: [
+                  Icon(AppIcons.edit, size: AppSize.icon),
+                  const Text('Edit'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: _Menu.delete,
+              child: Row(
+                spacing: AppSpacing.sm,
+                children: [
+                  Icon(
+                    AppIcons.delete,
+                    size: AppSize.icon,
+                    color: AppColors.danger,
+                  ),
+                  const Text('Delete'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

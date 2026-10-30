@@ -7,7 +7,11 @@ import '../../../domain/entities/schedule/schedule_override_entity.dart';
 // import '../../blocs/schedule_overrides/schedule_overrides_bloc.dart';
 import '../../app/app_router.dart';
 import '../../blocs/schedule_override/schedule_overrides_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
 import 'schedule_detail_screen_widgets/schedule_exceptions_card.dart';
 import 'schedule_detail_screen_widgets/schedule_header_card.dart';
 import 'schedule_detail_screen_widgets/schedule_rules_card.dart';
@@ -86,38 +90,41 @@ class _ScheduleDetailsScreenState extends State<ScheduleDetailsScreen> {
         appBar: AppBar(
           title: const Text('Schedule Details'),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: AppColors.iconPrimary(context)),
+            tooltip: 'Back',
+            icon: const Icon(AppIcons.back),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         body: BlocConsumer<ScheduleOverridesBloc, ScheduleOverridesState>(
           listener: (context, state) {
             if (state.actionError != null) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.actionError!)));
+              AppSnackBar.error(context, state.actionError!);
             }
           },
           builder: (context, state) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: AppSpacing.mdAll,
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.md,
                 children: [
-                  ScheduleHeaderCard(schedule: widget.schedule),
-                  const SizedBox(height: 16),
-                  ScheduleTimingCard(schedule: widget.schedule),
-                  const SizedBox(height: 16),
-                  ScheduleRulesCard(schedule: widget.schedule),
-                  const SizedBox(height: 16),
+                  ScheduleHeaderCard(
+                    schedule: widget.schedule,
+                  ).entrance(context, index: 0),
+                  ScheduleTimingCard(
+                    schedule: widget.schedule,
+                  ).entrance(context, index: 1),
+                  ScheduleRulesCard(
+                    schedule: widget.schedule,
+                  ).entrance(context, index: 2),
                   if (state.status == ScheduleOverridesStatus.loading &&
                       state.overrides.isEmpty)
-                    const Center(child: CircularProgressIndicator())
+                    const Center(child: CircularProgressIndicator()) // pending
                   else if (state.status == ScheduleOverridesStatus.error)
                     Text(
                       state.errorMessage ?? 'Failed to load exceptions.',
-                      style: TextStyle(color: AppColors.danger),
+                      style: TextStyle(color: AppColors.danger), // pending
                     )
                   else
                     ScheduleExceptionsCard(
@@ -126,7 +133,7 @@ class _ScheduleDetailsScreenState extends State<ScheduleDetailsScreen> {
                       onAddException: () => _openForm(),
                       onEditException: (o) => _openForm(existing: o),
                       onDeleteException: _confirmDelete,
-                    ),
+                    ).entrance(context, index: 3),
                 ],
               ),
             );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../themes/app_text_styles.dart';
 import '../themes/app_tokens.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
 import 'app_button.dart';
 import 'app_surfaces.dart';
 
@@ -42,11 +43,11 @@ class AsyncStateView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             spacing: AppSpacing.md,
             children: [
-              const IconTile(
+              IconTile(
                 circle: true,
                 size: AppSize.tapTarget,
                 iconSize: AppSize.iconLg,
-                icon: Icons.error_outline_rounded,
+                icon: AppIcons.error,
                 background: AppColors.dangerContainer,
                 foreground: AppColors.danger,
               ),

@@ -76,6 +76,22 @@ Color deviceSeverityColor(List<dynamic> deviceAlerts) {
   return AppColors.success;
 }
 
+// TODO(logic): priority is a raw String on the entity. Use an enum there.
+// CRITICAL and HIGH share danger for now.
+Color priorityColor(String priority) {
+  switch (priority.toUpperCase()) {
+    case 'CRITICAL':
+    case 'HIGH':
+      return AppColors.danger;
+    case 'MEDIUM':
+      return AppColors.warning;
+    case 'LOW':
+      return AppColors.info;
+    default:
+      return AppColors.offline;
+  }
+}
+
 // ======================================================= hex helpers
 
 String hexFromColor(Color c) =>

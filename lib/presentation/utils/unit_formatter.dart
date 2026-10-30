@@ -41,4 +41,19 @@ class UnitFormatter {
   static String formatPhone(String n) => RegExp(r'^\d{10}$').hasMatch(n)
       ? '${n.substring(0, 5)} ${n.substring(5)}'
       : n;
+
+  static const _dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  /// 0 = Sunday. "Every day", "Weekdays", "Weekends" or "Mon, Wed, Fri".
+  static String formatDays(List<int> days) {
+    final set = days.where((d) => d >= 0 && d <= 6).toSet();
+    if (set.isEmpty) return 'No days selected';
+    if (set.length == 7) return 'Everyday';
+    if (set.length == 5 && set.containsAll(const [1, 2, 3, 4, 5])) {
+      return 'Weekdays';
+    }
+    if (set.length == 2 && set.containsAll(const [0, 6])) return 'Weekends';
+    final sorted = set.toList()..sort();
+    return sorted.map((d) => _dayNames[d]).join(', ');
+  }
 }

@@ -134,7 +134,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                 // ── Company name ───────────────────────
                 Text(
-                  'Synquerra',
+                  'AADYAA',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,

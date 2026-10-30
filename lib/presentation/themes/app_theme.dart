@@ -271,6 +271,13 @@ class AppTheme {
         textStyle: AppTextStyles.body.copyWith(color: p.textPrimary),
       ),
 
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: p.primary,
+        foregroundColor: p.onPrimary,
+        elevation: AppSize.elevationLow,
+        extendedTextStyle: AppTextStyles.button,
+        shape: shapeMd,
+      ),
       dialogTheme: DialogThemeData(
         backgroundColor: p.surface,
         surfaceTintColor: Colors.transparent,

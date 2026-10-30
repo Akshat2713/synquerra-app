@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -9,12 +12,15 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 12),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.xs,
+        top: AppSpacing.smd,
+        bottom: AppSpacing.sm,
+      ),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
+        style: AppTextStyles.sectionWithColor(
+          context,
           color: AppColors.primary(context),
         ),
       ),

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:synquerra/presentation/themes/app_tokens.dart';
+import 'package:synquerra/presentation/themes/colors.dart';
+import 'package:synquerra/presentation/utils/app_icons.dart';
+import 'package:synquerra/presentation/widgets/app_surfaces.dart';
 
 import '../../../../domain/entities/schedule/schedule_entity.dart';
-import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../schedule_form/widgets/day_selector_row.dart';
+import 'detail_card_parts.dart';
 
 class ScheduleTimingCard extends StatelessWidget {
   final ScheduleEntity schedule;
@@ -11,120 +15,38 @@ class ScheduleTimingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: AppColors.surface(context),
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.schedule_outlined,
-                  size: 20,
-                  color: AppColors.primary(context),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Timing & Recurrence',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildDetailRow(
-              context,
-              label: 'Active Hours',
-              value: '${schedule.startTime} - ${schedule.endTime}',
-              isHighlight: true,
-            ),
-            const Divider(height: 24),
-            _buildDetailRow(
-              context,
-              label: 'Timezone',
-              value: schedule.timezone,
-            ),
-            _buildDetailRow(
-              context,
-              label: 'Validity Period',
-              value: schedule.endDate != null
-                  ? '${schedule.startDate} to ${schedule.endDate}'
-                  : 'From ${schedule.startDate} (Ongoing)',
-            ),
-            _buildDetailRow(
-              context,
-              label: 'Midnight Cross',
-              value: schedule.crossesMidnight ? 'Yes' : 'No',
-            ),
-            const SizedBox(height: 12),
-            _buildDaysOfWeekPicker(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDaysOfWeekPicker(BuildContext context) {
-    final days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(7, (index) {
-        final isSelected = schedule.daysOfWeek.contains(index);
-        return CircleAvatar(
-          radius: 18,
-          backgroundColor: isSelected
-              ? AppColors.primary(context)
-              : AppColors.background(context),
-          child: Text(
-            days[index],
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: isSelected
-                  ? Colors.white
-                  : AppColors.textSecondary(context),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildDetailRow(
-    BuildContext context, {
-    required String label,
-    required String value,
-    bool isHighlight = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppSpacing.smd,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary(context),
-            ),
+          DetailCardHeader(
+            title: 'Timing & Recurrence',
+            icon: AppIcons.time,
+            background: AppColors.primary(context),
+            foreground: AppColors.onPrimary(context),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isHighlight ? 16 : 14,
-              fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
-              color: isHighlight
-                  ? AppColors.primary(context)
-                  : AppColors.textPrimary(context),
-            ),
+          Column(
+            children: [
+              DetailRow(
+                label: 'Active Hours',
+                value: '${schedule.startTime} - ${schedule.endTime}',
+                highlight: true,
+              ),
+              DetailRow(label: 'Timezone', value: schedule.timezone),
+              DetailRow(
+                label: 'Validity Period',
+                value: schedule.endDate != null
+                    ? '${schedule.startDate} to ${schedule.endDate}'
+                    : 'From ${schedule.startDate} (Ongoing)',
+              ),
+              DetailRow(
+                label: 'Midnight Cross',
+                value: schedule.crossesMidnight ? 'Yes' : 'No',
+              ),
+            ],
           ),
+          DaySelectorRow(selectedDays: schedule.daysOfWeek),
         ],
       ),
     );

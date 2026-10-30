@@ -50,44 +50,65 @@ class ScheduleModel {
   });
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
-    final grace = json['graceConfig'] as Map<String, dynamic>? ?? {};
-    final targetUser = json['targetUser'] as Map<String, dynamic>? ?? {};
-    final device = json['device'] as Map<String, dynamic>? ?? {};
-    final geofence = json['geofence'] as Map<String, dynamic>? ?? {};
+    final grace =
+        (json['grace_config'] ?? json['graceConfig'])
+            as Map<String, dynamic>? ??
+        {};
+    final targetUser =
+        (json['target_user'] ?? json['targetUser']) as Map<String, dynamic>? ??
+        {};
+    final device = (json['device']) as Map<String, dynamic>? ?? {};
+    final geofence = (json['geofence']) as Map<String, dynamic>? ?? {};
 
     return ScheduleModel(
-      id: json['id'] as String? ?? '',
-      targetUserId: targetUser['userId'] as String? ?? '',
-      deviceId: device['deviceId'] as String? ?? '',
-      geofenceId: geofence['geofenceId'] as String? ?? '',
-      title: json['title'] as String? ?? '',
+      id: (json['id'] ?? '') as String,
+      targetUserId:
+          (targetUser['user_id'] ?? targetUser['userId'] ?? '') as String,
+      deviceId: (device['device_id'] ?? device['deviceId'] ?? '') as String,
+      geofenceId:
+          (geofence['geofence_id'] ?? geofence['geofenceId'] ?? '') as String,
+      title: (json['title'] ?? '') as String,
       description: json['description'] as String?,
-      startTime: json['startTime'] as String? ?? '',
-      endTime: json['endTime'] as String? ?? '',
-      timezone: json['timezone'] as String? ?? 'Asia/Kolkata',
-      recurrenceType: json['recurrenceType'] as String? ?? 'WEEKLY',
+      startTime: (json['start_time'] ?? json['startTime'] ?? '') as String,
+      endTime: (json['end_time'] ?? json['endTime'] ?? '') as String,
+      timezone: (json['timezone'] ?? 'Asia/Kolkata') as String,
+      recurrenceType:
+          (json['recurrence_type'] ?? json['recurrenceType'] ?? 'WEEKLY')
+              as String,
       daysOfWeek:
-          (json['daysOfWeek'] as List<dynamic>?)
+          ((json['days_of_week'] ?? json['daysOfWeek']) as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
               .toList() ??
           [],
       customDates:
-          (json['customDates'] as List<dynamic>?)
+          ((json['custom_dates'] ?? json['customDates']) as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      startDate: json['startDate'] as String? ?? '',
-      endDate: json['endDate'] as String?,
-      crossesMidnight: json['crossesMidnight'] as bool? ?? false,
-      priority: json['priority'] as String? ?? 'MEDIUM',
-      isActive: json['isActive'] as bool? ?? true,
-      arrivalGraceMins: (grace['entryGraceMinutes'] as num?)?.toInt() ?? 10,
-      departureBufferMins: (grace['exitGraceMinutes'] as num?)?.toInt() ?? 5,
-      minimumStayMins: (grace['minimumStayMinutes'] as num?)?.toInt(),
-      createdAt: json['createdAt'] as String?,
-      updatedAt: json['updatedAt'] as String?,
+      startDate: (json['start_date'] ?? json['startDate'] ?? '') as String,
+      endDate: (json['end_date'] ?? json['endDate']) as String?,
+      crossesMidnight:
+          (json['crosses_midnight'] ?? json['crossesMidnight'] ?? false)
+              as bool,
+      priority: (json['priority'] ?? 'MEDIUM') as String,
+      isActive: (json['is_active'] ?? json['isActive'] ?? true) as bool,
+      arrivalGraceMins:
+          ((grace['arrival_grace_mins'] ?? grace['entryGraceMinutes']) as num?)
+              ?.toInt() ??
+          10,
+      departureBufferMins:
+          ((grace['departure_buffer_mins'] ?? grace['exitGraceMinutes'])
+                  as num?)
+              ?.toInt() ??
+          5,
+      minimumStayMins:
+          ((grace['minimum_stay_mins'] ?? grace['minimumStayMinutes']) as num?)
+              ?.toInt(),
+      createdAt: (json['created_at'] ?? json['createdAt']) as String?,
+      updatedAt: (json['updated_at'] ?? json['updatedAt']) as String?,
     );
   }
+
   ScheduleEntity toEntity() => ScheduleEntity(
     id: id,
     targetUserId: targetUserId,

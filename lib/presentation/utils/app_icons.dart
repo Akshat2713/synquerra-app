@@ -100,4 +100,27 @@ class AppIcons {
   static const IconData info = Icons.info_outline_rounded;
   static const IconData error = Icons.error_outline_rounded;
   static const IconData success = Icons.check_circle_rounded;
+
+  // ============================================================= schedules
+  static const IconData schedule = Icons.calendar_month_rounded;
+  static const IconData time = Icons.schedule_rounded;
+  static const IconData overnight = Icons.nights_stay_rounded;
+  static const IconData more = Icons.more_vert_rounded;
+  static const IconData edit = Icons.edit_rounded;
+  static const IconData delete = Icons.delete_outline_rounded;
+  static const IconData add = Icons.add_rounded;
+  static const IconData filter = Icons.filter_list_rounded;
+  static const IconData rules = Icons.tune_rounded;
+  static const IconData eventBusy = Icons.event_busy_rounded;
+
+  // ========================================================= form fields
+  static const IconData keyboardArrowDown = Icons.keyboard_arrow_down_rounded;
+  static const IconData geofence = Icons.shield_outlined;
+  static const IconData title = Icons.title_rounded;
+  static const IconData description = Icons.description_rounded;
+  static const IconData priority = Icons.flag_rounded;
+  static const IconData person = Icons.person_outline_rounded;
+  static const IconData devices = Icons.devices_rounded;
+  static const IconData visibility = Icons.visibility_outlined;
+  static const IconData visibilityOff = Icons.visibility_off_outlined;
 }
