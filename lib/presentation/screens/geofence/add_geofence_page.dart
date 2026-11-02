@@ -17,7 +17,7 @@ import 'widgets/geofence_address_section.dart';
 import 'widgets/geofence_color_picker.dart';
 import 'widgets/geofence_map_preview.dart';
 import 'widgets/geofence_name_input.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class AddGeofencePage extends StatefulWidget {
   final String deviceId;

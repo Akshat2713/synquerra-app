@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/utils/colour_util.dart';
-import 'package:synquerra/presentation/utils/unit_formatter.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/colour_util.dart';
+import '../../../utils/unit_formatter.dart';
 
 import '../../../widgets/app_surfaces.dart';
 

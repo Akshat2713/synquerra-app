@@ -1,7 +1,8 @@
 // lib/presentation/themes/app_palette.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:synquerra/core/utils/app_logger.dart';
+
+import '../../core/utils/app_logger.dart';
 
 /// Helper to calculate contrast ratio between two colors (WCAG 2.1).
 /// Returns ratio, with 4.5:1 being the minimum for normal text.

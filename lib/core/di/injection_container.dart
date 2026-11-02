@@ -2,8 +2,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
-import 'package:synquerra/presentation/blocs/profile/profile_bloc.dart';
 
 // Core & Network
 import '../../data/datasources/realtime/analytics_realtime_datasource.dart';
@@ -51,6 +49,7 @@ import '../../domain/usecases/relationship/create_person_with_relationship_useca
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
+import '../../domain/usecases/relationship/search_person_by_phone_usecase.dart';
 import '../../domain/usecases/schedule/create_schedule_override_usecase.dart';
 import '../../domain/usecases/schedule/create_schedule_usecase.dart';
 import '../../domain/usecases/schedule/delete_schedule_override_usecase.dart';
@@ -73,6 +72,7 @@ import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/mode_condition/mode_condition_bloc.dart';
+import '../../presentation/blocs/profile/profile_bloc.dart';
 import '../../presentation/blocs/realtime/device_events_cubit.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';

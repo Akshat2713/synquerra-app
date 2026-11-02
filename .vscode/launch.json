@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Synquerra App",
+      "name": "Aadyaa App",
       "request": "launch",
       "type": "dart",
       "args": [

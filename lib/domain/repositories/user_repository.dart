@@ -2,7 +2,7 @@
 
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import 'package:synquerra/domain/entities/signup/person_entity.dart';
+import '../../domain/entities/signup/person_entity.dart';
 import '../failures/failure.dart';
 
 abstract class UserRepository {

@@ -7,7 +7,7 @@ import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/signup_progress_tracker.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class SignupPasswordSetupScreen extends StatefulWidget {
   final SignupProfileData profileData;
@@ -79,9 +79,7 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
                 content: Text(state.errorMessage!),
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppRadius.mdAll,
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
               ),
             );
         }

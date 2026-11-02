@@ -4,7 +4,7 @@ import '../../../../domain/entities/analytics/analytics_filter.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../widgets/analytics_filter_sheet.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class HistoryFilterChips extends StatelessWidget {
   final AnalyticsFilter activeFilter;

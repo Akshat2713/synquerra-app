@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/utils/colour_util.dart';
-import 'package:synquerra/presentation/widgets/user_avatar.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../utils/colour_util.dart';
+import '../../../widgets/user_avatar.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';

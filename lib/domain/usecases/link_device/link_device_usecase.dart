@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:synquerra/domain/repositories/link_device_repository.dart';
 import '../../failures/failure.dart';
+import '../../repositories/link_device_repository.dart';
 import '../base_usecase.dart';
 
 class LinkDeviceParams {

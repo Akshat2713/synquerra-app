@@ -12,7 +12,7 @@ import '../location/widgets/map_icon_button.dart';
 import 'utils/map_bounds_util.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class GeofenceMapPickerPage extends StatefulWidget {
   final LatLng initialCenter;
@@ -123,7 +123,9 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                     polygons: [
                       Polygon(
                         points: isDone ? [..._points, _points.first] : _points,
-                        color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
+                        color: AppColors.primary(
+                          context,
+                        ).withValues(alpha: AppAlpha.tint),
                         borderColor: AppColors.primary(context),
                         borderStrokeWidth: 2,
                       ),
@@ -189,9 +191,9 @@ class _GeofenceMapPickerPageState extends State<GeofenceMapPickerPage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary(context).withValues(
-                                      alpha: 0.4,
-                                    ),
+                                    color: AppColors.primary(
+                                      context,
+                                    ).withValues(alpha: 0.4),
                                     blurRadius: 8,
                                     spreadRadius: 4,
                                   ),

@@ -4,7 +4,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../app/app_router.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

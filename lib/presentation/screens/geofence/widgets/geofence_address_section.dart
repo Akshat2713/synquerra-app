@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 /// Holds controllers + null-safe getters for optional geofence address fields.
 /// Reusable wherever a geofence address needs to be collected/edited.

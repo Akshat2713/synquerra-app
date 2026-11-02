@@ -6,7 +6,7 @@ import '../../../themes/colors.dart';
 import '../../../utils/app_icons.dart';
 import 'map_icon_button.dart';
 import 'map_zoom_slider.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class MapControlsColumn extends StatelessWidget {
   final MapController mapController;

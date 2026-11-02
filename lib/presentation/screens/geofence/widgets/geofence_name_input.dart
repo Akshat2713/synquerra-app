@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../themes/app_tokens.dart';
 
 class GeofenceNameInput extends StatelessWidget {
   final TextEditingController controller;

@@ -5,7 +5,7 @@ import 'dart:isolate';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:synquerra/data/models/signup/person_model.dart';
+import '../../models/signup/person_model.dart';
 import '../../network/dio_client.dart';
 import '../../network/api_constants.dart';
 import '../../../core/error/app_exceptions.dart';

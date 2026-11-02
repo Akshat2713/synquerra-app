@@ -6,7 +6,7 @@ import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/app_icons.dart';
 import '../../../widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 /// Card showing the address of the currently active analytics point
 /// (works for both live and history/timeline modes).

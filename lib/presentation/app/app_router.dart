@@ -3,10 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:synquerra/presentation/blocs/alerts/alerts_bloc.dart';
-import 'package:synquerra/presentation/screens/modes/modes_screen.dart';
-import 'package:synquerra/presentation/screens/user_schedule/schedule_detail_screen.dart';
-import 'package:synquerra/presentation/screens/user_schedule/schedule_exception_screen.dart';
 import '../../core/di/injection_container.dart';
 import '../../domain/entities/device/device_entity.dart';
 import '../../domain/entities/geofence/geofence_entity.dart';
@@ -14,6 +10,7 @@ import '../../domain/entities/schedule/schedule_entity.dart';
 import '../../domain/entities/schedule/schedule_override_entity.dart';
 import '../../domain/entities/signup/person_entity.dart';
 import '../../domain/entities/signup/signup_profile_data.dart';
+import '../blocs/alerts/alerts_bloc.dart';
 import '../blocs/geofence/geofence_bloc.dart';
 import '../blocs/device_list/device_list_bloc.dart';
 import '../blocs/analytics/analytics_bloc.dart';
@@ -41,12 +38,15 @@ import '../screens/main_shell/main_shell_screen.dart';
 import '../screens/manage_devices/manage_devices_page.dart';
 import '../screens/manage_users/add_member_screen.dart';
 import '../screens/manage_users/manage_users_screen.dart';
+import '../screens/modes/modes_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/update_profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 // import '../screens/device_list/device_list_screen.dart';
 import '../screens/schedule_form/create_schedule_screen.dart';
+import '../screens/user_schedule/schedule_detail_screen.dart';
+import '../screens/user_schedule/schedule_exception_screen.dart';
 import '../screens/user_schedule/schedules_list_screen.dart';
 
 class DeviceDetailArgs {

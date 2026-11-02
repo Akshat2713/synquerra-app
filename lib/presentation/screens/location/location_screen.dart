@@ -32,7 +32,7 @@ import 'widgets/map_icon_button.dart';
 import 'widgets/map_user_location_layer.dart';
 import 'widgets/timeline_slider.dart';
 import 'widgets/view_tabs.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class LocationScreen extends StatefulWidget {
   final DeviceEntity device;

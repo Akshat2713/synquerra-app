@@ -1,8 +1,8 @@
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
-import 'package:synquerra/data/models/settings/send_query_command_model.dart';
 import '../../../core/error/app_exceptions.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../models/settings/send_query_command_model.dart';
 import '../../models/settings/settings_model.dart';
 import '../../network/api_constants.dart';
 import '../../network/dio_client.dart';

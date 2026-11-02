@@ -1,7 +1,7 @@
+import 'package:aadyaa/core/di/injection_container.dart';
+import 'package:aadyaa/presentation/app/my_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synquerra/core/di/injection_container.dart';
-import 'package:synquerra/presentation/app/my_app.dart';
 
 void main() {
   testWidgets('App starts and renders smoke test', (WidgetTester tester) async {

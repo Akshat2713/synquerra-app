@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class EmptyCoordinatesPlaceholder extends StatelessWidget {
   final VoidCallback onTap;
@@ -17,15 +17,23 @@ class EmptyCoordinatesPlaceholder extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.primary(context).withValues(alpha: AppAlpha.border),
+            color: AppColors.primary(
+              context,
+            ).withValues(alpha: AppAlpha.border),
             style: BorderStyle.solid,
           ),
           borderRadius: AppRadius.mdAll,
-          color: AppColors.primaryContainer(context).withValues(alpha: AppAlpha.tint),
+          color: AppColors.primaryContainer(
+            context,
+          ).withValues(alpha: AppAlpha.tint),
         ),
         child: Column(
           children: [
-            Icon(Icons.map_outlined, size: 36, color: AppColors.primary(context)),
+            Icon(
+              Icons.map_outlined,
+              size: 36,
+              color: AppColors.primary(context),
+            ),
             const SizedBox(height: 8),
             Text(
               'Tap to draw on map',

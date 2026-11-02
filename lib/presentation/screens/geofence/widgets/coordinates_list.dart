@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class CoordinatesList extends StatelessWidget {
   final List<Coordinate> coordinates;

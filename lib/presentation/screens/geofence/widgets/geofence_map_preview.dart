@@ -5,7 +5,7 @@ import '../../../../core/config/map_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../utils/map_bounds_util.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 /// Compact, non-interactive square map thumbnail rendering a geofence polygon.
 /// Tapping it fires [onTap] (e.g. reopen the picker to redraw).

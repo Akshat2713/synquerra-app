@@ -15,7 +15,7 @@ import 'geofence_list_page_widgets/device_geofence_slots.dart';
 import 'geofence_list_page_widgets/geofence_list_tile.dart';
 import 'geofence_list_page_widgets/select_cloud_geofence_dialog.dart';
 import 'widgets/configure_trigger_mode_dialog.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class GeofenceListPage extends StatefulWidget {
   final String deviceId;

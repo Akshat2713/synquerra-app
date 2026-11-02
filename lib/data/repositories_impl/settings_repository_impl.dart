@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:synquerra/domain/entities/settings/send_query_command_entity.dart';
+import '../../domain/entities/settings/send_query_command_entity.dart';
 import '../../domain/entities/settings/settings_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/settings_repository.dart';

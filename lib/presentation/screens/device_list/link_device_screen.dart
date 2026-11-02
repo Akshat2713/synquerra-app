@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/link_device/link_device_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class LinkDeviceScreen extends StatefulWidget {
   const LinkDeviceScreen({super.key});
@@ -48,9 +48,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                 content: const Text('Device linked successfully!'),
                 backgroundColor: AppColors.primary(context),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppRadius.mdAll,
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
               ),
             );
           Navigator.pop(
@@ -66,9 +64,7 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                 content: Text(state.errorMessage!),
                 backgroundColor: AppColors.danger,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppRadius.mdAll,
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
               ),
             );
         }
@@ -102,7 +98,9 @@ class _LinkDeviceScreenState extends State<LinkDeviceScreen> {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.primary(context).withValues(alpha: AppAlpha.tint),
+                      color: AppColors.primary(
+                        context,
+                      ).withValues(alpha: AppAlpha.tint),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

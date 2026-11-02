@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/utils/app_icons.dart';
-import 'package:synquerra/presentation/widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/widgets/app_text_field.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
+import '../../../widgets/app_text_field.dart';
 
 import 'section_header.dart';
 

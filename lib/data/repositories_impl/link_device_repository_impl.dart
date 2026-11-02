@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:synquerra/data/datasources/remote/link_device_remote_datasource.dart';
-import 'package:synquerra/domain/repositories/link_device_repository.dart';
 
 import '../../core/error/app_exceptions.dart';
 import '../../domain/failures/failure.dart';
+import '../../domain/repositories/link_device_repository.dart';
+import '../datasources/remote/link_device_remote_datasource.dart';
 import '../mappers/failure_mapper.dart';
 
 class LinkDeviceRepositoryImpl implements LinkDeviceRepository {

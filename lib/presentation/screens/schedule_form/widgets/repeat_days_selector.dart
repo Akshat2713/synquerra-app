@@ -1,7 +1,7 @@
 // lib/presentation/screens/create_schedule/widgets/repeat_days_selector.dart
 import 'package:flutter/material.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class RepeatDaysSelector extends StatelessWidget {
   final List<int> selectedDays;

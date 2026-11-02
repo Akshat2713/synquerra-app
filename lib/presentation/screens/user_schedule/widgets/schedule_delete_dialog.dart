@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/widgets/app_button.dart';
+import '../../../themes/colors.dart';
+import '../../../widgets/app_button.dart';
 
 Future<bool?> showScheduleDeleteDialog(BuildContext context, String title) =>
     showDialog<bool>(

@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../themes/colors.dart';
 import '../utils/date_time_formatter.dart';
 import 'app_text_field.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../themes/app_tokens.dart';
 
 class UserFormData {
   String firstName;

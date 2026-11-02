@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/utils/app_icons.dart';
-import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 
 import '../../../../domain/entities/schedule/schedule_entity.dart';
 import '../../schedule_form/widgets/day_selector_row.dart';

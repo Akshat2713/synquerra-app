@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../domain/entities/realtime/device_event.dart';
 import '../themes/colors.dart'; // adjust path if needed
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../themes/app_tokens.dart';
 
 /// How long the banner stays before auto-hiding.
 const Duration _autoHide = Duration(seconds: 4);

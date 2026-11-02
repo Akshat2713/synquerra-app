@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
 
 class DaySelectorRow extends StatelessWidget {
   final List<int> selectedDays;

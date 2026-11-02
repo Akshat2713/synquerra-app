@@ -22,7 +22,7 @@ import 'widgets/hero_section.dart';
 import 'widgets/info_card.dart';
 import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class LandingScreen extends StatefulWidget {
   final DeviceEntity device;

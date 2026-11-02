@@ -4,7 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../../blocs/user_location/user_location_bloc.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 import '../../../utils/app_icons.dart';
 

@@ -1,9 +1,9 @@
 // lib/presentation/themes/app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
 import 'app_palette.dart';
 import 'app_text_styles.dart';
 import 'app_tokens.dart';
+import 'colors.dart';
 
 /// Builds ThemeData for ANY AppThemeType from its AppPalette.
 class AppTheme {

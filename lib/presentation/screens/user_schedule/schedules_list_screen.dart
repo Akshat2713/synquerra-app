@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/app/app_router.dart';
+import '../../app/app_router.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/schedule/schedule_entity.dart';
 import '../../blocs/schedule_list/schedule_list_bloc.dart';
@@ -11,7 +11,7 @@ import '../../widgets/async_state_view.dart';
 import 'widgets/schedule_card.dart';
 import 'widgets/schedule_delete_dialog.dart';
 import 'widgets/schedule_empty_view.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 import 'widgets/schedule_list_skeleton.dart';
 

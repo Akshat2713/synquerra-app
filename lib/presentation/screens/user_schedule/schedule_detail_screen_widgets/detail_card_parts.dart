@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../widgets/app_surfaces.dart';
 
 class DetailCardHeader extends StatelessWidget {
   final String title;

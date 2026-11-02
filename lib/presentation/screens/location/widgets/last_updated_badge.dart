@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class LastUpdatedBadge extends StatefulWidget {
   final DateTime? timestamp;

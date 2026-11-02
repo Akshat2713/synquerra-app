@@ -8,7 +8,7 @@ import '../../widgets/app_text_field.dart';
 import '../../widgets/app_button.dart';
 import '../../utils/date_time_formatter.dart';
 import '../../widgets/signup_progress_tracker.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class SignupProfileScreen extends StatefulWidget {
   const SignupProfileScreen({super.key});

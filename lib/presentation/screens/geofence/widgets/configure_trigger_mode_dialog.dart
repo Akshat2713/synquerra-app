@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
+import '../../../themes/colors.dart';
 import '../../../../data/datasources/graphql/mode_conditions_query.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../../domain/entities/geofence_mode/geofence_mode_entity.dart';

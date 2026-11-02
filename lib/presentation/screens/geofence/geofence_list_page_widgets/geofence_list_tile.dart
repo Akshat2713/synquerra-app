@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
 import '../widgets/geofence_status_chip.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class GeofenceListTile extends StatelessWidget {
   final GeofenceEntity geofence;

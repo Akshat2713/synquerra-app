@@ -2,14 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/domain/entities/device/device_entity.dart';
-import 'package:synquerra/domain/utils/schedule_resolver.dart';
-import 'package:synquerra/presentation/blocs/schedule_list/schedule_list_bloc.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/widgets/expandable_card.dart';
+
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/utils/schedule_resolver.dart';
+import '../../../blocs/schedule_list/schedule_list_bloc.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../widgets/app_surfaces.dart';
+import '../../../widgets/expandable_card.dart';
 
 import 'schedule_row_skeleton.dart';
 

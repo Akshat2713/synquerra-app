@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../themes/colors.dart'; // Adjust path if needed
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../themes/app_tokens.dart';
 
 class CriticalAlertBanner extends StatelessWidget {
   final int criticalCount;
@@ -61,7 +61,9 @@ class CriticalAlertBanner extends StatelessWidget {
                   Text(
                     '$criticalCount critical alert${criticalCount > 1 ? 's' : ''} unacknowledged',
                     style: TextStyle(
-                      color: AppColors.danger.withValues(alpha: AppAlpha.overlay),
+                      color: AppColors.danger.withValues(
+                        alpha: AppAlpha.overlay,
+                      ),
                       fontSize: 12,
                     ),
                   ),

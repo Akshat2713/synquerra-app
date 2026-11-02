@@ -4,7 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/app_icons.dart';
 import '../../../widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class MapZoomSlider extends StatelessWidget {
   final MapController mapController;

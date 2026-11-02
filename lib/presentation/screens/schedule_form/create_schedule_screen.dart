@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/utils/app_icons.dart';
+import '../../themes/app_text_styles.dart';
+import '../../themes/app_tokens.dart';
+import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
 import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/entities/schedule/schedule_entity.dart';
 import '../../blocs/device_list/device_list_bloc.dart';

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class ViewTabs extends StatelessWidget {
   final bool isHistory;

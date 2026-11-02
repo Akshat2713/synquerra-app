@@ -3,15 +3,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/utils/unit_formatter.dart';
+import '../../../utils/date_time_formatter.dart';
+import '../../../utils/unit_formatter.dart';
 import '../../../../domain/entities/analytics/analytics_entity.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/app_icons.dart';
 import '../../../utils/colour_util.dart';
 import '../../../widgets/app_surfaces.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class TimelineSlider extends StatefulWidget {
   final List<AnalyticsEntity> points;

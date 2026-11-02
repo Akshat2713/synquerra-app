@@ -13,7 +13,7 @@ import '../../widgets/app_overlays.dart';
 import '../../widgets/app_picker_field.dart';
 import '../../widgets/app_surfaces.dart';
 import '../../widgets/app_text_field.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 enum ExceptionType { cancel, modify }
 

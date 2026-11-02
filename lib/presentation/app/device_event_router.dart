@@ -1,7 +1,7 @@
 // presentation/utils/device_event_router.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/core/utils/app_logger.dart';
+import '../../core/utils/app_logger.dart';
 
 import '../../core/services/sos_alarm_service.dart';
 import '../../domain/entities/realtime/device_alert.dart';

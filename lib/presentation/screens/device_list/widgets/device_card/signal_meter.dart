@@ -1,9 +1,9 @@
 // lib/presentation/screens/device_list/widgets/device_card/signal_meter.dart
 
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/utils/unit_formatter.dart';
+import '../../../../themes/app_tokens.dart';
 import '../../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../../utils/unit_formatter.dart';
 
 class SignalMeter extends StatelessWidget {
   final int? signal;
@@ -32,7 +32,9 @@ class SignalMeter extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isFilled
                       ? AppColors.info
-                      : AppColors.textSecondary(context).withValues(alpha: 0.18),
+                      : AppColors.textSecondary(
+                          context,
+                        ).withValues(alpha: 0.18),
                   borderRadius: AppRadius.smAll,
                 ),
               );

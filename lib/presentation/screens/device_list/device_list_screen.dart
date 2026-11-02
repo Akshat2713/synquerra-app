@@ -4,19 +4,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/domain/entities/device/device_entity.dart';
+import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
 import '../../app/app_router.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
-// import 'widgets/add_device_fab.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Hosted as the "Devices" tab inside MainShellScreen.
 /// Back handling and auth redirect are owned by the shell.

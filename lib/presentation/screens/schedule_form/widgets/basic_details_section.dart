@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/widgets/app_text_field.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../widgets/app_text_field.dart';
 
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';

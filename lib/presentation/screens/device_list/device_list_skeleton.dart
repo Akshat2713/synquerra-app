@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+
+import '../../themes/app_tokens.dart';
 
 class DeviceListSkeleton extends StatelessWidget {
   const DeviceListSkeleton({super.key});

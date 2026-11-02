@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:synquerra/domain/entities/schedule/schedule_entity.dart';
-import 'package:synquerra/presentation/themes/app_text_styles.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
-import 'package:synquerra/presentation/utils/app_icons.dart';
-import 'package:synquerra/presentation/utils/colour_util.dart';
-import 'package:synquerra/presentation/utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/utils/unit_formatter.dart';
-import 'package:synquerra/presentation/widgets/app_surfaces.dart';
+import '../../../../domain/entities/schedule/schedule_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../utils/colour_util.dart';
+import '../../../utils/date_time_formatter.dart';
+import '../../../utils/unit_formatter.dart';
+import '../../../widgets/app_surfaces.dart';
 
 enum _Menu { edit, delete }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../themes/app_tokens.dart';
 import '../../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class StatusDot extends StatelessWidget {
   final bool state;

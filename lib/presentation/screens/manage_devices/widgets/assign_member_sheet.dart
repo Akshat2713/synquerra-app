@@ -6,7 +6,7 @@ import '../../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 import '../../../utils/app_icons.dart';
 import '../../../widgets/app_overlays.dart';

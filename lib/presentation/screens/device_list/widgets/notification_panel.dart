@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import '../../../utils/date_time_formatter.dart';
 import '../../../widgets/async_state_view.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 import '../../../widgets/user_avatar.dart';
 
