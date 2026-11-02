@@ -1,22 +1,25 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/app_router.dart';
 import '../../../blocs/manage_users/manage_users_bloc.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
 import '../../../widgets/app_button.dart';
+import '../../../widgets/app_overlays.dart';
+import '../../../widgets/app_surfaces.dart';
 import '../../../widgets/app_text_field.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../widgets/user_avatar.dart';
 
 class LinkMemberByPhoneBottomSheet extends StatefulWidget {
   const LinkMemberByPhoneBottomSheet({super.key});
 
   static Future<void> show(BuildContext context) {
     final bloc = context.read<ManageUsersBloc>();
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+    return showAppBottomSheet<void>(
+      context,
       builder: (_) => BlocProvider.value(
         value: bloc,
         child: const LinkMemberByPhoneBottomSheet(),
@@ -35,7 +38,13 @@ class _LinkMemberByPhoneBottomSheetState
   final _phoneController = TextEditingController();
   String _selectedRelationship = 'Friend';
 
-  final List<String> _relationshipTypes = [
+  // TODO(logic): the bloc has no "link succeeded" signal. Replace this flag
+  // with a state/event from the bloc.
+  bool _linking = false;
+
+  // TODO(logic): business data. Note these are capitalised ('Friend') while
+  // the Add form sends lowercase ('child'). Confirm what the API expects.
+  static const _relationshipTypes = [
     'Friend',
     'Parent',
     'Child',
@@ -59,14 +68,14 @@ class _LinkMemberByPhoneBottomSheetState
   }
 
   void _confirmLink() {
+    _linking = true;
     context.read<ManageUsersBloc>().add(
       ManageUsersConfirmLinkRequested(_selectedRelationship),
     );
   }
 
-  void _searchAgain() {
-    context.read<ManageUsersBloc>().add(const ManageUsersClearFoundPerson());
-  }
+  void _searchAgain() =>
+      context.read<ManageUsersBloc>().add(const ManageUsersClearFoundPerson());
 
   void _navigateToCreateUser() {
     final bloc = context.read<ManageUsersBloc>();
@@ -76,18 +85,20 @@ class _LinkMemberByPhoneBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return BlocConsumer<ManageUsersBloc, ManageUsersState>(
-      listenWhen: (prev, curr) =>
-          curr is ManageUsersLoaded &&
-          curr.foundPerson != null &&
-          !curr.isProcessing &&
-          prev is ManageUsersLoaded &&
-          prev.isProcessing,
+      // Only while a link is in flight: failure stays inline, success closes.
+      listenWhen: (p, c) =>
+          _linking &&
+          c is ManageUsersLoaded &&
+          (c.errorMessage != null || p is ManageUsersLoading),
       listener: (context, state) {
-        // Relationship successfully created -> foundPerson would be cleared
-        // by the load-refresh cycle; if still present with no error, ignore.
+        _linking = false;
+        if (state is ManageUsersLoaded && state.errorMessage == null) {
+          AppSnackBar.success(context, 'Member linked');
+          Navigator.pop(context);
+        }
       },
       builder: (context, state) {
         final loaded = state is ManageUsersLoaded ? state : null;
@@ -96,251 +107,211 @@ class _LinkMemberByPhoneBottomSheetState
         final foundPerson = loaded?.foundPerson;
         final errorMessage = loaded?.errorMessage;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface(context),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md + bottomInset,
           ),
-          padding: EdgeInsets.fromLTRB(24, 12, 24, bottomInset + 24),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: AppColors.textSecondary(
-                        context,
-                      ).withValues(alpha: AppAlpha.border),
-                      borderRadius: AppRadius.smAll,
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpacing.md,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
                       'Link Member',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary(context),
-                      ),
+                      style: AppTextStyles.titleWithColor(context),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded),
-                      visualDensity: VisualDensity.compact,
-                      color: AppColors.textSecondary(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Enter the registered phone number of the member you want to link.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(context),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                if (errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMessage,
-                    style: const TextStyle(fontSize: 13, color: Colors.red),
+                  IconButton(
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(AppIcons.close),
                   ),
                 ],
-
-                const SizedBox(height: 16),
-
-                if (foundPerson == null) ...[
-                  Form(
-                    key: _phoneFormKey,
-                    child: AppTextField(
-                      controller: _phoneController,
-                      label: 'Phone Number *',
-                      hint: '+917878787878',
-                      prefixIcon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Phone number is required';
-                        }
-                        if (v.trim().length < 10) {
-                          return 'Enter a valid phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-
-                  if (errorMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      errorMessage,
-                      style: const TextStyle(fontSize: 13, color: Colors.red),
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButton(
-                      label: isSearching ? 'Searching...' : 'Search',
-                      onPressed: isSearching ? null : _search,
-                    ),
-                  ),
-                ] else ...[
-                  // Found person card
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface(context),
-                      border: Border.all(
-                        color: AppColors.outlineVariant(context),
-                      ),
-                      borderRadius: AppRadius.mdAll,
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: AppColors.primary(context).withValues(
-                            alpha: 0.15,
-                          ),
-                          backgroundImage: foundPerson.profilePhoto != null
-                              ? NetworkImage(foundPerson.profilePhoto!)
-                              : null,
-                          child: foundPerson.profilePhoto == null
-                              ? Text(
-                                  foundPerson.firstName.isNotEmpty
-                                      ? foundPerson.firstName[0].toUpperCase()
-                                      : '?',
-                                  style: TextStyle(color: AppColors.primary(context)),
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${foundPerson.firstName} ${foundPerson.lastName}'
-                                    .trim(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary(context),
-                                ),
-                              ),
-                              if (foundPerson.mobile != null)
-                                Text(
-                                  foundPerson.mobile!,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary(context),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: isProcessing ? null : _searchAgain,
-                          child: const Text('Change'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'Relationship *',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary(context),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedRelationship,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.mdAll,
-                        borderSide: BorderSide(
-                          color: AppColors.outlineVariant(context),
-                        ),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.diversity_3_outlined,
-                        color: AppColors.textSecondary(context),
-                        size: 20,
-                      ),
-                    ),
-                    items: _relationshipTypes
-                        .map(
-                          (type) =>
-                              DropdownMenuItem(value: type, child: Text(type)),
-                        )
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedRelationship = val);
+              ),
+              Text(
+                'Enter the registered phone number of the member you want to link.',
+                style: AppTextStyles.bodyWithColor(context),
+              ),
+              if (errorMessage != null) _ErrorBanner(message: errorMessage),
+              if (foundPerson == null) ...[
+                Form(
+                  key: _phoneFormKey,
+                  child: AppTextField(
+                    controller: _phoneController,
+                    label: 'Phone Number *',
+                    hint: '+917878787878',
+                    prefixIcon: AppIcons.phone,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => _search(),
+                    // TODO(logic): phone validation rule.
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Phone number is required';
                       }
+                      if (v.trim().length < 10) {
+                        return 'Enter a valid phone number';
+                      }
+                      return null;
                     },
                   ),
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButton(
-                      label: isProcessing ? 'Linking...' : 'Confirm & Link',
-                      onPressed: isProcessing ? null : _confirmLink,
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 16),
-                Center(
-                  child: RichText(
-                    text: TextSpan(
-                      text: "Can't find them? ",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary(context),
+                ),
+                AppButton(
+                  label: 'Search',
+                  onPressed: _search,
+                  isLoading: isSearching,
+                ),
+              ] else ...[
+                AppCard(
+                  tint: AppColors.primaryContainer(context),
+                  padding: AppSpacing.smAll,
+                  child: Row(
+                    spacing: AppSpacing.smd,
+                    children: [
+                      UserAvatar(
+                        name: '${foundPerson.firstName} ${foundPerson.lastName}'
+                            .trim(),
+                        photoUrl: foundPerson.profilePhoto,
+                        radius: AppSize.tile / 2,
+                        backgroundColor: AppColors.primary(context),
+                        textColor: AppColors.onPrimary(context),
                       ),
-                      children: [
-                        TextSpan(
-                          text: 'Create a user',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary(context),
-                            decoration: TextDecoration.underline,
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = _navigateToCreateUser,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: AppSpacing.xs,
+                          children: [
+                            Text(
+                              '${foundPerson.firstName} ${foundPerson.lastName}'
+                                  .trim(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.sectionWithColor(
+                                context,
+                                color: AppColors.onPrimaryContainer(context),
+                              ),
+                            ),
+                            if (foundPerson.mobile != null)
+                              Text(
+                                foundPerson.mobile!,
+                                style: AppTextStyles.metaWithColor(
+                                  context,
+                                  color: AppColors.onPrimaryContainer(context),
+                                ),
+                              ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      TextButton(
+                        onPressed: isProcessing ? null : _searchAgain,
+                        child: const Text('Change'),
+                      ),
+                    ],
                   ),
                 ),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedRelationship,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: 'Relationship *',
+                    prefixIcon: Icon(
+                      AppIcons.relationship,
+                      size: AppSize.icon,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                  items: [
+                    for (final t in _relationshipTypes)
+                      DropdownMenuItem(value: t, child: Text(t)),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() => _selectedRelationship = val);
+                    }
+                  },
+                ),
+                AppButton(
+                  label: 'Confirm & Link',
+                  onPressed: _confirmLink,
+                  isLoading: isProcessing,
+                ),
               ],
-            ),
+              Center(
+                child: Text.rich(
+                  TextSpan(
+                    text: "Can't find them? ",
+                    style: AppTextStyles.bodyWithColor(context),
+                    children: [
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.baseline,
+                        baseline: TextBaseline.alphabetic,
+                        child: Material(
+                          type: MaterialType.transparency,
+                          borderRadius: AppRadius.smAll,
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _navigateToCreateUser();
+                            },
+                            child: Text(
+                              'Create a user',
+                              style:
+                                  AppTextStyles.bodyWithColor(
+                                    context,
+                                    color: AppColors.primary(context),
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: AppColors.primary(context),
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  const _ErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      tint: AppColors.dangerContainer,
+      padding: AppSpacing.smAll,
+      child: Row(
+        spacing: AppSpacing.sm,
+        children: [
+          Icon(AppIcons.error, size: AppSize.icon, color: AppColors.danger),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodyWithColor(
+                context,
+                color: AppColors.textPrimary(context),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

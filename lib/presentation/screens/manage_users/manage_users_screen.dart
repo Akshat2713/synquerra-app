@@ -1,13 +1,16 @@
-// lib/presentation/screens/manage_users/manage_users_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_empty_state.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/link_member_by_phone_screen.dart';
 import 'widgets/member_card.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -17,17 +20,20 @@ class ManageUsersScreen extends StatefulWidget {
 }
 
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
+  // TODO(logic): the bloc has no success signal. Move this into the bloc
+  // (e.g. a `successMessage` on ManageUsersLoaded) and drop this field.
+  String? _pendingSuccess;
+
   @override
   void initState() {
     super.initState();
-    context.read<ManageUsersBloc>().add(const ManageUsersLoadRequested());
+    _reload();
   }
 
-  Future<void> _confirmUnlink(
-    BuildContext context,
-    String relationshipId,
-    String name,
-  ) async {
+  void _reload() =>
+      context.read<ManageUsersBloc>().add(const ManageUsersLoadRequested());
+
+  Future<void> _confirmUnlink(String relationshipId, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -41,25 +47,22 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Unlink', style: TextStyle(color: AppColors.primary(context))),
+            child: const Text('Unlink'),
           ),
         ],
       ),
     );
-    if (confirmed == true && context.mounted) {
+    if (confirmed == true && mounted) {
+      _pendingSuccess = 'Member unlinked';
       context.read<ManageUsersBloc>().add(
         ManageUsersUnlinkRequested(relationshipId),
       );
     }
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    String personId,
-    String name,
-  ) async {
+  Future<void> _confirmDelete(String personId, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -73,49 +76,60 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          AppButton(
+            label: 'Delete',
+            fullWidth: false,
+            backgroundColor: AppColors.danger,
+            foregroundColor: AppColors.onDanger,
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text('Delete', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
     );
-    if (confirmed == true && context.mounted) {
+    if (confirmed == true && mounted) {
+      _pendingSuccess = 'Member deleted';
       context.read<ManageUsersBloc>().add(
         ManageUsersDeletePersonRequested(personId),
       );
     }
   }
 
+  // TODO(logic): onRefresh should await the bloc (see ProfileScreen._refresh).
+  Widget _refreshable(Widget Function(BuildContext) child) => RefreshIndicator(
+    onRefresh: () async => _reload(),
+    child: Builder(builder: child),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Users'), centerTitle: false),
+      appBar: AppBar(title: const Text('Manage Users')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => LinkMemberByPhoneBottomSheet.show(context),
-        backgroundColor: AppColors.primary(context),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text(
-          'Add Member',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        icon: Icon(AppIcons.personAdd),
+        label: const Text('Add Member'),
       ),
       body: BlocConsumer<ManageUsersBloc, ManageUsersState>(
+        // Only reacts to results of unlink/delete started from this screen.
+        // Link and add report their own results.
+        listenWhen: (p, c) =>
+            c is ManageUsersError ||
+            (c is ManageUsersLoaded &&
+                (c.errorMessage != null || p is ManageUsersLoading)),
         listener: (context, state) {
-          if (state is ManageUsersLoaded && state.errorMessage != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage!),
-                  backgroundColor: AppColors.danger,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.mdAll,
-                  ),
-                ),
-              );
+          final pending = _pendingSuccess;
+          if (pending == null) return;
+          if (state is ManageUsersError) {
+            _pendingSuccess = null;
+            return;
+          }
+          if (state is! ManageUsersLoaded) return;
+          _pendingSuccess = null;
+          final error = state.errorMessage;
+          if (error != null) {
+            AppSnackBar.error(context, error);
+          } else {
+            AppSnackBar.success(context, pending);
           }
         },
         builder: (context, state) {
@@ -133,75 +147,59 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             isLoading: isLoading,
             errorMessage: errorMessage,
             isEmpty: members.isEmpty,
-            onRetry: () => context.read<ManageUsersBloc>().add(
-              const ManageUsersLoadRequested(),
-            ),
-            emptyWidget: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.28),
-                Icon(
-                  Icons.people_outline_rounded,
-                  size: 56,
-                  color: AppColors.textSecondary(
-                    context,
-                  ).withValues(alpha: AppAlpha.border),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'No members added yet.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary(context),
+            onRetry: _reload,
+            emptyWidget: LayoutBuilder(
+              builder: (context, box) => _refreshable(
+                (_) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: box.maxHeight),
+                    child: Center(
+                      child: AppEmptyState(
+                        icon: AppIcons.people,
+                        title: 'No members added yet',
+                        message:
+                            'Tap "Add Member" to link or create a family member.',
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tap "Add Member" to link or create a family member.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(
-                      context,
-                    ).withValues(alpha: AppAlpha.overlay),
-                  ),
-                ),
-              ],
+              ),
             ),
-            builder: () => RefreshIndicator(
-              onRefresh: () async {
-                context.read<ManageUsersBloc>().add(
-                  const ManageUsersLoadRequested(),
-                );
-              },
-              color: AppColors.primary(context),
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 12, bottom: 80),
-                itemCount: members.length,
-                itemBuilder: (context, index) {
-                  final member = members[index];
-                  final fullName = member.person.fullName;
-
-                  return MemberCard(
-                    person: member.person,
-                    onUnlink: isProcessing
-                        ? null
-                        : () => _confirmUnlink(
-                            context,
-                            member.person.id,
-                            fullName,
-                          ),
-                    onDelete: isProcessing
-                        ? null
-                        : () => _confirmDelete(
-                            context,
-                            member.person.id,
-                            fullName,
-                          ),
-                  );
-                },
+            builder: () => _refreshable(
+              (_) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                // Bottom padding keeps the last card clear of the FAB.
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSize.tapTarget + AppSpacing.xl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.md,
+                  children: [
+                    for (var i = 0; i < members.length; i++)
+                      MemberCard(
+                        person: members[i].person,
+                        onUnlink: isProcessing
+                            ? null
+                            : () => _confirmUnlink(
+                                members[i].person.id,
+                                members[i].person.fullName,
+                              ),
+                        onDelete: isProcessing
+                            ? null
+                            : () => _confirmDelete(
+                                members[i].person.id,
+                                members[i].person.fullName,
+                              ),
+                      ).entrance(context, index: i),
+                  ],
+                ),
               ),
             ),
           );

@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../themes/app_text_styles.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? name;
@@ -46,14 +48,10 @@ class UserAvatar extends StatelessWidget {
       foregroundImage: hasPhoto ? CachedNetworkImageProvider(photoUrl!) : null,
       // onForegroundImageError: hasPhoto ? (_, __) {} : null,
       child: initials.isEmpty
-          ? Icon(Icons.person, size: radius * 1.1, color: fg)
+          ? Icon(AppIcons.person, size: radius * 1.1, color: fg)
           : Text(
               initials,
-              style: TextStyle(
-                fontSize: radius * 0.7,
-                fontWeight: FontWeight.w700,
-                color: fg,
-              ),
+              style: AppTextStyles.avatarInitials(radius, color: fg),
             ),
     );
   }

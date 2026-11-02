@@ -1,10 +1,13 @@
-// lib/presentation/screens/manage_devices/widgets/unassign_confirm_sheet.dart
-
 import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_association_entity.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_overlays.dart';
+import '../../../widgets/app_surfaces.dart';
+import '../../../widgets/user_avatar.dart';
 
 class UnassignConfirmSheet extends StatelessWidget {
   final DeviceEntity device;
@@ -21,17 +24,15 @@ class UnassignConfirmSheet extends StatelessWidget {
     required DeviceEntity device,
     required void Function(String personId, String associationType) onUnassign,
   }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+    return showAppBottomSheet<void>(
+      context,
       builder: (_) =>
           UnassignConfirmSheet(device: device, onUnassign: onUnassign),
     );
   }
 
+  // TODO(logic): duplicated in assign_member_sheet.dart. Move role labels to
+  // one place (entity or util).
   static const Map<String, String> _roleLabels = {
     'carrier': 'Carrier',
     'manager': 'Manager',
@@ -49,98 +50,123 @@ class UnassignConfirmSheet extends StatelessWidget {
     final assignments = device.assignments;
 
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        top: 20,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.md,
         children: [
-          Text(
-            'Unassign Member',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: [
+              Text(
+                'Unassign Member',
+                style: AppTextStyles.titleWithColor(context),
+              ),
+              Text(
+                'Select an assigned person to remove from this device.',
+                style: AppTextStyles.bodyWithColor(context),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Select an assigned person to remove from this device.',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          const SizedBox(height: 16),
           Flexible(
             child: assignments.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    padding: AppSpacing.lgVertical,
                     child: Center(
                       child: Text(
                         'No one is currently assigned to this device.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary(context),
-                        ),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyWithColor(context),
                       ),
                     ),
                   )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: assignments.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final assignment = assignments[index];
-                      return _buildAssignmentTile(context, assignment);
-                    },
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (final a in assignments)
+                          _AssignmentRow(
+                            assignment: a,
+                            roleLabel: _roleLabelFor(a.assignmentType),
+                            onTap: () {
+                              Navigator.pop(context);
+                              onUnassign(a.userId, a.assignmentType);
+                            },
+                          ),
+                      ],
+                    ),
                   ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildAssignmentTile(
-    BuildContext context,
-    DeviceAssociationEntity assignment,
-  ) {
-    final hasPhoto =
-        assignment.profile != null && assignment.profile!.isNotEmpty;
-    final displayName = assignment.name.trim().isEmpty
+class _AssignmentRow extends StatelessWidget {
+  final DeviceAssociationEntity assignment;
+  final String roleLabel;
+  final VoidCallback onTap;
+
+  const _AssignmentRow({
+    required this.assignment,
+    required this.roleLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = assignment.name.trim().isEmpty
         ? 'Unnamed Member'
         : assignment.name.trim();
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      leading: CircleAvatar(
-        backgroundColor: AppColors.dangerContainer.withValues(alpha: AppAlpha.border),
-        backgroundImage: hasPhoto ? NetworkImage(assignment.profile!) : null,
-        child: !hasPhoto
-            ? Icon(Icons.person_outline_rounded, color: AppColors.danger)
-            : null,
+    return InsetRow(
+      onTap: onTap,
+      child: Row(
+        spacing: AppSpacing.smd,
+        children: [
+          UserAvatar(
+            name: name,
+            photoUrl: assignment.profile,
+            radius: AppSize.tile / 2,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.xs,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyWithColor(
+                    context,
+                    color: AppColors.textPrimary(context),
+                  ).copyWith(fontWeight: FontWeight.w600),
+                ),
+                InfoPill(
+                  label: roleLabel,
+                  background: AppColors.primaryContainer(context),
+                  foreground: AppColors.onPrimaryContainer(context),
+                ),
+              ],
+            ),
+          ),
+          IconTile(
+            size: AppSize.avatarSm,
+            iconSize: AppSize.iconSm,
+            icon: AppIcons.personRemove,
+            background: AppColors.dangerContainer,
+            foreground: AppColors.danger,
+          ),
+        ],
       ),
-      title: Text(
-        displayName,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-      ),
-      subtitle: Text(
-        _roleLabelFor(assignment.assignmentType),
-        style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context)),
-      ),
-      trailing: IconButton(
-        icon: Icon(Icons.remove_circle_outline, color: AppColors.danger),
-        onPressed: () {
-          Navigator.pop(context);
-          onUnassign(assignment.userId, assignment.assignmentType);
-        },
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        onUnassign(assignment.userId, assignment.assignmentType);
-      },
     );
   }
 }

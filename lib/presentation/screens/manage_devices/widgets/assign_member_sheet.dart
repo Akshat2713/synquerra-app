@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import '../../../../../domain/entities/device/device_entity.dart';
 import '../../../../../domain/entities/relationship/related_user_entity.dart';
 import '../../../../../domain/entities/relationship/relationship_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import 'package:synquerra/presentation/themes/app_tokens.dart';
 
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_overlays.dart';
+import '../../../widgets/app_surfaces.dart';
 import '../../../widgets/user_avatar.dart';
 
 class AssignMemberSheet extends StatefulWidget {
@@ -33,12 +37,8 @@ class AssignMemberSheet extends StatefulWidget {
     required List<RelationshipEntity> relationships,
     required void Function(String personId, String associationType) onAssign,
   }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+    return showAppBottomSheet<void>(
+      context,
       builder: (_) => AssignMemberSheet(
         device: device,
         currentUserId: currentUserId,
@@ -84,6 +84,9 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
     };
 
     _availablePersons = <RelatedUserEntity>[];
+
+    // TODO(logic): the "(Myself)" label is faked through lastName. Give the
+    // picker its own model (name + isSelf) instead of a RelatedUserEntity.
 
     // Add current user as a choice if not already assigned
     if (!assignedPersonIds.contains(widget.currentUserId)) {
@@ -139,117 +142,101 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        top: 20,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md + MediaQuery.viewInsetsOf(context).bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.md,
         children: [
-          Text(
-            'Assign Device to Person',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: [
+              Text(
+                'Assign Device to Person',
+                style: AppTextStyles.titleWithColor(context),
+              ),
+              Text(
+                'Select a role and a person to assign to this device.',
+                style: AppTextStyles.bodyWithColor(context),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Select a role and a person to assign to this device.',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _selectedRole,
+            isExpanded: true,
             decoration: InputDecoration(
               labelText: 'Role / Association Type',
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
+              prefixIcon: Icon(
+                AppIcons.relationship,
+                size: AppSize.icon,
+                color: AppColors.textSecondary(context),
               ),
-              border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
-              filled: true,
-              fillColor: AppColors.surfaceVariant(
-                context,
-              ).withValues(alpha: AppAlpha.border),
             ),
-            items: _availableRoles.entries.map((entry) {
-              return DropdownMenuItem<String>(
-                value: entry.key,
-                child: Text(entry.value, style: const TextStyle(fontSize: 14)),
-              );
-            }).toList(),
+            items: [
+              for (final e in _availableRoles.entries)
+                DropdownMenuItem(value: e.key, child: Text(e.value)),
+            ],
             onChanged: (val) {
-              if (val != null) {
-                setState(() => _selectedRole = val);
-              }
+              if (val != null) setState(() => _selectedRole = val);
             },
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Select Person',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          const SizedBox(height: 8),
+          Text('Select person', style: AppTextStyles.sectionWithColor(context)),
           Flexible(
             child: _availablePersons.isEmpty
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.lg,
-                    ),
+                    padding: AppSpacing.lgVertical,
                     child: Center(
                       child: Text(
                         'All available contacts are already assigned.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary(context),
-                        ),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyWithColor(context),
                       ),
                     ),
                   )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: _availablePersons.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final person = _availablePersons[index];
-                      // final hasPhoto =
-                      //     person.profilePhoto != null &&
-                      //     person.profilePhoto!.isNotEmpty;
-
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        leading: UserAvatar(
-                          name: person.id == widget.currentUserId
-                              ? widget.currentUserFullName
-                              : person.fullName,
-                          photoUrl: person.profilePhoto,
-                          radius: 20,
-                        ),
-                        title: Text(
-                          person.fullName.isEmpty
-                              ? 'Unnamed Member'
-                              : person.fullName,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => _confirmAssignment(person),
-                      );
-                    },
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (final person in _availablePersons)
+                          _personRow(context, person),
+                      ],
+                    ),
                   ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _personRow(BuildContext context, RelatedUserEntity person) {
+    final isSelf = person.id == widget.currentUserId;
+    return InsetRow(
+      onTap: () => _confirmAssignment(person),
+      child: Row(
+        spacing: AppSpacing.smd,
+        children: [
+          UserAvatar(
+            name: isSelf ? widget.currentUserFullName : person.fullName,
+            photoUrl: person.profilePhoto,
+            radius: AppSize.tile / 2,
+          ),
+          Expanded(
+            child: Text(
+              person.fullName.isEmpty ? 'Unnamed Member' : person.fullName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodyWithColor(
+                context,
+                color: AppColors.textPrimary(context),
+              ).copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Icon(AppIcons.chevron, color: AppColors.primary(context)),
         ],
       ),
     );

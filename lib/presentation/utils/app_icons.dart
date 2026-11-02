@@ -123,4 +123,25 @@ class AppIcons {
   static const IconData devices = Icons.devices_rounded;
   static const IconData visibility = Icons.visibility_outlined;
   static const IconData visibilityOff = Icons.visibility_off_outlined;
+
+  // ===== profile / member form
+
+  static const IconData email = Icons.mail_outline_rounded;
+  static const IconData phone = Icons.phone_rounded;
+  static const IconData gender = Icons.wc_rounded;
+  static const IconData lock = Icons.lock_outline_rounded;
+  static const IconData camera = Icons.photo_camera_rounded;
+  static const IconData gallery = Icons.photo_library_rounded;
+  static const IconData street = Icons.home_rounded;
+  static const IconData city = Icons.location_city_rounded;
+  static const IconData region = Icons.map_rounded;
+  static const IconData country = Icons.flag_rounded;
+  static const IconData pincode = Icons.pin_rounded;
+  static const IconData relationship = Icons.diversity_3_rounded;
+
+  static const IconData personAdd = Icons.person_add_alt_1_rounded;
+  static const IconData unlink = Icons.link_off_rounded;
+  static const IconData close = Icons.close_rounded;
+  static const IconData people = Icons.people_outline_rounded;
+  static const IconData personRemove = Icons.person_remove_rounded;
 }

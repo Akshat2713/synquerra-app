@@ -18,6 +18,7 @@ class AppTextField extends StatefulWidget {
   final bool readOnly;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
+  final VoidCallback? onTap;
 
   const AppTextField({
     super.key,
@@ -33,6 +34,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -80,6 +82,7 @@ class _AppTextFieldState extends State<AppTextField> {
               )
             : null,
       ),
+      onTap: widget.onTap,
     );
   }
 }

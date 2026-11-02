@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/presentation/themes/colors.dart';
 
 import '../../../domain/entities/signup/person_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/profile/profile_bloc.dart';
+import '../../themes/app_text_styles.dart';
+import '../../themes/app_tokens.dart';
+import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../utils/date_time_formatter.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_section_card.dart';
+import '../../widgets/app_surfaces.dart';
+import '../../widgets/async_state_view.dart';
 import '../../widgets/user_avatar.dart';
+import 'profile_skeleton.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,275 +27,291 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(const FetchUserProfile());
+    _fetch();
+  }
+
+  void _fetch() => context.read<ProfileBloc>().add(const FetchUserProfile());
+
+  // TODO(logic): move refresh-and-wait into the bloc (a refresh event that
+  // completes when loaded/error) instead of awaiting the stream in the UI.
+  Future<void> _refresh() async {
+    _fetch();
+    await context.read<ProfileBloc>().stream.firstWhere(
+      (s) => s is ProfileLoaded || s is ProfileError,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background(context),
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () {
-              final state = context.read<ProfileBloc>().state;
-              if (state is! ProfileLoaded) return;
-              AppRouter.pushEditProfile(
-                context,
-                bloc: context.read<ProfileBloc>(),
-                person: state
-                    .user, // was: initialData: MemberFormInitialData.fromPerson(state.user)
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        final loaded = state is ProfileLoaded ? state : null;
+
+        return Scaffold(
+          backgroundColor: AppColors.background(context),
+          appBar: AppBar(
+            title: const Text('Profile'),
+            actions: [
+              IconButton(
+                tooltip: 'Edit profile',
+                icon: Icon(AppIcons.edit),
+                onPressed: loaded == null
+                    ? null
+                    : () => AppRouter.pushEditProfile(
+                        context,
+                        bloc: context.read<ProfileBloc>(),
+                        person: loaded.user,
+                      ),
+              ),
+            ],
+          ),
+          body: AsyncStateView(
+            isLoading: state is ProfileInitial || state is ProfileLoading,
+            errorMessage: state is ProfileError
+                ? (state.message.isEmpty
+                      ? 'Something went wrong'
+                      : state.message)
+                : null,
+            onRetry: _fetch,
+            loadingWidget: const ProfileSkeleton(),
+            builder: () {
+              if (loaded == null) return const SizedBox.shrink();
+              final user = loaded.user;
+
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: AppSpacing.md,
+                    children: [
+                      _ProfileHero(user: user).entrance(context, index: 0),
+                      _PersonalCard(user: user).entrance(context, index: 1),
+                      _AddressCard(user: user).entrance(context, index: 2),
+                    ],
+                  ),
+                ),
               );
             },
           ),
+        );
+      },
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────── hero
+
+class _ProfileHero extends StatelessWidget {
+  final PersonEntity user;
+  const _ProfileHero({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final fullName = '${user.firstName} ${user.lastName}'.trim();
+    final onPrimary = AppColors.onPrimary(context);
+    final pillBg = AppAlpha.withAlpha(onPrimary, AppAlpha.fill);
+
+    final phone = user.phone ?? user.mobile;
+    final city = user.city;
+    final pills = <Widget>[
+      if (phone != null && phone.isNotEmpty)
+        InfoPill(
+          label: phone,
+          icon: AppIcons.phone,
+          background: pillBg,
+          foreground: onPrimary,
+        ),
+      if (city != null && city.isNotEmpty)
+        InfoPill(
+          label: city,
+          icon: AppIcons.address,
+          background: pillBg,
+          foreground: onPrimary,
+        ),
+    ];
+
+    return Container(
+      padding: AppSpacing.lgAll,
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient(context),
+        borderRadius: AppRadius.lgAll,
+        boxShadow: AppShadow.glow(AppColors.primary(context)),
+      ),
+      child: Column(
+        spacing: AppSpacing.smd,
+        children: [
+          // Translucent ring around the avatar.
+          Container(
+            padding: AppSpacing.xsAll,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: pillBg),
+            child: UserAvatar(
+              name: fullName,
+              photoUrl: user.profilePhoto,
+              radius: AppSize.avatarLg / 2,
+              maxInitials: 1,
+              backgroundColor: onPrimary,
+              textColor: AppColors.primary(context),
+            ),
+          ),
+          Column(
+            spacing: AppSpacing.xs,
+            children: [
+              Text(
+                fullName.isNotEmpty ? fullName : 'User Profile',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.titleWithColor(context, color: onPrimary),
+              ),
+              if (user.email != null && user.email!.isNotEmpty)
+                Text(
+                  user.email!,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.metaWithColor(
+                    context,
+                    color: AppAlpha.withAlpha(onPrimary, AppAlpha.strong),
+                  ),
+                ),
+            ],
+          ),
+          if (pills.isNotEmpty)
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              alignment: WrapAlignment.center,
+              children: pills,
+            ),
         ],
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (context, state) {
-          if (state is ProfileLoading || state is ProfileInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is ProfileError) {
-            return _buildErrorView(context, state.message);
-          }
-
-          final user = (state as ProfileLoaded).user;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<ProfileBloc>().add(const FetchUserProfile());
-              await context.read<ProfileBloc>().stream.firstWhere(
-                (s) => s is ProfileLoaded || s is ProfileError,
-              );
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Column(
-                children: [
-                  _buildProfileHeader(context, user),
-                  const SizedBox(height: 24),
-                  _buildPersonalDetailsCard(context, user),
-                  const SizedBox(height: 16),
-                  _buildAddressCard(context, user),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
+}
 
-  Widget _buildErrorView(BuildContext context, String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.textSecondary(context),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () =>
-                  context.read<ProfileBloc>().add(const FetchUserProfile()),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+// ──────────────────────────────────────────────────────────────── cards
 
-  // Header with Avatar, Full Name, Email, and Unique ID Tag
-  Widget _buildProfileHeader(BuildContext context, PersonEntity user) {
-    final String fullName = '${user.firstName} ${user.lastName}'.trim();
+class _PersonalCard extends StatelessWidget {
+  final PersonEntity user;
+  const _PersonalCard({required this.user});
 
-    return Column(
+  @override
+  Widget build(BuildContext context) {
+    // TODO(logic): gender capitalising and the phone/mobile fallback belong
+    // in the entity or a presenter.
+    final gender = user.gender?.capitalize();
+    final birth = user.birthDate;
+
+    return AppSectionCard(
+      title: 'Personal Information',
+      icon: AppIcons.person,
+      background: AppColors.primary(context),
+      foreground: AppColors.onPrimary(context),
+      spacing: null,
       children: [
-        UserAvatar(
-          name: fullName,
-          photoUrl: user.profilePhoto,
-          radius: 50,
-          maxInitials: 1, // keeps your original single-letter look
+        _InfoRow(label: 'Phone', value: user.phone ?? user.mobile ?? 'N/A'),
+        _InfoRow(
+          label: 'Gender',
+          value: gender ?? 'N/A',
+          valueWidget: gender == null
+              ? null
+              : InfoPill(
+                  label: gender,
+                  background: AppColors.primaryContainer(context),
+                  foreground: AppColors.onPrimaryContainer(context),
+                ),
         ),
-        const SizedBox(height: 16),
-        Text(
-          fullName.isNotEmpty ? fullName : 'User Profile',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary(context),
-          ),
+        _InfoRow(
+          label: 'Birth Date',
+          value: birth == null ? 'N/A' : DateTimeFormatter.formatDate(birth),
         ),
-        const SizedBox(height: 4),
-        if (user.email != null)
-          Text(
-            user.email!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary(context),
-            ),
-          ),
       ],
     );
   }
+}
 
-  // Personal Information Section
-  Widget _buildPersonalDetailsCard(BuildContext context, PersonEntity user) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader(
-              context,
-              'Personal Information',
-              Icons.person_outline,
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(context, 'Phone', user.phone ?? user.mobile ?? 'N/A'),
-            _buildInfoRow(
-              context,
-              'Gender',
-              user.gender?.capitalize() ?? 'N/A',
-            ),
-            _buildInfoRow(
-              context,
-              'Birth Date',
-              _formatDate(user.birthDate),
-              isLast: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+class _AddressCard extends StatelessWidget {
+  final PersonEntity user;
+  const _AddressCard({required this.user});
 
-  // Address Details Section
-  Widget _buildAddressCard(BuildContext context, PersonEntity user) {
+  @override
+  Widget build(BuildContext context) {
     final hasAddress =
         user.address != null ||
         user.city != null ||
         user.state != null ||
         user.country != null;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader(
-              context,
-              'Address Details',
-              Icons.location_on_outlined,
-            ),
-            const Divider(height: 24),
-            if (hasAddress) ...[
-              _buildInfoRow(context, 'Street Address', user.address ?? 'N/A'),
-              _buildInfoRow(context, 'City', user.city ?? 'N/A'),
-              _buildInfoRow(context, 'State', user.state ?? 'N/A'),
-              _buildInfoRow(context, 'Country', user.country ?? 'N/A'),
-              _buildInfoRow(
-                context,
-                'Pincode',
-                user.pincode ?? 'N/A',
-                isLast: true,
-              ),
-            ] else
-              Text(
-                'No address details provided',
-                style: TextStyle(color: AppColors.textTertiary(context)),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Section Header Helper
-  Widget _buildSectionHeader(
-    BuildContext context,
-    String title,
-    IconData icon,
-  ) {
-    return Row(
+    return AppSectionCard(
+      title: 'Address Details',
+      icon: AppIcons.address,
+      background: AppColors.info,
+      foreground: AppColors.onInfo,
+      spacing: null,
       children: [
-        Icon(icon, size: 20, color: AppColors.primary(context)),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary(context),
+        if (hasAddress) ...[
+          _InfoRow(label: 'Street Address', value: user.address ?? 'N/A'),
+          _InfoRow(label: 'City', value: user.city ?? 'N/A'),
+          _InfoRow(label: 'State', value: user.state ?? 'N/A'),
+          _InfoRow(label: 'Country', value: user.country ?? 'N/A'),
+          _InfoRow(label: 'Pincode', value: user.pincode ?? 'N/A'),
+        ] else
+          Text(
+            'No address details provided',
+            style: AppTextStyles.bodyWithColor(
+              context,
+              color: AppColors.textTertiary(context),
+            ),
           ),
-        ),
       ],
     );
   }
+}
 
-  // Key-Value Info Row Helper
-  Widget _buildInfoRow(
-    BuildContext context,
-    String label,
-    String value, {
-    bool isLast = false,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Widget? valueWidget;
+
+  const _InfoRow({required this.label, required this.value, this.valueWidget});
+
+  @override
+  Widget build(BuildContext context) {
+    return InsetRow(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: AppSpacing.md,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary(context),
-              ),
+          Text(label, style: AppTextStyles.bodyWithColor(context)),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child:
+                  valueWidget ??
+                  Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: AppTextStyles.bodyWithColor(
+                      context,
+                      color: AppColors.textPrimary(context),
+                    ).copyWith(fontWeight: FontWeight.w600),
+                  ),
             ),
           ),
         ],
       ),
     );
   }
-
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'N/A';
-    final y = date.year.toString().padLeft(4, '0');
-    final m = date.month.toString().padLeft(2, '0');
-    final d = date.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
-  }
 }
 
+// TODO(logic): move to utils (and search the project for a duplicate).
 extension StringExtension on String {
   String capitalize() {
     if (isEmpty) return this;

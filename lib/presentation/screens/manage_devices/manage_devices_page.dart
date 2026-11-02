@@ -5,6 +5,7 @@ import '../../../domain/entities/relationship/relationship_entity.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/manage_devices/manage_devices_bloc.dart';
+import '../../widgets/app_overlays.dart';
 import 'manage_device_screen.dart';
 
 class ManageDevicesPage extends StatefulWidget {
@@ -71,9 +72,7 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
             ? personId
             : resolvedPersonId;
         if (targetPersonId.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cannot assign: User ID is missing.')),
-          );
+          AppSnackBar.error(context, 'Cannot assign: User ID is missing.');
           return;
         }
 
@@ -91,11 +90,7 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
             ? personId
             : resolvedPersonId;
         if (targetPersonId.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cannot unassign: User ID is missing.'),
-            ),
-          );
+          AppSnackBar.error(context, 'Cannot assign: User ID is missing.');
           return;
         }
 
