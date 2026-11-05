@@ -217,7 +217,7 @@ class _PersonalCard extends StatelessWidget {
       foreground: AppColors.onPrimary(context),
       spacing: null,
       children: [
-        _InfoRow(label: 'Phone', value: user.phone ?? user.mobile ?? 'N/A'),
+        // _InfoRow(label: 'Phone', value: user.phone ?? user.mobile ?? 'N/A'),
         _InfoRow(
           label: 'Gender',
           value: gender ?? 'N/A',

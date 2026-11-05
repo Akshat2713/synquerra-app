@@ -9,13 +9,20 @@ import '../../../domain/entities/geofence_mode/mode_condition_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
 import '../../blocs/mode_condition/mode_condition_bloc.dart';
+import '../../themes/app_tokens.dart';
+import '../../themes/app_text_styles.dart';
 import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_empty_state.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
+import '../../widgets/app_surfaces.dart';
 import '../../widgets/async_state_view.dart';
 import 'geofence_list_page_widgets/device_geofence_slots.dart';
 import 'geofence_list_page_widgets/geofence_list_tile.dart';
 import 'geofence_list_page_widgets/select_cloud_geofence_dialog.dart';
 import 'widgets/configure_trigger_mode_dialog.dart';
-import '../../themes/app_tokens.dart';
 
 class GeofenceListPage extends StatefulWidget {
   final String deviceId;
@@ -35,8 +42,8 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
   final _searchController = TextEditingController();
   String _query = '';
 
-  // Last loaded conditions, kept here so tiles don't lose their mode while
-  // the bloc is in a loading/operation state.
+  // TODO(logic): move cached lists to bloc state (keep last loaded data
+  // while loading / operating).
   List<ModeConditionEntity> _conditions = const [];
   List<GeofenceEntity> _geofences = const [];
 
@@ -53,29 +60,23 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     super.dispose();
   }
 
+  // TODO(logic): move search filtering to bloc/utils.
   List<GeofenceEntity> _filtered(List<GeofenceEntity> all) {
     if (_query.isEmpty) return all;
-
-    return all
-        .where(
-          (g) => g.geofenceName.toLowerCase().contains(_query.toLowerCase()),
-        )
-        .toList();
+    final q = _query.toLowerCase();
+    return all.where((g) => g.geofenceName.toLowerCase().contains(q)).toList();
   }
 
-  /// Finds the mode condition attached to this geofence.
-  /// Synced to device -> device_geofence, otherwise -> geofence.
+  // TODO(logic): move condition lookup (synced -> device_geofence,
+  // otherwise -> geofence) to bloc/utils.
   ModeConditionEntity? _conditionFor(GeofenceEntity g) {
     final type = g.isSyncToDevice
         ? ModeConditionType.deviceGeofence
         : ModeConditionType.geofence;
 
     for (final c in _conditions) {
-      if (c.conditionType == type && c.geofenceId == g.id) {
-        return c;
-      }
+      if (c.conditionType == type && c.geofenceId == g.id) return c;
     }
-
     return null;
   }
 
@@ -106,18 +107,17 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          AppButton(
+            label: 'Delete',
+            fullWidth: false,
+            backgroundColor: AppColors.danger,
+            foregroundColor: AppColors.onDanger,
             onPressed: () {
               Navigator.pop(dialogContext);
-
               context.read<GeofenceBloc>().add(
                 GeofenceDelete(deviceId: widget.deviceId, id: geofence.id),
               );
             },
-            child: const Text('Delete'),
           ),
         ],
       ),
@@ -142,13 +142,13 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+          AppButton(
+            label: 'Unassign',
+            fullWidth: false,
+            backgroundColor: AppColors.danger,
+            foregroundColor: AppColors.onDanger,
             onPressed: () {
               Navigator.pop(dialogContext);
-
               context.read<GeofenceBloc>().add(
                 GeofenceUnassign(
                   deviceId: widget.deviceId,
@@ -156,7 +156,6 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
                 ),
               );
             },
-            child: const Text('Unassign'),
           ),
         ],
       ),
@@ -195,10 +194,14 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 
-  void _snack(String message, {Color? color}) {
-    ScaffoldMessenger.of(
+  void _onTileTab(GeofenceEntity geofence) {
+    if (geofence.coordinates.isEmpty) return;
+
+    Navigator.pushNamed(
       context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+      AppRoutes.geofencePreview,
+      arguments: GeofencePreviewArgs(geofence: geofence),
+    );
   }
 
   @override
@@ -208,51 +211,47 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
         if (state is ModeConditionLoaded) {
           setState(() => _conditions = state.conditions);
         } else if (state is ModeConditionCreated) {
-          _snack('Trigger mode saved.');
+          AppSnackBar.success(context, 'Trigger mode saved.');
         } else if (state is ModeConditionUpdated) {
-          _snack('Trigger mode updated.');
+          AppSnackBar.success(context, 'Trigger mode updated.');
         } else if (state is ModeConditionDeleted) {
-          _snack('Trigger mode removed.');
+          AppSnackBar.success(context, 'Trigger mode removed.');
         } else if (state is ModeConditionOperationError) {
-          _snack(state.message, color: AppColors.danger);
+          AppSnackBar.error(context, state.message);
         }
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Geofences')),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _openAddPage,
-          icon: const Icon(Icons.add_rounded),
+          icon: Icon(AppIcons.add),
           label: const Text('New Geofence'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          elevation: 6,
         ),
         body: BlocConsumer<GeofenceBloc, GeofenceState>(
           listener: (context, state) {
             if (state is GeofenceLoaded) {
               setState(() => _geofences = state.geofences);
             } else if (state is GeofenceDeleted) {
-              _snack('Geofence deleted.');
+              AppSnackBar.success(context, 'Geofence deleted.');
             } else if (state is GeofenceAssigned) {
-              _snack('Geofence assigned to device.');
+              AppSnackBar.success(context, 'Geofence assigned to device.');
             } else if (state is GeofenceUnassigned) {
-              _snack('Geofence unassigned from device.');
+              AppSnackBar.success(context, 'Geofence unassigned from device.');
             } else if (state is GeofenceOperationError) {
-              _snack(state.message, color: AppColors.danger);
+              AppSnackBar.error(context, state.message);
             }
           },
           builder: (context, state) {
             final isLoading = state is GeofenceLoading;
-
             final errorMessage = state is GeofenceError ? state.message : null;
-
             final geofences = state is GeofenceLoaded
                 ? state.geofences
                 : _geofences;
 
-            // Device section is a fixed 3-slot layout built from ALL geofences
-            // (search does not hide slots).
+            // Device section is a fixed 3-slot layout built from ALL
+            // geofences (search does not hide slots).
             final slots = GeofenceSlot.fromGeofences(geofences);
+            final used = slots.where((s) => !s.isEmpty).length;
 
             final cloudAll = geofences.where((g) => !g.isSyncToDevice).toList();
             final cloudFiltered = _filtered(cloudAll);
@@ -266,51 +265,76 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
               builder: () => Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                    ),
                     child: TextField(
                       controller: _searchController,
                       onChanged: (v) => setState(() => _query = v),
                       decoration: InputDecoration(
                         hintText: 'Search cloud geofences...',
-                        prefixIcon: const Icon(Icons.search_rounded),
+                        prefixIcon: Icon(AppIcons.search),
                         suffixIcon: _query.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(Icons.clear_rounded),
+                                tooltip: 'Clear search',
+                                icon: Icon(AppIcons.close),
                                 onPressed: () {
                                   _searchController.clear();
                                   setState(() => _query = '');
                                 },
                               )
                             : null,
-                        border: OutlineInputBorder(
-                          borderRadius: AppRadius.mdAll,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
                     ),
                   ),
-
                   Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                      children: [
-                        DeviceGeofenceSlots(
-                          slots: slots,
-                          modeNameFor: (g) => _conditionFor(g)?.mode?.name,
-                          onAddToSlot: (slot) => _assignToSlot(slot, cloudAll),
-                          onTap: _onTileTab,
-                          onEdit: (g) => _openAddPage(existing: g),
-                          onDelete: (g) => _confirmDelete(context, g),
-                          onMode: _openModeDialog,
-                          onUnassign: _confirmUnassign,
-                        ),
-
-                        ..._buildCloudSection(
-                          context,
-                          items: cloudFiltered,
-                          hasAnyCloud: cloudAll.isNotEmpty,
-                        ),
-                      ],
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        AppSize.tapTarget + AppSpacing.xl,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: AppSpacing.lg,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            spacing: AppSpacing.smd,
+                            children: [
+                              _SectionHeader(
+                                title: 'Important',
+                                count: '$used/${GeofenceSlot.totalSlots}',
+                                dotColor: AppColors.success,
+                                background: AppColors.successContainer,
+                              ),
+                              DeviceGeofenceSlots(
+                                slots: slots,
+                                modeNameFor: (g) =>
+                                    _conditionFor(g)?.mode?.name,
+                                onAddToSlot: (slot) =>
+                                    _assignToSlot(slot, cloudAll),
+                                onTap: _onTileTab,
+                                onEdit: (g) => _openAddPage(existing: g),
+                                onDelete: (g) => _confirmDelete(context, g),
+                                onMode: _openModeDialog,
+                                onUnassign: _confirmUnassign,
+                              ),
+                            ],
+                          ).entrance(context, index: 0),
+                          _buildCloudSection(
+                            context,
+                            items: cloudFiltered,
+                            hasAnyCloud: cloudAll.isNotEmpty,
+                          ).entrance(context, index: 1),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -322,31 +346,31 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
     );
   }
 
-  List<Widget> _buildCloudSection(
+  Widget _buildCloudSection(
     BuildContext context, {
     required List<GeofenceEntity> items,
     required bool hasAnyCloud,
   }) {
-    return [
-      _SectionHeader(title: 'Synced to cloud', count: items.length),
-
-      if (items.isEmpty)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Center(
-            child: Text(
-              !hasAnyCloud
-                  ? 'No cloud geofences yet.'
-                  : 'No geofences match your search.',
-              style: TextStyle(color: AppColors.textSecondary(context)),
-            ),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.smd,
+      children: [
+        _SectionHeader(
+          title: 'General',
+          count: '${items.length}',
+          dotColor: AppColors.info,
+          background: AppColors.infoContainer,
         ),
-
-      for (final g in items)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: GeofenceListTile(
+        if (items.isEmpty)
+          AppEmptyState(
+            icon: hasAnyCloud ? AppIcons.search : AppIcons.geofence,
+            title: hasAnyCloud ? 'No matches' : 'No cloud geofences yet',
+            message: hasAnyCloud
+                ? 'No geofences match your search.'
+                : 'Tap New Geofence to create one.',
+          ),
+        for (final g in items)
+          GeofenceListTile(
             geofence: g,
             modeName: _conditionFor(g)?.mode?.name,
             onTap: () => _onTileTab(g),
@@ -354,38 +378,37 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
             onDelete: () => _confirmDelete(context, g),
             onMode: () => _openModeDialog(g),
           ),
-        ),
-    ];
-  }
-
-  void _onTileTab(GeofenceEntity geofence) {
-    if (geofence.coordinates.isEmpty) return;
-
-    Navigator.pushNamed(
-      context,
-      AppRoutes.geofencePreview,
-      arguments: GeofencePreviewArgs(geofence: geofence),
+      ],
     );
   }
 }
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  final int count;
+  final String count;
+  final Color dotColor;
+  final Color background;
 
-  const _SectionHeader({required this.title, required this.count});
+  const _SectionHeader({
+    required this.title,
+    required this.count,
+    required this.dotColor,
+    required this.background,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Text(
-        '$title ($count)',
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary(context),
+    return Row(
+      spacing: AppSpacing.sm,
+      children: [
+        Text(title, style: AppTextStyles.sectionWithColor(context)),
+        InfoPill(
+          label: count,
+          dotColor: dotColor,
+          background: background,
+          foreground: AppColors.textPrimary(context),
         ),
-      ),
+      ],
     );
   }
 }

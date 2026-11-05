@@ -102,3 +102,9 @@ Color colorFromHex(String hex) {
   final value = int.tryParse(cleaned, radix: 16);
   return value == null ? Colors.blue : Color(0xFF000000 | value);
 }
+
+/// Readable icon color on top of a user-chosen (geofence) color.
+Color onGeofenceColor(Color background) =>
+    ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+    ? AppColors.onColorLight
+    : AppColors.onColorDark;

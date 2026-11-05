@@ -55,6 +55,9 @@ class AppColors {
   static const Color mapMarkerOutline =
       Colors.white; // halo/border on map markers
 
+  static const Color onColorLight = Colors.white;
+  static const Color onColorDark = Color(0xFF0F172A);
+
   // ==========================================
   // ===== THEME-AWARE (read from AppPalette)
   // ==========================================

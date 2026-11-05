@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 
 /// Lists cloud-synced geofences and returns the one the user picks (or null).
 Future<GeofenceEntity?> showSelectCloudGeofenceDialog(
@@ -39,8 +42,6 @@ class _SelectCloudGeofenceDialogState extends State<SelectCloudGeofenceDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     final items = widget.cloudGeofences;
 
     return AlertDialog(
@@ -50,60 +51,57 @@ class _SelectCloudGeofenceDialogState extends State<SelectCloudGeofenceDialog> {
         child: items.isEmpty
             ? Text(
                 'No cloud geofences available to assign.',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary(context),
-                ),
+                style: AppTextStyles.bodyWithColor(context),
               )
             : ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.45,
+                  maxHeight:
+                      MediaQuery.sizeOf(context).height *
+                      AppSize.dialogListFactor,
                 ),
-                child: ListView.separated(
+                child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: items.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: AppSpacing.xs),
                   itemBuilder: (_, i) {
                     final g = items[i];
                     final selected = _selected?.id == g.id;
 
-                    return InkWell(
-                      borderRadius: AppRadius.mdAll,
-                      onTap: () => setState(() => _selected = g),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface(context),
-                          borderRadius: AppRadius.mdAll,
-                          border: Border.all(
-                            color: selected
-                                ? scheme.primary
-                                : AppColors.outlineVariant(context),
-                            width: selected ? 1.5 : 1,
-                          ),
-                        ),
+                    return Semantics(
+                      button: true,
+                      selected: selected,
+                      child: InsetRow(
+                        onTap: () => setState(() => _selected = g),
                         child: Row(
+                          spacing: AppSpacing.smd,
                           children: [
+                            IconTile(
+                              icon: AppIcons.geofence,
+                              size: AppSize.avatarSm,
+                              iconSize: AppSize.iconSm,
+                              circle: true,
+                              background: selected
+                                  ? AppColors.primary(context)
+                                  : AppColors.primaryContainer(context),
+                              foreground: selected
+                                  ? AppColors.onPrimary(context)
+                                  : AppColors.onPrimaryContainer(context),
+                            ),
                             Expanded(
                               child: Text(
                                 g.geofenceName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppTextStyles.bodyWithColor(
+                                  context,
+                                  color: AppColors.textPrimary(context),
+                                ).copyWith(fontWeight: FontWeight.w600),
                               ),
                             ),
                             Icon(
-                              selected
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_off_rounded,
-                              size: 20,
+                              selected ? AppIcons.radioOn : AppIcons.radioOff,
+                              size: AppSize.icon,
                               color: selected
-                                  ? scheme.primary
+                                  ? AppColors.primary(context)
                                   : AppColors.iconSecondary(context),
                             ),
                           ],
@@ -123,7 +121,7 @@ class _SelectCloudGeofenceDialogState extends State<SelectCloudGeofenceDialog> {
           onPressed: _selected == null
               ? null
               : () => Navigator.pop(context, _selected),
-          child: const Text('OK'),
+          child: const Text('Assign'),
         ),
       ],
     );

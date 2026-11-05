@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/colors.dart';
 import '../../../themes/app_tokens.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 
 /// Holds controllers + null-safe getters for optional geofence address fields.
 /// Reusable wherever a geofence address needs to be collected/edited.
@@ -59,71 +63,120 @@ class GeofenceAddressFields {
 }
 
 /// Collapsible "Address (optional)" form section.
-class GeofenceAddressSection extends StatelessWidget {
+/// Collapsible "Address (optional)" form section.
+/// "Address (optional)" fields, meant to sit inside another card.
+/// Collapsible "Address (optional)" fields, meant to sit inside another card.
+/// Collapsed by default. Controllers live in [GeofenceAddressFields], so
+/// collapsing never loses what the user typed.
+class GeofenceAddressSection extends StatefulWidget {
   final GeofenceAddressFields fields;
-  const GeofenceAddressSection({super.key, required this.fields});
+  final bool initiallyExpanded;
+
+  const GeofenceAddressSection({
+    super.key,
+    required this.fields,
+    this.initiallyExpanded = false,
+  });
+
+  @override
+  State<GeofenceAddressSection> createState() => _GeofenceAddressSectionState();
+}
+
+class _GeofenceAddressSectionState extends State<GeofenceAddressSection> {
+  late bool _expanded = widget.initiallyExpanded;
+
+  void _toggle() {
+    HapticFeedback.selectionClick();
+    setState(() => _expanded = !_expanded);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.outline(context)),
-          borderRadius: AppRadius.mdAll,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: ExpansionTile(
-          title: Text(
-            'Address (optional)',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary(context),
-              fontSize: 14,
+    final f = widget.fields;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : AppMotion.base;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          button: true,
+          expanded: _expanded,
+          child: InsetRow(
+            onTap: _toggle,
+            child: Row(
+              spacing: AppSpacing.sm,
+              children: [
+                Icon(
+                  AppIcons.address,
+                  size: AppSize.iconSm,
+                  color: AppColors.iconSecondary(context),
+                ),
+                Expanded(
+                  child: Text(
+                    'Address (optional)',
+                    style: AppTextStyles.bodyWithColor(
+                      context,
+                      color: AppColors.textPrimary(context),
+                    ).copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: _expanded ? 0.5 : 0,
+                  duration: duration,
+                  curve: AppMotion.curve,
+                  child: Icon(
+                    AppIcons.keyboardArrowDown,
+                    size: AppSize.icon,
+                    color: AppColors.primary(context),
+                  ),
+                ),
+              ],
             ),
           ),
-          leading: const Icon(Icons.location_on_outlined),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          children: [
-            _field(fields.addressController, 'Address'),
-            const SizedBox(height: 12),
-            _row(
-              _field(fields.blockController, 'Block / House No.'),
-              _field(fields.localityController, 'Locality'),
-            ),
-            const SizedBox(height: 12),
-            _row(
-              _field(fields.districtController, 'District'),
-              _field(fields.stateController, 'State'),
-            ),
-            const SizedBox(height: 12),
-            _row(
-              _field(fields.postcodeController, 'Postcode'),
-              _field(fields.countryController, 'Country'),
-            ),
-            const SizedBox(height: 12),
-            _field(fields.landmarkController, 'Landmark'),
-          ],
         ),
-      ),
+        AnimatedSize(
+          duration: duration,
+          curve: AppMotion.curve,
+          alignment: Alignment.topCenter,
+          child: _expanded
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.smd,
+                  children: [
+                    _field(f.addressController, 'Address'),
+                    _row(
+                      _field(f.blockController, 'Block / House No.'),
+                      _field(f.localityController, 'Locality'),
+                    ),
+                    _row(
+                      _field(f.districtController, 'District'),
+                      _field(f.stateController, 'State'),
+                    ),
+                    _row(
+                      _field(f.postcodeController, 'Postcode'),
+                      _field(f.countryController, 'Country'),
+                    ),
+                    _field(f.landmarkController, 'Landmark'),
+                  ],
+                )
+              : const SizedBox(width: double.infinity),
+        ),
+      ],
     );
   }
 
   Widget _row(Widget a, Widget b) => Row(
+    spacing: AppSpacing.smd,
     children: [
       Expanded(child: a),
-      const SizedBox(width: 12),
       Expanded(child: b),
     ],
   );
 
   Widget _field(TextEditingController c, String label) => TextFormField(
     controller: c,
-    decoration: InputDecoration(
-      labelText: label,
-      isDense: true,
-      border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
-    ),
+    decoration: InputDecoration(labelText: label),
   );
 }

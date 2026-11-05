@@ -1,5 +1,3 @@
-// lib/presentation/screens/geofence/add_geofence_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
@@ -8,16 +6,16 @@ import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/geofence/geofence_entity.dart';
 import '../../app/app_router.dart';
 import '../../blocs/geofence/geofence_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import '../../utils/colour_util.dart' as colour_utils;
+import '../../widgets/app_button.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
 import 'utils/map_bounds_util.dart';
-import 'widgets/empty_coordinates_placeholder.dart';
-import 'widgets/geofence_active_toggle.dart';
 import 'widgets/geofence_address_section.dart';
-import 'widgets/geofence_color_picker.dart';
-import 'widgets/geofence_map_preview.dart';
-import 'widgets/geofence_name_input.dart';
-import '../../themes/app_tokens.dart';
+import 'widgets/geofence_area_card.dart';
+import 'widgets/geofence_details_card.dart';
 
 class AddGeofencePage extends StatefulWidget {
   final String deviceId;
@@ -61,7 +59,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     _coordinates = widget.existing?.coordinates;
     _selectedColor = widget.existing != null
         ? colour_utils.colorFromHex(widget.existing!.geofenceColor)
-        : const Color(0xFF2196F3);
+        : AppColors.info;
   }
 
   @override
@@ -71,6 +69,7 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
     super.dispose();
   }
 
+  // TODO(logic): route name should come from AppRoutes.
   Future<void> _openMapPicker() async {
     final existingPoints = _coordinates
         ?.map((c) => LatLng(c.lat, c.lng))
@@ -92,13 +91,10 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
   }
 
   void _onSave() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
+
     if (_coordinates == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please pick geofence area on map.')),
-      );
+      AppSnackBar.info(context, 'Please pick geofence area on map.');
       return;
     }
 
@@ -109,7 +105,6 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
           id: widget.existing!.id,
           name: _nameController.text.trim(),
           isActive: _isActive,
-          // isSyncToDevice: _isSyncToDevice,
           coordinates: _coordinates!,
           color: colour_utils.hexFromColor(_selectedColor),
           geofenceNumber: widget.existing!.geofenceNumber,
@@ -150,104 +145,61 @@ class _AddGeofencePageState extends State<AddGeofencePage> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Geofence' : 'New Geofence'),
       ),
-      body: BlocListener<GeofenceBloc, GeofenceState>(
+      body: BlocConsumer<GeofenceBloc, GeofenceState>(
         listener: (context, state) {
           if (state is GeofenceCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${state.geofence.geofenceName} created successfully.',
-                ),
-                backgroundColor: AppColors.primary(context),
-              ),
+            AppSnackBar.success(
+              context,
+              '${state.geofence.geofenceName} created successfully.',
             );
             Navigator.pop(context);
           } else if (state is GeofenceEdited) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${state.geofence.geofenceName} updated successfully.',
-                ),
-                backgroundColor: AppColors.primary(context),
-              ),
+            AppSnackBar.success(
+              context,
+              '${state.geofence.geofenceName} updated successfully.',
             );
             Navigator.pop(context);
           } else if (state is GeofenceOperationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.danger,
-              ),
-            );
+            AppSnackBar.error(context, state.message);
           }
         },
-        child: BlocBuilder<GeofenceBloc, GeofenceState>(
-          builder: (context, state) {
-            final isLoading = state is GeofenceOperationLoading;
-            return Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                children: [
-                  GeofenceNameInput(controller: _nameController),
-                  const SizedBox(height: 24),
-                  GeofenceActiveToggle(
-                    isActive: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                  ),
-                  const SizedBox(height: 24),
+        builder: (context, state) {
+          final isLoading = state is GeofenceOperationLoading;
 
-                  const SizedBox(height: 24),
-                  GeofenceAddressSection(fields: _addressFields),
-                  const SizedBox(height: 24),
-                  GeofenceColorPickerTile(
-                    selectedColor: _selectedColor,
+          return Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: AppSpacing.mdAll,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.md,
+                children: [
+                  GeofenceDetailsCard(
+                    controller: _nameController,
+                    addressFields: _addressFields,
+                    isActive: _isActive,
+                    onActiveChanged: (v) => setState(() => _isActive = v),
+                  ).entrance(context, index: 0),
+                  GeofenceAreaCard(
+                    coordinates: _coordinates,
+                    color: _selectedColor,
                     onColorChanged: (c) => setState(() => _selectedColor = c),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Geofence Area',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary(context),
-                      fontSize: 16,
+                    onOpenMap: _openMapPicker,
+                  ).entrance(context, index: 1),
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: AppButton(
+                      label: _isEditing ? 'Update Geofence' : 'Save Geofence',
+                      isLoading: isLoading,
+                      onPressed: _onSave,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _coordinates == null
-                      ? EmptyCoordinatesPlaceholder(onTap: _openMapPicker)
-                      : GeofenceMapPreview(
-                          coordinates: _coordinates!,
-                          color: _selectedColor,
-                          onTap: _openMapPicker,
-                        ),
-                  const SizedBox(height: 32),
-                  FilledButton(
-                    onPressed: isLoading ? null : _onSave,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.mdAll,
-                      ),
-                    ),
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator.adaptive(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            _isEditing ? 'Update Geofence' : 'Save Geofence',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                  ),
+                  ).entrance(context, index: 2),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

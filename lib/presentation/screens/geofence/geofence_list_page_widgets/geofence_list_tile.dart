@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import '../widgets/geofence_status_chip.dart';
+import '../../../utils/app_icons.dart';
+import '../../../utils/colour_util.dart';
+import '../../../widgets/app_surfaces.dart';
 
 class GeofenceListTile extends StatelessWidget {
   final GeofenceEntity geofence;
@@ -10,7 +15,8 @@ class GeofenceListTile extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  /// Opens the "Configure trigger mode" dialog. Icon is hidden when null.
+  /// Opens the "Configure trigger mode" dialog. Mode row is hidden when null
+  /// and no mode is attached.
   final VoidCallback? onMode;
 
   /// Unassigns the geofence from its device slot. Cross icon is hidden when null.
@@ -32,104 +38,115 @@ class GeofenceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final hasMode = modeName != null;
+    final synced = geofence.isSyncToDevice;
+    final tileColor = colorFromHex(geofence.geofenceColor);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.mdAll,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface(context),
-          border: Border.all(color: AppColors.outlineVariant(context)),
-          borderRadius: AppRadius.mdAll,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    geofence.geofenceName,
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: AppRadius.lgAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
+          child: Padding(
+            padding: AppSpacing.mdAll,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  spacing: AppSpacing.smd,
+                  children: [
+                    IconTile(
+                      icon: AppIcons.geofence,
+                      size: AppSize.avatarSm,
+                      iconSize: AppSize.iconSm,
+                      background: tileColor,
+                      foreground: onGeofenceColor(tileColor),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      GeofenceStatusChip(isActive: geofence.isActive),
-                      if (geofence.isSyncToDevice) ...[
-                        const SizedBox(width: AppSpacing.xs),
-                        Icon(
-                          Icons.sync_rounded,
-                          size: 14,
-                          color: AppColors.success,
-                        ),
-                      ],
-                    ],
-                  ),
-                  if (hasMode) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Mode: $modeName',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary(context),
+                    Expanded(
+                      child: Text(
+                        geofence.geofenceName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.sectionWithColor(context),
                       ),
                     ),
+                    IconButton(
+                      onPressed: onEdit,
+                      tooltip: 'Edit',
+                      visualDensity: VisualDensity.compact,
+                      padding: AppSpacing.xsAll,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        AppIcons.edit,
+                        size: AppSize.icon,
+                        color: AppColors.primary(context),
+                      ),
+                    ),
+                    if (!synced)
+                      IconButton(
+                        onPressed: onDelete,
+                        tooltip: 'Delete',
+                        visualDensity: VisualDensity.compact,
+                        padding: AppSpacing.xsAll,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          AppIcons.delete,
+                          size: AppSize.icon,
+                          color: AppColors.danger,
+                        ),
+                      ),
+                    if (onUnassign != null)
+                      IconButton(
+                        onPressed: onUnassign,
+                        tooltip: 'Unassign from device',
+                        visualDensity: VisualDensity.compact,
+                        padding: AppSpacing.xsAll,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          AppIcons.close,
+                          size: AppSize.icon,
+                          color: AppColors.iconSecondary(context),
+                        ),
+                      ),
                   ],
+                ),
+                if (onMode != null || hasMode) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  InsetRow(
+                    onTap: onMode,
+                    child: Row(
+                      spacing: AppSpacing.sm,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            hasMode ? 'Mode: $modeName' : 'No trigger mode',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodyWithColor(
+                              context,
+                              color: AppColors.textPrimary(context),
+                            ),
+                          ),
+                        ),
+                        if (onMode != null)
+                          Icon(
+                            AppIcons.chevron,
+                            size: AppSize.icon,
+                            color: AppColors.primary(context),
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
-            if (onMode != null)
-              IconButton(
-                onPressed: onMode,
-                icon: Icon(
-                  Icons.tune_rounded,
-                  size: 20,
-                  color: hasMode
-                      ? Theme.of(context).colorScheme.primary
-                      : AppColors.iconSecondary(context),
-                ),
-                visualDensity: VisualDensity.compact,
-                tooltip: hasMode ? 'Edit trigger mode' : 'Set trigger mode',
-              ),
-            IconButton(
-              onPressed: onEdit,
-              icon: Icon(
-                Icons.edit_outlined,
-                size: 20,
-                color: AppColors.iconSecondary(context),
-              ),
-              visualDensity: VisualDensity.compact,
-              tooltip: 'Edit',
-            ),
-            IconButton(
-              onPressed: onDelete,
-              icon: Icon(
-                Icons.delete_outline_rounded,
-                size: 20,
-                color: AppColors.danger,
-              ),
-              visualDensity: VisualDensity.compact,
-              tooltip: 'Delete',
-            ),
-            if (onUnassign != null)
-              IconButton(
-                onPressed: onUnassign,
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: 20,
-                  color: AppColors.iconSecondary(context),
-                ),
-                visualDensity: VisualDensity.compact,
-                tooltip: 'Unassign from device',
-              ),
-          ],
+          ),
         ),
       ),
     );

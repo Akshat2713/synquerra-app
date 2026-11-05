@@ -144,4 +144,13 @@ class AppIcons {
   static const IconData close = Icons.close_rounded;
   static const IconData people = Icons.people_outline_rounded;
   static const IconData personRemove = Icons.person_remove_rounded;
+
+  static const IconData search = Icons.search_rounded;
+  static const IconData triggerMode = Icons.tune_rounded;
+  static const IconData radioOn = Icons.radio_button_checked_rounded;
+  static const IconData radioOff = Icons.radio_button_off_rounded;
+
+  static const IconData mapArea = Icons.map_rounded;
+  static const IconData editLocation = Icons.edit_location_alt_rounded;
+  static const IconData palette = Icons.palette_rounded;
 }

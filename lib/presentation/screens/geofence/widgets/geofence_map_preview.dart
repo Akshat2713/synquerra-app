@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/config/map_config.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
 import '../utils/map_bounds_util.dart';
 import '../../../themes/app_tokens.dart';
 
@@ -59,7 +63,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
         _mapController.fitCamera(
           CameraFit.bounds(
             bounds: LatLngBounds.fromPoints(points),
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.mdAll,
             maxZoom: 18,
           ),
         );
@@ -104,7 +108,7 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
                         points: _points,
                         color: widget.color.withValues(alpha: AppAlpha.border),
                         borderColor: widget.color,
-                        borderStrokeWidth: 2,
+                        borderStrokeWidth: AppSize.stroke,
                       ),
                     ],
                   ),
@@ -113,8 +117,13 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
             ),
             Positioned.fill(
               child: Material(
-                color: Colors.transparent,
-                child: InkWell(onTap: widget.onTap),
+                type: MaterialType.transparency,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    widget.onTap();
+                  },
+                ),
               ),
             ),
             Positioned(
@@ -123,40 +132,44 @@ class _GeofenceMapPreviewState extends State<GeofenceMapPreview> {
               bottom: 0,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: AppSpacing.smd,
+                  vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withValues(alpha: AppAlpha.overlay),
-                      Colors.black.withValues(alpha: AppAlpha.tint),
+                      AppColors.onColorDark.withValues(alpha: AppAlpha.overlay),
+                      AppColors.onColorDark.withValues(alpha: AppAlpha.tint),
                     ],
                   ),
                 ),
                 child: Row(
+                  spacing: AppSpacing.xs,
                   children: [
-                    const Icon(
-                      Icons.edit_location_alt_outlined,
-                      size: 15,
-                      color: Colors.white,
+                    Icon(
+                      AppIcons.editLocation,
+                      size: AppSize.iconSm,
+                      color: AppColors.onColorLight,
                     ),
-                    const SizedBox(width: AppSpacing.xs),
-                    const Text(
-                      'Tap to adjust geofence boundary',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                    Expanded(
+                      child: Text(
+                        'Tap to adjust geofence boundary',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.metaWithColor(
+                          context,
+                          color: AppColors.onColorLight,
+                        ).copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
-                    const Spacer(),
                     Icon(
-                      Icons.chevron_right_rounded,
-                      size: 16,
-                      color: Colors.white.withValues(alpha: AppAlpha.overlay),
+                      AppIcons.chevron,
+                      size: AppSize.iconSm,
+                      color: AppColors.onColorLight.withValues(
+                        alpha: AppAlpha.overlay,
+                      ),
                     ),
                   ],
                 ),

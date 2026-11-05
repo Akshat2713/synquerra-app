@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../themes/colors.dart';
+
 import '../../../../data/datasources/graphql/mode_conditions_query.dart';
 import '../../../../domain/entities/geofence/geofence_entity.dart';
 import '../../../../domain/entities/geofence_mode/geofence_mode_entity.dart';
 import '../../../../domain/entities/geofence_mode/mode_condition_entity.dart';
 import '../../../blocs/mode_condition/mode_condition_bloc.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
 
 class ConfigureTriggerModeDialog extends StatefulWidget {
   final String deviceId;
@@ -32,6 +37,7 @@ class _ConfigureTriggerModeDialogState
 
   /// Synced to device -> device_geofence, otherwise -> geofence.
   /// The same string is used as the modes category.
+  /// TODO(logic): move condition-type mapping to bloc/utils.
   String get _conditionType => widget.geofence.isSyncToDevice
       ? ModeConditionType.deviceGeofence
       : ModeConditionType.geofence;
@@ -85,9 +91,9 @@ class _ConfigureTriggerModeDialogState
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return AlertDialog(
+      insetPadding: AppSpacing.mdHorizontal,
+      actionsPadding: AppSpacing.mdAll,
       title: const Text('Configure trigger mode'),
       content: SizedBox(
         width: double.maxFinite,
@@ -99,15 +105,20 @@ class _ConfigureTriggerModeDialogState
                 state.modesCategory == _conditionType;
 
             if (!ready) {
-              return const SizedBox(
-                height: 80,
-                child: Center(child: CircularProgressIndicator()),
+              return Center(
+                child: Padding(
+                  padding: AppSpacing.lgAll,
+                  child: const CircularProgressIndicator(),
+                ),
               );
             }
 
             final modes = state.modes;
             if (modes.isEmpty) {
-              return const Text('No modes available.');
+              return Text(
+                'No modes available.',
+                style: AppTextStyles.bodyWithColor(context),
+              );
             }
 
             // Guard: the saved mode may not be in the list anymore.
@@ -118,24 +129,38 @@ class _ConfigureTriggerModeDialogState
 
             return Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppSpacing.md,
               children: [
-                Text(
-                  widget.geofence.geofenceName,
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                AppCard(
+                  tint: AppColors.primaryContainer(context),
+                  padding: AppSpacing.smAll,
+                  child: Row(
+                    spacing: AppSpacing.sm,
+                    children: [
+                      Icon(
+                        AppIcons.geofence,
+                        size: AppSize.icon,
+                        color: AppColors.onPrimaryContainer(context),
+                      ),
+                      Expanded(
+                        child: Text(
+                          widget.geofence.geofenceName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyWithColor(
+                            context,
+                            color: AppColors.onPrimaryContainer(context),
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   initialValue: hasSelected ? _selectedModeId : null,
                   isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: 'Mode',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Mode'),
                   items: modes
                       .map(
                         (GeofenceModeEntity m) => DropdownMenuItem(
@@ -146,30 +171,25 @@ class _ConfigureTriggerModeDialogState
                       .toList(),
                   onChanged: (v) => setState(() => _selectedModeId = v),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Description',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(minHeight: 80),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface(context),
-                    border: Border.all(
-                      color: AppColors.outlineVariant(context),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xs,
+                  children: [
+                    Text(
+                      'Description',
+                      style: AppTextStyles.metaWithColor(context),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    selected?.displayDescription ??
-                        'Select a mode to see its description.',
-                    style: textTheme.bodyMedium,
-                  ),
+                    InsetRow(
+                      child: Text(
+                        selected?.displayDescription ??
+                            'Select a mode to see its description.',
+                        style: AppTextStyles.bodyWithColor(
+                          context,
+                          color: AppColors.textPrimary(context),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -177,19 +197,25 @@ class _ConfigureTriggerModeDialogState
         ),
       ),
       actions: [
-        if (widget.existing != null)
-          TextButton(
-            onPressed: _delete,
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Remove'),
-          ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _selectedModeId == null ? null : _save,
-          child: const Text('Save'),
+        Row(
+          spacing: AppSpacing.sm,
+          children: [
+            if (widget.existing != null)
+              TextButton.icon(
+                onPressed: _delete,
+                icon: Icon(AppIcons.delete, color: AppColors.danger),
+                label: const Text('Remove'),
+              ),
+            const Spacer(),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: _selectedModeId == null ? null : _save,
+              child: const Text('Save'),
+            ),
+          ],
         ),
       ],
     );

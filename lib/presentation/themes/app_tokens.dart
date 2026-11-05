@@ -109,6 +109,7 @@ class AppSize {
   static const double pickerHeight = 120; // wheel picker viewport
   static const double pickerItem = 36; // wheel picker row height
   static const double mapPlayBottom = 88;
+  static const double dialogListFactor = 0.45;
 }
 
 /// Durations, curves and motion amounts.
