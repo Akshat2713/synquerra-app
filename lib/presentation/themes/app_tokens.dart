@@ -110,6 +110,7 @@ class AppSize {
   static const double pickerItem = 36; // wheel picker row height
   static const double mapPlayBottom = 88;
   static const double dialogListFactor = 0.45;
+  static const double authLogo = 120; // login/signup brand logo
 }
 
 /// Durations, curves and motion amounts.

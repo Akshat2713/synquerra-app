@@ -3,11 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/signup/signup_profile_data.dart';
 import '../../app/app_router.dart';
 import '../../blocs/signup/signup_bloc.dart';
-import '../../themes/colors.dart';
-import '../../widgets/app_text_field.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/signup_progress_tracker.dart';
+import '../../themes/app_text_styles.dart';
 import '../../themes/app_tokens.dart';
+import '../../themes/colors.dart';
+import '../../utils/app_icons.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/app_overlays.dart';
+import '../../widgets/app_section_card.dart';
+import '../../widgets/app_text_field.dart';
+import '../../widgets/signup_progress_tracker.dart';
 
 class SignupPasswordSetupScreen extends StatefulWidget {
   final SignupProfileData profileData;
@@ -39,9 +44,12 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
   }
 
   void _submit() {
+    final bloc = context.read<SignupBloc>();
+    // Keyboard "done" bypasses the button's loading guard.
+    if (bloc.state.status == SignupStatus.loading) return;
     if (!_formKey.currentState!.validate()) return;
     final p = widget.profileData;
-    context.read<SignupBloc>().add(
+    bloc.add(
       SignupSubmitted(
         firstName: p.firstName,
         lastName: p.lastName,
@@ -59,149 +67,96 @@ class _SignupPasswordSetupScreenState extends State<SignupPasswordSetupScreen> {
     );
   }
 
+  // TODO(logic): move to a shared validators util (min length 6, match check).
+  String? _validatePassword(String? v) {
+    if (v == null || v.isEmpty) return 'Password is required';
+    if (v.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  }
+
+  String? _validateConfirm(String? v) {
+    if (v == null || v.isEmpty) return 'Please confirm your password';
+    if (v != _passwordController.text) return 'Passwords do not match';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return BlocListener<SignupBloc, SignupState>(
       listener: (context, state) {
-        // Navigate to screen 3 when step 2 succeeds
         if (state.status == SignupStatus.done) {
+          AppSnackBar.success(context, 'Account created. Please sign in.');
           Navigator.pushNamed(context, AppRoutes.login);
         }
-
-        // Show error snackbar
         if (state.status == SignupStatus.error && state.errorMessage != null) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: AppColors.danger,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
-              ),
-            );
+          AppSnackBar.error(context, state.errorMessage!);
         }
       },
       child: Scaffold(
+        appBar: AppBar(title: const Text('Secure Your Account')),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: AppSpacing.mdAll,
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.md,
                 children: [
-                  // ── Page Header ──────────────────────────────
-                  Text(
-                    'Secure Your Account',
-                    style: textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary(context),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Configure your system sign-in credentials.',
                     textAlign: TextAlign.center,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary(context),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
+                    style: AppTextStyles.bodyWithColor(context),
+                  ).entrance(context, index: 0),
 
-                  // ── Progress Tracker ─────────────────────────
-                  const SignupProgressTracker(currentStep: SignupStep.security),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SignupProgressTracker(
+                    currentStep: SignupStep.security,
+                  ).entrance(context, index: 1),
 
-                  // ── Checkbox ─────────────────────────────────
-                  // ── Email ─────────────────────────────────────
-                  AppTextField(
-                    controller: _emailController,
-                    label: 'Account Email *',
-                    hint: 'you@example.com',
-                    prefixIcon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    readOnly: true,
-                    enabled: false,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return 'Email is required';
-                      }
-                      if (!v.contains('@')) {
-                        return 'Enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Password ──────────────────────────────────
-                  AppTextField(
-                    controller: _passwordController,
-                    label: 'Set Password *',
-                    hint: '••••••••',
-                    prefixIcon: Icons.lock_outline_rounded,
-                    isPassword: true,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password is required';
-                      if (v.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Confirm Password ──────────────────────────
-                  AppTextField(
-                    controller: _confirmPasswordController,
-                    label: 'Confirm Password *',
-                    hint: '••••••••',
-                    prefixIcon: Icons.lock_reset_rounded,
-                    isPassword: true,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (v != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // ── Footer ────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  AppSectionCard(
+                    title: 'Account',
+                    icon: AppIcons.lock,
+                    background: AppColors.success,
+                    foreground: AppColors.onSuccess,
                     children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Back',
-                          style: TextStyle(
-                            color: AppColors.textSecondary(context),
-                          ),
-                        ),
+                      AppTextField(
+                        controller: _emailController,
+                        label: 'Account Email',
+                        prefixIcon: AppIcons.email,
+                        keyboardType: TextInputType.emailAddress,
+                        readOnly: true,
+                        enabled: false,
                       ),
-                      BlocBuilder<SignupBloc, SignupState>(
-                        builder: (context, state) {
-                          return SizedBox(
-                            width: 200,
-                            child: AppButton(
-                              label: 'Submit',
-                              onPressed: _submit,
-                              isLoading: state.status == SignupStatus.loading,
-                            ),
-                          );
-                        },
+                      AppTextField(
+                        controller: _passwordController,
+                        label: 'Set Password *',
+                        hint: '••••••••',
+                        prefixIcon: AppIcons.lock,
+                        isPassword: true,
+                        validator: _validatePassword,
+                      ),
+                      AppTextField(
+                        controller: _confirmPasswordController,
+                        label: 'Confirm Password *',
+                        hint: '••••••••',
+                        prefixIcon: AppIcons.lock,
+                        isPassword: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _submit(),
+                        validator: _validateConfirm,
                       ),
                     ],
-                  ),
+                  ).entrance(context, index: 2),
+
+                  const SizedBox(height: AppSpacing.xs),
+                  BlocBuilder<SignupBloc, SignupState>(
+                    builder: (context, state) => AppButton(
+                      label: 'Submit',
+                      onPressed: _submit,
+                      isLoading: state.status == SignupStatus.loading,
+                    ),
+                  ).entrance(context, index: 3),
                 ],
               ),
             ),
