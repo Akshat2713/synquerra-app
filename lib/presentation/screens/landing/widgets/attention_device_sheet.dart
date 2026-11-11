@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
+import '../../../themes/colors.dart';
+import '../../../utils/app_icons.dart';
 import '../../../utils/colour_util.dart';
+import '../../../widgets/app_empty_state.dart';
+import '../../../widgets/app_surfaces.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../../../domain/entities/alerts/alert_entity.dart';
 import '../../../../domain/entities/device/device_entity.dart';
 import '../../../../domain/utils/alert_device_matcher.dart';
 import '../../../app/app_router.dart';
 import '../../../blocs/device_list/device_list_bloc.dart';
-import '../../../themes/colors.dart';
 
 class AttentionDeviceSheet extends StatelessWidget {
   final List<AlertEntity> alerts;
@@ -27,79 +30,123 @@ class AttentionDeviceSheet extends StatelessWidget {
         ? deviceState.devices
         : <DeviceEntity>[];
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) => Column(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.md,
         children: [
-          Padding(
-            padding: AppSpacing.mdAll,
-            child: Text(
-              'Devices needing attention',
-              style: AppTextStyles.sectionWithColor(context),
+          Text(
+            'Devices needing attention',
+            style: AppTextStyles.titleWithColor(context),
+          ),
+          if (devices.isEmpty)
+            const AppEmptyState(icon: AppIcons.devices, title: 'No devices')
+          else
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: devices.length,
+                itemBuilder: (context, i) => _DeviceRow(
+                  device: devices[i],
+                  alerts: alerts,
+                  isCurrent: devices[i].id == currentDeviceId,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeviceRow extends StatelessWidget {
+  final DeviceEntity device;
+  final List<AlertEntity> alerts;
+  final bool isCurrent;
+
+  const _DeviceRow({
+    required this.device,
+    required this.alerts,
+    required this.isCurrent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final open = alertsForDevice(
+      device,
+      alerts,
+    ).where((a) => !a.isAcknowledged).toList();
+    final critical = open.where((a) => a.isCritical).length;
+
+    // InsetRow carries its own bottom padding, so no separators or spacing.
+    return InsetRow(
+      onTap: () {
+        final bloc = context.read<DeviceListBloc>();
+        Navigator.pop(context);
+        AppRouter.pushDeviceDetail(
+          context,
+          device: device,
+          deviceListBloc: bloc,
+        );
+      },
+      child: Row(
+        spacing: AppSpacing.smd,
+        children: [
+          Container(
+            padding: AppSpacing.xsAll,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: deviceSeverityColor(open),
+                width: AppSize.stroke,
+              ),
+            ),
+            child: UserAvatar(
+              name: device.displayOwnerName,
+              photoUrl: device.displayProfilePhoto,
+              radius: AppSize.tile / 2,
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              itemCount: devices.length,
-              itemBuilder: (context, i) {
-                final d = devices[i];
-                final open = alertsForDevice(
-                  d,
-                  alerts,
-                ).where((a) => !a.isAcknowledged).toList();
-                final critical = open.where((a) => a.isCritical).length;
-                final isCurrent = d.id == currentDeviceId;
-
-                return ListTile(
-                  leading: Container(
-                    padding: AppSpacing.xsAll,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: deviceSeverityColor(open),
-                        width: AppSize.stroke,
-                      ),
-                    ),
-                    child: UserAvatar(
-                      name: d.displayOwnerName,
-                      photoUrl: d.displayProfilePhoto,
-                      radius: AppSize.tile / 2,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.xs,
+              children: [
+                Text(
+                  device.displayOwnerName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.sectionWithColor(context).copyWith(
+                    fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w600,
                   ),
-                  title: Text(
-                    d.displayOwnerName,
-                    style:
-                        AppTextStyles.bodyWithColor(
-                          context,
-                          color: AppColors.textPrimary(context),
-                        ).copyWith(
-                          fontWeight: isCurrent
-                              ? FontWeight.w800
-                              : FontWeight.w500,
-                        ),
-                  ),
-                  subtitle: Text(
-                    critical == 0
-                        ? 'No critical alerts'
-                        : '$critical critical alert${critical > 1 ? 's' : ''}',
+                ),
+                if (critical == 0)
+                  Text(
+                    'No critical alerts',
                     style: AppTextStyles.metaWithColor(context),
+                  )
+                else
+                  InfoPill(
+                    label: '$critical critical alert${critical > 1 ? 's' : ''}',
+                    dotColor: AppColors.danger,
+                    background: AppColors.dangerContainer,
+                    foreground: AppColors.textPrimary(context),
                   ),
-                  onTap: () {
-                    final bloc = context.read<DeviceListBloc>();
-                    Navigator.pop(context);
-                    AppRouter.pushDeviceDetail(
-                      context,
-                      device: d,
-                      deviceListBloc: bloc,
-                    );
-                  },
-                );
-              },
+              ],
             ),
+          ),
+          Icon(
+            AppIcons.chevron,
+            size: AppSize.icon,
+            color: AppColors.primary(context),
           ),
         ],
       ),

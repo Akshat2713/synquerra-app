@@ -363,8 +363,13 @@ class _LocationScreenState extends State<LocationScreen> {
                   MapIconButton(
                     icon: AppIcons.recenterDevice,
                     tooltip: 'Center on device',
-                    onTap: () =>
-                        _mapController.move(_defaultCenter, _focusZoom),
+                    onTap: () {
+                      AppLogger.d(
+                        'LocationScreen',
+                        'recenter target=$_defaultCenter, camera before=${_mapController.camera.center}',
+                      );
+                      _mapController.move(_defaultCenter, _focusZoom);
+                    },
                   ),
                   // User GPS button is hidden while the Play overlay is shown.
                   if (!isPlayVisible)
