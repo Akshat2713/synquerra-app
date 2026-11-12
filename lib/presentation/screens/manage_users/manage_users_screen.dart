@@ -9,6 +9,7 @@ import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_motion_widgets.dart';
 import '../../widgets/app_overlays.dart';
 import '../../widgets/async_state_view.dart';
+import 'manage_users_skeleton.dart';
 import 'widgets/link_member_by_phone_screen.dart';
 import 'widgets/member_card.dart';
 
@@ -145,6 +146,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
           return AsyncStateView(
             isLoading: isLoading,
+            loadingWidget: const ManageUsersSkeleton(),
             errorMessage: errorMessage,
             isEmpty: members.isEmpty,
             onRetry: _reload,

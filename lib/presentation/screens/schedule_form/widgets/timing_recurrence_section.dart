@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../themes/app_text_styles.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
@@ -133,14 +132,16 @@ class TimingRecurrenceSection extends StatelessWidget {
                   ),
                 ],
               ),
-              if (crossesMidnight)
+              if (crossesMidnight) ...[
+                const SizedBox(height: AppSpacing.md),
                 InfoPill(
                   label: 'Ends next day (+1 day)',
                   icon: AppIcons.overnight,
                   background: AppColors.primaryContainer(context),
                   foreground: AppColors.onPrimaryContainer(context),
                 ),
-              const SizedBox(height: AppSpacing.lg),
+              ],
+              const SizedBox(height: AppSpacing.md),
               Text(
                 'Repeat Days',
                 style: AppTextStyles.bodyWithColor(
@@ -153,7 +154,7 @@ class TimingRecurrenceSection extends StatelessWidget {
                 selectedDays: selectedDays,
                 onDayToggled: onDayToggled,
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment<String>(

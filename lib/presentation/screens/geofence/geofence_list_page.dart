@@ -23,6 +23,7 @@ import 'geofence_list_page_widgets/device_geofence_slots.dart';
 import 'geofence_list_page_widgets/geofence_list_tile.dart';
 import 'geofence_list_page_widgets/select_cloud_geofence_dialog.dart';
 import 'widgets/configure_trigger_mode_dialog.dart';
+import 'geofence_list_skeleton.dart';
 
 class GeofenceListPage extends StatefulWidget {
   final String deviceId;
@@ -258,6 +259,7 @@ class _GeofenceListPageState extends State<GeofenceListPage> {
 
             return AsyncStateView(
               isLoading: isLoading,
+              loadingWidget: const GeofenceListSkeleton(),
               errorMessage: errorMessage,
               onRetry: () {
                 context.read<GeofenceBloc>().add(GeofenceLoad(widget.deviceId));

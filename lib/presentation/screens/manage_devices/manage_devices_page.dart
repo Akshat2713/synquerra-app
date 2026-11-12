@@ -66,6 +66,9 @@ class _ManageDevicesPageState extends State<ManageDevicesPage> {
       relationships: relationships,
       currentUserId: resolvedPersonId,
       currentUserFullName: user?.fullName ?? '',
+      isLoading:
+          deviceListState is DeviceListLoading ||
+          manageState is ManageDevicesLoading,
       onRefresh: _onRefresh,
       onAssignDevice: (deviceId, personId, associationType) async {
         final targetPersonId = personId.isNotEmpty

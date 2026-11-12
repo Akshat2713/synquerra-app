@@ -8,6 +8,7 @@ import '../../utils/app_icons.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_motion_widgets.dart';
 import '../../widgets/app_surfaces.dart';
+import 'manage_devices_skeleton.dart';
 import 'widgets/manage_device_card.dart';
 
 class ManageDevicesScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class ManageDevicesScreen extends StatefulWidget {
   onAssignDevice;
   final Function(String deviceId, String personId, String associationType)?
   onUnassignDevice;
+  final bool isLoading;
   const ManageDevicesScreen({
     super.key,
     this.devices = const [],
@@ -29,6 +31,7 @@ class ManageDevicesScreen extends StatefulWidget {
     this.onRefresh,
     this.onAssignDevice,
     this.onUnassignDevice,
+    this.isLoading = false,
   });
 
   @override
@@ -84,63 +87,65 @@ class _ManageDevicesScreenState extends State<ManageDevicesScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Devices')),
-      body: RefreshIndicator(
-        onRefresh: widget.onRefresh ?? () async {},
-        child: owned.isEmpty
-            ? LayoutBuilder(
-                builder: (context, box) => SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: box.maxHeight),
-                    child: const Center(
-                      child: AppEmptyState(
-                        icon: AppIcons.devices,
-                        title: 'No owned devices found',
-                        message: 'Devices you own will show up here.',
+      body: widget.isLoading && owned.isEmpty
+          ? const ManageDevicesSkeleton()
+          : RefreshIndicator(
+              onRefresh: widget.onRefresh ?? () async {},
+              child: owned.isEmpty
+                  ? LayoutBuilder(
+                      builder: (context, box) => SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: box.maxHeight),
+                          child: const Center(
+                            child: AppEmptyState(
+                              icon: AppIcons.devices,
+                              title: 'No owned devices found',
+                              message: 'Devices you own will show up here.',
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.md,
+                        AppSpacing.md,
+                        AppSpacing.xl,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: AppSpacing.lg,
+                        children: [
+                          _SummaryHero(
+                            total: owned.length,
+                            assigned: assigned.length,
+                            unassigned: unassigned.length,
+                          ).entrance(context, index: 0),
+                          _Section(
+                            title: 'Needs assignment',
+                            count: unassigned.length,
+                            dotColor: AppColors.warning,
+                            pillBackground: AppColors.warningContainer,
+                            emptyMessage: 'Every device has a carrier',
+                            children: [for (final d in unassigned) _card(d)],
+                          ).entrance(context, index: 1),
+                          _Section(
+                            title: 'Assigned',
+                            count: assigned.length,
+                            dotColor: AppColors.success,
+                            pillBackground: AppColors.successContainer,
+                            emptyMessage: 'No assigned devices yet',
+                            children: [for (final d in assigned) _card(d)],
+                          ).entrance(context, index: 2),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              )
-            : SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.xl,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: AppSpacing.lg,
-                  children: [
-                    _SummaryHero(
-                      total: owned.length,
-                      assigned: assigned.length,
-                      unassigned: unassigned.length,
-                    ).entrance(context, index: 0),
-                    _Section(
-                      title: 'Needs assignment',
-                      count: unassigned.length,
-                      dotColor: AppColors.warning,
-                      pillBackground: AppColors.warningContainer,
-                      emptyMessage: 'Every device has a carrier',
-                      children: [for (final d in unassigned) _card(d)],
-                    ).entrance(context, index: 1),
-                    _Section(
-                      title: 'Assigned',
-                      count: assigned.length,
-                      dotColor: AppColors.success,
-                      pillBackground: AppColors.successContainer,
-                      emptyMessage: 'No assigned devices yet',
-                      children: [for (final d in assigned) _card(d)],
-                    ).entrance(context, index: 2),
-                  ],
-                ),
-              ),
-      ),
+            ),
     );
   }
 }
