@@ -63,8 +63,12 @@ class AppSnackBar {
 Future<T?> showAppBottomSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
+  bool isDismissible = true,
+  bool enableDrag = true,
 }) => showModalBottomSheet<T>(
   context: context,
+  isDismissible: isDismissible,
+  enableDrag: enableDrag,
   isScrollControlled: true,
   useSafeArea: true,
   builder: builder,

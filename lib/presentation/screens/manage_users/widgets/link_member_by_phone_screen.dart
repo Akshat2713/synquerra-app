@@ -8,6 +8,7 @@ import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/app_icons.dart';
 import '../../../widgets/app_button.dart';
+import '../../../widgets/app_error_banner.dart';
 import '../../../widgets/app_overlays.dart';
 import '../../../widgets/app_surfaces.dart';
 import '../../../widgets/app_text_field.dart';
@@ -138,7 +139,7 @@ class _LinkMemberByPhoneBottomSheetState
                 'Enter the registered phone number of the member you want to link.',
                 style: AppTextStyles.bodyWithColor(context),
               ),
-              if (errorMessage != null) _ErrorBanner(message: errorMessage),
+              if (errorMessage != null) AppErrorBanner(message: errorMessage),
               if (foundPerson == null) ...[
                 Form(
                   key: _phoneFormKey,
@@ -284,34 +285,6 @@ class _LinkMemberByPhoneBottomSheetState
           ),
         );
       },
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      tint: AppColors.dangerContainer,
-      padding: AppSpacing.smAll,
-      child: Row(
-        spacing: AppSpacing.sm,
-        children: [
-          Icon(AppIcons.error, size: AppSize.icon, color: AppColors.danger),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodyWithColor(
-                context,
-                color: AppColors.textPrimary(context),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

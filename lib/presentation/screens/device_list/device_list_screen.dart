@@ -13,6 +13,7 @@ import '../../blocs/device_list/device_list_bloc.dart';
 import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
+import 'post_link_assign_flow.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
@@ -26,6 +27,7 @@ class DeviceListScreen extends StatefulWidget {
 }
 
 class _DeviceListScreenState extends State<DeviceListScreen> {
+  bool _promptChecked = false;
   @override
   void initState() {
     super.initState();
@@ -67,6 +69,17 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     });
   }
 
+  void _maybePromptCarrier(DeviceListLoaded state) {
+    if (_promptChecked || PostLinkAssignFlow.isRunning) return;
+    _promptChecked = true;
+    final missing = state.devices.unassignedDevices; // owned + no carrier
+    if (missing.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      PostLinkAssignFlow.promptForUnassigned(context, missing);
+    });
+  }
+
   void _onDeviceTap(DeviceEntity device) => _refreshAfter(
     AppRouter.pushDeviceDetail(
       context,
@@ -105,91 +118,96 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
         ],
       ),
       // floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
-      body: BlocBuilder<DeviceListBloc, DeviceListState>(
-        builder: (context, state) {
-          if (state is DeviceListLoading || state is DeviceListInitial) {
-            return const DeviceListSkeleton();
-          }
-          if (state is DeviceListError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline_rounded,
-                    size: 48,
-                    color: AppColors.danger,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.message,
-                    style: TextStyle(color: AppColors.danger),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<DeviceListBloc>().add(
-                      const DeviceListLoadRequested(),
+      body: BlocListener<DeviceListBloc, DeviceListState>(
+        listenWhen: (p, c) => c is DeviceListLoaded,
+        listener: (context, state) =>
+            _maybePromptCarrier(state as DeviceListLoaded),
+        child: BlocBuilder<DeviceListBloc, DeviceListState>(
+          builder: (context, state) {
+            if (state is DeviceListLoading || state is DeviceListInitial) {
+              return const DeviceListSkeleton();
+            }
+            if (state is DeviceListError) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: AppColors.danger,
                     ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is DeviceListLoaded) {
-            final grouped = _groupByRelationship(state.devices);
-            final alertsState = context.watch<AlertsBloc>().state;
-            final allAlerts = alertsState is AlertsLoaded
-                ? alertsState.alerts
-                : const [];
-
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: AppColors.primary(context),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                      child: Text(
-                        '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary(context),
-                        ),
+                    const SizedBox(height: 12),
+                    Text(
+                      state.message,
+                      style: TextStyle(color: AppColors.danger),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<DeviceListBloc>().add(
+                        const DeviceListLoadRequested(),
                       ),
+                      child: const Text('Retry'),
                     ),
-                  ),
-                  if (state.devices.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(
+                  ],
+                ),
+              );
+            }
+            if (state is DeviceListLoaded) {
+              final grouped = _groupByRelationship(state.devices);
+              final alertsState = context.watch<AlertsBloc>().state;
+              final allAlerts = alertsState is AlertsLoaded
+                  ? alertsState.alerts
+                  : const [];
+
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: AppColors.primary(context),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                         child: Text(
-                          'No devices found.',
+                          '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
                           style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary(context),
                           ),
                         ),
                       ),
-                    )
-                  else
-                    for (final entry in _relationshipOrder)
-                      if (grouped[entry.key]?.isNotEmpty ?? false)
-                        ..._buildSection(
-                          context,
-                          title: entry.value,
-                          devices: grouped[entry.key]!,
-                          user: user,
-                          allAlerts: allAlerts,
+                    ),
+                    if (state.devices.isEmpty)
+                      SliverFillRemaining(
+                        child: Center(
+                          child: Text(
+                            'No devices found.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary(context),
+                            ),
+                          ),
                         ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 48)),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                      )
+                    else
+                      for (final entry in _relationshipOrder)
+                        if (grouped[entry.key]?.isNotEmpty ?? false)
+                          ..._buildSection(
+                            context,
+                            title: entry.value,
+                            devices: grouped[entry.key]!,
+                            user: user,
+                            allAlerts: allAlerts,
+                          ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 48)),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

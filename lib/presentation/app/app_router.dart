@@ -311,11 +311,10 @@ class AppRouter {
 
       case AppRoutes.addMember:
         final bloc = settings.arguments as ManageUsersBloc;
-        return _slide(
+        return _slide<bool>(
           settings,
           BlocProvider.value(value: bloc, child: const AddMemberScreen()),
         );
-
       case AppRoutes.editProfile:
         final args = settings.arguments as EditProfileArgs;
         return _slide(
@@ -494,7 +493,7 @@ class AppRouter {
     );
   }
 
-  static Future<void> pushLinkDevice(BuildContext context) =>
+  static Future<String?> pushLinkDevice(BuildContext context) =>
       LinkDeviceBottomSheet.show(context);
 
   static Future<T?> pushSchedulesList<T>(

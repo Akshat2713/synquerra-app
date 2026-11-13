@@ -19,6 +19,9 @@ class AssignMemberSheet extends StatefulWidget {
   final String currentUserFullName;
   final List<RelationshipEntity> relationships;
   final void Function(String personId, String associationType) onAssign;
+  final VoidCallback? onAddMember;
+  final bool carrierOnly;
+  final bool dismissible;
 
   const AssignMemberSheet({
     super.key,
@@ -27,6 +30,9 @@ class AssignMemberSheet extends StatefulWidget {
     required this.currentUserFullName,
     required this.relationships,
     required this.onAssign,
+    this.onAddMember,
+    this.carrierOnly = false,
+    this.dismissible = true,
   });
 
   static Future<void> show(
@@ -36,6 +42,9 @@ class AssignMemberSheet extends StatefulWidget {
     required String currentUserFullName,
     required List<RelationshipEntity> relationships,
     required void Function(String personId, String associationType) onAssign,
+    VoidCallback? onAddMember,
+    bool carrierOnly = false,
+    bool dismissible = true,
   }) {
     return showAppBottomSheet<void>(
       context,
@@ -45,6 +54,9 @@ class AssignMemberSheet extends StatefulWidget {
         currentUserFullName: currentUserFullName,
         relationships: relationships,
         onAssign: onAssign,
+        onAddMember: onAddMember,
+        carrierOnly: carrierOnly,
+        dismissible: dismissible,
       ),
     );
   }
@@ -69,9 +81,13 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
       'viewer': 'Viewer',
     };
 
-    _availableRoles = Map.fromEntries(
-      allRoles.entries.where((entry) => !isAssigned || entry.key != 'carrier'),
-    );
+    _availableRoles = widget.carrierOnly
+        ? const {'carrier': 'Carrier'}
+        : Map.fromEntries(
+            allRoles.entries.where(
+              (entry) => !isAssigned || entry.key != 'carrier',
+            ),
+          );
 
     _selectedRole = _availableRoles.containsKey('carrier')
         ? 'carrier'
@@ -141,73 +157,110 @@ class _AssignMemberSheetState extends State<AssignMemberSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-        AppSpacing.md + MediaQuery.viewInsetsOf(context).bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.md,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppSpacing.xs,
-            children: [
-              Text(
-                'Assign Device to Person',
-                style: AppTextStyles.titleWithColor(context),
+    return PopScope(
+      canPop: widget.dismissible,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.md + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: AppSpacing.md,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.xs,
+              children: [
+                Text(
+                  widget.carrierOnly
+                      ? 'Add a carrier'
+                      : 'Assign Device to Person',
+                  style: AppTextStyles.titleWithColor(context),
+                ),
+                Text(
+                  widget.carrierOnly
+                      ? 'Every device needs a carrier. Choose who will carry this device.'
+                      : 'Select a role and a person to assign to this device.',
+                  style: AppTextStyles.bodyWithColor(context),
+                ),
+              ],
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedRole,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Role / Association Type',
+                prefixIcon: Icon(
+                  AppIcons.relationship,
+                  size: AppSize.icon,
+                  color: AppColors.textSecondary(context),
+                ),
               ),
-              Text(
-                'Select a role and a person to assign to this device.',
-                style: AppTextStyles.bodyWithColor(context),
-              ),
-            ],
-          ),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedRole,
-            isExpanded: true,
-            decoration: InputDecoration(
-              labelText: 'Role / Association Type',
-              prefixIcon: Icon(
-                AppIcons.relationship,
-                size: AppSize.icon,
-                color: AppColors.textSecondary(context),
+              items: [
+                for (final e in _availableRoles.entries)
+                  DropdownMenuItem(value: e.key, child: Text(e.value)),
+              ],
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedRole = val);
+              },
+            ),
+            Text(
+              widget.carrierOnly ? 'Select carrier' : 'Select person',
+              style: AppTextStyles.sectionWithColor(context),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    if (_availablePersons.isEmpty)
+                      Padding(
+                        padding: AppSpacing.lgVertical,
+                        child: Text(
+                          'All available contacts are already assigned.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyWithColor(context),
+                        ),
+                      ),
+                    for (final person in _availablePersons)
+                      _personRow(context, person),
+                    if (widget.onAddMember != null) _addMemberRow(context),
+                  ],
+                ),
               ),
             ),
-            items: [
-              for (final e in _availableRoles.entries)
-                DropdownMenuItem(value: e.key, child: Text(e.value)),
-            ],
-            onChanged: (val) {
-              if (val != null) setState(() => _selectedRole = val);
-            },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _addMemberRow(BuildContext context) {
+    return InsetRow(
+      onTap: () {
+        Navigator.pop(context);
+        widget.onAddMember!();
+      },
+      child: Row(
+        spacing: AppSpacing.smd,
+        children: [
+          Icon(
+            AppIcons.person,
+            color: AppColors.primary(context),
+          ), // use a "person add" icon if you have one
+          Expanded(
+            child: Text(
+              'Add new member',
+              style: AppTextStyles.bodyWithColor(
+                context,
+                color: AppColors.primary(context),
+              ).copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
-          Text('Select person', style: AppTextStyles.sectionWithColor(context)),
-          Flexible(
-            child: _availablePersons.isEmpty
-                ? Padding(
-                    padding: AppSpacing.lgVertical,
-                    child: Center(
-                      child: Text(
-                        'All available contacts are already assigned.',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyWithColor(context),
-                      ),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        for (final person in _availablePersons)
-                          _personRow(context, person),
-                      ],
-                    ),
-                  ),
-          ),
+          Icon(AppIcons.chevron, color: AppColors.primary(context)),
         ],
       ),
     );

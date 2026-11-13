@@ -4,18 +4,17 @@ import '../../../core/di/injection_container.dart';
 import '../../blocs/link_device/link_device_bloc.dart';
 import '../../themes/app_text_styles.dart';
 import '../../themes/app_tokens.dart';
-import '../../themes/colors.dart';
 import '../../utils/app_icons.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_error_banner.dart';
 import '../../widgets/app_overlays.dart';
-import '../../widgets/app_surfaces.dart';
 import '../../widgets/app_text_field.dart';
 
 class LinkDeviceBottomSheet extends StatefulWidget {
   const LinkDeviceBottomSheet({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showAppBottomSheet<void>(
+  static Future<String?> show(BuildContext context) {
+    return showAppBottomSheet<String>(
       context,
       builder: (_) => BlocProvider(
         create: (_) => sl<LinkDeviceBloc>(),
@@ -61,8 +60,7 @@ class _LinkDeviceBottomSheetState extends State<LinkDeviceBottomSheet> {
       listener: (context, state) {
         if (state.status == LinkDeviceStatus.success) {
           AppSnackBar.success(context, 'Device linked');
-          // DeviceListScreen's _navigateAndRefresh handles the reload.
-          Navigator.pop(context);
+          Navigator.pop(context, _serialNumberController.text.trim());
         }
       },
       builder: (context, state) {
@@ -114,7 +112,7 @@ class _LinkDeviceBottomSheetState extends State<LinkDeviceBottomSheet> {
                     ),
                   ],
                 ),
-                if (errorMessage != null) _ErrorBanner(message: errorMessage),
+                if (errorMessage != null) AppErrorBanner(message: errorMessage),
                 AppTextField(
                   controller: _serialNumberController,
                   label: 'Device Serial Number *',
@@ -140,37 +138,6 @@ class _LinkDeviceBottomSheetState extends State<LinkDeviceBottomSheet> {
           ),
         );
       },
-    );
-  }
-}
-
-// TODO(shared): identical to the private _ErrorBanner in
-// link_member_by_phone_screen.dart. It is now used by 2+ files, so move it to
-// widgets/ (for example AppErrorBanner) and use it in both.
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      tint: AppColors.dangerContainer,
-      padding: AppSpacing.smAll,
-      child: Row(
-        spacing: AppSpacing.sm,
-        children: [
-          Icon(AppIcons.error, size: AppSize.icon, color: AppColors.danger),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodyWithColor(
-                context,
-                color: AppColors.textPrimary(context),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../app/device_event_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
 import '../../blocs/realtime/device_events_cubit.dart';
+import '../device_list/post_link_assign_flow.dart';
 import 'bottom_bar.dart';
 import 'main_shell_cubit.dart';
 import 'main_tab.dart';
@@ -21,9 +22,17 @@ class MainShellScreen extends StatelessWidget {
   const MainShellScreen({super.key, this.tabs});
 
   Future<void> _onAddDevice(BuildContext context) async {
-    await AppRouter.pushLinkDevice(context);
+    final serialNo = await AppRouter.pushLinkDevice(context);
     if (!context.mounted) return;
-    context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+
+    if (serialNo != null) {
+      await PostLinkAssignFlow.start(
+        context,
+        serialNo,
+      ); // refreshes the list itself
+    } else {
+      context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+    }
   }
 
   @override
