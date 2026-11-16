@@ -6,10 +6,10 @@ import '../../../core/error/app_exceptions.dart';
 import '../session_expired_notifier.dart';
 
 class ErrorInterceptor extends Interceptor {
-  final FlutterSecureStorage _storage;
-  final SessionExpiredNotifier _sessionNotifier;
+  // final FlutterSecureStorage _storage;
+  // final SessionExpiredNotifier _sessionNotifier;
 
-  ErrorInterceptor(this._storage, this._sessionNotifier);
+  ErrorInterceptor();
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
@@ -50,13 +50,7 @@ class ErrorInterceptor extends Interceptor {
               statusCode: statusCode,
             );
           case 401:
-            final hadToken = err.requestOptions.headers.containsKey(
-              'Authorization',
-            );
-            if (hadToken) {
-              await _clearTokens();
-              _sessionNotifier.notify();
-            }
+            // Token refresh + session expiry are handled by TokenRefreshInterceptor
             exception = AuthException(
               message: serverMessage ?? 'Session expired. Please log in again.',
               statusCode: statusCode,
@@ -126,17 +120,17 @@ class ErrorInterceptor extends Interceptor {
     );
   }
 
-  Future<void> _clearTokens() async {
-    try {
-      await Future.wait([
-        _storage.delete(key: 'cached_user'),
-        _storage.delete(key: 'access_token'),
-        _storage.delete(key: 'refresh_token'),
-        _storage.delete(key: 'person_id'),
-        _storage.delete(key: 'last_sent_fcm_token'),
-      ]);
-    } catch (e) {
-      // Ignore errors during token clearing
-    }
-  }
+  // Future<void> _clearTokens() async {
+  //   try {
+  //     await Future.wait([
+  //       _storage.delete(key: 'cached_user'),
+  //       _storage.delete(key: 'access_token'),
+  //       _storage.delete(key: 'refresh_token'),
+  //       _storage.delete(key: 'person_id'),
+  //       _storage.delete(key: 'last_sent_fcm_token'),
+  //     ]);
+  //   } catch (e) {
+  //     // Ignore errors during token clearing
+  //   }
+  // }
 }

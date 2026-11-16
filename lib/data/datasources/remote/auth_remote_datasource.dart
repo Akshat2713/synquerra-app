@@ -63,4 +63,16 @@ class AuthRemoteDataSource {
       );
     }
   }
+
+  Future<void> signOut() async {
+    AppLogger.d('AuthRemoteDataSource', 'signOut() called');
+    final response = await _dioClient.dio.post(ApiConstants.signOut);
+    final body = response.data as Map<String, dynamic>;
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Sign out failed.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
 }

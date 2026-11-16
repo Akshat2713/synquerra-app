@@ -6,6 +6,7 @@ import 'api_constants.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 import 'interceptors/log_interceptor.dart';
+import 'interceptors/token_refresh_interceptor.dart';
 import 'session_expired_notifier.dart';
 
 class DioClient {
@@ -15,7 +16,25 @@ class DioClient {
     FlutterSecureStorage secureStorage,
     SessionExpiredNotifier notifier,
   ) {
-    _dio = Dio(
+    _dio = _buildDio();
+    final refreshDio = _buildDio(); // no interceptors on purpose
+
+    _dio.interceptors.addAll([
+      AuthInterceptor(secureStorage),
+      // Must come BEFORE ErrorInterceptor so it sees the raw 401
+      TokenRefreshInterceptor(
+        dio: _dio,
+        refreshDio: refreshDio,
+        storage: secureStorage,
+        notifier: notifier,
+      ),
+      ErrorInterceptor(),
+      AppLogInterceptor(),
+    ]);
+  }
+
+  Dio _buildDio() {
+    final dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         // baseUrl: ApiConstants.devBaseUrl, // ⚠️ DEV ONLY
@@ -32,17 +51,13 @@ class DioClient {
     );
 
     // ⚠️ DEV ONLY — remove before production
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       final client = HttpClient();
       client.badCertificateCallback = (cert, host, port) => true;
       return client;
     };
 
-    _dio.interceptors.addAll([
-      AuthInterceptor(secureStorage),
-      ErrorInterceptor(secureStorage, notifier),
-      AppLogInterceptor(),
-    ]);
+    return dio;
   }
 
   Dio get dio => _dio;

@@ -9,6 +9,8 @@ class ApiConstants {
   static const String signUp = '/api/v1/auth/register-user';
   static const String orgMemberSignIn = '/api/v1/auth/org-member/sign-in';
   static String deleteUser(String userId) => '/api/v1/users/$userId';
+  static const String refreshToken = '/api/v1/auth/refresh-token';
+  static const String signOut = '/api/v1/auth/sign-out';
 
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';

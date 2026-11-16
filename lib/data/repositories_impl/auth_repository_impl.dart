@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import '../../core/utils/app_logger.dart';
 import '../../domain/entities/auth/user_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -75,6 +76,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, void>> logout() async {
+    // Best effort: tell the server first (needs the token still in storage).
+    // Never block local sign-out on a network/server failure.
+    try {
+      await _remote.signOut();
+    } catch (e) {
+      AppLogger.w('AuthRepositoryImpl', 'Remote sign-out failed: $e');
+    }
+
     try {
       await _local.clearUser();
       if (sl.isRegistered<UserHolder>()) {

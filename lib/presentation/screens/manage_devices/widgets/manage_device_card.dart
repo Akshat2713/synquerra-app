@@ -151,6 +151,7 @@ class ManageDeviceCard extends StatelessWidget {
                     currentUserFullName: currentUserFullName,
                     relationships: relationships,
                     onAssign: onAssign,
+                    dismissible: false,
                   ),
                 ),
               ),
