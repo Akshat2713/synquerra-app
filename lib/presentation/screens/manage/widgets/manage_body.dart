@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../blocs/analytics/analytics_bloc.dart';
 import '../../../blocs/manage/manage_bloc.dart';
 import '../../../themes/app_tokens.dart';
 import '../../../widgets/app_motion_widgets.dart';
@@ -22,15 +23,21 @@ class ManageBody extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       padding: AppSpacing.mdAll,
       children: [
-        ModePickerRow(
-          modes: state.modes,
-          activeModeId: state.activeModeId,
-          isSwitching: state.isSwitchingMode,
-          autoModeSwitch: state.settings.autoModeSwitch,
-          onAutoModeToggle: () =>
-              bloc.add(ManageAutoModeToggleRequested(device.id)),
-          onChanged: (modeId) => bloc.add(
-            ManageModeSwitchRequested(deviceId: device.id, modeId: modeId),
+        BlocSelector<AnalyticsBloc, AnalyticsState, String?>(
+          selector: (s) => s is AnalyticsLoaded && s.points.isNotEmpty
+              ? s.points.first.modeName
+              : null,
+          builder: (context, liveModeName) => ModePickerRow(
+            modes: state.modes,
+            activeModeId: state.activeModeId,
+            liveModeName: liveModeName,
+            isSwitching: state.isSwitchingMode,
+            autoModeSwitch: state.settings.autoModeSwitch,
+            onAutoModeToggle: () =>
+                bloc.add(ManageAutoModeToggleRequested(device.id)),
+            onChanged: (modeId) => bloc.add(
+              ManageModeSwitchRequested(deviceId: device.id, modeId: modeId),
+            ),
           ),
         ).entrance(context),
         const SizedBox(height: AppSpacing.lg),

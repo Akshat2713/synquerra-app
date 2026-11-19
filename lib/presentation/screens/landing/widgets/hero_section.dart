@@ -92,7 +92,7 @@ class HeroSection extends StatelessWidget {
                       ),
                       // Mode, plain text
                       Text(
-                        device.currentMode,
+                        latest!.modeName ?? " Unknown Mode",
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodyWithColor(
                           context,

@@ -69,20 +69,23 @@ class _ModeCarouselState extends State<ModeCarousel> {
           AppSpacing.md,
           AppSpacing.lg,
         ),
-        child: Row(
-          children: [
-            for (final m in widget.modes)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: _ModeCard(
-                  key: _keys.putIfAbsent(m.id, GlobalKey.new),
-                  mode: m,
-                  isSelected: m.id == widget.selectedId,
-                  onTap: () => widget.onSelect(m),
-                  onLongPress: () => widget.onDetails(m),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final m in widget.modes)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: _ModeCard(
+                    key: _keys.putIfAbsent(m.id, GlobalKey.new),
+                    mode: m,
+                    isSelected: m.id == widget.selectedId,
+                    onTap: () => widget.onSelect(m),
+                    onDetails: () => widget.onDetails(m),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -93,14 +96,14 @@ class _ModeCard extends StatelessWidget {
   final ModeEntity mode;
   final bool isSelected;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  final VoidCallback onDetails;
 
   const _ModeCard({
     super.key,
     required this.mode,
     required this.isSelected,
     required this.onTap,
-    required this.onLongPress,
+    required this.onDetails,
   });
 
   @override
@@ -114,7 +117,7 @@ class _ModeCard extends StatelessWidget {
       label: mode.name,
       child: Pressable(
         onTap: onTap,
-        onLongPress: onLongPress,
+        onLongPress: onDetails,
         child: AnimatedContainer(
           duration: AppMotion.base,
           curve: AppMotion.curve,
@@ -148,16 +151,29 @@ class _ModeCard extends StatelessWidget {
                         ? onPrimary
                         : AppColors.textSecondary(context),
                   ),
-                  AnimatedScale(
-                    scale: isSelected ? 1 : 0,
-                    duration: AppMotion.slow,
-                    curve: isSelected ? Curves.elasticOut : Curves.easeIn,
-                    child: IconTile(
-                      size: AppSize.iconLg,
-                      circle: true,
-                      icon: Icons.check_rounded,
-                      background: primary,
-                      foreground: onPrimary,
+                  SizedBox(
+                    width: AppSize.iconLg,
+                    height: AppSize.iconLg,
+                    child: AnimatedSwitcher(
+                      duration: AppMotion.slow,
+                      switchInCurve: Curves.elasticOut,
+                      switchOutCurve: Curves.easeIn,
+                      transitionBuilder: (child, animation) =>
+                          ScaleTransition(scale: animation, child: child),
+                      child: isSelected
+                          ? IconTile(
+                              key: const ValueKey('selected'),
+                              size: AppSize.iconLg,
+                              circle: true,
+                              icon: AppIcons.selected,
+                              background: primary,
+                              foreground: onPrimary,
+                            )
+                          : _InfoButton(
+                              key: const ValueKey('info'),
+                              color: AppColors.textSecondary(context),
+                              onPressed: onDetails,
+                            ),
                     ),
                   ),
                 ],
@@ -165,7 +181,7 @@ class _ModeCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 mode.name,
-                maxLines: 1,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyWithColor(
                   context,
@@ -187,4 +203,23 @@ class _ModeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _InfoButton extends StatelessWidget {
+  final Color color;
+  final VoidCallback onPressed;
+  const _InfoButton({super.key, required this.color, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    tooltip: 'Mode details',
+    icon: Icon(AppIcons.info, size: AppSize.iconSm, color: color),
+    onPressed: onPressed,
+    padding: EdgeInsets.zero,
+    constraints: BoxConstraints.tightFor(
+      width: AppSize.iconLg,
+      height: AppSize.iconLg,
+    ),
+    visualDensity: VisualDensity.compact,
+  );
 }

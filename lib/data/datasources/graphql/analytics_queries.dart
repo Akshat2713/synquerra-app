@@ -33,6 +33,7 @@ class AnalyticsQueries {
           speed
           battery
           signal
+          temperature 
           deviceTimestamp
           type
           geofence {

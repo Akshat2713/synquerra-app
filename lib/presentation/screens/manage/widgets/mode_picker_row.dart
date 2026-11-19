@@ -17,6 +17,7 @@ class ModePickerRow extends StatelessWidget {
   final String? activeModeId;
   final bool isSwitching;
   final bool autoModeSwitch;
+  final String? liveModeName;
   final VoidCallback onAutoModeToggle;
   final ValueChanged<String> onChanged;
 
@@ -26,6 +27,7 @@ class ModePickerRow extends StatelessWidget {
     required this.activeModeId,
     required this.isSwitching,
     required this.autoModeSwitch,
+    this.liveModeName,
     required this.onAutoModeToggle,
     required this.onChanged,
   });
@@ -67,6 +69,7 @@ class ModePickerRow extends StatelessWidget {
                   )
                 : _CurrentModeHero(
                     mode: active,
+                    liveModeName: liveModeName,
                     isAuto: autoModeSwitch,
                     isSwitching: isSwitching,
                   ),
@@ -165,11 +168,13 @@ class _AutoModeHeader extends StatelessWidget {
 
 class _CurrentModeHero extends StatelessWidget {
   final ModeEntity mode;
+  final String? liveModeName;
   final bool isAuto;
   final bool isSwitching;
 
   const _CurrentModeHero({
     required this.mode,
+    this.liveModeName,
     required this.isAuto,
     required this.isSwitching,
   });
@@ -179,6 +184,9 @@ class _CurrentModeHero extends StatelessWidget {
     final on = AppColors.onPrimary(context);
     final soft = AppAlpha.withAlpha(on, AppAlpha.fill);
     final muted = AppAlpha.withAlpha(on, AppAlpha.strong);
+    // at the top of build():
+    final live = liveModeName?.trim();
+    final name = (live != null && live.isNotEmpty) ? live : mode.name;
     final desc = mode.description.isNotEmpty
         ? mode.description
         : 'Location updates every ${UnitFormatter.formatDuration(mode.normalSendingInterval)}';
@@ -228,8 +236,8 @@ class _CurrentModeHero extends StatelessWidget {
                       style: AppTextStyles.metaWithColor(context, color: muted),
                     ),
                     AnimatedText(
-                      mode.name,
-                      maxLines: 1,
+                      name,
+                      maxLines: 2,
                       style: AppTextStyles.titleWithColor(context, color: on),
                     ),
                   ],

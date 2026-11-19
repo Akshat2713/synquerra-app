@@ -17,6 +17,7 @@ class AnalyticsModel {
   final String? phone1;
   final String? phone2;
   final String? alert;
+  final String? modeName;
   final GeofenceData? geofence;
   final AddressData? address;
 
@@ -34,6 +35,7 @@ class AnalyticsModel {
     this.phone1,
     this.phone2,
     this.alert,
+    this.modeName,
     required this.deviceTimestamp,
     this.type,
     this.geofence,
@@ -50,7 +52,9 @@ class AnalyticsModel {
     speed: (json['speed'] as num?)?.toDouble(),
     battery: json['battery']?.toString(),
     signal: json['signal']?.toString(),
+    temperature: json['temperature']?.toString(),
     alert: json['alert'] as String?,
+    modeName: (json['mode'] as Map<String, dynamic>?)?['name'] as String?,
     deviceTimestamp: json['deviceTimestamp'] as String? ?? '',
     type: json['type'] as String?,
     geofence: json['geofence'] != null
@@ -71,10 +75,11 @@ class AnalyticsModel {
     speed: speed,
     battery: battery != null ? int.tryParse(battery!) : null,
     signal: signal != null ? int.tryParse(signal!) : null,
-    temperature: "NA",
+    temperature: temperature,
     phone1: "No Primary Number",
     phone2: "No Secondary Number",
     alert: alert,
+    modeName: modeName,
     deviceTimestamp: DateTimeFormatter.parseUtcToLocal(deviceTimestamp),
     type: type,
     geofenceName: geofence?.geofenceName,

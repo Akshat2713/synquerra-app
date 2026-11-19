@@ -14,6 +14,7 @@ class AnalyticsEntity extends Equatable {
   final String? phone1;
   final String? phone2;
   final String? alert;
+  final String? modeName;
   final DateTime? deviceTimestamp;
   final String? type;
   final String? geofenceName;
@@ -33,6 +34,7 @@ class AnalyticsEntity extends Equatable {
     this.phone1,
     this.phone2,
     this.alert,
+    this.modeName,
     this.deviceTimestamp,
     this.type,
     this.geofenceName,
@@ -75,6 +77,7 @@ class AnalyticsEntity extends Equatable {
     phone1,
     phone2,
     alert,
+    modeName,
     deviceTimestamp,
     type,
     geofenceName,

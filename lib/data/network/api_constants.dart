@@ -116,10 +116,14 @@ class ApiConstants {
 
   // ── Realtime (Soketi) ─────────────────────────────
   static const String soketiHost = 'websocket.synquerra.com';
-  static const int soketiPort = 443;
-  static const String soketiKey = 'synquerra@23';
+  static const int soketiPort = 6001;
+  static const String soketiKey = String.fromEnvironment('SOKETI_APP_KEY');
   static const bool soketiUseTLS = true;
 
+  // ── LocationIQ ────────────────────────────────────
+  static const String locationIqKey = String.fromEnvironment(
+    'LOCATIONIQ_API_KEY',
+  );
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;
   static const int receiveTimeoutMs = 30000;
