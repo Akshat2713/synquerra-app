@@ -9,7 +9,7 @@ import '../../themes/colors.dart';
 import '../../widgets/async_state_view.dart';
 import 'widgets/mode_list_tile.dart';
 import 'widgets/mode_skeleton.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+// import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class ModesScreen extends StatefulWidget {
   final String deviceId;
@@ -47,12 +47,12 @@ class _ModesScreenState extends State<ModesScreen> {
     _ => [],
   };
 
-  void _onSave(BuildContext context, String? selectedId) {
-    if (selectedId == null) return;
-    context.read<ModeBloc>().add(
-      ModeSwitchSubmit(deviceId: widget.deviceId, modeId: selectedId),
-    );
-  }
+  // void _onSave(BuildContext context, String? selectedId) {
+  //   if (selectedId == null) return;
+  //   context.read<ModeBloc>().add(
+  //     ModeSwitchSubmit(deviceId: widget.deviceId, modeId: selectedId),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -122,56 +122,56 @@ class _ModesScreenState extends State<ModesScreen> {
   }
 }
 
-class _SaveBar extends StatelessWidget {
-  final bool enabled;
-  final bool isLoading;
-  final VoidCallback onSave;
+// class _SaveBar extends StatelessWidget {
+//   final bool enabled;
+//   final bool isLoading;
+//   final VoidCallback onSave;
 
-  const _SaveBar({
-    required this.enabled,
-    required this.isLoading,
-    required this.onSave,
-  });
+//   const _SaveBar({
+//     required this.enabled,
+//     required this.isLoading,
+//     required this.onSave,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        12,
-        16,
-        12 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        border: Border(
-          top: BorderSide(color: AppColors.outlineVariant(context)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: AppAlpha.tint),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: FilledButton(
-        onPressed: enabled ? onSave : null,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-              )
-            : const Text(
-                'Apply Mode',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: EdgeInsets.fromLTRB(
+//         16,
+//         12,
+//         16,
+//         12 + MediaQuery.of(context).padding.bottom,
+//       ),
+//       decoration: BoxDecoration(
+//         color: AppColors.surface(context),
+//         border: Border(
+//           top: BorderSide(color: AppColors.outlineVariant(context)),
+//         ),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withValues(alpha: AppAlpha.tint),
+//             blurRadius: 12,
+//             offset: const Offset(0, -4),
+//           ),
+//         ],
+//       ),
+//       child: FilledButton(
+//         onPressed: enabled ? onSave : null,
+//         style: FilledButton.styleFrom(
+//           minimumSize: const Size.fromHeight(52),
+//           shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
+//         ),
+//         child: isLoading
+//             ? const SizedBox(
+//                 width: 20,
+//                 height: 20,
+//                 child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+//               )
+//             : const Text(
+//                 'Apply Mode',
+//                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+//               ),
+//       ),
+//     );
+//   }
+// }

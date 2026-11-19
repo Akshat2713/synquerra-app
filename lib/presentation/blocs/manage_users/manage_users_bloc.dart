@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../domain/entities/relationship/related_user_entity.dart';
@@ -13,6 +12,7 @@ import '../../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../../domain/usecases/relationship/get_relationship_list_usecase.dart';
 // import '../../../domain/usecases/signup/create_person_usecase.dart';
+import '../../../domain/usecases/relationship/search_person_by_phone_usecase.dart';
 import '../../../domain/usecases/signup/delete_person_usecase.dart';
 import '../base/base_state.dart';
 

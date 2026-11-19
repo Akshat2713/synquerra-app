@@ -31,6 +31,7 @@ class AppColors {
 
   static const Color info = Color(0xFF0EA5E9);
   static const Color infoContainer = Color(0x1F0EA5E9); // sheet: #EFF8FF
+  static const Color onInfo = Colors.white;
 
   // NEW: "Offline" state from the design sheet
   static const Color offline = Color(0xFF64748B);
@@ -50,6 +51,12 @@ class AppColors {
   static const Color darkMapPath = Color(0xFF1E1D2D);
   static const Color darkMapZonePrimary = Color(0xFF064E3B);
   static const Color darkMapZoneSecondary = Color(0xFF1E3A8A);
+
+  static const Color mapMarkerOutline =
+      Colors.white; // halo/border on map markers
+
+  static const Color onColorLight = Colors.white;
+  static const Color onColorDark = Color(0xFF0F172A);
 
   // ==========================================
   // ===== THEME-AWARE (read from AppPalette)

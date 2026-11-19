@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../signup/person_entity.dart';
 import 'device_association_entity.dart';
 import 'device_owner_entity.dart';
 
@@ -15,14 +14,11 @@ class DeviceEntity extends Equatable {
   final double? speed;
   final String? temperature;
   final String currentMode;
-  final String ledStatus;
+  // final String ledStatus;
   final String? timestamp;
   final int? battery;
   final int? signal;
   final String? gpsStrength;
-  final bool? isActive;
-  final bool? isSubscribed;
-  final String? inventoryStatus;
   final String? associationType;
   final bool? isOnline;
   final bool? isCharging;
@@ -30,19 +26,11 @@ class DeviceEntity extends Equatable {
   final String updatedAt;
   final String relationship;
   final DeviceOwnerEntity owner;
-  final PersonEntity? carrier;
+  // final PersonEntity? carrier;
   final List<DeviceAssociationEntity> assignments;
   final String displayOwnerName;
-  final int? schemaVersion;
-  final String? hdop;
-  final String? satsUsed;
-  final String? satsInView;
-  final String? fixType;
-  final String? deviceMode;
-  final String? gnssMode;
-  final String? source;
-  final String? hardwareVersion;
-  final String? firmwareVersion;
+  final String? displayProfilePhoto;
+  final String displayRealUserId;
 
   const DeviceEntity({
     required this.id,
@@ -55,14 +43,11 @@ class DeviceEntity extends Equatable {
     this.speed,
     this.temperature,
     required this.currentMode,
-    required this.ledStatus,
+    // required this.ledStatus,
     this.timestamp,
     this.battery,
     this.signal,
     this.gpsStrength,
-    this.isActive,
-    this.isSubscribed,
-    this.inventoryStatus,
     this.associationType,
     this.isOnline,
     this.isCharging,
@@ -70,24 +55,17 @@ class DeviceEntity extends Equatable {
     required this.updatedAt,
     required this.relationship,
     required this.owner,
-    this.carrier,
+    // this.carrier,
     this.assignments = const [],
     required this.displayOwnerName,
-    this.schemaVersion,
-    this.hdop,
-    this.satsUsed,
-    this.satsInView,
-    this.fixType,
-    this.deviceMode,
-    this.gnssMode,
-    this.source,
-    this.hardwareVersion,
-    this.firmwareVersion,
+    this.displayProfilePhoto,
+    required this.displayRealUserId,
   });
 
   bool get hasLocation => latitude != null && longitude != null;
   bool get hasData => battery != null && signal != null;
   bool get isOwned => relationship == 'owned';
+  bool get hasCarrier => associationFor('carrier') != null;
 
   DeviceAssociationEntity? associationFor(String roleKey) {
     try {
@@ -96,6 +74,8 @@ class DeviceEntity extends Equatable {
       return null;
     }
   }
+
+  DeviceAssociationEntity? get carrier => associationFor('carrier');
 
   String? get geoidLocation {
     if (geoid == '10' || geoid == '11') {
@@ -116,14 +96,11 @@ class DeviceEntity extends Equatable {
     speed,
     temperature,
     currentMode,
-    ledStatus,
+    // ledStatus,
     timestamp,
     battery,
     signal,
     gpsStrength,
-    isActive,
-    isSubscribed,
-    inventoryStatus,
     associationType,
     isOnline,
     isCharging,
@@ -131,18 +108,11 @@ class DeviceEntity extends Equatable {
     updatedAt,
     relationship,
     owner,
-    carrier,
+    // carrier,
+    displayOwnerName,
+    displayProfilePhoto,
+    displayRealUserId,
     assignments,
-    schemaVersion,
-    hdop,
-    satsUsed,
-    satsInView,
-    fixType,
-    deviceMode,
-    gnssMode,
-    source,
-    hardwareVersion,
-    firmwareVersion,
   ];
 }
 
@@ -152,8 +122,8 @@ extension DeviceEntityFiltering on List<DeviceEntity> {
   ).toList();
 
   List<DeviceEntity> get unassignedDevices =>
-      ownedDevices.where((d) => d.carrier == null).toList();
+      ownedDevices.where((d) => !d.hasCarrier).toList();
 
   List<DeviceEntity> get assignedDevices =>
-      ownedDevices.where((d) => d.carrier != null).toList();
+      ownedDevices.where((d) => d.hasCarrier).toList();
 }

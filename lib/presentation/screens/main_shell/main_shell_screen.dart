@@ -2,8 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../data/datasources/realtime/realtime_connection.dart';
+import '../../../domain/entities/realtime/device_event.dart';
 import '../../app/app_router.dart';
+import '../../app/device_event_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/device_list/device_list_bloc.dart';
+import '../../blocs/realtime/device_events_cubit.dart';
+import '../device_list/post_link_assign_flow.dart';
+import 'bottom_bar.dart';
 import 'main_shell_cubit.dart';
 import 'main_tab.dart';
 import 'main_tabs.dart';
@@ -13,55 +21,119 @@ class MainShellScreen extends StatelessWidget {
   final List<MainTab>? tabs;
   const MainShellScreen({super.key, this.tabs});
 
+  Future<void> _onAddDevice(BuildContext context) async {
+    final serialNo = await AppRouter.pushLinkDevice(context);
+    if (!context.mounted) return;
+
+    if (serialNo != null) {
+      await PostLinkAssignFlow.start(
+        context,
+        serialNo,
+      ); // refreshes the list itself
+    } else {
+      context.read<DeviceListBloc>().add(const DeviceListRefreshRequested());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tabs = this.tabs ?? mainTabs;
 
     return BlocProvider(
       create: (_) => MainShellCubit(),
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthUnauthenticated) {
-            if (state.reason == LogoutReason.sessionExpired) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Session expired. Please log in again.'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 3),
-                ),
+      child: BlocListener<DeviceEventsCubit, DeviceEvent?>(
+        listener: (context, e) {
+          if (e == null) return;
+          final deviceId = switch (e) {
+            ModeChanged(:final deviceId) => deviceId,
+            AlertReceived(:final alert) => alert.deviceId,
+          };
+          final ds = context.read<DeviceListBloc>().state;
+          if (ds is! DeviceListLoaded) return;
+
+          final name = ds.devices
+              .firstWhere((d) => d.id == deviceId)
+              .displayOwnerName;
+
+          handleDeviceEvent(context, e, name);
+        },
+
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              sl<RealtimeConnection>().dispose();
+              if (state.reason == LogoutReason.sessionExpired) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Session expired. Please log in again.'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              }
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.login,
+                (_) => false,
               );
             }
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.login,
-              (_) => false,
-            );
-          }
-        },
-        child: BlocBuilder<MainShellCubit, int>(
-          builder: (context, index) => PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (didPop, _) async {
-              if (didPop) return;
-              if (index != 0) {
-                context.read<MainShellCubit>().select(0);
-              } else {
-                await SystemNavigator.pop();
-              }
-            },
-            child: Scaffold(
-              body: _LazyIndexedStack(index: index, tabs: tabs),
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: index,
-                onDestinationSelected: context.read<MainShellCubit>().select,
-                destinations: [
-                  for (final t in tabs)
-                    NavigationDestination(
-                      icon: Icon(t.icon),
-                      selectedIcon: Icon(t.selectedIcon),
-                      label: t.label,
-                    ),
-                ],
+          },
+          child: BlocBuilder<MainShellCubit, int>(
+            builder: (context, index) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) async {
+                if (didPop) return;
+                if (index != 0) {
+                  context.read<MainShellCubit>().select(0);
+                } else {
+                  await SystemNavigator.pop();
+                }
+              },
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: Builder(
+                  builder: (context) {
+                    final keyboardOpen =
+                        MediaQuery.viewInsetsOf(context).bottom > 0;
+                    final barSpace = keyboardOpen
+                        ? 0.0
+                        : BottomBar.barHeight +
+                              MediaQuery.paddingOf(context).bottom;
+
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: barSpace),
+                            child: MediaQuery.removePadding(
+                              context: context,
+                              removeBottom: true,
+                              child: _LazyIndexedStack(
+                                index: index,
+                                tabs: tabs,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (!keyboardOpen)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: BottomBar(
+                              items: [
+                                for (final t in tabs)
+                                  BarItem(t.label, t.icon, t.selectedIcon),
+                              ],
+                              selectedIndex: index,
+                              onSelected: context.read<MainShellCubit>().select,
+                              onCenterTap: () => _onAddDevice(context),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),

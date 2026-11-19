@@ -21,7 +21,6 @@ class ScheduleModel {
   final int arrivalGraceMins;
   final int departureBufferMins;
   final int? minimumStayMins;
-
   final String? createdAt;
   final String? updatedAt;
 
@@ -46,54 +45,67 @@ class ScheduleModel {
     required this.arrivalGraceMins,
     required this.departureBufferMins,
     this.minimumStayMins,
-
     this.createdAt,
     this.updatedAt,
   });
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
-    final graceConfig = json['grace_config'] as Map<String, dynamic>? ?? {};
-    final targetUser = json['target_user'] as Map<String, dynamic>? ?? {};
-    final device = json['device'] as Map<String, dynamic>? ?? {};
-    final geofence = json['geofence'] as Map<String, dynamic>? ?? {};
+    final grace =
+        (json['grace_config'] ?? json['graceConfig'])
+            as Map<String, dynamic>? ??
+        {};
+    final targetUser =
+        (json['target_user'] ?? json['targetUser']) as Map<String, dynamic>? ??
+        {};
+    final device = (json['device']) as Map<String, dynamic>? ?? {};
+    final geofence = (json['geofence']) as Map<String, dynamic>? ?? {};
 
     return ScheduleModel(
-      id: json['id'] as String? ?? json['_id'] as String? ?? '',
-      // These three IDs live inside nested objects in the API response,
-      // not at the top level — pulling from the nested maps fixes the
-      // empty-string bug that broke geofence fetching downstream.
-      targetUserId: targetUser['user_id'] as String? ?? '',
-      deviceId: device['device_id'] as String? ?? '',
-      geofenceId: geofence['geofence_id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
+      id: (json['id'] ?? '') as String,
+      targetUserId:
+          (targetUser['user_id'] ?? targetUser['userId'] ?? '') as String,
+      deviceId: (device['device_id'] ?? device['deviceId'] ?? '') as String,
+      geofenceId:
+          (geofence['geofence_id'] ?? geofence['geofenceId'] ?? '') as String,
+      title: (json['title'] ?? '') as String,
       description: json['description'] as String?,
-      startTime: json['start_time'] as String? ?? '',
-      endTime: json['end_time'] as String? ?? '',
-      timezone: json['timezone'] as String? ?? 'Asia/Kolkata',
-      recurrenceType: json['recurrence_type'] as String? ?? 'WEEKLY',
+      startTime: (json['start_time'] ?? json['startTime'] ?? '') as String,
+      endTime: (json['end_time'] ?? json['endTime'] ?? '') as String,
+      timezone: (json['timezone'] ?? 'Asia/Kolkata') as String,
+      recurrenceType:
+          (json['recurrence_type'] ?? json['recurrenceType'] ?? 'WEEKLY')
+              as String,
       daysOfWeek:
-          (json['days_of_week'] as List<dynamic>?)
+          ((json['days_of_week'] ?? json['daysOfWeek']) as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
               .toList() ??
           [],
       customDates:
-          (json['custom_dates'] as List<dynamic>?)
+          ((json['custom_dates'] ?? json['customDates']) as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      startDate: json['start_date'] as String? ?? '',
-      endDate: json['end_date'] as String?,
-      crossesMidnight: json['crosses_midnight'] as bool? ?? false,
-      priority: json['priority'] as String? ?? 'MEDIUM',
-      isActive: json['is_active'] as bool? ?? true,
+      startDate: (json['start_date'] ?? json['startDate'] ?? '') as String,
+      endDate: (json['end_date'] ?? json['endDate']) as String?,
+      crossesMidnight:
+          (json['crosses_midnight'] ?? json['crossesMidnight'] ?? false)
+              as bool,
+      priority: (json['priority'] ?? 'MEDIUM') as String,
+      isActive: (json['is_active'] ?? json['isActive'] ?? true) as bool,
       arrivalGraceMins:
-          (graceConfig['arrival_grace_mins'] as num?)?.toInt() ?? 10,
+          ((grace['arrival_grace_mins'] ?? grace['entryGraceMinutes']) as num?)
+              ?.toInt() ??
+          10,
       departureBufferMins:
-          (graceConfig['departure_buffer_mins'] as num?)?.toInt() ?? 5,
-      minimumStayMins: (graceConfig['minimum_stay_mins'] as num?)?.toInt(),
-
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
+          ((grace['departure_buffer_mins'] ?? grace['exitGraceMinutes'])
+                  as num?)
+              ?.toInt() ??
+          5,
+      minimumStayMins:
+          ((grace['minimum_stay_mins'] ?? grace['minimumStayMinutes']) as num?)
+              ?.toInt(),
+      createdAt: (json['created_at'] ?? json['createdAt']) as String?,
+      updatedAt: (json['updated_at'] ?? json['updatedAt']) as String?,
     );
   }
 
@@ -118,7 +130,6 @@ class ScheduleModel {
     arrivalGraceMins: arrivalGraceMins,
     departureBufferMins: departureBufferMins,
     minimumStayMins: minimumStayMins,
-
     createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
     updatedAt: updatedAt != null ? DateTime.tryParse(updatedAt!) : null,
   );

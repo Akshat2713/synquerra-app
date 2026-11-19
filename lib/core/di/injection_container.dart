@@ -2,8 +2,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:synquerra/domain/usecases/relationship/search_person_by_phone_usecase.dart';
-import 'package:synquerra/presentation/blocs/profile/profile_bloc.dart';
 
 // Core & Network
 import '../../data/datasources/realtime/analytics_realtime_datasource.dart';
@@ -14,6 +12,7 @@ import '../../data/datasources/remote/mode_conditions_remote_data_source.dart';
 import '../../data/datasources/remote/relationship_remote_datasource.dart';
 import '../../data/datasources/remote/schedule_remote_datasource.dart';
 import '../../data/datasources/remote/settings_remote_datasource.dart';
+import '../../data/datasources/remote/sos_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/network/session_expired_notifier.dart';
 import '../../data/repositories_impl/device_assignment_repository_impl.dart';
@@ -22,6 +21,7 @@ import '../../data/repositories_impl/realtime_events_repository_impl.dart';
 import '../../data/repositories_impl/relationship_repository_impl.dart';
 import '../../data/repositories_impl/schedule_repository_impl.dart';
 import '../../data/repositories_impl/settings_repository_impl.dart';
+import '../../data/repositories_impl/sos_repository_impl.dart';
 import '../../data/repositories_impl/user_repository_impl.dart';
 import '../../domain/repositories/device_assignment_repository.dart';
 import '../../domain/repositories/mode_conditions_repository.dart';
@@ -29,12 +29,15 @@ import '../../domain/repositories/realtime_events_repository.dart';
 import '../../domain/repositories/relationship_repository.dart';
 import '../../domain/repositories/schedule_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/sos_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/analytics/get_live_telemetry_usecase.dart';
 import '../../domain/usecases/analytics/subscribe_analytics_realtime_usecase.dart';
 import '../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../domain/usecases/device_assignments/assign_device_usecase.dart';
 import '../../domain/usecases/device_assignments/unassign_device_usecase.dart';
+import '../../domain/usecases/geofence/assign_geofence_usecase.dart';
+import '../../domain/usecases/geofence/unassign_geofence_usecase.dart';
 import '../../domain/usecases/mode_conditions/create_mode_condition_usecase.dart';
 import '../../domain/usecases/mode_conditions/delete_mode_condition_usecase.dart';
 import '../../domain/usecases/mode_conditions/get_geofence_modes_usecase.dart';
@@ -46,6 +49,7 @@ import '../../domain/usecases/relationship/create_person_with_relationship_useca
 import '../../domain/usecases/relationship/create_relationship_usecase.dart';
 import '../../domain/usecases/relationship/delete_relationship_usecase.dart';
 import '../../domain/usecases/relationship/get_relationship_list_usecase.dart';
+import '../../domain/usecases/relationship/search_person_by_phone_usecase.dart';
 import '../../domain/usecases/schedule/create_schedule_override_usecase.dart';
 import '../../domain/usecases/schedule/create_schedule_usecase.dart';
 import '../../domain/usecases/schedule/delete_schedule_override_usecase.dart';
@@ -53,6 +57,7 @@ import '../../domain/usecases/schedule/delete_schedule_usecase.dart';
 import '../../domain/usecases/schedule/get_my_schedules_usecase.dart';
 import '../../domain/usecases/schedule/get_schedule_by_id_usecase.dart';
 import '../../domain/usecases/schedule/get_schedule_overrides_usecase.dart';
+import '../../domain/usecases/schedule/get_target_user_schedules_usecase.dart';
 import '../../domain/usecases/schedule/toggle_schedule_status_usecase.dart';
 import '../../domain/usecases/schedule/update_schedule_override_usecase.dart';
 import '../../domain/usecases/schedule/update_schedule_usecase.dart';
@@ -60,16 +65,20 @@ import '../../domain/usecases/settings/get_settings_usecase.dart';
 import '../../domain/usecases/settings/update_phone_numbers_usecase.dart';
 import '../../domain/usecases/signup/delete_person_usecase.dart';
 import '../../domain/usecases/signup/signup_usecase.dart';
+import '../../domain/usecases/sos/acknowledge_sos_usecase.dart';
+import '../../domain/usecases/sos/stop_sos_usecase.dart';
 import '../../domain/usecases/user/get_user_profile_usecase.dart';
 import '../../domain/usecases/user/update_user_profile_usecase.dart';
 import '../../presentation/blocs/manage_devices/manage_devices_bloc.dart';
 import '../../presentation/blocs/manage_users/manage_users_bloc.dart';
 import '../../presentation/blocs/mode_condition/mode_condition_bloc.dart';
+import '../../presentation/blocs/profile/profile_bloc.dart';
 import '../../presentation/blocs/realtime/device_events_cubit.dart';
 import '../../presentation/blocs/schedule_form/schedule_form_bloc.dart';
 import '../../presentation/blocs/schedule_list/schedule_list_bloc.dart';
 import '../../presentation/blocs/schedule_override/schedule_overrides_bloc.dart';
 import '../../presentation/blocs/settings/settings_bloc.dart';
+import '../../presentation/blocs/sos/sos_bloc.dart';
 import '../config/map_config.dart';
 import '../../data/network/dio_client.dart';
 
@@ -146,6 +155,7 @@ import '../../presentation/blocs/theme/theme_cubit.dart';
 import '../../presentation/blocs/user_location/user_location_bloc.dart';
 import '../services/local_notification_service.dart';
 import '../services/push_notification_service.dart';
+import '../services/sos_alarm_service.dart';
 
 // Wrapper to allow nullable user in get_it
 class UserHolder {
@@ -287,6 +297,7 @@ Future<void> initDependencies() async {
       getLiveTelemetryUseCase: sl(),
     ),
   );
+
   // ── Geofence Feature ────────────────────────────────────
   sl.registerLazySingleton<GeofenceRemoteDataSource>(
     () => GeofenceRemoteDataSource(sl()),
@@ -298,12 +309,17 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CreateGeofenceUseCase(sl()));
   sl.registerLazySingleton(() => DeleteGeofenceUseCase(sl()));
   sl.registerFactory(() => EditGeofenceUseCase(sl()));
+  sl.registerLazySingleton(() => AssignGeofenceUseCase(sl()));
+  sl.registerLazySingleton(() => UnassignGeofenceUseCase(sl()));
+
   sl.registerFactory<GeofenceBloc>(
     () => GeofenceBloc(
       getGeofencesUseCase: sl(),
       createGeofenceUseCase: sl(),
       editGeofenceUseCase: sl(),
       deleteGeofenceUseCase: sl(),
+      assignGeofenceUseCase: sl(),
+      unassignGeofenceUseCase: sl(),
     ),
   );
 
@@ -434,10 +450,11 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DeleteScheduleUseCase(sl()));
   sl.registerLazySingleton(() => GetScheduleByIdUseCase(sl()));
   sl.registerLazySingleton(() => ToggleScheduleStatusUseCase(sl()));
+  sl.registerLazySingleton(() => GetTargetUserSchedulesUseCase(sl()));
 
   sl.registerFactory<ScheduleListBloc>(
     () => ScheduleListBloc(
-      getMySchedulesUseCase: sl(),
+      getTargetUserSchedulesUseCase: sl(),
       deleteScheduleUseCase: sl(),
       toggleScheduleStatusUseCase: sl(),
     ),
@@ -521,6 +538,26 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => WatchDeviceEventsUseCase(sl()));
   sl.registerFactory<DeviceEventsCubit>(() => DeviceEventsCubit(sl()));
+
+  // ── SOS Feature ─────────────────────────────────────────
+  sl.registerLazySingleton<SosRemoteDataSource>(
+    // ASSUMED name
+    () => SosRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<SosRepository>(
+    () => SosRepositoryImpl(remote: sl()),
+  );
+  sl.registerLazySingleton(() => AcknowledgeSosUseCase(sl()));
+  sl.registerLazySingleton(() => StopSosUseCase(sl()));
+  sl.registerLazySingleton<SosAlarmService>(() => SosAlarmService());
+
+  sl.registerLazySingleton<SosBloc>(
+    () => SosBloc(
+      acknowledgeSosUseCase: sl(),
+      stopSosUseCase: sl(),
+      sosAlarmService: sl(),
+    ),
+  );
 }
 
 /// Called after successful login to store user globally

@@ -15,9 +15,9 @@ abstract class ScheduleRepository {
   });
 
   Future<Either<Failure, List<ScheduleEntity>>> getTargetUserSchedules(
-    String targetUserId, {
-    bool? isActive,
-  });
+    String userId,
+    String deviceId,
+  );
 
   Future<Either<Failure, ScheduleEntity>> getScheduleById(String scheduleId);
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/manage_users/manage_users_bloc.dart';
-import '../../themes/colors.dart';
+import '../../themes/app_tokens.dart';
+import '../../utils/date_time_formatter.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_overlays.dart';
 import '../../widgets/member_form_controller.dart';
 import '../../widgets/member_form_fields.dart';
-import '../../utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class AddMemberScreen extends StatefulWidget {
   const AddMemberScreen({super.key});
@@ -19,8 +19,8 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   final _formKey = GlobalKey<FormState>();
   late final _controller = MemberFormController();
 
-  // Tracks whether the in-flight submission belongs to this screen, so the
-  // listener doesn't react to isAdding changes triggered elsewhere.
+  // TODO(logic): the submit/reload tracking below should live in the bloc
+  // (a dedicated "added" state) instead of these two flags.
   bool _wasSubmitting = false;
   bool _awaitingReload = false;
 
@@ -30,6 +30,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     super.dispose();
   }
 
+  // TODO(logic): empty-string -> null mapping belongs in the bloc/use case.
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _wasSubmitting = true;
@@ -68,34 +69,21 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         if (!_wasSubmitting) return;
 
         if (state is ManageUsersLoaded && state.errorMessage != null) {
-          // Add or relationship-create failed.
           _wasSubmitting = false;
           _awaitingReload = false;
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: AppColors.danger,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppRadius.mdAll,
-                ),
-              ),
-            );
+          AppSnackBar.error(context, state.errorMessage!);
           return;
         }
 
         if (state is ManageUsersLoading) {
-          // The bloc succeeded and is now re-fetching the list.
           _awaitingReload = true;
           return;
         }
 
         if (state is ManageUsersLoaded && _awaitingReload) {
-          // Reload after a successful add completed.
           _wasSubmitting = false;
           _awaitingReload = false;
+          AppSnackBar.success(context, 'Member added successfully');
           Navigator.pop(context, true);
         }
       },
@@ -105,44 +93,25 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             (state is ManageUsersLoading ||
                 (state is ManageUsersLoaded && state.isProcessing));
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Add Family Member'),
-            centerTitle: false,
-          ),
+          appBar: AppBar(title: const Text('Add Family Member')),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: AppSpacing.mdAll,
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.lg,
                   children: [
                     MemberFormFields(
                       controller: _controller,
                       requirePassword: true,
                     ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: AppColors.textSecondary(context),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 200,
-                          child: AppButton(
-                            label: 'Add Member',
-                            onPressed: _submit,
-                            isLoading: isAdding,
-                          ),
-                        ),
-                      ],
+                    AppButton(
+                      label: 'Add Member',
+                      onPressed: _submit,
+                      isLoading: isAdding,
                     ),
                   ],
                 ),

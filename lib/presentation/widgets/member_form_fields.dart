@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import '../themes/app_text_styles.dart';
+import '../themes/app_tokens.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
 import '../utils/date_time_formatter.dart';
+import 'app_motion_widgets.dart';
+import 'app_overlays.dart';
+import 'app_section_card.dart';
+import 'app_surfaces.dart';
 import 'app_text_field.dart';
 import 'member_form_controller.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class MemberFormFields extends StatefulWidget {
   final MemberFormController controller;
@@ -33,97 +40,101 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
       imageQuality: 80,
       maxWidth: 1024,
     );
-    if (picked != null) {
-      setState(
-        () => c.profilePhoto = picked.path,
-      ); // was: c.newProfileImage = File(picked.path)
+    if (picked != null && mounted) {
+      setState(() => c.profilePhoto = picked.path);
     }
   }
 
   void _showPhotoSourceSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    showAppBottomSheet(
+      context,
+      builder: (sheetContext) => Padding(
+        padding: AppSpacing.mdAll,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _PhotoOption(
+              icon: AppIcons.camera,
+              label: 'Take Photo',
+              background: AppColors.primary(context),
+              foreground: AppColors.onPrimary(context),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            _PhotoOption(
+              icon: AppIcons.gallery,
+              label: 'Choose from Gallery',
+              background: AppColors.info,
+              foreground: AppColors.onInfo,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            if (c.profilePhoto?.isNotEmpty ?? false)
+              _PhotoOption(
+                icon: AppIcons.delete,
+                label: 'Remove Photo',
+                background: AppColors.danger,
+                foreground: AppColors.onDanger,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  setState(() => c.profilePhoto = null);
+                },
+              ),
+          ],
+        ),
       ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_camera_outlined),
-                title: const Text('Take Photo'),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Choose from Gallery'),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              if (c.profilePhoto?.isNotEmpty ?? false)
-                ListTile(
-                  leading: Icon(Icons.delete_outline, color: AppColors.danger),
-                  title: Text(
-                    'Remove Photo',
-                    style: TextStyle(color: AppColors.danger),
-                  ),
-                  onTap: () {
-                    Navigator.pop(sheetContext);
-                    setState(() => c.profilePhoto = null); //
-                  },
-                ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
     );
   }
 
   Widget _buildAvatar() {
+    final image = c.avatarImage;
     return Center(
       child: Stack(
         children: [
           CircleAvatar(
-            radius: 52,
-            backgroundColor: AppColors.outlineVariant(context),
-            backgroundImage: c.avatarImage, // was: image (locally built)
-            child:
-                c.avatarImage ==
-                    null // was: image == null
+            radius: AppSize.avatarLg / 2,
+            backgroundColor: AppColors.primaryContainer(context),
+            backgroundImage: image,
+            child: image == null
                 ? Icon(
-                    Icons.person_outline,
-                    size: 48,
-                    color: AppColors.textSecondary(context),
+                    AppIcons.person,
+                    size: AppSize.tapTarget,
+                    color: AppColors.onPrimaryContainer(context),
                   )
                 : null,
           ),
           Positioned(
             bottom: 0,
             right: 0,
-            child: GestureDetector(
-              onTap: _showPhotoSourceSheet,
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                decoration: BoxDecoration(
-                  color: AppColors.primary(context),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    width: 2,
+            child: Tooltip(
+              message: 'Change photo',
+              child: IconTile(
+                circle: true,
+                size: AppSize.avatarSm,
+                background: AppColors.primary(context),
+                foreground: AppColors.onPrimary(context),
+                child: Material(
+                  type: MaterialType.transparency,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      _showPhotoSourceSheet();
+                    },
+                    child: Center(
+                      child: Icon(
+                        AppIcons.camera,
+                        size: AppSize.iconSm,
+                        color: AppColors.onPrimary(context),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Icon(
-                  Icons.camera_alt_outlined,
-                  size: 18,
-                  color: Colors.white,
                 ),
               ),
             ),
@@ -134,13 +145,14 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
   }
 
   Future<void> _selectBirthDate() async {
+    // TODO(logic): date bounds (1900 / today / 2000 default) are business rules.
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: c.birthDate ?? DateTime(2000),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         c.birthDate = picked;
         c.birthDateController.text = DateTimeFormatter.formatDate(picked);
@@ -148,228 +160,256 @@ class _MemberFormFieldsState extends State<MemberFormFields> {
     }
   }
 
+  Widget _prefix(IconData icon) =>
+      Icon(icon, size: AppSize.icon, color: AppColors.textSecondary(context));
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.md,
       children: [
-        _buildAvatar(),
-        const SizedBox(height: 24),
-        AppTextField(
-          controller: c.firstNameController,
-          label: 'First Name *',
-          hint: 'Anik',
-          prefixIcon: Icons.person_outline,
-          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.middleNameController,
-          label: 'Middle Name',
-          hint: 'M',
-          prefixIcon: Icons.person_outline,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.lastNameController,
-          label: 'Last Name',
-          hint: 'Kumar',
-          prefixIcon: Icons.person_outline,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.emailController,
-          label: 'Email *',
-          hint: 'anik123@gmail.com',
-          prefixIcon: Icons.email_outlined,
-          keyboardType: TextInputType.emailAddress,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Required';
-            if (!v.contains('@')) return 'Invalid email';
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.passwordController,
-          label: widget.requirePassword
-              ? 'Set Password *'
-              : 'New Password (optional)',
-          hint: '••••••••',
-          prefixIcon: Icons.lock_outline_rounded,
-          isPassword: true,
-          validator: (v) {
-            if (!widget.requirePassword && (v == null || v.isEmpty)) {
-              return null; // blank = keep current password
-            }
-            if (v == null || v.isEmpty) return 'Password is required';
-            if (v.length < 6) return 'Password must be at least 6 characters';
-            return null;
-          },
-        ),
-        if (!widget.requirePassword)
-          Padding(
-            padding: const EdgeInsets.only(top: 4, left: 4),
-            child: Text(
-              'Leave blank to keep the current password',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary(context),
-              ),
+        _buildAvatar().entrance(context, index: 0),
+
+        AppSectionCard(
+          title: 'Personal Information',
+          icon: AppIcons.person,
+          background: AppColors.primary(context),
+          foreground: AppColors.onPrimary(context),
+          children: [
+            AppTextField(
+              controller: c.firstNameController,
+              label: 'First Name *',
+              hint: 'Anik',
+              prefixIcon: AppIcons.person,
+              validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
             ),
-          ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.phoneController,
-          label: 'Phone *',
-          hint: '+917788997788',
-          prefixIcon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-        ),
-        const SizedBox(height: 16),
-        GestureDetector(
-          onTap: _selectBirthDate,
-          child: AbsorbPointer(
-            child: AppTextField(
+            AppTextField(
+              controller: c.middleNameController,
+              label: 'Middle Name',
+              hint: 'M',
+              prefixIcon: AppIcons.person,
+            ),
+            AppTextField(
+              controller: c.lastNameController,
+              label: 'Last Name',
+              hint: 'Kumar',
+              prefixIcon: AppIcons.person,
+            ),
+            AppTextField(
+              controller: c.phoneController,
+              label: 'Phone *',
+              hint: '+917788997788',
+              prefixIcon: AppIcons.phone,
+              keyboardType: TextInputType.phone,
+              validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+            ),
+            AppTextField(
               controller: c.birthDateController,
               label: 'Birth Date',
               hint: '14 Feb, 2000',
-              prefixIcon: Icons.calendar_today_outlined,
+              prefixIcon: AppIcons.date,
+              readOnly: true,
+              onTap: _selectBirthDate,
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Gender',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary(context),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        DropdownButtonFormField<String>(
-          initialValue: c.gender,
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: AppRadius.mdAll,
-              borderSide: BorderSide(color: AppColors.outlineVariant(context)),
-            ),
-            prefixIcon: Icon(
-              Icons.wc_outlined,
-              color: AppColors.textSecondary(context),
-              size: 20,
-            ),
-          ),
-          items: const [
-            DropdownMenuItem(value: 'male', child: Text('Male')),
-            DropdownMenuItem(value: 'female', child: Text('Female')),
-            DropdownMenuItem(value: 'other', child: Text('Other')),
-          ],
-          onChanged: (val) => setState(() => c.gender = val!),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Relationship',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary(context),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        if (widget.showRelationshipFields) ...[
-          DropdownButtonFormField<String>(
-            initialValue: c.relationshipType,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+            DropdownButtonFormField<String>(
+              initialValue: c.gender,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Gender',
+                prefixIcon: _prefix(AppIcons.gender),
               ),
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.mdAll,
-                borderSide: BorderSide(
-                  color: AppColors.outlineVariant(context),
+              items: const [
+                DropdownMenuItem(value: 'male', child: Text('Male')),
+                DropdownMenuItem(value: 'female', child: Text('Female')),
+                DropdownMenuItem(value: 'other', child: Text('Other')),
+              ],
+              onChanged: (val) {
+                if (val != null) setState(() => c.gender = val);
+              },
+            ),
+            if (widget.showRelationshipFields) ...[
+              DropdownButtonFormField<String>(
+                initialValue: c.relationshipType,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Relationship',
+                  prefixIcon: _prefix(AppIcons.relationship),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'child', child: Text('Child')),
+                  DropdownMenuItem(value: 'parent', child: Text('Parent')),
+                  DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
+                  DropdownMenuItem(value: 'guardian', child: Text('Guardian')),
+                  DropdownMenuItem(value: 'spouse', child: Text('Spouse')),
+                  DropdownMenuItem(value: 'other', child: Text('Other')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => c.relationshipType = val);
+                },
+              ),
+              InsetRow(
+                onTap: () => setState(() => c.isHead = !c.isHead),
+                child: Row(
+                  spacing: AppSpacing.md,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: AppSpacing.xs,
+                        children: [
+                          Text(
+                            'Set as Head of Family',
+                            style: AppTextStyles.bodyWithColor(
+                              context,
+                              color: AppColors.textPrimary(context),
+                            ).copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            'This member will have primary account privileges',
+                            style: AppTextStyles.metaWithColor(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: c.isHead,
+                      onChanged: (val) => setState(() => c.isHead = val),
+                    ),
+                  ],
                 ),
               ),
-              prefixIcon: Icon(
-                Icons.diversity_3_outlined,
-                color: AppColors.textSecondary(context),
-                size: 20,
-              ),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'child', child: Text('Child')),
-              DropdownMenuItem(value: 'parent', child: Text('Parent')),
-              DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
-              DropdownMenuItem(value: 'guardian', child: Text('Guardian')),
-              DropdownMenuItem(value: 'spouse', child: Text('Spouse')),
-              DropdownMenuItem(value: 'other', child: Text('Other')),
             ],
-            onChanged: (val) => setState(() => c.relationshipType = val!),
-          ),
-          const SizedBox(height: 16),
-          SwitchListTile(
-            title: Text(
-              'Set as Head of Family',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary(context),
+          ],
+        ).entrance(context, index: 1),
+
+        AppSectionCard(
+          title: 'Account',
+          icon: AppIcons.lock,
+          background: AppColors.success,
+          foreground: AppColors.onSuccess,
+          children: [
+            AppTextField(
+              controller: c.emailController,
+              label: 'Email *',
+              hint: 'anik123@gmail.com',
+              prefixIcon: AppIcons.email,
+              keyboardType: TextInputType.emailAddress,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Required';
+                if (!v.contains('@')) return 'Invalid email';
+                return null;
+              },
+            ),
+            AppTextField(
+              controller: c.passwordController,
+              label: widget.requirePassword
+                  ? 'Set Password *'
+                  : 'New Password (optional)',
+              hint: '••••••••',
+              prefixIcon: AppIcons.lock,
+              isPassword: true,
+              validator: (v) {
+                if (!widget.requirePassword && (v == null || v.isEmpty)) {
+                  return null; // blank = keep current password
+                }
+                if (v == null || v.isEmpty) return 'Password is required';
+                if (v.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+            if (!widget.requirePassword)
+              Padding(
+                padding: AppSpacing.xsHorizontal,
+                child: Text(
+                  'Leave blank to keep the current password',
+                  style: AppTextStyles.metaWithColor(context),
+                ),
               ),
+          ],
+        ).entrance(context, index: 2),
+
+        AppSectionCard(
+          title: 'Address Details',
+          icon: AppIcons.address,
+          background: AppColors.info,
+          foreground: AppColors.onInfo,
+          children: [
+            AppTextField(
+              controller: c.addressController,
+              label: 'Address',
+              hint: 'XYZ Colony, ABC Road',
+              prefixIcon: AppIcons.street,
             ),
-            subtitle: const Text(
-              'This member will have primary account privileges',
+            AppTextField(
+              controller: c.cityController,
+              label: 'City',
+              hint: 'Ranchi',
+              prefixIcon: AppIcons.city,
             ),
-            value: c.isHead,
-            onChanged: (val) => setState(() => c.isHead = val),
-            activeThumbColor: AppColors.primary(context),
-            contentPadding: EdgeInsets.zero,
+            AppTextField(
+              controller: c.stateController,
+              label: 'State',
+              hint: 'Jharkhand',
+              prefixIcon: AppIcons.region,
+            ),
+            AppTextField(
+              controller: c.countryController,
+              label: 'Country',
+              hint: 'India',
+              prefixIcon: AppIcons.country,
+            ),
+            AppTextField(
+              controller: c.pincodeController,
+              label: 'Pincode',
+              hint: '834003',
+              prefixIcon: AppIcons.pincode,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+            ),
+          ],
+        ).entrance(context, index: 3),
+      ],
+    );
+  }
+}
+
+class _PhotoOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color background;
+  final Color foreground;
+  final VoidCallback onTap;
+
+  const _PhotoOption({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InsetRow(
+      onTap: onTap,
+      child: Row(
+        spacing: AppSpacing.smd,
+        children: [
+          IconTile(icon: icon, background: background, foreground: foreground),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.bodyWithColor(
+                context,
+                color: AppColors.textPrimary(context),
+              ).copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
-        const SizedBox(height: 16),
-
-        AppTextField(
-          controller: c.addressController,
-          label: 'Address',
-          hint: 'XYZ Colony, ABC Road',
-          prefixIcon: Icons.home_outlined,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.cityController,
-          label: 'City',
-          hint: 'Ranchi',
-          prefixIcon: Icons.location_city_outlined,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.stateController,
-          label: 'State',
-          hint: 'Jharkhand',
-          prefixIcon: Icons.map_outlined,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.countryController,
-          label: 'Country',
-          hint: 'India',
-          prefixIcon: Icons.flag_outlined,
-        ),
-        const SizedBox(height: 16),
-        AppTextField(
-          controller: c.pincodeController,
-          label: 'Pincode',
-          hint: '834003',
-          prefixIcon: Icons.pin_outlined,
-          keyboardType: TextInputType.number,
-        ),
-      ],
+      ),
     );
   }
 }

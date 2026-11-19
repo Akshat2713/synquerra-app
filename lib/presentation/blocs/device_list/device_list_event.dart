@@ -11,8 +11,10 @@ class DeviceListLoadRequested extends DeviceListEvent {
   const DeviceListLoadRequested();
 }
 
+// device_list_event.dart
 class DeviceListRefreshRequested extends DeviceListEvent {
-  const DeviceListRefreshRequested();
+  final Completer<void>? completer;
+  const DeviceListRefreshRequested({this.completer});
 }
 
 class DeviceListDeviceToggled extends DeviceListEvent {

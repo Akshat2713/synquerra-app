@@ -52,6 +52,10 @@ class DeviceAssignmentRemoteDataSource {
       '[DeviceAssignmentRemoteDataSource] unassignDevice() called for device $deviceId',
     );
 
+    debugPrint(
+      '[DeviceAssignmentRemoteDataSource] unassignDevice() called for person $personId',
+    );
+
     final response = await _dioClient.dio.delete(
       '${ApiConstants.deviceAssignments(deviceId)}/$personId',
       // queryParameters: {

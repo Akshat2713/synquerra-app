@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../image_auth.dart';
+
 class AuthInterceptor extends Interceptor {
   final FlutterSecureStorage _storage;
 
@@ -12,6 +14,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final token = await _storage.read(key: 'access_token');
+    ImageAuth.setToken(token);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }

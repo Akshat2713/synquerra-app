@@ -7,17 +7,20 @@ abstract class ScheduleListEvent extends Equatable {
 }
 
 class ScheduleListLoadRequested extends ScheduleListEvent {
-  final bool? isActive;
-  const ScheduleListLoadRequested({this.isActive});
+  final String userId;
+  final String deviceId;
+
+  const ScheduleListLoadRequested({
+    required this.userId,
+    required this.deviceId,
+  });
+
   @override
-  List<Object?> get props => [isActive];
+  List<Object?> get props => [userId, deviceId];
 }
 
 class ScheduleListRefreshRequested extends ScheduleListEvent {
-  final bool? isActive;
-  const ScheduleListRefreshRequested({this.isActive});
-  @override
-  List<Object?> get props => [isActive];
+  const ScheduleListRefreshRequested();
 }
 
 class ScheduleListItemDeleted extends ScheduleListEvent {

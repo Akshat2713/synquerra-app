@@ -6,8 +6,10 @@ class ScheduleListState extends Equatable {
   final ScheduleListStatus status;
   final List<ScheduleEntity> schedules;
   final String? errorMessage;
-  final Set<String> processingIds; // schedule ids currently deleting/toggling
-  final String? actionError; // transient error from a delete/toggle action
+  final Set<String> processingIds;
+  final String? actionError;
+  final String? userId;
+  final String? deviceId;
 
   const ScheduleListState({
     this.status = ScheduleListStatus.initial,
@@ -15,6 +17,8 @@ class ScheduleListState extends Equatable {
     this.errorMessage,
     this.processingIds = const {},
     this.actionError,
+    this.userId,
+    this.deviceId,
   });
 
   bool get isLoading => status == ScheduleListStatus.loading;
@@ -27,6 +31,8 @@ class ScheduleListState extends Equatable {
     String? errorMessage,
     Set<String>? processingIds,
     String? actionError,
+    String? userId,
+    String? deviceId,
   }) {
     return ScheduleListState(
       status: status ?? this.status,
@@ -34,6 +40,8 @@ class ScheduleListState extends Equatable {
       errorMessage: errorMessage,
       processingIds: processingIds ?? this.processingIds,
       actionError: actionError,
+      userId: userId ?? this.userId,
+      deviceId: deviceId ?? this.deviceId,
     );
   }
 
@@ -44,5 +52,7 @@ class ScheduleListState extends Equatable {
     errorMessage,
     processingIds,
     actionError,
+    userId,
+    deviceId,
   ];
 }

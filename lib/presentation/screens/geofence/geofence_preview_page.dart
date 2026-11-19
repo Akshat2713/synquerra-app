@@ -12,7 +12,7 @@ import 'utils/map_bounds_util.dart';
 import 'widgets/geofence_status_chip.dart';
 import 'widgets/map_numbered_marker.dart';
 import 'widgets/map_top_header_bar.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class GeofencePreviewPage extends StatefulWidget {
   final GeofenceEntity geofence;
@@ -121,7 +121,9 @@ class _GeofencePreviewPageState extends State<GeofencePreviewPage> {
                 borderRadius: AppRadius.lgAll,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
+                    color: AppColors.shadow(
+                      context,
+                    ).withValues(alpha: AppAlpha.tint),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

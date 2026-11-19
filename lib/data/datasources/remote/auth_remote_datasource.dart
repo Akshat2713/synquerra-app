@@ -50,7 +50,7 @@ class AuthRemoteDataSource {
     AppLogger.d('AuthRemoteDataSource', 'updateFcmToken() called');
 
     final response = await _dioClient.dio.patch(
-      ApiConstants.updateProfile,
+      ApiConstants.profile,
       data: {'fcm_token': fcmToken, 'platform': platform},
     );
 
@@ -59,6 +59,18 @@ class AuthRemoteDataSource {
     if (body['status'] != 'success') {
       throw ServerException(
         message: body['message'] ?? 'Failed to update FCM token.',
+        statusCode: body['code'] as int?,
+      );
+    }
+  }
+
+  Future<void> signOut() async {
+    AppLogger.d('AuthRemoteDataSource', 'signOut() called');
+    final response = await _dioClient.dio.post(ApiConstants.signOut);
+    final body = response.data as Map<String, dynamic>;
+    if (body['status'] != 'success') {
+      throw ServerException(
+        message: body['message'] ?? 'Sign out failed.',
         statusCode: body['code'] as int?,
       );
     }

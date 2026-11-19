@@ -45,7 +45,7 @@ final List<MainTab> mainTabs = [
   ),
 
   MainTab(
-    label: 'Mappings',
+    label: 'Assignments',
     icon: Icons.developer_board_outlined,
     selectedIcon: Icons.developer_board_rounded,
     builder: (_) => BlocProvider(

@@ -11,7 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
-
+shared_ui_features.md
 
 # IntelliJ related
 *.iml

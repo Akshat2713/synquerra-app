@@ -1,12 +1,11 @@
-import 'package:synquerra/data/datasources/graphql/geofence_mode_query.dart';
-import 'package:synquerra/data/datasources/graphql/mode_conditions_query.dart';
-
 import '../../../core/error/app_exceptions.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../models/geofence_mode/geofence_mode_model.dart';
 import '../../models/geofence_mode/mode_condition_model.dart';
 import '../../network/api_constants.dart';
 import '../../network/dio_client.dart';
+import '../graphql/geofence_mode_query.dart';
+import '../graphql/mode_conditions_query.dart';
 
 class ModeConditionsRemoteDataSource {
   final DioClient _dioClient;

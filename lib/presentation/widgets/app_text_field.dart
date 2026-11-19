@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../themes/app_text_styles.dart';
+import '../themes/app_tokens.dart';
 import '../themes/colors.dart';
+import '../utils/app_icons.dart';
 
 class AppTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -15,6 +18,7 @@ class AppTextField extends StatefulWidget {
   final bool readOnly;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
+  final VoidCallback? onTap;
 
   const AppTextField({
     super.key,
@@ -30,6 +34,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -51,30 +56,33 @@ class _AppTextFieldState extends State<AppTextField> {
       validator: widget.validator,
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onSubmitted,
-      style: TextStyle(color: AppColors.textPrimary(context), fontSize: 15),
+      style: AppTextStyles.bodyWithColor(
+        context,
+        color: AppColors.textPrimary(context),
+      ),
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
         prefixIcon: widget.prefixIcon != null
             ? Icon(
                 widget.prefixIcon,
-                size: 20,
+                size: AppSize.icon,
                 color: AppColors.textSecondary(context),
               )
             : null,
         suffixIcon: widget.isPassword
             ? IconButton(
+                tooltip: _obscure ? 'Show password' : 'Hide password',
                 icon: Icon(
-                  _obscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: 20,
+                  _obscure ? AppIcons.visibilityOff : AppIcons.visibility,
+                  size: AppSize.icon,
                   color: AppColors.textSecondary(context),
                 ),
                 onPressed: () => setState(() => _obscure = !_obscure),
               )
             : null,
       ),
+      onTap: widget.onTap,
     );
   }
 }

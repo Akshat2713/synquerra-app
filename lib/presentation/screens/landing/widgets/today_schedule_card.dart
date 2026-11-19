@@ -1,195 +1,147 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../domain/entities/device/device_entity.dart';
+import '../../../../domain/utils/schedule_resolver.dart';
+import '../../../blocs/schedule_list/schedule_list_bloc.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../widgets/app_surfaces.dart';
+import '../../../widgets/expandable_card.dart';
+
+import 'schedule_row_skeleton.dart';
 
 class TodayScheduleCard extends StatefulWidget {
-  final List<ScheduleEntry> schedule;
+  final DeviceEntity device;
 
-  const TodayScheduleCard({super.key, required this.schedule});
+  const TodayScheduleCard({super.key, required this.device});
 
   @override
   State<TodayScheduleCard> createState() => _TodayScheduleCardState();
 }
 
 class _TodayScheduleCardState extends State<TodayScheduleCard> {
-  bool _isExpanded = false;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    // Re-evaluate upcoming / ongoing / completed every minute.
+    _ticker = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  void _load() => context.read<ScheduleListBloc>().add(
+    ScheduleListLoadRequested(
+      userId: widget.device.displayRealUserId,
+      deviceId: widget.device.id,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: AppRadius.lgAll,
-        border: Border.all(
-          color: AppColors.outline(context).withValues(alpha: 1),
-        ),
+    return ExpandableCard(
+      leading: IconTile(
+        icon: Icons.event_rounded,
+        background: AppColors.primary(context),
+        foreground: AppColors.onPrimary(context),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Dropdown Header ──────────────────────────────────────
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: AppRadius.lgAll,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    _isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary(context),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Today's Schedule",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      title: "Today's Schedule",
+      onExpanded: _load,
+      child: BlocBuilder<ScheduleListBloc, ScheduleListState>(
+        builder: (context, state) {
+          if ((state.isLoading || state.status == ScheduleListStatus.initial) &&
+              state.schedules.isEmpty) {
+            return const ScheduleRowSkeleton();
+          }
 
-          // ── Expandable List ──────────────────────────────────────
-          if (_isExpanded) ...[
-            Divider(
-              height: 1,
-              color: AppColors.outlineVariant(context).withValues(alpha: AppAlpha.border),
-            ),
-            if (widget.schedule.isNotEmpty)
-              ...widget.schedule.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        child: Text(
-                          item.time,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary(context),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.label,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'Safe environment',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary(context),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.lgAll,
-                          ),
-                          side: BorderSide(
-                            color: AppColors.outlineVariant(
-                              context,
-                            ).withValues(alpha: AppAlpha.border),
-                          ),
-                        ),
-                        child: const Text(
-                          'Skip',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'No scheduled events today.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
-              ),
-          ],
-        ],
+          if (state.isError && state.schedules.isEmpty) {
+            return ExpandableCardEmpty(
+              state.errorMessage ?? 'Could not load schedules.',
+            );
+          }
+
+          final today = ScheduleResolver.forDay(
+            state.schedules,
+            DateTime.now(),
+          );
+
+          if (today.isEmpty) {
+            return const ExpandableCardEmpty('No scheduled events today.');
+          }
+
+          return Column(
+            children: [for (final r in today) _ScheduleRow(resolved: r)],
+          );
+        },
       ),
     );
   }
 }
 
-class ScheduleEntry {
-  final String id;
-  final String time;
-  final String label;
-  final String subtitle;
-  final bool isSkipped;
+class _ScheduleRow extends StatelessWidget {
+  final ResolvedSchedule resolved;
+  const _ScheduleRow({required this.resolved});
 
-  const ScheduleEntry({
-    required this.id,
-    required this.time,
-    required this.label,
-    this.subtitle = 'Safe environment',
-    this.isSkipped = false,
-  });
+  static String _label(ScheduleStatus s) => switch (s) {
+    ScheduleStatus.upcoming => 'Upcoming',
+    ScheduleStatus.ongoing => 'Ongoing',
+    ScheduleStatus.completed => 'Completed',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final schedule = resolved.schedule;
+
+    return InsetRow(
+      onTap: () {}, // TODO(logic): wire destination
+      child: Row(
+        children: [
+          InfoPill(
+            label: schedule.startTime,
+            background: AppColors.primaryContainer(context),
+            foreground: AppColors.primary(context),
+          ),
+          const SizedBox(width: AppSpacing.smd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  schedule.title,
+                  style: AppTextStyles.bodyWithColor(
+                    context,
+                    color: AppColors.textPrimary(context),
+                  ).copyWith(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  _label(resolved.status),
+                  style: AppTextStyles.metaWithColor(context),
+                ),
+              ],
+            ),
+          ),
+          // TODO(logic): wire skip action.
+          FilledButton.tonal(
+            onPressed: () {},
+            style: FilledButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              minimumSize: Size.zero,
+            ),
+            child: const Text('Skip'),
+          ),
+        ],
+      ),
+    );
+  }
 }
-
-final List<ScheduleEntry> mockSchedule = [
-  const ScheduleEntry(
-    id: '1',
-    time: '08:00',
-    label: 'School day',
-    subtitle: 'Safe environment',
-  ),
-  const ScheduleEntry(
-    id: '2',
-    time: '12:30',
-    label: 'Lunch Break',
-    subtitle: 'Cafeteria',
-  ),
-  const ScheduleEntry(
-    id: '3',
-    time: '15:00',
-    label: 'After-school Activity',
-    subtitle: 'Sports Complex',
-  ),
-  const ScheduleEntry(
-    id: '4',
-    time: '18:00',
-    label: 'Evening Study',
-    subtitle: 'Home / Library',
-  ),
-];

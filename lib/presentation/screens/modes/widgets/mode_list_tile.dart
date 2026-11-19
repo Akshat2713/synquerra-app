@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../domain/entities/modes/mode_entity.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../themes/app_tokens.dart';
 
 class ModeListTile extends StatelessWidget {
   final ModeEntity mode;
@@ -29,7 +29,9 @@ class ModeListTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryContainer(context).withValues(alpha: AppAlpha.border)
+              ? AppColors.primaryContainer(
+                  context,
+                ).withValues(alpha: AppAlpha.border)
               : AppColors.surface(context),
           border: Border.all(
             color: isSelected
@@ -65,7 +67,9 @@ class ModeListTile extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? AppColors.primary(context) : Colors.transparent,
+                    color: isSelected
+                        ? AppColors.primary(context)
+                        : Colors.transparent,
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary(context)
@@ -158,7 +162,9 @@ class _StatChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant(context).withValues(alpha: AppAlpha.border),
+          color: AppColors.surfaceVariant(
+            context,
+          ).withValues(alpha: AppAlpha.border),
           borderRadius: AppRadius.mdAll,
         ),
         child: Column(

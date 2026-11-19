@@ -74,6 +74,21 @@ class DateTimeFormatter {
     }
   }
 
+  /// Compact time for feed rows, takes the raw ISO string.
+  /// Today: "now", "5m ago", "2h ago". Yesterday: "9:30 PM". Older: "14 Oct".
+  static String formatFeedTime(String? iso) {
+    final dt = parseUtcToLocal(iso);
+    if (dt == null) return '';
+    if (isToday(dt)) {
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return 'now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      return '${diff.inHours}h ago';
+    }
+    if (isYesterday(dt)) return DateFormat('h:mm a').format(dt);
+    return DateFormat('d MMM').format(dt);
+  }
+
   /// Checks if a timestamp falls within the live threshold
   static bool isLive(
     DateTime? timestamp, {
@@ -103,7 +118,7 @@ class DateTimeFormatter {
 
   static String toFullDateTime(String? isoTimestamp) {
     final dt = parseUtcToLocal(isoTimestamp);
-    return formatFullDateTime(dt); // Reuses formatFullDateTime directly
+    return formatFullDateTime(dt);
   }
 
   static String formatFullDateTime(DateTime? dateTime) {
@@ -122,4 +137,31 @@ class DateTimeFormatter {
 
   static bool isYesterday(DateTime dateTime) =>
       isSameDay(dateTime, DateTime.now().subtract(const Duration(days: 1)));
+
+  /// "09:00" or "09:00:00" -> "9:00 AM". Returns the input if unparseable.
+  // TODO(logic): drop once ScheduleEntity exposes TimeOfDay.
+  static String formatTimeString(String? value) {
+    if (value == null || value.isEmpty) return '--:--';
+    final parts = value.split(':');
+    final hour = parts.length >= 2 ? int.tryParse(parts[0]) : null;
+    final minute = parts.length >= 2 ? int.tryParse(parts[1]) : null;
+    if (hour == null || minute == null) return value;
+    return formatTimeOfDay(TimeOfDay(hour: hour, minute: minute));
+  }
+
+  /// "12 Oct – 30 Nov", or "From 12 Oct" with no end date.
+  /// Adds the year when a date is outside the current year.
+  // TODO(logic): drop once ScheduleEntity exposes DateTime.
+  static String formatDateRange(String start, String? end) {
+    final hasEnd = end != null && end.isNotEmpty;
+    final from = DateTime.tryParse(start);
+    final to = hasEnd ? DateTime.tryParse(end) : null;
+    if (from == null) return hasEnd ? '$start – $end' : start;
+    final year = DateTime.now().year;
+    final withYear = from.year != year || (to != null && to.year != year);
+    final fmt = DateFormat(withYear ? 'd MMM yyyy' : 'd MMM');
+    return to == null
+        ? 'From ${fmt.format(from)}'
+        : '${fmt.format(from)} – ${fmt.format(to)}';
+  }
 }

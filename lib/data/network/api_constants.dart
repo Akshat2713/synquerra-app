@@ -9,6 +9,8 @@ class ApiConstants {
   static const String signUp = '/api/v1/auth/register-user';
   static const String orgMemberSignIn = '/api/v1/auth/org-member/sign-in';
   static String deleteUser(String userId) => '/api/v1/users/$userId';
+  static const String refreshToken = '/api/v1/auth/refresh-token';
+  static const String signOut = '/api/v1/auth/sign-out';
 
   // ── SignUp & Ownership ────────────────────────────
   static const String createPerson = '/api/v1/persons';
@@ -19,10 +21,10 @@ class ApiConstants {
 
   // ── User ────────────────────────────
 
-  static const String fetchUser = '/api/v1/auth/me';
+  // static const String fetchUser = '/api/v1/auth/me';
 
   // ── User Profile ────────────────────────────────────
-  static const String updateProfile = '/api/v1/auth/profile';
+  static const String profile = '/api/v1/auth/profile';
 
   // ── Device ────────────────────────────────────────
   static const String devices = '/api/v1/users/devices';
@@ -40,8 +42,8 @@ class ApiConstants {
       '/api/v1/alerts-errors/person/$personId';
   static String alertsByDevice(String deviceId) =>
       '/api/v1/alerts-errors/device/alerts?device_id=$deviceId';
-  static String acknowledgeAlert(String alertId) =>
-      '/api/v1/alerts-errors/$alertId/acknowledge';
+  // static String acknowledgeAlert(String alertId) =>
+  //     '/api/v1/alerts-errors/$alertId/acknowledge';
 
   // ── Analytics ─────────────────────────────────────
   static const String analytics = '/api/v1/analytics/device-analytics-query';
@@ -64,6 +66,7 @@ class ApiConstants {
   static const String assignGeofence = '/api/v1/geofences/assign';
   static String geofenceHistory(String deviceId) =>
       '/api/v1/geofences/device/$deviceId/geofence-history';
+  static const String assigGeofence = '/api/v1/geofences/assign';
 
   // Legacy geofence aliases (also supported by backend)
   // static const String getGeofences = '/api/v1/geofences/list';
@@ -92,8 +95,7 @@ class ApiConstants {
   // ── Schedules ─────────────────────────────────────
   static const String schedules = '/api/v1/schedules';
   static const String mySchedules = '/api/v1/schedules/me';
-  static String targetUserSchedules(String targetUserId) =>
-      '/api/v1/schedules/user/$targetUserId';
+  static String targetUserSchedules = '/api/v1/schedules/graphql';
   static String scheduleById(String scheduleId) =>
       '/api/v1/schedules/$scheduleId';
   static String scheduleStatus(String scheduleId) =>
@@ -107,12 +109,21 @@ class ApiConstants {
   static String effectiveSchedule(String scheduleId) =>
       '/api/v1/schedules/$scheduleId/effective';
 
+  // ── SOS ───────────
+  static String acknowledgeSos(String alertId) =>
+      '/api/v1/alerts/$alertId/acknowledge';
+  static const String stopSos = '/api/v1/device-settings/stop-sos';
+
   // ── Realtime (Soketi) ─────────────────────────────
   static const String soketiHost = 'websocket.synquerra.com';
-  static const int soketiPort = 443;
-  static const String soketiKey = 'synquerra@23';
+  static const int soketiPort = 6001;
+  static const String soketiKey = String.fromEnvironment('SOKETI_APP_KEY');
   static const bool soketiUseTLS = true;
 
+  // ── LocationIQ ────────────────────────────────────
+  static const String locationIqKey = String.fromEnvironment(
+    'LOCATIONIQ_API_KEY',
+  );
   // ── Timeouts ──────────────────────────────────────
   static const int connectTimeoutMs = 30000;
   static const int receiveTimeoutMs = 30000;

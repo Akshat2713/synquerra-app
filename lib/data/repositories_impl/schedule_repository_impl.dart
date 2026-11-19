@@ -44,12 +44,11 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
   @override
   Future<Either<Failure, List<ScheduleEntity>>> getTargetUserSchedules(
-    String targetUserId, {
-    bool? isActive,
-  }) async {
+    String userId,
+    String deviceId,
+  ) async {
     return await safeListCall(
-      call: () =>
-          _remote.getTargetUserSchedules(targetUserId, isActive: isActive),
+      call: () => _remote.getTargetUserSchedules(userId, deviceId),
       toEntity: (m) => m.toEntity(),
     );
   }

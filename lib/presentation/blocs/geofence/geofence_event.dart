@@ -17,6 +17,7 @@ class GeofenceCreate extends GeofenceEvent {
   final String deviceId;
   final String name;
   final bool isActive;
+  // final bool isSyncToDevice;
   final List<Coordinate> coordinates;
   final String color;
   final String? locality;
@@ -32,6 +33,7 @@ class GeofenceCreate extends GeofenceEvent {
     required this.deviceId,
     required this.name,
     required this.isActive,
+    // required this.isSyncToDevice,
     required this.coordinates,
     required this.color,
     this.locality,
@@ -49,6 +51,7 @@ class GeofenceCreate extends GeofenceEvent {
     deviceId,
     name,
     isActive,
+    // isSyncToDevice,
     coordinates,
     color,
     locality,
@@ -65,9 +68,9 @@ class GeofenceCreate extends GeofenceEvent {
 class GeofenceEdit extends GeofenceEvent {
   final String deviceId;
   final String id;
-  // final String geofenceId;
   final String name;
   final bool isActive;
+  // final bool isSyncToDevice;
   final List<Coordinate> coordinates;
   final String color;
   final String geofenceNumber;
@@ -83,9 +86,9 @@ class GeofenceEdit extends GeofenceEvent {
   const GeofenceEdit({
     required this.deviceId,
     required this.id,
-    // required this.geofenceId,
     required this.name,
     required this.isActive,
+    // required this.isSyncToDevice,
     required this.coordinates,
     required this.color,
     required this.geofenceNumber,
@@ -103,9 +106,9 @@ class GeofenceEdit extends GeofenceEvent {
   List<Object?> get props => [
     deviceId,
     id,
-    // geofenceId,
     name,
     isActive,
+    // isSyncToDevice,
     coordinates,
     color,
     geofenceNumber,
@@ -126,4 +129,29 @@ class GeofenceDelete extends GeofenceEvent {
   const GeofenceDelete({required this.deviceId, required this.id});
   @override
   List<Object?> get props => [deviceId, id];
+}
+
+class GeofenceAssign extends GeofenceEvent {
+  final String deviceId; // Required to reload geofences after success
+  final String geofenceId;
+  final String geofenceNumber;
+
+  const GeofenceAssign({
+    required this.deviceId,
+    required this.geofenceId,
+    required this.geofenceNumber,
+  });
+
+  @override
+  List<Object?> get props => [deviceId, geofenceId, geofenceNumber];
+}
+
+class GeofenceUnassign extends GeofenceEvent {
+  final String deviceId; // Required to reload geofences after success
+  final String geofenceId;
+
+  const GeofenceUnassign({required this.deviceId, required this.geofenceId});
+
+  @override
+  List<Object?> get props => [deviceId, geofenceId];
 }

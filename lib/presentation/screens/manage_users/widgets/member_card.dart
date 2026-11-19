@@ -1,209 +1,147 @@
 import 'package:flutter/material.dart';
 import '../../../../domain/entities/relationship/related_user_entity.dart';
+import '../../../themes/app_text_styles.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../../utils/app_icons.dart';
+import '../../../widgets/app_surfaces.dart';
+import '../../../widgets/user_avatar.dart';
+
+enum _MemberAction { unlink, delete }
 
 class MemberCard extends StatelessWidget {
   final RelatedUserEntity person;
-  final VoidCallback? onTap;
   final VoidCallback? onUnlink;
   final VoidCallback? onDelete;
 
   const MemberCard({
     super.key,
     required this.person,
-    this.onTap,
     this.onUnlink,
     this.onDelete,
   });
 
-  String get _fullName {
-    final name = person.fullName;
-    return name.isEmpty ? 'Unnamed Member' : name;
-  }
-
-  String get _initials {
-    if (person.firstName.isNotEmpty && person.lastName.isNotEmpty) {
-      return '${person.firstName[0]}${person.lastName[0]}'.toUpperCase();
-    } else if (person.firstName.isNotEmpty) {
-      return person.firstName[0].toUpperCase();
-    }
-    return '?';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final hasPhoto =
-        person.profilePhoto != null && person.profilePhoto!.isNotEmpty;
+    final name = person.fullName.isEmpty ? 'Unnamed Member' : person.fullName;
+    final phone = (person.mobile ?? '').isNotEmpty
+        ? person.mobile!
+        : 'No phone number';
+    final email = (person.email ?? '').isNotEmpty
+        ? person.email!
+        : (person.uniqueId.isNotEmpty
+              ? 'ID: ${person.uniqueId}'
+              : 'No email address');
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surface(context),
-        borderRadius: _circularBorder(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow(context).withValues(alpha: AppAlpha.tint),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    return AppCard(
+      child: Row(
+        spacing: AppSpacing.md,
+        children: [
+          UserAvatar(
+            name: person.fullName,
+            photoUrl: person.profilePhoto,
+            radius: AppSize.tapTarget / 2,
           ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: AppSpacing.xs,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.sectionWithColor(context),
+                ),
+                _DetailLine(icon: AppIcons.phone, text: phone),
+                _DetailLine(icon: AppIcons.email, text: email),
+              ],
+            ),
+          ),
+          if (onUnlink != null || onDelete != null)
+            PopupMenuButton<_MemberAction>(
+              tooltip: 'Member actions',
+              icon: Icon(
+                AppIcons.more,
+                color: AppColors.textSecondary(context),
+              ),
+              onSelected: (a) => switch (a) {
+                _MemberAction.unlink => onUnlink?.call(),
+                _MemberAction.delete => onDelete?.call(),
+              },
+              itemBuilder: (_) => [
+                if (onUnlink != null)
+                  PopupMenuItem(
+                    value: _MemberAction.unlink,
+                    child: _MenuLabel(
+                      icon: AppIcons.unlink,
+                      label: 'Unlink Member',
+                      iconColor: AppColors.textSecondary(context),
+                    ),
+                  ),
+                if (onDelete != null)
+                  const PopupMenuItem(
+                    value: _MemberAction.delete,
+                    child: _MenuLabel(
+                      icon: AppIcons.delete,
+                      label: 'Delete Member',
+                      iconColor: AppColors.danger,
+                    ),
+                  ),
+              ],
+            ),
         ],
-        border: Border.all(
-          color: AppColors.textSecondary(context).withValues(alpha: AppAlpha.tint),
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.lgAll,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primaryContainer(context),
-                backgroundImage: hasPhoto
-                    ? NetworkImage(person.profilePhoto!)
-                    : null,
-                child: !hasPhoto
-                    ? Text(
-                        _initials,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.onPrimaryContainer(context),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: AppSpacing.md),
-
-              // Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _fullName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary(context),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.phone_outlined,
-                          size: 14,
-                          color: AppColors.textSecondary(context),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Expanded(
-                          child: Text(
-                            person.mobile != null && person.mobile!.isNotEmpty
-                                ? person.mobile!
-                                : 'No phone number',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary(context),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.email_outlined,
-                          size: 14,
-                          color: AppColors.textSecondary(context),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Expanded(
-                          child: Text(
-                            person.email != null && person.email!.isNotEmpty
-                                ? person.email!
-                                : (person.uniqueId.isNotEmpty
-                                      ? 'ID: ${person.uniqueId}'
-                                      : 'No email address'),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary(context),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Action Menu with Unlink & Delete
-              if (onUnlink != null || onDelete != null)
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
-                    color: AppColors.textSecondary(context),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.mdAll,
-                  ),
-                  onSelected: (value) {
-                    if (value == 'unlink') onUnlink?.call();
-                    if (value == 'delete') onDelete?.call();
-                  },
-                  itemBuilder: (context) => [
-                    if (onUnlink != null)
-                      PopupMenuItem<String>(
-                        value: 'unlink',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.link_off_rounded,
-                              color: AppColors.textSecondary(context),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Unlink Member'),
-                          ],
-                        ),
-                      ),
-                    if (onDelete != null)
-                      PopupMenuItem<String>(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline_rounded,
-                              color: AppColors.danger,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Delete Member',
-                              style: TextStyle(color: AppColors.danger),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-            ],
-          ),
-        ),
       ),
     );
   }
+}
 
-  BorderRadius _circularBorder(double radius) => BorderRadius.circular(radius);
+class _DetailLine extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _DetailLine({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: AppSpacing.xs,
+      children: [
+        Icon(
+          icon,
+          size: AppSize.iconSm,
+          color: AppColors.textSecondary(context),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.metaWithColor(context),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuLabel extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color iconColor;
+  const _MenuLabel({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: AppSpacing.smd,
+      children: [
+        Icon(icon, size: AppSize.icon, color: iconColor),
+        Text(label),
+      ],
+    );
+  }
 }

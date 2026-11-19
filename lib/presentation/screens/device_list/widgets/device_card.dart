@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/device/device_entity.dart';
+import '../../../themes/app_tokens.dart';
 import '../../../themes/colors.dart';
 import '../../../utils/colour_util.dart';
 import 'device_card/battery_gauge.dart';
 import 'device_card/gps_readout.dart';
 import 'device_card/signal_meter.dart';
 import 'device_card/status_dot.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class DeviceCard extends StatelessWidget {
   final DeviceEntity device;
@@ -184,10 +184,14 @@ class DeviceCard extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.info.withValues(alpha: AppAlpha.tint),
+                                color: AppColors.info.withValues(
+                                  alpha: AppAlpha.tint,
+                                ),
                                 borderRadius: AppRadius.lgAll,
                                 border: Border.all(
-                                  color: AppColors.info.withValues(alpha: AppAlpha.border),
+                                  color: AppColors.info.withValues(
+                                    alpha: AppAlpha.border,
+                                  ),
                                   width: 1,
                                 ),
                               ),

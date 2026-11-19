@@ -11,6 +11,7 @@ abstract class GeofenceRepository {
     required String deviceId,
     required String name,
     required bool isActive,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     String? locality,
@@ -28,6 +29,7 @@ abstract class GeofenceRepository {
     required String id,
     required String name,
     required bool isActive,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
@@ -45,4 +47,11 @@ abstract class GeofenceRepository {
     required String deviceId,
     required String id,
   });
+
+  Future<Either<Failure, Unit>> assignGeofence({
+    required String geofenceId,
+    required String geofenceNumber,
+  });
+
+  Future<Either<Failure, Unit>> unassignGeofence({required String geofenceId});
 }

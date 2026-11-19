@@ -7,6 +7,7 @@ import '../../models/schedule/schedule_model.dart';
 import '../../models/schedule/schedule_override_model.dart';
 import '../../network/api_constants.dart';
 import '../../network/dio_client.dart';
+import '../graphql/schedule_query.dart';
 
 class ScheduleRemoteDataSource {
   final DioClient _dioClient;
@@ -124,19 +125,25 @@ class ScheduleRemoteDataSource {
     }
   }
 
-  /// 3. Get Schedules for Target User
   Future<List<ScheduleModel>> getTargetUserSchedules(
-    String targetUserId, {
-    bool? isActive,
-  }) async {
+    String userId,
+    String deviceId,
+  ) async {
     AppLogger.d(
       'ScheduleRemoteDataSource',
-      'getTargetUserSchedules() for targetUserId: $targetUserId, isActive: $isActive',
+      'getTargetUserSchedules() [GraphQL] for userId: $userId, deviceId: $deviceId',
     );
     try {
-      final response = await _dioClient.dio.get(
-        ApiConstants.targetUserSchedules(targetUserId),
-        queryParameters: {if (isActive != null) 'is_active': isActive},
+      final response = await _dioClient.dio.post(
+        ApiConstants.targetUserSchedules,
+        data: {
+          'query': ScheduleQuery.getSchedules,
+          'variables': {
+            'userId': userId,
+            'deviceId': deviceId,
+            // 'isActive': true, // Hardcoded here
+          },
+        },
       );
 
       AppLogger.d(
@@ -149,14 +156,19 @@ class ScheduleRemoteDataSource {
       );
 
       final body = response.data as Map<String, dynamic>;
-      if (body['status'] != 'success') {
+
+      if (body.containsKey('errors') && body['errors'] != null) {
+        final errors = body['errors'] as List<dynamic>;
         throw ServerException(
-          message: body['message'] ?? 'Failed to fetch target user schedules.',
-          statusCode: body['code'] as int?,
+          message: errors.isNotEmpty
+              ? (errors[0]['message'] as String? ?? 'GraphQL error occurred')
+              : 'GraphQL error occurred',
         );
       }
 
-      final rawList = body['data'] as List<dynamic>;
+      final data = body['data'] as Map<String, dynamic>?;
+      final rawList = data?['schedules'] as List<dynamic>? ?? [];
+
       AppLogger.d(
         'ScheduleRemoteDataSource',
         'getTargetUserSchedules() parsed items count: ${rawList.length}',

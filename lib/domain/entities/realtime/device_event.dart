@@ -1,4 +1,4 @@
-import '../alerts/alert_entity.dart';
+import 'device_alert.dart';
 
 sealed class DeviceEvent {
   const DeviceEvent();
@@ -18,6 +18,6 @@ class ModeChanged extends DeviceEvent {
 }
 
 class AlertReceived extends DeviceEvent {
-  final AlertEntity alert;
+  final DeviceAlert alert;
   const AlertReceived(this.alert);
 }

@@ -1,20 +1,22 @@
 // lib/presentation/screens/device_list/device_list_screen.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/domain/entities/device/device_entity.dart';
+import '../../../domain/entities/device/device_entity.dart';
 import '../../../domain/utils/alert_device_matcher.dart';
 import '../../app/app_router.dart';
 import '../../blocs/alerts/alerts_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/device_list/device_list_bloc.dart';
+import '../../themes/app_tokens.dart';
 import '../../themes/colors.dart';
 import 'device_list_skeleton.dart';
-import 'widgets/add_device_fab.dart';
+import 'post_link_assign_flow.dart';
 import 'widgets/device_card.dart';
 import 'widgets/notification_bell.dart';
 import 'widgets/profile_menu_button.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 /// Hosted as the "Devices" tab inside MainShellScreen.
 /// Back handling and auth redirect are owned by the shell.
@@ -25,6 +27,7 @@ class DeviceListScreen extends StatefulWidget {
 }
 
 class _DeviceListScreenState extends State<DeviceListScreen> {
+  bool _promptChecked = false;
   @override
   void initState() {
     super.initState();
@@ -33,9 +36,11 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   Future<void> _onRefresh() async {
-    final bloc = context.read<DeviceListBloc>();
-    bloc.add(const DeviceListRefreshRequested());
-    await bloc.stream.firstWhere((s) => s is! DeviceListLoading);
+    final completer = Completer<void>();
+    context.read<DeviceListBloc>().add(
+      DeviceListRefreshRequested(completer: completer),
+    );
+    await completer.future;
   }
 
   static const List<MapEntry<String, String>> _relationshipOrder = [
@@ -64,6 +69,17 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     });
   }
 
+  void _maybePromptCarrier(DeviceListLoaded state) {
+    if (_promptChecked || PostLinkAssignFlow.isRunning) return;
+    _promptChecked = true;
+    final missing = state.devices.unassignedDevices; // owned + no carrier
+    if (missing.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      PostLinkAssignFlow.promptForUnassigned(context, missing);
+    });
+  }
+
   void _onDeviceTap(DeviceEntity device) => _refreshAfter(
     AppRouter.pushDeviceDetail(
       context,
@@ -80,7 +96,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     ),
   );
 
-  void _onAddDeviceTap() => _refreshAfter(AppRouter.pushLinkDevice(context));
+  // void _onAddDeviceTap() => _refreshAfter(AppRouter.pushLinkDevice(context));
 
   @override
   Widget build(BuildContext context) {
@@ -101,92 +117,97 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           ),
         ],
       ),
-      floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
-      body: BlocBuilder<DeviceListBloc, DeviceListState>(
-        builder: (context, state) {
-          if (state is DeviceListLoading || state is DeviceListInitial) {
-            return const DeviceListSkeleton();
-          }
-          if (state is DeviceListError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline_rounded,
-                    size: 48,
-                    color: AppColors.danger,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.message,
-                    style: TextStyle(color: AppColors.danger),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<DeviceListBloc>().add(
-                      const DeviceListLoadRequested(),
+      // floatingActionButton: AddDeviceFab(onTap: _onAddDeviceTap),
+      body: BlocListener<DeviceListBloc, DeviceListState>(
+        listenWhen: (p, c) => c is DeviceListLoaded,
+        listener: (context, state) =>
+            _maybePromptCarrier(state as DeviceListLoaded),
+        child: BlocBuilder<DeviceListBloc, DeviceListState>(
+          builder: (context, state) {
+            if (state is DeviceListLoading || state is DeviceListInitial) {
+              return const DeviceListSkeleton();
+            }
+            if (state is DeviceListError) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: AppColors.danger,
                     ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is DeviceListLoaded) {
-            final grouped = _groupByRelationship(state.devices);
-            final alertsState = context.watch<AlertsBloc>().state;
-            final allAlerts = alertsState is AlertsLoaded
-                ? alertsState.alerts
-                : const [];
-
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: AppColors.primary(context),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                      child: Text(
-                        '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary(context),
-                        ),
+                    const SizedBox(height: 12),
+                    Text(
+                      state.message,
+                      style: TextStyle(color: AppColors.danger),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<DeviceListBloc>().add(
+                        const DeviceListLoadRequested(),
                       ),
+                      child: const Text('Retry'),
                     ),
-                  ),
-                  if (state.devices.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(
+                  ],
+                ),
+              );
+            }
+            if (state is DeviceListLoaded) {
+              final grouped = _groupByRelationship(state.devices);
+              final alertsState = context.watch<AlertsBloc>().state;
+              final allAlerts = alertsState is AlertsLoaded
+                  ? alertsState.alerts
+                  : const [];
+
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: AppColors.primary(context),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                         child: Text(
-                          'No devices found.',
+                          '${state.devices.length} Device${state.devices.length != 1 ? 's' : ''}',
                           style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary(context),
                           ),
                         ),
                       ),
-                    )
-                  else
-                    for (final entry in _relationshipOrder)
-                      if (grouped[entry.key]?.isNotEmpty ?? false)
-                        ..._buildSection(
-                          context,
-                          title: entry.value,
-                          devices: grouped[entry.key]!,
-                          user: user,
-                          allAlerts: allAlerts,
+                    ),
+                    if (state.devices.isEmpty)
+                      SliverFillRemaining(
+                        child: Center(
+                          child: Text(
+                            'No devices found.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary(context),
+                            ),
+                          ),
                         ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                      )
+                    else
+                      for (final entry in _relationshipOrder)
+                        if (grouped[entry.key]?.isNotEmpty ?? false)
+                          ..._buildSection(
+                            context,
+                            title: entry.value,
+                            devices: grouped[entry.key]!,
+                            user: user,
+                            allAlerts: allAlerts,
+                          ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 48)),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

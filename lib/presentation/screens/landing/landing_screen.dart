@@ -12,6 +12,8 @@ import '../../blocs/landing/landing_bloc.dart';
 import '../../themes/colors.dart';
 import '../../utils/colour_util.dart';
 import '../../utils/date_time_formatter.dart';
+import '../../widgets/app_motion_widgets.dart';
+import '../../widgets/async_state_view.dart';
 import 'landing_skeleton.dart';
 import 'widgets/activity_feed_card.dart';
 import 'widgets/attention_banner.dart';
@@ -20,7 +22,7 @@ import 'widgets/hero_section.dart';
 import 'widgets/info_card.dart';
 import 'widgets/today_schedule_card.dart';
 import 'widgets/today_status_card.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
+import '../../themes/app_tokens.dart';
 
 class LandingScreen extends StatefulWidget {
   final DeviceEntity device;
@@ -50,14 +52,19 @@ class _LandingScreenState extends State<LandingScreen> {
       ),
     );
 
-    await landingBloc.stream.firstWhere((s) => s is! LandingLoading);
+    await landingBloc.stream
+        .firstWhere((s) => s is! LandingLoading)
+        .timeout(AppMotion.refreshTimeout, onTimeout: () => landingBloc.state);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset('assets/images/app_name_logo.png', height: 35),
+        title: Image.asset(
+          'assets/images/app_name_logo.png',
+          height: AppSize.appBarLogo,
+        ),
         centerTitle: true,
       ),
       body: BlocBuilder<LandingBloc, LandingState>(
@@ -67,11 +74,13 @@ class _LandingScreenState extends State<LandingScreen> {
           }
 
           if (state is LandingError) {
-            return _ErrorBody(
-              message: state.message,
+            return AsyncStateView(
+              isLoading: false,
+              errorMessage: state.message,
               onRetry: () => context.read<LandingBloc>().add(
                 LandingLoadRequested(widget.device),
               ),
+              builder: () => const SizedBox.shrink(),
             );
           }
 
@@ -154,94 +163,62 @@ class _LoadedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const kBlue = Color(0xFF5B8DEF);
-
     final deviceListState = context.watch<DeviceListBloc>().state;
     final allDevices = deviceListState is DeviceListLoaded
         ? deviceListState.devices
         : <DeviceEntity>[];
 
-    final statusLogs = [
-      const StatusLogEntry(label: 'Left home', value: '7:58 AM'),
-      const StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
+    // TODO(logic): replace mock data with bloc state.
+    const statusLogs = [
+      StatusLogEntry(label: 'Left home', value: '7:58 AM'),
+      StatusLogEntry(label: 'Arrived school', value: '8:42 AM'),
     ];
-    const defaultSchedule = <ScheduleEntry>[
-      ScheduleEntry(time: '18:00', label: 'Evening routine', id: 'uiyghcvjhb'),
-    ];
+    // const defaultSchedule = <ScheduleEntry>[
+    //   ScheduleEntry(id: 'evening', time: '18:00', label: 'Evening routine'),
+    // ];
 
-    final activityFeed = _buildActivityFeed(device, state.alerts);
+    final items = <Widget>[
+      AttentionBanner(
+        devices: allDevices,
+        alerts: state.alerts,
+        onTap: onAttentionTap ?? () {},
+      ),
+      HeroSection(device: device, latest: latest),
+      InfoCard(
+        icon: Icons.location_on_rounded,
+        iconBg: AppColors.primary(context),
+        iconColor: AppColors.onPrimary(context),
+        title: latest?.userAddress ?? 'Address Unavailable',
+        subtitle: latest?.deviceTimestamp != null
+            ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
+            : 'Awaiting first fix',
+      ),
+      const TodayStatusCard(looksNormal: true, logs: statusLogs),
+      TodayScheduleCard(device: device),
+      ActivityFeedCard(activities: _buildActivityFeed(device, state.alerts)),
+    ];
 
     return Column(
       children: [
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            children: [
-              AttentionBanner(
-                devices: allDevices,
-                alerts: state.alerts,
-                onTap: onAttentionTap ?? () {},
-              ),
-              const SizedBox(height: 16),
-              HeroSection(device: device, latest: latest),
-              const SizedBox(height: 16),
-              InfoCard(
-                icon: Icons.location_on_rounded,
-                iconBg: kBlue.withValues(alpha: AppAlpha.tint),
-                iconColor: kBlue,
-                title: latest?.userAddress ?? 'Address Unavailable',
-                subtitle: latest?.deviceTimestamp != null
-                    ? 'Updated ${DateTimeFormatter.formatRelativeTime(latest!.deviceTimestamp)}'
-                    : 'Awaiting first fix',
-              ),
-              const SizedBox(height: 16),
-              TodayStatusCard(looksNormal: true, logs: statusLogs),
-              const SizedBox(height: 16),
-              const TodayScheduleCard(schedule: defaultSchedule),
-              const SizedBox(height: 16),
-              ActivityFeedCard(activities: activityFeed),
-              const SizedBox(height: 16),
-            ],
+          child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.smd,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+            itemBuilder: (context, i) => items[i].entrance(context, index: i),
           ),
         ),
         BottomMetricsBar(
-          battery: device.battery ?? 0,
-          temperature: device.temperature ?? 'NA',
+          battery: latest!.battery ?? 0,
+          temperature: latest!.temperature ?? 'NA',
         ),
       ],
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: AppColors.danger,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: TextStyle(color: AppColors.danger),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
-      ),
     );
   }
 }

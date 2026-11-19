@@ -7,7 +7,7 @@ import '../../themes/app_palette.dart';
 class ThemeCubit extends Cubit<AppThemeType> {
   final ThemeRepository _themeRepository;
 
-  ThemeCubit(this._themeRepository) : super(AppThemeType.cleanCalm) {
+  ThemeCubit(this._themeRepository) : super(AppThemeType.aadyaBrand) {
     _init();
   }
 

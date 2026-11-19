@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/signup/person_entity.dart';
 import '../../blocs/profile/profile_bloc.dart';
-import '../../themes/colors.dart';
+import '../../themes/app_tokens.dart';
+import '../../utils/date_time_formatter.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_overlays.dart';
 import '../../widgets/member_form_controller.dart';
 import '../../widgets/member_form_fields.dart';
-import '../../utils/date_time_formatter.dart';
-import 'package:synquerra/presentation/themes/app_tokens.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   /// Existing values to pre-fill the form with, including
@@ -32,6 +32,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     super.dispose();
   }
 
+  // TODO(logic): empty-string -> null mapping belongs in the bloc/use case.
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _wasSubmitting = true;
@@ -57,8 +58,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         state: c.stateController.text.trim(),
         country: c.countryController.text.trim(),
         pincode: c.pincodeController.text.trim(),
-        profileImage: c
-            .profileImageFile, // was: c.profilePhotoChanged ? c.newProfileImage : null
+        profileImage: c.profileImageFile,
       ),
     );
   }
@@ -71,71 +71,46 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
         if (state is ProfileLoaded && state.errorMessage != null) {
           _wasSubmitting = false;
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: AppColors.danger,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppRadius.mdAll,
-                ),
-              ),
-            );
+          AppSnackBar.error(context, state.errorMessage!);
           return;
         }
 
         if (state is ProfileLoaded &&
             !state.isUpdating &&
             state.errorMessage == null) {
-          // Save completed successfully.
           _wasSubmitting = false;
+          // Shown on the root messenger, so it carries over to the profile
+          // screen after the pop.
+          AppSnackBar.success(context, 'Profile updated successfully');
           Navigator.pop(context, true);
         }
       },
       builder: (context, state) {
         final isSaving = state is ProfileLoaded && state.isUpdating;
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Update Profile'),
-            centerTitle: false,
-          ),
+          appBar: AppBar(title: const Text('Update Profile')),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.lg,
                   children: [
                     MemberFormFields(
                       controller: _controller,
                       requirePassword: false,
                       showRelationshipFields: false,
                     ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: AppColors.textSecondary(context),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 200,
-                          child: AppButton(
-                            label: 'Save Changes',
-                            onPressed: _submit,
-                            isLoading: isSaving,
-                          ),
-                        ),
-                      ],
+                    AppButton(
+                      label: 'Save Changes',
+                      onPressed: _submit,
+                      isLoading: isSaving,
                     ),
                   ],
                 ),

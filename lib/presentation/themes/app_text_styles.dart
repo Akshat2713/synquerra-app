@@ -66,6 +66,18 @@ class AppTextStyles {
     letterSpacing: 0.5,
   );
 
+  // avatarInitials - initials inside a UserAvatar, scaled to its radius
+  static TextStyle avatarInitials(double radius, {required Color color}) =>
+      body.copyWith(
+        fontSize: radius * 0.7,
+        fontWeight: FontWeight.w700,
+        color: color,
+      );
+
+  // button - label inside buttons
+  static TextStyle get button =>
+      body.copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.3);
+
   // ===== DEPRECATED ALIASES (for backward compatibility) =====
   // Headings - mapped to new roles
   @Deprecated('Use AppTextStyles.display instead')

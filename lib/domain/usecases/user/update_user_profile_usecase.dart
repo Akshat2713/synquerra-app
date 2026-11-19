@@ -2,7 +2,7 @@
 
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import 'package:synquerra/domain/entities/signup/person_entity.dart';
+import '../../entities/signup/person_entity.dart';
 import '../../failures/failure.dart';
 import '../../repositories/user_repository.dart';
 import '../base_usecase.dart';

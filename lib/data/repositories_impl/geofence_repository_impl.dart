@@ -23,6 +23,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
     required String deviceId,
     required String name,
     required bool isActive,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     String? locality,
@@ -38,6 +39,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
       deviceId: deviceId,
       name: name,
       isActive: isActive,
+      // isSyncToDevice: isSyncToDevice,
       coordinates: coordinates,
       color: color,
       locality: locality,
@@ -57,6 +59,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
     required String deviceId,
     required String name,
     required bool isActive,
+    // required bool isSyncToDevice,
     required List<Coordinate> coordinates,
     required String color,
     required String geofenceNumber,
@@ -74,6 +77,7 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
       deviceId: deviceId,
       name: name,
       isActive: isActive,
+      // isSyncToDevice: isSyncToDevice,
       coordinates: coordinates,
       color: color,
       geofenceNumber: geofenceNumber,
@@ -96,6 +100,26 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
     required String id,
   }) => safeCall(
     call: () => _remote.deleteGeofence(deviceId: deviceId, id: id),
+    toEntity: (_) => unit,
+  );
+
+  @override
+  Future<Either<Failure, Unit>> assignGeofence({
+    required String geofenceId,
+    required String geofenceNumber,
+  }) => safeCall(
+    call: () => _remote.assignGeofence(
+      geofenceId: geofenceId,
+      geofenceNumber: geofenceNumber,
+    ),
+    toEntity: (_) => unit,
+  );
+
+  @override
+  Future<Either<Failure, Unit>> unassignGeofence({
+    required String geofenceId,
+  }) => safeCall(
+    call: () => _remote.unassignGeofence(geofenceId: geofenceId),
     toEntity: (_) => unit,
   );
 }

@@ -22,13 +22,18 @@ class DeviceAssociationModel {
   });
 
   factory DeviceAssociationModel.fromJson(Map<String, dynamic> json) {
-    final user = json['user'] as Map<String, dynamic>? ?? const {};
+    final user = json['user'] as Map<String, dynamic>;
+
+    final firstName = user['first_name'] as String? ?? '';
+    final lastName = user['last_name'] as String? ?? '';
+    final fullName = '$firstName $lastName'.trim();
+
     return DeviceAssociationModel(
-      userId: user['id'] as String? ?? '',
-      name: user['name'] as String? ?? '',
+      userId: user['user_id'] as String,
+      name: fullName,
       phone: user['phone'] as String?,
       email: user['email'] as String?,
-      profile: user['profile'] as String?,
+      profile: user['profile_photo'] as String?,
       assignmentType: json['assignment_type'] as String? ?? '',
     );
   }

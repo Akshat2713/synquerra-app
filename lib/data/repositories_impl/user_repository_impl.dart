@@ -3,7 +3,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:synquerra/domain/entities/signup/person_entity.dart';
+import '../../domain/entities/signup/person_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../core/error/app_exceptions.dart';

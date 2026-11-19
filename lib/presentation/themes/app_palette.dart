@@ -1,7 +1,8 @@
 // lib/presentation/themes/app_palette.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:synquerra/core/utils/app_logger.dart';
+
+import '../../core/utils/app_logger.dart';
 
 /// Helper to calculate contrast ratio between two colors (WCAG 2.1).
 /// Returns ratio, with 4.5:1 being the minimum for normal text.
@@ -123,9 +124,9 @@ void _validatePalette(String name, AppPalette palette) {
 
 /// The 4 selectable themes. Dark is just another option in the dropdown.
 enum AppThemeType {
-  cleanCalm('Clean Calm', Color(0xFF0EA5E9)),
+  // cleanCalm('Clean Calm', Color(0xFF0EA5E9)),
   aadyaBrand('AADYA Brand', Color(0xFF7C3AED)),
-  natureCalm('Nature Calm', Color(0xFF10B981)),
+  // natureCalm('Nature Calm', Color(0xFF10B981)),
   dark('Dark', Color(0xFF1A1424));
 
   const AppThemeType(this.label, this.swatch);
@@ -138,7 +139,7 @@ enum AppThemeType {
   /// Safe parse for persisted values. Old values like "light" fall back
   /// to cleanCalm; old "dark" still maps to dark.
   static AppThemeType fromName(String? name) =>
-      AppThemeType.values.asNameMap()[name] ?? AppThemeType.cleanCalm;
+      AppThemeType.values.asNameMap()[name] ?? AppThemeType.aadyaBrand;
 }
 
 /// Every color that CHANGES between themes lives here.
@@ -257,14 +258,14 @@ class AppPalette extends ThemeExtension<AppPalette> {
   );
 
   static AppPalette fromType(AppThemeType type) => switch (type) {
-    AppThemeType.cleanCalm => cleanCalm,
+    // AppThemeType.cleanCalm => cleanCalm,
     AppThemeType.aadyaBrand => aadyaBrand,
-    AppThemeType.natureCalm => natureCalm,
+    // AppThemeType.natureCalm => natureCalm,
     AppThemeType.dark => dark,
   };
 
   static AppPalette of(BuildContext context) =>
-      Theme.of(context).extension<AppPalette>() ?? cleanCalm;
+      Theme.of(context).extension<AppPalette>() ?? aadyaBrand;
 
   // Themes switch instantly, so no real interpolation is needed.
   @override

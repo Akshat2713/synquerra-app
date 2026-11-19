@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synquerra/domain/usecases/auth/logout_usecase.dart';
 import '../../../core/services/push_notification_service.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../data/network/session_expired_notifier.dart';
 import '../../../domain/entities/auth/user_entity.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/check_auth_status_usecase.dart';
+import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/sync_fcm_token_usecase.dart';
 import '../../../domain/usecases/base_usecase.dart';
 
